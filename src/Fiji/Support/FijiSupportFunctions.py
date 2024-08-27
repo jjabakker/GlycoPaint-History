@@ -104,6 +104,30 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
         return ""
 
 
+def ask_user_for_file(prompt='Select File'):
+
+    """
+    Ask the user to specify the user image directory. Present the last used value as default.
+    Save the user choice.
+    :param prompt:
+    :return:
+    """
+    root_dir, paint_dir, images_dir = get_default_directories()
+
+    file_chooser = JFileChooser('~')
+    file_chooser.setFileSelectionMode(JFileChooser.FILES_ONLY)
+
+    # Show the dialog and get the result
+    result = file_chooser.showDialog(None, prompt)
+
+    # Check if the user selected a directory
+    if result == JFileChooser.APPROVE_OPTION:
+        selected_file = file_chooser.getSelectedFile()
+        return selected_file.getAbsolutePath()
+    else:
+        return ""
+
+
 def fiji_get_file_open_write_attribute():
 
     """

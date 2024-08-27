@@ -151,7 +151,7 @@ def install():
     # Then do the actual copying
 
     print(f"\n\nCopy from {fiji_grid_source} to {fiji_grid_dest}: ")
-    plugin_files = ["Grid_Process_Batch.py", "Convert_BF_images.py"]
+    plugin_files = ["Grid_Process_Batch.py", "Convert_BF_images.py", "Grid_Process_Batch_Batch.py"]
     for file in plugin_files:
         copy_file_from_source_to_dest(fiji_grid_source, fiji_grid_dest, file)
 

@@ -38,14 +38,14 @@ def save_as_png(canvas, file_name, image_name):
 
 def save_square_info_to_batch(self):
     for index, row in self.df_batch.iterrows():
-        image_name = row['Ext Image Name']
-        squares_file_path = os.path.join(self.paint_directory, image_name, 'grid', image_name + '-squares.csv')
+        # image_name = row['Ext Image Name']
+        # squares_file_path = os.path.join(self.paint_directory, image_name, 'grid', image_name + '-squares.csv')
         df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
         if df_squares is None:
             print(" Function 'save_square_info_to_batch' failed: - Square file {squares_file_path} does not exist")
             exit()
         if len(df_squares) > 0:
-            nr_visible_squares    = len(df_squares[df_squares['Visible'] == True])
+            nr_visible_squares    = len(df_squares[df_squares['Visible']])
             nr_total_squares      = len(df_squares)
             squares_ratio         = round(nr_visible_squares / nr_total_squares, 2)
         else:
@@ -69,8 +69,9 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
     squares files, but for some reason the individual files are used here (maybe a bit safer in terms of
     corruption risk),
 
-    :param root_directory:
+    :param paint_directory:
     :param df_batch:
+    :param mode:
     :param type_of_image:
     :return:
     """
@@ -84,7 +85,7 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
 
         image_name = df_batch.iloc[index]['Ext Image Name']
 
-        if mode == 'Directory' :
+        if mode == 'Directory':
             image_path = os.path.join(paint_directory, image_name)
         else:
             image_path = os.path.join(paint_directory, str(df_batch.iloc[index]['Experiment Date']), image_name)
@@ -102,7 +103,6 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
         else:
             bf_dir = os.path.join(paint_directory, str(df_batch.iloc[index]['Experiment Date']), "Converted BF Images")
 
-
         # Then get all the files in  the 'img' directory
         all_images_in_img_dir = os.listdir(img_dir)
 
@@ -112,7 +112,6 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
                 all_images_in_img_dir.remove(img)
         all_images_in_img_dir.sort()
 
-        tm_img     = None
         valid      = False
         square_nrs = []
 
@@ -159,19 +158,19 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
         right_valid, right_img = get_corresponding_bf(bf_dir, image_name)
 
         record = {
-            "Left Image Name": df_batch.iloc[index]['Ext Image Name'],
-            "Left Image": left_img,
-            "Cell Type": df_batch.iloc[index]['Cell Type'],
-            "Adjuvant": df_batch.iloc[index]['Adjuvant'],
-            "Probe": df_batch.iloc[index]['Probe'],
-            "Probe Type": df_batch.iloc[index]['Probe Type'],
-            "Nr Spots": int(df_batch.iloc[index]['Nr Spots']),
-            "Square Nrs": square_nrs,
-            "Squares File": squares_file,
-            "Left Valid": valid,
-            "Right Image Name": image_name,
-            "Right Image": right_img,
-            "Right Valid": right_valid
+            "Left Image Name"  : df_batch.iloc[index]['Ext Image Name'],
+            "Left Image"       : left_img,
+            "Cell Type"        : df_batch.iloc[index]['Cell Type'],
+            "Adjuvant"         : df_batch.iloc[index]['Adjuvant'],
+            "Probe"            : df_batch.iloc[index]['Probe'],
+            "Probe Type"       : df_batch.iloc[index]['Probe Type'],
+            "Nr Spots"         : int(df_batch.iloc[index]['Nr Spots']),
+            "Square Nrs"       : square_nrs,
+            "Squares File"     : squares_file,
+            "Left Valid"       : valid,
+            "Right Image Name" : image_name,
+            "Right Image"      : right_img,
+            "Right Valid"      : right_valid
         }
 
         list_images.append(record)
@@ -187,7 +186,8 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
 def get_corresponding_bf(bf_dir, image_name):
     """
     Get the brightfield images for the right canvas
-    :param paint_directory:
+    :param bf_dir:
+    :param image_name:
     :return:
     """
 
@@ -246,7 +246,6 @@ class ImageViewer:
         self.conf_file         = conf_file
         self.paint_directory   = directory
 
-
         if self.mode == 'Directory':
             self.paint_directory = directory
             self.batchfile_path  = os.path.join(self.paint_directory, 'grid_batch.csv')
@@ -259,15 +258,6 @@ class ImageViewer:
         if self.df_batch is None:
             print("No 'grid_batch.csv' file, Did you run 'Process All Images.py'?")
             return
-
-        # # Now distinguish two case: either the user specified a paint directory (one experiment) or a root directory
-        # if len(self.df_batch['Experiment Date'].unique()) > 1:
-        #     self.paint_directory = head_tail[0]
-        #     self.batch_file_name = batchfilename
-        # else:
-        #     head_tail = os.path.split(head_tail[0])
-        #     self.paint_directory = head_tail[0]
-        #     self.batch_file_name = batchfilename
 
         # Retrieve some info from the batch file
         self.image_name = self.df_batch.iloc[self.img_no]['Ext Image Name']
@@ -637,7 +627,6 @@ class ImageViewer:
         if self.user_change:
             self.save_image_state()
         exit()
-
 
     def image_selected(self, event):
 
@@ -1123,7 +1112,7 @@ class ImageViewer:
         else:
             print('Big trouble!')
 
-        self.list_images = get_images(self.paint_directory, self.df_batch, self.mode_var.get())
+        self.list_images = get_images(self.paint_directory, self.df_batch, self.mode, self.mode_var.get())
 
         self.img_no = self.img_no - 1
         self.go_forward_backward('Forward')
@@ -1235,7 +1224,6 @@ class ImageViewer:
                                              self.image_name + '-squares.csv')
         save_squares_to_file(self.df_squares, squares_file_name)
 
-
     def write_grid_batch(self):
         batch_file_name = os.path.join(self.paint_directory, 'grid_batch.csv')
         save_batch_to_file(self.df_batch, batch_file_name)
@@ -1263,6 +1251,7 @@ proceed        = False
 root_directory = ''
 conf_file      = ''
 mode           = ''
+
 
 class SelectViewerDialog:
 
@@ -1321,7 +1310,6 @@ class SelectViewerDialog:
             self.rb_mode_directory.focus()
             self.lbl_root_dir.config(text=self.root_directory)
 
-
     def change_conf_file(self):
         global root_directory
         global conf_file
@@ -1360,16 +1348,13 @@ class SelectViewerDialog:
             proceed = True
             root.destroy()
 
-    def select_mode_button(self):
-
-        pass
-
     def exit_dialog(self):
 
         global proceed
 
         proceed = False
         root.destroy()
+
 
 root = Tk()
 root.eval('tk::PlaceWindow . center')
