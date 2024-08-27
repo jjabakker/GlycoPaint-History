@@ -255,6 +255,8 @@ def process_single_image_in_paint_directory(image_path,
                                                experiment_name,
                                                verbose)
 
+
+
     # -------------------------------------------------------------------------------
     # Determine the density ratio
     # -------------------------------------------------------------------------------
@@ -279,6 +281,20 @@ def process_single_image_in_paint_directory(image_path,
     df_squares = identify_invalid_squares(df_squares,
                                           min_r_squared,
                                           min_tracks_for_tau)
+
+    # Assign the label numbers to the squares
+    df_with_label = df_tracks.copy()
+    df_temp = df_squares[df_squares['Label Nr'] != 0]
+    for index, row in df_temp.iterrows():
+        square = row['Square Nr']
+        label  = row['Label Nr']
+        df_with_label.loc[df_with_label['Square Nr'] == square, 'Label Nr'] = label
+
+    # The tracks dataframe has been changed, so write a copy to file
+    new_tracks_file_name = tracks_file_name[:tracks_file_name.find('.csv')] + '_label.csv'
+    df_with_label.drop(['NUMBER_SPLITS', 'NUMBER_MERGES', 'TRACK_Z_LOCATION', 'NUMBER_COMPLEX'], axis=1,
+                       inplace=True)
+    df_with_label.to_csv(new_tracks_file_name, index=False)
 
     # -------------------------------------------------------------------------------
     # Set the visibility in the df_squares
@@ -324,11 +340,21 @@ def create_df_squares(df_tracks,
                       experiment_name,
                       verbose):
     # Create the matrices
-
     count_matrix       = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
     tau_matrix         = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
     density_matrix     = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
     variability_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
+
+    # Add a label and square column to the tracks dataframe, if it does not already exist, else reset it
+    if 'Square Nr' in df_tracks.columns:
+        df_tracks['Square Nr'] = 0
+    else:
+        df_tracks['Square Nr'] = 0
+
+    if 'Label' in df_tracks.columns:
+        df_tracks['Label Nr'] = 0
+    else:
+        df_tracks['Label Nr'] = 0
 
     # Create an empty squares dataframe, that will contain the data for each square
     df_squares = pd.DataFrame()
@@ -352,6 +378,9 @@ def create_df_squares(df_tracks,
         df_tracks_square.reset_index(drop=True, inplace=True)
         nr_tracks = len(df_tracks_square)
 
+        # Assign the tracks to the square.
+        if nr_tracks > 0:
+            df_tracks.loc[mask, 'Square Nr'] = i
 
         # --------------------------------------------
         # Calculate the sum of track durations
