@@ -547,7 +547,7 @@ def read_squares_from_file(squares_file_path):
     try:
         df_squares = pd.read_csv(squares_file_path, header=0, skiprows=[])
     except IOError:
-        print('Read_squares from_file: error in read_csv' )
+        print(f'Read_squares from_file: file {squares_file_path} could not be opened.' )
         exit(-1)
         return None
 
