@@ -141,6 +141,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
                 imp = IJ.openImage(image_file_name)
                 imp.show()
                 IJ.run("Enhance Contrast", "saturated=0.35")
+                IJ.run("Grays")
                 ext_image_name = image_name + "-threshold-" + str(int(threshold))
 
                 create_directories(os.path.join(paint_directory, ext_image_name), True)
