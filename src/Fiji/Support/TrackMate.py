@@ -122,7 +122,7 @@ def paint_trackmate(threshold, tracks_filename, image_filename):
 
     # Read the default display settings.
     ds = DisplaySettingsIO.readUserDefault()
-    ds.setTrackColorBy(TrackMateObject.TRACKS, 'TRACK_INDEX')
+    ds.setTrackColorBy(TrackMateObject.TRACKS, 'TRACK_DURATION')
 
     displayer = HyperStackDisplayer(model, selection_model, imp, ds)
     displayer.render()
