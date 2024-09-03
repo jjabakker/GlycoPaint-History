@@ -22,7 +22,7 @@ from src.Automation.Support.Support_Functions import get_default_directories
 from src.Automation.Support.Support_Functions import save_default_directories
 from src.Automation.Support.Support_Functions import read_batch_from_file
 from src.Automation.Support.Support_Functions import read_squares_from_file
-from src.Automation.Support.Support_Functions import save_squares_to_file
+# from src.Automation.Support.Support_Functions import save_squares_to_file
 from src.Automation.Support.Support_Functions import save_batch_to_file
 
 from src.Automation.Support.Analyse_All_Images import analyse_all_images
@@ -82,6 +82,9 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
     # Cycle through the batch file
     count = 0
     for index in range(len(df_batch)):
+
+        if df_batch.iloc[index]['Process'] == 'No' or df_batch.iloc[index]['Process'] == 'N':
+            continue
 
         image_name = df_batch.iloc[index]['Ext Image Name']
 
@@ -235,7 +238,7 @@ class ImageViewer:
 
         # Remember the root, because you need it later to close
         self.image_viewer_root = root
-        # self.stand_alone       = stand_alone
+        root.title('Image Viewer')
 
         self.neighbour_mode    = ""   # We can't know for sure what mode is displayed, so leave it ambiguous
         self.img_no            = 0
@@ -254,7 +257,7 @@ class ImageViewer:
             self.batchfile_path  = os.path.join(self.paint_directory, conf_file)
 
         # Read the batch file. If the file is not there just return (a message will have been printed)
-        self.df_batch = read_batch_from_file(self.batchfile_path)
+        self.df_batch = read_batch_from_file(self.batchfile_path, FALSE)
         if self.df_batch is None:
             print("No 'grid_batch.csv' file, Did you run 'Process All Images.py'?")
             return
@@ -542,7 +545,7 @@ class ImageViewer:
             self.df_batch.loc[row_index, 'Exclude'] = False
             self.bn_exclude.config(text='Exclude')
             self.text_for_info3.set('')
-        self.df_batch.to_csv(os.path.join(self.paint_directory, 'grid_batch.csv'), index=False)
+        self.df_batch.to_csv(self.batchfile_path)
 
     def key_pressed(self, event):
         self.cn_left_image.focus_set()
@@ -552,7 +555,7 @@ class ImageViewer:
             if self.show_squares:
                 self.cn_left_image.delete("all")
                 self.cn_left_image.create_image(0, 0, anchor=NW,
-                                                image=self.list_images[self.img_no]['Photo Image Object'])
+                                                image=self.list_images[self.img_no]['Left Image'])
                 self.show_squares = False
             else:
                 self.display_selected_squares()
@@ -570,7 +573,6 @@ class ImageViewer:
 
         save_img_no = self.img_no
         self.img_no = -1
-        regexp      = re.compile(r'\d{6}-Exp-\d{1,2}-[AB]\d-\d{1,2}')
 
         # Create the squares directory if it does not exist
         squares_dir = os.path.join(self.paint_directory, 'Output', 'Squares')
@@ -1217,16 +1219,19 @@ class ImageViewer:
         return self.df_batch
 
     def write_squares(self):
-        if self.mode == 'Directory':
-            squares_file_name = os.path.join(self.paint_directory, self.image_name, 'grid', self.image_name + '-squares.csv')
-        else:
-            squares_file_name = os.path.join(self.paint_directory, str(self.df_batch.iloc[self.img_no]['Experiment Date']),  self.image_name, 'grid',
-                                             self.image_name + '-squares.csv')
-        save_squares_to_file(self.df_squares, squares_file_name)
+
+        pass
+
+        # It is in fact not necessary to write the squares file. It is reinterpreted every time it is loaded which square are visible
+        # if self.mode == 'Directory':
+        #     squares_file_name = os.path.join(self.paint_directory, self.image_name, 'grid', self.image_name + '-squares.csv')
+        # else:
+        #     squares_file_name = os.path.join(self.paint_directory, str(self.df_batch.iloc[self.img_no]['Experiment Date']),  self.image_name, 'grid',
+        #                                      self.image_name + '-squares.csv')
+        # save_squares_to_file(self.df_squares, squares_file_name)
 
     def write_grid_batch(self):
-        batch_file_name = os.path.join(self.paint_directory, 'grid_batch.csv')
-        save_batch_to_file(self.df_batch, batch_file_name)
+        save_batch_to_file(self.df_batch, self.batchfile_path)
 
     def save_image_state(self):
 
