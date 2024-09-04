@@ -152,6 +152,8 @@ def compile_squares_file(root_dir):
     df_all_batches.to_excel(os.path.join(root_dir, 'Output', 'All Batches.xlsx'), index=False)
     df_batch_summary.to_excel(os.path.join(root_dir, "Output", "Batch Summary.xlsx"), index=False)
 
+    df_all_batches.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
+
     print ("\nOutput generated in directory 'Output'")
 
 
