@@ -28,7 +28,6 @@ def inspect_batch_files(root_dir):
 
     # Create the dataframes to be filled
     df_all_batches   = pd.DataFrame()
-    df_batch_summary = pd.DataFrame()
 
     paint_dirs = os.listdir(root_dir)
     paint_dirs.sort()
@@ -54,10 +53,8 @@ def inspect_batch_files(root_dir):
 
         df_all_batches   = pd.concat([df_all_batches, df_batch])
 
-
-
     # ------------------------------------
-    # Save the files
+    # Save the file
     # -------------------------------------
 
     # Check if Output directory exists, create if necessary
@@ -66,7 +63,6 @@ def inspect_batch_files(root_dir):
 
     # Save the files
     df_all_batches.to_excel(os.path.join(root_dir, 'Output', 'Batches to Run.xlsx'), index=False)
-    df_batch_summary.to_excel(os.path.join(root_dir, "Output", "Batch Summary.xlsx"), index=False)
 
     print ("\nOutput generated in directory 'Output'")
 
