@@ -1172,7 +1172,11 @@ class ImageViewer:
         self.lbl_image_bf_name.set(str(self.img_no + 1) + ":  " + self.list_images[self.img_no]['Right Image Name'])
 
         # Update information labels
-        cell_info = f"({self.list_images[self.img_no]['Cell Type']}) - ({self.list_images[self.img_no]['Adjuvant']}) - ({self.list_images[self.img_no]['Probe Type']}) - ({self.list_images[self.img_no]['Probe']})"
+        if self.list_images[self.img_no]['Adjuvant'] is  None:
+            adj_label = 'No'
+        else:
+            adj_label = self.list_images[self.img_no]['Adjuvant']
+        cell_info = f"({self.list_images[self.img_no]['Cell Type']}) - ({adj_label}) - ({self.list_images[self.img_no]['Probe Type']}) - ({self.list_images[self.img_no]['Probe']})"
         self.text_for_info1.set(cell_info)
         self.text_for_info2.set(f"{self.list_images[self.img_no]['Nr Spots']:,} spots")
 
