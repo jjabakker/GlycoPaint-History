@@ -153,7 +153,7 @@ class GridDialog:
             for image_dir in image_dirs:
                 if not os.path.isdir(os.path.join(self.paint_directory, image_dir)):
                     continue
-                if image_dir == 'Output':
+                if 'Output' in image_dir:
                     continue
                 process_images_in_paint_directory(os.path.join(self.paint_directory, image_dir),
                                                   self.nr_of_squares_in_row.get(),
@@ -708,6 +708,7 @@ def process_images_in_paint_directory(paint_directory,
 
     # Loop though selected images to produce the individual grid_results files
     i = 1
+    processed = 0
 
     print_header(f"Processing {nr_files} images in {paint_directory}")
 
@@ -716,45 +717,69 @@ def process_images_in_paint_directory(paint_directory,
         ext_image_path = os.path.join(paint_directory, ext_image_name)
         concentration  = row["Concentration"]
 
-        print_header(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+        squares_file_name = os.path.join(ext_image_path, "grid", ext_image_name + "-squares.csv")
+        tracks_file_name = os.path.join(ext_image_path, "tracks", ext_image_name + "-full-tracks.csv")
 
-        df_squares = process_single_image_in_paint_directory(ext_image_path,
-                                                             ext_image_name,
-                                                             nr_of_squares_in_row,
-                                                             min_r_squared,
-                                                             min_tracks_for_tau,
-                                                             min_density_ratio,
-                                                             max_variability,
-                                                             concentration,
-                                                             row["Nr Spots"],
-                                                             row['Batch Sequence Nr'],
-                                                             row['Experiment Nr'],
-                                                             row['Experiment Seq Nr'],
-                                                             row['Experiment Date'],
-                                                             row['Experiment Name'],
-                                                             verbose)
-        if df_squares is None:
-            print("\nAborted with error")
-            return None
+        process = False
+        if not os.path.isfile(squares_file_name):
+            process = True
+        else:
+            squares_file_timestamp = os.path.getmtime(squares_file_name)
 
-        nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
-        nr_visible_squares = len(df_squares[df_squares['Visible'] == True])
-        nr_total_squares   = int(nr_of_squares_in_row * nr_of_squares_in_row)
-        df_batch.loc[index, 'Nr Total Squares']      = nr_total_squares
-        df_batch.loc[index, 'Nr Defined Squares']    = nr_defined_squares
-        df_batch.loc[index, 'Nr Visible Squares']    = nr_visible_squares
-        df_batch.loc[index, 'Nr Invisible Squares']  = nr_defined_squares -  nr_visible_squares
-        df_batch.loc[index, 'Squares Ratio']         = round(100 * nr_defined_squares / nr_total_squares)
-        df_batch.loc[index, 'Max Squares Ratio']     = max_square_coverage
-        df_batch.loc[index, 'Nr Rejected Squares']   = nr_total_squares - nr_defined_squares
-        df_batch.loc[index, 'Exclude']               = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
-        df_batch.loc[index, 'Ext Image Name']        = ext_image_name
+        # Get the time stamp of the tracks_file
+        if not os.path.isfile(tracks_file_name):
+            print(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
+            exit(-1)
+        else:
+            tracks_file_timestamp = os.path.getmtime(tracks_file_name)
 
-        i += 1
+        # Force processing
+        process = True
+        if process or squares_file_timestamp < tracks_file_timestamp:
+
+            print_header(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+
+            df_squares = process_single_image_in_paint_directory(ext_image_path,
+                                                                 ext_image_name,
+                                                                 nr_of_squares_in_row,
+                                                                 min_r_squared,
+                                                                 min_tracks_for_tau,
+                                                                 min_density_ratio,
+                                                                 max_variability,
+                                                                 concentration,
+                                                                 row["Nr Spots"],
+                                                                 row['Batch Sequence Nr'],
+                                                                 row['Experiment Nr'],
+                                                                 row['Experiment Seq Nr'],
+                                                                 row['Experiment Date'],
+                                                                 row['Experiment Name'],
+                                                                 verbose)
+            if df_squares is None:
+                print("\nAborted with error")
+                return None
+
+            nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
+            nr_visible_squares = len(df_squares[df_squares['Visible'] == True])
+            nr_total_squares   = int(nr_of_squares_in_row * nr_of_squares_in_row)
+            df_batch.loc[index, 'Nr Total Squares']      = nr_total_squares
+            df_batch.loc[index, 'Nr Defined Squares']    = nr_defined_squares
+            df_batch.loc[index, 'Nr Visible Squares']    = nr_visible_squares
+            df_batch.loc[index, 'Nr Invisible Squares']  = nr_defined_squares -  nr_visible_squares
+            df_batch.loc[index, 'Squares Ratio']         = round(100 * nr_defined_squares / nr_total_squares)
+            df_batch.loc[index, 'Max Squares Ratio']     = max_square_coverage
+            df_batch.loc[index, 'Nr Rejected Squares']   = nr_total_squares - nr_defined_squares
+            df_batch.loc[index, 'Exclude']               = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
+            df_batch.loc[index, 'Ext Image Name']        = ext_image_name
+
+            i += 1
+            processed += 1
+
+        else:
+            print(f"Squares file already up to date: {squares_file_name}")
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv") )
     run_time = round(time.time() - time_stamp, 1)
-    print_header(f"Processed {nr_files} images in {paint_directory} in {run_time} seconds. Routine completed normally.")
+    print_header(f"Processed {processed} images in {paint_directory} in {run_time} seconds. Routine completed normally.")
 
 
 root = Tk()
