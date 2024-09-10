@@ -27,9 +27,9 @@ min_density_ratio     = 2
 def compile_squares_file(root_dir):
 
     # Create the dataframes to be filled
-    df_all_batches   = pd.DataFrame()
+    df_all_images    = pd.DataFrame()
     df_all_squares   = pd.DataFrame()
-    df_batch_summary = pd.DataFrame()
+    df_image_summary = pd.DataFrame()
 
     paint_dirs = os.listdir(root_dir)
     paint_dirs.sort()
@@ -79,34 +79,34 @@ def compile_squares_file(root_dir):
         row              = [paint_dir, nr_cell_types, nr_probe_types, nr_adjuvants, nr_probes]
 
         # Add the data to the all_dataframes
-        df_batch_summary = pd.concat([df_batch_summary, pd.DataFrame([row])])
-        df_all_batches   = pd.concat([df_all_batches, df_batch])
+        df_image_summary = pd.concat([df_image_summary, pd.DataFrame([row])])
+        df_all_images   = pd.concat([df_all_images, df_batch])
 
     # -----------------------------------------------------------------------------
-    # At this point we have the df_all_batches, df_all_squares and df_batch_summary complete.
+    # At this point we have the df_all_images, df_all_squares and df_image_summary complete.
     # It is a matter of fine tuning now
     # -----------------------------------------------------------------------------
 
     # ----------------------------------------
-    # Add data from df_all_batches to df_all_squares
+    # Add data from df_all_images to df_all_squares
     # ----------------------------------------
 
     list_of_images = df_all_squares['Ext Image Name'].unique().tolist()
     for image in list_of_images:
 
         # Get data from df_batch to add to df_all_squares
-        probe             = df_all_batches.loc[image]['Probe']
-        probe_type        = df_all_batches.loc[image]['Probe Type']
-        adjuvant          = df_all_batches.loc[image]['Adjuvant']
-        cell_type         = df_all_batches.loc[image]['Cell Type']
-        concentration     = df_all_batches.loc[image]['Concentration']
-        threshold         = df_all_batches.loc[image]['Threshold']
-        image_size        = df_all_batches.loc[image]['Image Size']
-        experiment_nr     = df_all_batches.loc[image]['Experiment Nr']
-        seq_nr            = df_all_batches.loc[image]['Batch Sequence Nr']
-        neighbour_setting = df_all_batches.loc[image]['Neighbour Setting']
+        probe             = df_all_images.loc[image]['Probe']
+        probe_type        = df_all_images.loc[image]['Probe Type']
+        adjuvant          = df_all_images.loc[image]['Adjuvant']
+        cell_type         = df_all_images.loc[image]['Cell Type']
+        concentration     = df_all_images.loc[image]['Concentration']
+        threshold         = df_all_images.loc[image]['Threshold']
+        image_size        = df_all_images.loc[image]['Image Size']
+        experiment_nr     = df_all_images.loc[image]['Experiment Nr']
+        seq_nr            = df_all_images.loc[image]['Batch Sequence Nr']
+        neighbour_setting = df_all_images.loc[image]['Neighbour Setting']
 
-        # Add the data that was obtained from df_all_batches
+        # Add the data that was obtained from df_all_images
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe']             = probe
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe Type']        = probe_type
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Adjuvant']          = adjuvant
@@ -124,8 +124,8 @@ def compile_squares_file(root_dir):
     # Change ext_image_name to image_name
     df_all_squares.rename(columns={'Ext Image Name': 'Image Name'}, inplace=True)
 
-    # Set the columns for df_batch_summary
-    df_batch_summary.columns = ['Image', 'Nr Cell Types', 'Nr Probe Types', 'Adjuvants', 'Nr Probes']
+    # Set the columns for df_image_summary
+    df_image_summary.columns = ['Image', 'Nr Cell Types', 'Nr Probe Types', 'Adjuvants', 'Nr Probes']
 
     # Only keep Visible squares
     # df_all_squares = df_all_squares[df_all_squares['Visible'] == True]
@@ -149,10 +149,10 @@ def compile_squares_file(root_dir):
 
     # Save the files
     df_all_squares.to_excel(os.path.join(root_dir, 'Output', 'All Squares.xlsx'), index=False)
-    df_all_batches.to_excel(os.path.join(root_dir, 'Output', 'All Batches.xlsx'), index=False)
-    df_batch_summary.to_excel(os.path.join(root_dir, "Output", "Batch Summary.xlsx"), index=False)
+    df_all_images.to_excel(os.path.join(root_dir, 'Output', 'All Images.xlsx'), index=False)
+    df_image_summary.to_excel(os.path.join(root_dir, "Output", "Image Summary.xlsx"), index=False)
 
-    df_all_batches.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
+    df_all_images.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
 
     print ("\nOutput generated in directory 'Output'")
 

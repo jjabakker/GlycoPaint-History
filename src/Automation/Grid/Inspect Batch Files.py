@@ -27,7 +27,7 @@ min_density_ratio     = 2
 def inspect_batch_files(root_dir):
 
     # Create the dataframes to be filled
-    df_all_batches   = pd.DataFrame()
+    df_all_images   = pd.DataFrame()
 
     paint_dirs = os.listdir(root_dir)
     paint_dirs.sort()
@@ -46,12 +46,12 @@ def inspect_batch_files(root_dir):
 
         # Read the batch file in the directory to determine which images there are
         batch_file_name = os.path.join(paint_dir_path, 'batch.csv')
-        df_batch = read_batch_from_file(batch_file_name, only_records_to_process=False)
+        df_batch        = read_batch_from_file(batch_file_name, only_records_to_process=False)
         if df_batch is None:
             print(f"Function 'compile_squares_file' failed: Batch file {batch_file_name} does not exist")
             exit()
 
-        df_all_batches   = pd.concat([df_all_batches, df_batch])
+        df_all_images   = pd.concat([df_all_images, df_batch])
 
     # ------------------------------------
     # Save the file
@@ -62,7 +62,7 @@ def inspect_batch_files(root_dir):
         os.mkdir(os.path.join(root_dir, "Output"))
 
     # Save the files
-    df_all_batches.to_excel(os.path.join(root_dir, 'Output', 'Batches to Run.xlsx'), index=False)
+    df_all_images.to_excel(os.path.join(root_dir, 'Output', 'Images to Process.xlsx'), index=False)
 
     print ("\nOutput generated in directory 'Output'")
 
