@@ -30,7 +30,8 @@ from src.Automation.Support.Analyse_All_Images import create_summary_graphpad
 
 
 def save_as_png(canvas, file_name, image_name):
-    canvas.create_text(60, 40, fill='white', text=image_name, font='Helvetica 15 bold')
+    # canvas.create_text(60, 40, fill='white', text=image_name, font='Helvetica 15 bold')
+    canvas.create_text(60, 40)
     canvas.postscript(file=file_name + '.eps')
     img = Image.open(file_name + '.eps')
     img.save(file_name + '.png', 'png')
@@ -583,11 +584,11 @@ class ImageViewer:
         for img_no in range(len(self.list_images)):
             self.go_forward_backward('Forward')
 
-            image_name   = self.list_images[self.img_no]['Image Name']
+            image_name   = self.list_images[self.img_no]['Left Image Name']
 
             # Delete the squares and write the canvas as an eps file
             self.cn_left_image.delete("all")
-            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Photo Image Object'])
+            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name), image_name)
 
             # Add the squares and write the canvas as an eps file
