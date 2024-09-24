@@ -94,6 +94,7 @@ def prepare_batch_file(image_source_directory, paint_directory):
                'Adjuvant'          : '',
                'Concentration'     : '',
                'Threshold'         : '',
+               'Min Density Ratio' : '30',
                'Process'           : 'Yes',
                'Ext Image Name'    : '-',
                'Nr Spots'          : 0,
