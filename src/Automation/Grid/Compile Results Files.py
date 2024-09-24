@@ -80,7 +80,7 @@ def compile_squares_file(root_dir):
 
         # Add the data to the all_dataframes
         df_image_summary = pd.concat([df_image_summary, pd.DataFrame([row])])
-        df_all_images   = pd.concat([df_all_images, df_batch])
+        df_all_images    = pd.concat([df_all_images, df_batch])
 
     # -----------------------------------------------------------------------------
     # At this point we have the df_all_images, df_all_squares and df_image_summary complete.
@@ -121,6 +121,9 @@ def compile_squares_file(root_dir):
     # Drop irrelevant columns in df_all_squares
     df_all_squares = df_all_squares.drop(['Neighbour Visible', 'Variability Visible', 'Density Ratio Visible'], axis=1)
 
+    # Drop the info on squares that have no tracks
+    df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
+
     # Change ext_image_name to image_name
     df_all_squares.rename(columns={'Ext Image Name': 'Image Name'}, inplace=True)
 
@@ -147,8 +150,8 @@ def compile_squares_file(root_dir):
     if not os.path.isdir(os.path.join(root_dir, "Output")):
         os.mkdir(os.path.join(root_dir, "Output"))
 
-    # Save the files
-    df_all_squares.to_excel(os.path.join(root_dir, 'Output', 'All Squares.xlsx'), index=False)
+    # Save the files, use csv for the really big file size
+    df_all_squares.to_csv(os.path.join(root_dir, 'Output', 'All Squares.csv'), index=False)
     df_all_images.to_excel(os.path.join(root_dir, 'Output', 'All Images.xlsx'), index=False)
     df_image_summary.to_excel(os.path.join(root_dir, "Output", "Image Summary.xlsx"), index=False)
 
