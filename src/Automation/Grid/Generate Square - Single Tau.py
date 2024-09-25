@@ -240,22 +240,18 @@ def process_single_image_in_paint_directory(image_path,
         return None
 
     # Here the actual calculation work is done: df_squares is generated
-    df_squares, tau_matrix = create_df_squares(df_tracks,
-                                               image_path,
-                                               image_name,
-                                               nr_of_squares_in_row,
-                                               concentration,
-                                               nr_spots,
-                                               min_r_squared,
-                                               min_tracks_for_tau,
-                                               batch_seq_nr,
-                                               experiment_nr,
-                                               experiment_seq_nr,
-                                               experiment_date,
-                                               experiment_name,
-                                               verbose)
-
-
+    df_squares = create_df_squares(df_tracks,
+                                   image_path,
+                                   image_name,
+                                   nr_of_squares_in_row,
+                                   concentration,
+                                   nr_spots,
+                                   batch_seq_nr,
+                                   experiment_nr,
+                                   experiment_seq_nr,
+                                   experiment_date,
+                                   experiment_name,
+                                   verbose)
 
     # -------------------------------------------------------------------------------
     # Determine the density ratio
@@ -273,14 +269,6 @@ def process_single_image_in_paint_directory(image_path,
         # The density RATIO can be calculated simply by dividing the tracks in the square by the average tracks
         # because everything else stays the same (no need to calculate the background density itself)
         df_squares['Density Ratio'] = round(df_squares['Nr Tracks'] / background_tracks, 1)
-
-    # -------------------------------------------------------------------------------
-    # Do the filtering, eliminate all squares for which no valid Tau exists
-    # -------------------------------------------------------------------------------
-
-    df_squares = identify_invalid_squares(df_squares,
-                                          min_r_squared,
-                                          min_tracks_for_tau)
 
     # Assign the label numbers to the squares
     df_with_label = df_tracks.copy()
@@ -308,21 +296,45 @@ def process_single_image_in_paint_directory(image_path,
 
     # df_squares, list_of_squares = eliminate_isolated_squares_relaxed(df_squares, nr_of_squares_in_row)
 
-    df_squares['Visible'] = (df_squares['Valid Tau'] &
-                             df_squares['Density Ratio Visible'] &
+    df_squares['Visible'] = (df_squares['Density Ratio Visible'] &
                              df_squares['Variability Visible'] &
                              df_squares['Neighbour Visible'] )
+
+
+    label_nr = 1
+    for idx, row in df_squares.iterrows():
+        if row['Valid Tau']:
+            df_squares.at[idx, 'Label Nr'] = label_nr
+            label_nr += 1
 
     # Write the filtered squares results
     squares_file_name = os.path.join(image_path, "grid", image_name + "-squares.csv")
     save_squares_to_file(df_squares, squares_file_name)
 
-    # Generate the Tau heatmap, but only if there are squares selected
-    if len(df_squares) > 0:
-        plt_file = os.path.join(image_path, "img", image_name + "-heatmap.png")
-        plot_heatmap(tau_matrix, plt_file)
+    # Identify the squares that contribute to the Tau calculation
+    df_squares_for_tau = df_squares[df_squares['Visible'] ]
+    df_tracks_for_tau  = df_tracks[df_tracks['Square Nr'].isin(df_squares_for_tau['Square Nr'])]
+    nr_tracks          = df_tracks_for_tau.shape[0]
 
-    return df_squares
+    # Calculate the Tau
+    if nr_tracks < min_tracks_for_tau:
+        tau = -1
+    else:
+        duration_data = CompileDuration(df_tracks_for_tau)
+        plt_file = image_path + os.sep + "plt" + os.sep + image_name + ".png"
+        tau, r_squared = CurveFitAndPlot(plot_data=duration_data,
+                                         nr_tracks=nr_tracks,
+                                         plot_max_x=5,
+                                         plot_title=" ",
+                                         file=plt_file, plot_to_screen=False, verbose=False)
+        if tau == -2:  # Tau calculation failed
+            r_squared = 0
+        tau = int(tau)
+        if r_squared < min_r_squared:  # Tau was calculated, but not reliable
+            tau = -3
+
+    print (tau)
+    return tau, df_squares
 
 
 def create_df_squares(df_tracks,
@@ -331,19 +343,12 @@ def create_df_squares(df_tracks,
                       nr_squares_in_row,
                       concentration,
                       nr_spots,
-                      min_r_squared,
-                      min_tracks_for_tau,
                       seq_nr,
                       experiment_nr,
                       experiment_seq_nr,
                       experiment_date,
                       experiment_name,
                       verbose):
-    # Create the matrices
-    count_matrix       = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
-    tau_matrix         = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
-    density_matrix     = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
-    variability_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
 
     # Add a label and square column to the tracks dataframe, if it does not already exist, else reset it
     if 'Square Nr' in df_tracks.columns:
@@ -402,28 +407,6 @@ def create_df_squares(df_tracks,
             nr_tracks_to_average = round(0.10 * nr_tracks)
             average_long_track = df_tracks_square.tail(nr_tracks_to_average)['TRACK_DURATION'].mean()
 
-        # -----------------
-        # Calculate the Tau
-        # -----------------
-
-        if nr_tracks < min_tracks_for_tau:                 # Too few points to curve fit
-            tau = -1
-            r_squared = 0
-        else:
-            duration_data = CompileDuration(df_tracks_square)
-            plt_file = image_path + os.sep + "plt" + os.sep + image_name + "-square-" + str(i) + ".png"
-            tau, r_squared = CurveFitAndPlot(plot_data=duration_data,
-                                             nr_tracks=nr_tracks,
-                                             plot_max_x=5,
-                                             plot_title=" ",
-                                             file=plt_file, plot_to_screen=False, verbose=False)
-            if tau == -2:                                 # Tau calculation failed
-                r_squared = 0
-            tau = int(tau)
-            if r_squared < min_r_squared:                # Tau was calculated, but not reliable
-                tau = -3
-
-
         # ----------------------------------------------------------------------------------
         # To calculate the density use the actual surface coordinates.
         # Assume 2000 frames (100 sec) -  need to check - this is not always the case
@@ -445,10 +428,6 @@ def create_df_squares(df_tracks,
 
         # Enter the calculated values in the tau, density, and variability matrices
         variability                        = calc_variability(df_tracks_square, i, nr_squares_in_row, 10)
-        tau_matrix[row_nr, col_nr]         = int(tau)
-        density_matrix[row_nr, col_nr]     = int(density)
-        variability_matrix[row_nr, col_nr] = int(variability * 100)
-        count_matrix[row_nr, col_nr]       = nr_tracks
 
         # Create the new squares record to add
         row = {'Experiment Date'               : experiment_date,
@@ -467,13 +446,12 @@ def create_df_squares(df_tracks,
                'Y1'                            : round(y1, 2),
                'Nr Spots'                      : int(nr_spots),
                'Nr Tracks'                     : int(nr_tracks),
-               'Tau'                           : round(tau, 0),
+               'Tau'                           : 0,
                'Valid Tau'                     : True,
                'Density'                       : round(density, 1),
                'Average Long Track Duration'   : round(average_long_track, 1),
                'Total Track Duration'          : round(total_track_duration, 1),
                'Variability'                   : round(variability, 2),
-               'R2'                            : round(r_squared, 2),
                'Density Ratio'                 : 0.0,
                'Cell Id'                       : 0,
                'Visible'                       : True,
@@ -488,140 +466,11 @@ def create_df_squares(df_tracks,
     # Polish up the table and sort
     df_squares = df_squares.sort_values(by=['Nr Tracks'], ascending=False)
 
-    if verbose:
-        write_matrices(image_path, image_name, tau_matrix, density_matrix, count_matrix, variability_matrix, verbose)
-
     df_squares.set_index('Square Nr', inplace=True, drop=False)
     # df_squares.index.names = ['index_sq_nr']
-    return df_squares, tau_matrix
-
-
-def write_matrices(image_path, image_name, tau_matrix, density_matrix, count_matrix, variability_matrix, verbose):
-    """
-    Simply utility function to write the matrices to disk.
-    If the grid directory does not exist, exit.
-    :param image_path:
-    :param image_name:
-    :param tau_matrix:
-    :param density_matrix:
-    :param count_matrix:
-    :param variability_matrix:
-    :param verbose:
-    :return:
-    """
-    # Check if the grid directory exist
-    dir_name = image_path + os.sep + "grid"
-    if not os.path.exists(dir_name):
-        print(f"\nFunction 'write_matrices' failed: Directory {dir_name} does not exists.")
-        exit(-1)
-
-    # Write the Tau matrix to file
-    if verbose:
-        print(f"\n\nThe Tau matrix for image : {image_name}\n")
-        print(tau_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-tau.xlsx"
-    write_np_to_excel(tau_matrix, filename)
-
-    # Write the Density matrix to file
-    if verbose:
-        print(f"\n\nThe Density matrix for image : {image_name}\n")
-        print(tau_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-density.xlsx"
-    write_np_to_excel(density_matrix, filename)
-
-    # Write the count matrix to file
-    if verbose:
-        print(f"\n\nThe Count matrix for image: {image_name}\n")
-        print(count_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-count.xlsx"
-    write_np_to_excel(count_matrix, filename)
-
-    # Write the percentage matrix to file
-    percentage_matrix = count_matrix / count_matrix.sum() * 100
-    percentage_matrix.round(1)
-    if verbose:
-        print(f"\n\nThe Percentage matrix for image: {image_name}\n")
-        with np.printoptions(precision=1, suppress=True):
-            print(count_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-percentage.xlsx"
-    write_np_to_excel(percentage_matrix, filename)
-
-    # Write the variability matrix to file
-    if verbose:
-        print(f"\n\nThe Variability matrix for image: {image_name}\n")
-        print(variability_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-variability.xlsx"
-    write_np_to_excel(variability_matrix, filename)
-
-    return 0
-
-
-def identify_invalid_squares(df_squares,
-                             min_r_squared,
-                             min_tracks_for_tau):
-    """
-    This function applies criteria to remove unwanted squares and report on the screen and into a file
-    :param df_squares:
-    :param min_r_squared:
-    :param min_tracks_for_tau:
-    :return:
-    """
-
-    # -------------------------------------------------------------------------------------------------------------
-    # Start with the full count of squares.
-    # Eliminate the squares for which no Tau was calculated, because there were insufficient tracks (tau code as -2)
-    # -------------------------------------------------------------------------------------------------------------
-
-    original_count = len(df_squares)
-    if original_count != 0:
-        df_squares.loc[df_squares['Tau'] == -1, 'Valid Tau'] = False
-        updated_count = len(df_squares[df_squares['Valid Tau'] == True])
-        print(f"\n\tStarted with {original_count} squares")
-        print(f"\tEliminated {original_count - updated_count} squares with track count was lower than {min_tracks_for_tau} (no Tau calculated): left {updated_count}")
-    else:
-        updated_count = 0
-
-    # -------------------------------------------------------------------------------------------------------------
-    # Then eliminate the squares for which Tau was calculated but where it failed
-    # -------------------------------------------------------------------------------------------------------------
-
-    # Filter
-    original_count = updated_count
-    if original_count != 0:
-        df_squares.loc[df_squares['Tau'] == -2, 'Valid Tau'] = False
-        updated_count = len(df_squares[df_squares['Valid Tau'] == True])
-        print(f"\tEliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
-    else:
-        updated_count = 0
-
-    # -------------------------------------------------------------------------------------------------------------
-    # Then eliminate the squares for which Tau was calculated but the R2 was too low (tau coded as -1)
-    # -------------------------------------------------------------------------------------------------------------
-
-    # Filter
-    original_count = updated_count
-    if original_count != 0:
-        df_squares.loc[df_squares['Tau'] == -3, 'Valid Tau'] = False
-        updated_count = len(df_squares[df_squares['Valid Tau'] == True])
-        print(f"\tEliminated {original_count - updated_count} squares for which the R2 was lower than {min_r_squared}: left {updated_count}")
-    else:
-        updated_count = 0
-
-    # Polish up the squares table by filling in the Label Nr
-    # The Label Nr corresponds to the squares visualised on the image (1-based)
-    # The Square number is the original sequence number of the squares (0-based)
-
-    label_nr = 1
-    for idx, row in df_squares.iterrows():
-        if row['Valid Tau']:
-            df_squares.at[idx, 'Label Nr'] = label_nr
-            label_nr += 1
-
-    df_squares.set_index('Square Nr', inplace=True)
-    df_squares['Square Nr'] = df_squares.index
-    df_squares = df_squares.drop(['index'], axis=1, errors='ignore')
-
     return df_squares
+
+
 
 
 def add_columns_to_batch_file(df_batch,
@@ -739,37 +588,41 @@ def process_images_in_paint_directory(paint_directory,
 
             print_header(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
 
-            df_squares = process_single_image_in_paint_directory(ext_image_path,
-                                                                 ext_image_name,
-                                                                 nr_of_squares_in_row,
-                                                                 min_r_squared,
-                                                                 min_tracks_for_tau,
-                                                                 min_density_ratio,
-                                                                 max_variability,
-                                                                 concentration,
-                                                                 row["Nr Spots"],
-                                                                 row['Batch Sequence Nr'],
-                                                                 row['Experiment Nr'],
-                                                                 row['Experiment Seq Nr'],
-                                                                 row['Experiment Date'],
-                                                                 row['Experiment Name'],
-                                                                 verbose)
+            tau, df_squares = process_single_image_in_paint_directory(ext_image_path,
+                                                                      ext_image_name,
+                                                                      nr_of_squares_in_row,
+                                                                      min_r_squared,
+                                                                      min_tracks_for_tau,
+                                                                      # min_density_ratio,
+                                                                      row["Min Density Ratio"],
+                                                                      max_variability,
+                                                                      concentration,
+                                                                      row["Nr Spots"],
+                                                                      row['Batch Sequence Nr'],
+                                                                      row['Experiment Nr'],
+                                                                      row['Experiment Seq Nr'],
+                                                                      row['Experiment Date'],
+                                                                      row['Experiment Name'],
+                                                                      verbose)
             if df_squares is None:
                 print("\nAborted with error")
                 return None
 
-            nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
+            # nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
+
             nr_visible_squares = len(df_squares[df_squares['Visible'] == True])
             nr_total_squares   = int(nr_of_squares_in_row * nr_of_squares_in_row)
+            nr_defined_squares = nr_total_squares
             df_batch.loc[index, 'Nr Total Squares']      = nr_total_squares
             df_batch.loc[index, 'Nr Defined Squares']    = nr_defined_squares
             df_batch.loc[index, 'Nr Visible Squares']    = nr_visible_squares
             df_batch.loc[index, 'Nr Invisible Squares']  = nr_defined_squares -  nr_visible_squares
-            df_batch.loc[index, 'Squares Ratio']         = round(100 * nr_defined_squares / nr_total_squares)
+            df_batch.loc[index, 'Squares Ratio']         = round(100 * nr_visible_squares / nr_total_squares)
             df_batch.loc[index, 'Max Squares Ratio']     = max_square_coverage
             df_batch.loc[index, 'Nr Rejected Squares']   = nr_total_squares - nr_defined_squares
             df_batch.loc[index, 'Exclude']               = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
             df_batch.loc[index, 'Ext Image Name']        = ext_image_name
+            df_batch.loc[index, 'Tau']                   = tau
 
             i += 1
             processed += 1
