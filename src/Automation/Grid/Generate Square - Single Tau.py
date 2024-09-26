@@ -55,7 +55,6 @@ class GridDialog:
         lbl_nr_squares          = ttk.Label(frame_parameters, text='Nr of Squares in row/col', width=30, anchor=W)
         lbl_min_tracks_for_tau  = ttk.Label(frame_parameters, text='Minimum tracks to calculate Tau', width=30, anchor=W)
         lbl_min_r2              = ttk.Label(frame_parameters, text='Min allowable R-squared', width=30, anchor=W)
-        lbl_min_density_ratio   = ttk.Label(frame_parameters, text='Min density ratio', width=30, anchor=W)
         lbl_max_variability     = ttk.Label(frame_parameters, text='Max variability', width=30, anchor=W)
         lbl_max_square_coverage = ttk.Label(frame_parameters, text='Max squares coverage', width=30, anchor=W)
 
@@ -86,14 +85,12 @@ class GridDialog:
         lbl_nr_squares.grid         (column=0, row=1, padx=5, pady=5)
         lbl_min_tracks_for_tau.grid (column=0, row=2, padx=5, pady=5)
         lbl_min_r2.grid             (column=0, row=3, padx=5, pady=5)
-        lbl_min_density_ratio.grid  (column=0, row=4, padx=5, pady=5)
         lbl_max_variability.grid    (column=0, row=5, padx=5, pady=5)
         lbl_max_square_coverage.grid(column=0, row=6, padx=5, pady=5)
 
         en_nr_squares.grid          (column=1, row=1)
         en_min_tracks_for_tau.grid  (column=1, row=2)
         en_min_r_squared.grid       (column=1, row=3)
-        en_min_densioty_ratio.grid  (column=1, row=4)
         en_max_variability.grid     (column=1, row=5)
         en_max_square_coverage.grid (column=1, row=6)
 
@@ -141,7 +138,6 @@ class GridDialog:
                                               self.nr_of_squares_in_row.get(),
                                               self.min_r_squared.get(),
                                               self.min_tracks_for_tau.get(),
-                                              self.min_density_ratio.get(),
                                               self.max_variability.get(),
                                               self.max_square_coverage.get(),
                                               verbose=False)
@@ -159,7 +155,6 @@ class GridDialog:
                                                   self.nr_of_squares_in_row.get(),
                                                   self.min_r_squared.get(),
                                                   self.min_tracks_for_tau.get(),
-                                                  self.min_density_ratio.get(),
                                                   self.max_variability.get(),
                                                   self.max_square_coverage.get(),
                                                   verbose=False)
@@ -477,7 +472,6 @@ def add_columns_to_batch_file(df_batch,
                               nr_of_squares_in_row,
                               min_tracks_for_tau,
                               min_r_squared,
-                              min_density_ratio,
                               max_variability):
 
     mask = ((df_batch['Process'] == 'Yes') |
@@ -491,7 +485,7 @@ def add_columns_to_batch_file(df_batch,
     df_batch['Exclude']               = False
     df_batch['Neighbour Setting']     = 'Free'
     df_batch['Variability Setting']   = max_variability
-    df_batch['Density Ratio Setting'] = min_density_ratio
+    df_batch['Density Ratio Setting'] = df_batch['Min Density Ratio']
     df_batch['Nr Total Squares']      = 0         # Defined by the nr of squares per row
     df_batch['Nr Defined Squares']    = 0         # The number of squares for which a Tau was successfully calculated
     df_batch['Nr Visible Squares']    = 0         # The number of squares that also meet the density and variability hurdle
@@ -508,7 +502,6 @@ def process_images_in_paint_directory(paint_directory,
                                       nr_of_squares_in_row,
                                       min_r_squared,
                                       min_tracks_for_tau,
-                                      min_density_ratio,
                                       max_variability,
                                       max_square_coverage,
                                       verbose=False):
@@ -546,7 +539,6 @@ def process_images_in_paint_directory(paint_directory,
                                          nr_of_squares_in_row,
                                          min_tracks_for_tau,
                                          min_r_squared,
-                                         min_density_ratio,
                                          max_variability)
 
     # Determine what images need processing from the batch.csv file
@@ -593,8 +585,7 @@ def process_images_in_paint_directory(paint_directory,
                                                                       nr_of_squares_in_row,
                                                                       min_r_squared,
                                                                       min_tracks_for_tau,
-                                                                      # min_density_ratio,
-                                                                      row["Min Density Ratio"],
+                                                                      row['Min Density Ratio'],
                                                                       max_variability,
                                                                       concentration,
                                                                       row["Nr Spots"],
@@ -619,7 +610,7 @@ def process_images_in_paint_directory(paint_directory,
             df_batch.loc[index, 'Nr Invisible Squares']  = nr_defined_squares -  nr_visible_squares
             df_batch.loc[index, 'Squares Ratio']         = round(100 * nr_visible_squares / nr_total_squares)
             df_batch.loc[index, 'Max Squares Ratio']     = max_square_coverage
-            df_batch.loc[index, 'Nr Rejected Squares']   = nr_total_squares - nr_defined_squares
+            df_batch.loc[index, 'Nr Rejected Squares']   = 0
             df_batch.loc[index, 'Exclude']               = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
             df_batch.loc[index, 'Ext Image Name']        = ext_image_name
             df_batch.loc[index, 'Tau']                   = tau
