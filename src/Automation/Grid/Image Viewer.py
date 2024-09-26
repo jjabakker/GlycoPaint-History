@@ -41,7 +41,8 @@ def save_square_info_to_batch(self):
     for index, row in self.df_batch.iterrows():
         # image_name = row['Ext Image Name']
         # squares_file_path = os.path.join(self.paint_directory, image_name, 'grid', image_name + '-squares.csv')
-        df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
+        self.squares_file_name = self.list_images[self.img_no]['Squares File']
+        df_squares             = read_squares_from_file(self.squares_file_name)
         if df_squares is None:
             print(" Function 'save_square_info_to_batch' failed: - Square file {squares_file_path} does not exist")
             exit()
@@ -63,7 +64,7 @@ def set_for_all_neighbour_state(self):
     self.df_batch['Neighbour Setting'] = self.neighbour_var.get()
 
 
-def get_images(paint_directory, df_batch, mode, type_of_image):
+def get_images(self, type_of_image):
     """
     Get the images for the left canvas. Either an image with squares or a heatmap.
     The data is all in the Combined Filtered Results spreadsheet (which is a compilation of the individual
@@ -76,6 +77,10 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
     :param type_of_image:
     :return:
     """
+
+    paint_directory = self.paint_directory
+    df_batch        = self.df_batch
+    mode            = self.mode
 
     # Create an empty lst that will hold the images
     list_images = []
@@ -128,8 +133,8 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
                     count += 1
 
                     # Retrieve the square numbers for this image
-                    squares_file = os.path.join(image_path, 'grid', image_name + '-squares.csv')
-                    df_squares = read_squares_from_file(squares_file)
+                    self.squares_file_name = os.path.join(image_path, 'grid', image_name + '-squares.csv')
+                    df_squares             = read_squares_from_file(self.squares_file_name)
                     if df_squares is not None:
                         square_nrs = list(df_squares['Square Nr'])
                     else:
@@ -158,6 +163,14 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
             left_img = ImageTk.PhotoImage(left_img)
             square_nrs = []
 
+        # See if a Tau is defined in the grid_batch file.
+        # If it is record it
+
+        if 'Tau' in df_batch.columns:
+            tau = df_batch.iloc[index]['Tau']
+        else:
+            tau = 0
+
         # Try to find the corresponding BF
         right_valid, right_img = get_corresponding_bf(bf_dir, image_name)
 
@@ -170,11 +183,13 @@ def get_images(paint_directory, df_batch, mode, type_of_image):
             "Probe Type"       : df_batch.iloc[index]['Probe Type'],
             "Nr Spots"         : int(df_batch.iloc[index]['Nr Spots']),
             "Square Nrs"       : square_nrs,
-            "Squares File"     : squares_file,
+            "Squares File"     : self.squares_file_name,
             "Left Valid"       : valid,
             "Right Image Name" : image_name,
             "Right Image"      : right_img,
-            "Right Valid"      : right_valid
+            "Right Valid"      : right_valid,
+            "Threshold"        : df_batch.iloc[index]['Threshold'],
+            "Tau"              : tau
         }
 
         list_images.append(record)
@@ -271,7 +286,7 @@ class ImageViewer:
         # Fill the list with images to view
         # ---------------------------------
 
-        self.list_images = get_images(self.paint_directory, self.df_batch, self.mode, 'ROI')
+        self.list_images = get_images(self, 'ROI')
         if len(self.list_images) == 0:
             print(f"Function 'ImageViewer Init' failed - No images were found below directory {self.paint_directory}.")
             exit()
@@ -329,7 +344,10 @@ class ImageViewer:
         lbl_info1           = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info1)
 
         # Define the label  for info2
-        self.text_for_info2 = StringVar(root, f"{self.list_images[self.img_no]['Nr Spots']:,} spots")
+        info1 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
+        if self.list_images[self.img_no]['Tau'] != 0:
+            info1 = f"{info1} - Tau: {int(self.list_images[self.img_no]['Tau'])}"
+        self.text_for_info2 = StringVar(root, info1)
         lbl_info2           = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
 
         # Define the label  for info3
@@ -914,10 +932,6 @@ class ImageViewer:
 
         # If there are no squares you can stop here
         if len(self.df_squares) > 0:
-            # for square_nr in self.df_squares['Square Nr']:
-            #     if square_is_visible(self.df_squares, square_nr):
-            #         self.draw_single_square(square_nr)
-
             for index, row in self.df_squares.iterrows():
                 if row['Visible']:
                     self.draw_single_square(row)
@@ -1115,7 +1129,7 @@ class ImageViewer:
         else:
             print('Big trouble!')
 
-        self.list_images = get_images(self.paint_directory, self.df_batch, self.mode, self.mode_var.get())
+        self.list_images = get_images(self, self.mode_var.get())
 
         self.img_no = self.img_no - 1
         self.go_forward_backward('Forward')
@@ -1161,7 +1175,8 @@ class ImageViewer:
 
         # If the mode is 'ROI' draw the squares:
         if self.mode_var.get() == 'ROI':
-            self.df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
+            self.squares_file_name = self.list_images[self.img_no]['Squares File']
+            self.df_squares = read_squares_from_file(self.squares_file_name)
             self.set_variability_slider_state()
             self.set_density_ratio_slider_state()
             self.set_neighbour_state()
@@ -1179,7 +1194,11 @@ class ImageViewer:
             adj_label = self.list_images[self.img_no]['Adjuvant']
         cell_info = f"({self.list_images[self.img_no]['Cell Type']}) - ({adj_label}) - ({self.list_images[self.img_no]['Probe Type']}) - ({self.list_images[self.img_no]['Probe']})"
         self.text_for_info1.set(cell_info)
-        self.text_for_info2.set(f"{self.list_images[self.img_no]['Nr Spots']:,} spots")
+
+        info1 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
+        if self.list_images[self.img_no]['Tau'] != 0:
+            info1 = f"{info1} - Tau: {int(self.list_images[self.img_no]['Tau'])}"
+        self.text_for_info2.set(info1)
 
         # Set correct state of Forward and back buttons
         if self.img_no == len(self.list_images) - 1:
