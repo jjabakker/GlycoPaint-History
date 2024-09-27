@@ -152,8 +152,8 @@ def compile_squares_file(root_dir):
 
     # Save the files, use csv for the really big file size
     df_all_squares.to_csv(os.path.join(root_dir, 'Output', 'All Squares.csv'), index=False)
-    df_all_images.to_excel(os.path.join(root_dir, 'Output', 'All Images.xlsx'), index=False)
-    df_image_summary.to_excel(os.path.join(root_dir, "Output", "Image Summary.xlsx"), index=False)
+    df_all_images.to_csv(os.path.join(root_dir, 'Output', 'All Images.csv'), index=False)
+    df_image_summary.to_csv(os.path.join(root_dir, "Output", "Image Summary.csv"), index=False)
 
     df_all_images.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
 
