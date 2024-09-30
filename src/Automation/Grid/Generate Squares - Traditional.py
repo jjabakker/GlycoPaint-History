@@ -201,6 +201,15 @@ def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_s
         average = total / n
     return average
 
+def delete_files_in_directory(directory_path):
+   try:
+     files = os.listdir(directory_path)
+     for file in files:
+       file_path = os.path.join(directory_path, file)
+       if os.path.isfile(file_path):
+         os.remove(file_path)
+   except OSError:
+     print("Error occurred while deleting files.")
 
 def process_single_image_in_paint_directory(image_path,
                                             image_name,
@@ -231,6 +240,10 @@ def process_single_image_in_paint_directory(image_path,
     :param verbose:
     :return:
     """
+
+    # Empty the plt directory
+    plt_path = os.path.join(image_path, "plt")
+    delete_files_in_directory(plt_path)
 
     # Read the full-track file from the 'tracks' directory (use special reading parameters!)
     tracks_file_name = os.path.join(image_path, "tracks", image_name + "-full-tracks.csv")
@@ -416,7 +429,9 @@ def create_df_squares(df_tracks,
                                              nr_tracks=nr_tracks,
                                              plot_max_x=5,
                                              plot_title=" ",
-                                             file=plt_file, plot_to_screen=False, verbose=False)
+                                             file=plt_file,
+                                             plot_to_screen=False,
+                                             verbose=False)
             if tau == -2:                                 # Tau calculation failed
                 r_squared = 0
             tau = int(tau)
