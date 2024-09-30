@@ -603,6 +603,7 @@ class ImageViewer:
             self.go_forward_backward('Forward')
 
             image_name   = self.list_images[self.img_no]['Left Image Name']
+            print(image_name)
 
             # Delete the squares and write the canvas as an eps file
             self.cn_left_image.delete("all")
