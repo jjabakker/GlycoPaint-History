@@ -24,7 +24,7 @@ max_variability       = 10
 min_density_ratio     = 2
 
 
-def compile_squares_file(root_dir):
+def compile_squares_file(root_dir, verbose):
 
     # Create the dataframes to be filled
     df_all_images    = pd.DataFrame()
@@ -44,7 +44,8 @@ def compile_squares_file(root_dir):
         if paint_dir.startswith('-'):          # If the image directory name starts with '-' it was marked to be ignored
             continue
 
-        print(f'\nProcessing directory: {paint_dir_path}')
+        if verbose:
+            print(f'\nProcessing directory: {paint_dir_path}')
 
         # Read the batch file in the directory to determine which images there are
         batch_file_name = os.path.join(paint_dir_path, 'grid_batch.csv')
@@ -216,7 +217,7 @@ class CompileDialog:
             self.lbl_root_dir.config(text=self.root_directory)
 
     def process(self):
-        compile_squares_file(root_dir=self.root_directory)
+        compile_squares_file(root_dir=self.root_directory, verbose=True)
         root.destroy()
 
     def exit_dialog(self):
