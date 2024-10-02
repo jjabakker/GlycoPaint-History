@@ -222,8 +222,8 @@ class CompileDialog:
     def exit_dialog(self):
         root.destroy()
 
-
-root = Tk()
-root.eval('tk::PlaceWindow . center')
-CompileDialog(root)
-root.mainloop()
+if __name__ == "__main__":
+    root = Tk()
+    root.eval('tk::PlaceWindow . center')
+    CompileDialog(root)
+    root.mainloop()
