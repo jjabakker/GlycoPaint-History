@@ -68,7 +68,7 @@ class GridDialog:
         en_min_r_squared          = ttk.Entry(frame_parameters, textvariable=self.min_r_squared, width=10)
 
         self.min_density_ratio    = DoubleVar(root, min_density_ratio)
-        en_min_densioty_ratio     = ttk.Entry(frame_parameters, textvariable=self.min_density_ratio, width=10)
+        #en_min_densioty_ratio     = ttk.Entry(frame_parameters, textvariable=self.min_density_ratio, width=10)
 
         self.max_variability      = DoubleVar(root, max_variability)
         en_max_variability        = ttk.Entry(frame_parameters, textvariable=self.max_variability, width=10)
@@ -104,7 +104,7 @@ class GridDialog:
 
         # Fill the directory frame
         btn_change_dir     = ttk.Button(frame_directory, text='Change Directory', width=15, command=self.change_dir)
-        self.lbl_directory = ttk.Label(frame_directory, text=self.paint_directory, width=50)
+        self.lbl_directory = ttk.Label(frame_directory, text=self.paint_directory, width=80)
 
         btn_change_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_directory.grid(column=1, row=0, padx=20, pady=5)
@@ -236,7 +236,6 @@ def process_single_image_in_paint_directory(image_path,
 
     # Here the actual calculation work is done: df_squares is generated
     df_squares = create_df_squares(df_tracks,
-                                   image_path,
                                    image_name,
                                    nr_of_squares_in_row,
                                    concentration,
@@ -264,6 +263,12 @@ def process_single_image_in_paint_directory(image_path,
         # The density RATIO can be calculated simply by dividing the tracks in the square by the average tracks
         # because everything else stays the same (no need to calculate the background density itself)
         df_squares['Density Ratio'] = round(df_squares['Nr Tracks'] / background_tracks, 1)
+
+    label_nr = 1
+    for idx, row in df_squares.iterrows():
+        if row['Valid Tau']:
+            df_squares.at[idx, 'Label Nr'] = label_nr
+            label_nr += 1
 
     # Assign the label numbers to the squares
     df_with_label = df_tracks.copy()
@@ -313,7 +318,8 @@ def process_single_image_in_paint_directory(image_path,
 
     # Calculate the Tau
     if nr_tracks < min_tracks_for_tau:
-        tau = -1
+        tau       = -1
+        r_squared = 0
     else:
         duration_data = CompileDuration(df_tracks_for_tau)
         plt_file = image_path + os.sep + "plt" + os.sep + image_name + ".png"
@@ -329,11 +335,10 @@ def process_single_image_in_paint_directory(image_path,
             tau = -3
 
     print (tau)
-    return tau, df_squares
+    return tau, r_squared, df_squares
 
 
 def create_df_squares(df_tracks,
-                      image_path,
                       image_name,
                       nr_squares_in_row,
                       concentration,
@@ -580,26 +585,43 @@ def process_images_in_paint_directory(paint_directory,
 
             print_header(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
 
-            tau, df_squares = process_single_image_in_paint_directory(ext_image_path,
-                                                                      ext_image_name,
-                                                                      nr_of_squares_in_row,
-                                                                      min_r_squared,
-                                                                      min_tracks_for_tau,
-                                                                      row['Min Density Ratio'],
-                                                                      max_variability,
-                                                                      concentration,
-                                                                      row["Nr Spots"],
-                                                                      row['Batch Sequence Nr'],
-                                                                      row['Experiment Nr'],
-                                                                      row['Experiment Seq Nr'],
-                                                                      row['Experiment Date'],
-                                                                      row['Experiment Name'],
-                                                                      verbose)
+            tau, r_squared, df_squares = process_single_image_in_paint_directory(ext_image_path,
+                                                                                 ext_image_name,
+                                                                                 nr_of_squares_in_row,
+                                                                                 min_r_squared,
+                                                                                 min_tracks_for_tau,
+                                                                                 row['Min Density Ratio'],
+                                                                                 max_variability,
+                                                                                 concentration,
+                                                                                 row["Nr Spots"],
+                                                                                 row['Batch Sequence Nr'],
+                                                                                 row['Experiment Nr'],
+                                                                                 row['Experiment Seq Nr'],
+                                                                                 row['Experiment Date'],
+                                                                                 row['Experiment Name'],
+                                                                                 verbose)
             if df_squares is None:
                 print("\nAborted with error")
                 return None
 
-            # nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
+            # To calculate the density use the actual surface coordinates.
+            # Assume 2000 frames (100 sec) -  need to check - this is not always the case
+            # Multiply by 1000 to get an easier  number
+            # Area is calculated with Fiji info:
+            #     Width:  82.0864 microns(512)
+            #     Height: 82.0864 microns(512)
+            # The area of a square then is (82.0864/nr_of_squares_in_row)^2
+            #
+            # To normalise concentration we divide by the supplied concentration
+            # ----------------------------------------------------------------------------------
+
+            area = pow(82.0864 / nr_of_squares_in_row, 2) * len(df_squares)
+            density = calculate_density(nr_tracks=sum(df_squares['Nr Tracks']),
+                                        area=area,
+                                        time=100,
+                                        concentration=concentration,
+                                        magnification=1000)
+
 
             nr_visible_squares = len(df_squares[df_squares['Visible'] == True])
             nr_total_squares   = int(nr_of_squares_in_row * nr_of_squares_in_row)
@@ -614,6 +636,8 @@ def process_images_in_paint_directory(paint_directory,
             df_batch.loc[index, 'Exclude']               = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
             df_batch.loc[index, 'Ext Image Name']        = ext_image_name
             df_batch.loc[index, 'Tau']                   = tau
+            df_batch.loc[index, 'Density']               = density
+            df_batch.loc[index, 'R Squared']             = round(r_squared, 3)
 
             i += 1
             processed += 1
