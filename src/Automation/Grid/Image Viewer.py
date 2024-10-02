@@ -1311,8 +1311,8 @@ class SelectViewerDialog:
         btn_root_dir       = ttk.Button(frame_directory, text='Paint Directory', width=15, command=self.change_root_dir)
         btn_conf_file      = ttk.Button(frame_directory, text='Configuration file', width=15, command=self.change_conf_file)
 
-        self.lbl_root_dir  = ttk.Label(frame_directory, text=self.root_directory, width=50)
-        self.lbl_conf_file = ttk.Label(frame_directory, text=self.conf_file, width=50)
+        self.lbl_root_dir  = ttk.Label(frame_directory, text=self.root_directory, width=80)
+        self.lbl_conf_file = ttk.Label(frame_directory, text=self.conf_file, width=80)
 
         self.mode_var = StringVar(value="Directory")
         self.rb_mode_directory  = ttk.Radiobutton(frame_directory, text="", variable=self.mode_var, width=10, value="Directory")

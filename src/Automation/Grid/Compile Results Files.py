@@ -204,7 +204,7 @@ class CompileDialog:
 
         # Fill the directory frame
         btn_root_dir       = ttk.Button(frame_directory, text='Root Directory', width=15, command=self.change_root_dir)
-        self.lbl_root_dir  = ttk.Label(frame_directory, text=self.root_directory, width=50)
+        self.lbl_root_dir  = ttk.Label(frame_directory, text=self.root_directory, width=80)
 
         btn_root_dir.grid      (column=0, row=0, padx=10, pady=5)
         self.lbl_root_dir.grid (column=1, row=0, padx=20, pady=5)
