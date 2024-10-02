@@ -107,7 +107,7 @@ class GridDialog:
 
         # Fill the directory frame
         btn_change_dir     = ttk.Button(frame_directory, text='Change Directory', width=15, command=self.change_dir)
-        self.lbl_directory = ttk.Label(frame_directory, text=self.paint_directory, width=50)
+        self.lbl_directory = ttk.Label(frame_directory, text=self.paint_directory, width=80)
 
         btn_change_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_directory.grid(column=1, row=0, padx=20, pady=5)
