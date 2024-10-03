@@ -14,6 +14,7 @@ from src.Automation.Support.Support_Functions import get_default_directories
 from src.Automation.Support.Support_Functions import save_default_directories
 from src.Automation.Support.Support_Functions import read_batch_from_file
 from src.Automation.Support.Support_Functions import read_squares_from_file
+from src.Automation.Support.Logger_Config import logger
 
 # -------------------------------------------------------------------------------------
 # Define the default parameters
@@ -45,13 +46,13 @@ def compile_squares_file(root_dir, verbose):
             continue
 
         if verbose:
-            print(f'\nProcessing directory: {paint_dir_path}')
+            logger.info(f'\nProcessing directory: {paint_dir_path}')
 
         # Read the batch file in the directory to determine which images there are
         batch_file_name = os.path.join(paint_dir_path, 'grid_batch.csv')
         df_batch = read_batch_from_file(batch_file_name, only_records_to_process=True)
         if df_batch is None:
-            print(f"Function 'compile_squares_file' failed: Batch file {batch_file_name} does not exist")
+            logger.error(f"Function 'compile_squares_file' failed: Batch file {batch_file_name} does not exist")
             exit()
 
         for index, row in df_batch.iterrows():
@@ -65,7 +66,7 @@ def compile_squares_file(root_dir, verbose):
 
             df_squares = read_squares_from_file(squares_file_name)
             if df_squares is None:
-                print(f'Compile Squares: No squares file found for image {ext_image_name} in the directory {paint_dir}')
+                logger.error(f'Compile Squares: No squares file found for image {ext_image_name} in the directory {paint_dir}')
                 continue
             if len(df_squares) == 0:  # Ignore it when it is empty
                 continue
@@ -158,7 +159,7 @@ def compile_squares_file(root_dir, verbose):
 
     df_all_images.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
 
-    print ("\nOutput generated in directory 'Output'")
+    logger.info ("\nOutput generated in directory 'Output'")
 
 
 def split_probe_valency (row):
