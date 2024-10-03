@@ -240,10 +240,12 @@ if __name__ == "__main__":
     time_stamp = time.time()
     for row in csv_reader:
 
-        if 'Y' in row[2] or 'y' in row[2]:
+        if 'Y' in row[3] or 'y' in row[3]:
             print(row[0])
             print(row[1])
-            grid_analysis_batch(row[0], row[1])
+            grid_analysis_batch(os.path.join(row[0], row[2]),
+                                os.path.join(row[1], row[2]))
+
 
     run_time = time.time() - time_stamp
     run_time = round(run_time, 1)
