@@ -1,7 +1,7 @@
 import os
 import time
 from tkinter import *
-from tkinter import ttk, filedialog, Toplevel
+from tkinter import ttk, filedialog
 
 import numpy as np
 import pandas as pd
@@ -25,10 +25,12 @@ from src.Automation.Support.Support_Functions import eliminate_isolated_squares_
 from src.Automation.Support.Support_Functions import save_squares_to_file
 from src.Automation.Support.Support_Functions import save_batch_to_file
 from src.Automation.Support.Support_Functions import check_batch_integrity
+from src.Automation.Support.Logger_Config import logger
 
 # -------------------------------------------------------------------------------------
 # Define the default parameters
 # ------------------------------------------------------------------------------------
+
 
 class GridDialog:
 
@@ -137,42 +139,61 @@ class GridDialog:
 
         if os.path.isfile(os.path.join(self.paint_directory, 'Batch.csv')):
 
-            process_images_in_paint_directory(self.paint_directory,
-                                              self.nr_of_squares_in_row.get(),
-                                              self.min_r_squared.get(),
-                                              self.min_tracks_for_tau.get(),
-                                              self.min_density_ratio.get(),
-                                              self.max_variability.get(),
-                                              self.max_square_coverage.get(),
-                                              verbose=False)
+            process_images_in_paint_directory_traditional_mode(self.paint_directory,
+                                                               self.nr_of_squares_in_row.get(),
+                                                               self.min_r_squared.get(),
+                                                               self.min_tracks_for_tau.get(),
+                                                               self.min_density_ratio.get(),
+                                                               self.max_variability.get(),
+                                                               self.max_square_coverage.get(),
+                                                               verbose=False)
             run_time = time.time() - time_stamp
 
         elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):  # Assume it is group directory
-            image_dirs = os.listdir(self.paint_directory)
-            image_dirs.sort()
-            for image_dir in image_dirs:
-                if not os.path.isdir(os.path.join(self.paint_directory, image_dir)):
-                    continue
-                if 'Output' in image_dir:
-                    continue
-                process_images_in_paint_directory(os.path.join(self.paint_directory, image_dir),
-                                                  self.nr_of_squares_in_row.get(),
-                                                  self.min_r_squared.get(),
-                                                  self.min_tracks_for_tau.get(),
-                                                  self.min_density_ratio.get(),
-                                                  self.max_variability.get(),
-                                                  self.max_square_coverage.get(),
-                                                  verbose=False)
+
+            process_images_in_root_directory_traditional_mode(self.paint_directory,
+                                                              self.nr_of_squares_in_row.get(),
+                                                              self.min_r_squared.get(),
+                                                              self.min_tracks_for_tau.get(),
+                                                              self.min_density_ratio.get(),
+                                                              self.max_variability.get(),
+                                                              self.max_square_coverage.get(),
+                                                              verbose=False)
             run_time = time.time() - time_stamp
         else:
             run_time = 0
-            print('Not an paint directory and not a root directory')
+            logger.error('Not an paint directory and not a root directory')
 
-        print(f"\n\nTotal processing time is {run_time:.1f} seconds")
+        logger.info(f"\n\nTotal processing time is {run_time:.1f} seconds")
 
         # And then exit
         self.exit_pressed()
 
+
+def process_images_in_root_directory_traditional_mode(root_directory,
+                                                      nr_of_squares_in_row,
+                                                      min_r_squared,
+                                                      min_tracks_for_tau,
+                                                      min_density_ratio,
+                                                      max_variability,
+                                                      max_square_coverage,
+                                                      verbose):
+
+    image_dirs = os.listdir(root_directory)
+    image_dirs.sort()
+    for image_dir in image_dirs:
+        if not os.path.isdir(os.path.join(root_directory, image_dir)):
+            continue
+        if 'Output' in image_dir:
+            continue
+        process_images_in_paint_directory_traditional_mode(os.path.join(root_directory, image_dir),
+                                                           nr_of_squares_in_row,
+                                                           min_r_squared,
+                                                           min_tracks_for_tau,
+                                                           min_density_ratio,
+                                                           max_variability,
+                                                           max_square_coverage,
+                                                           verbose=False)
 
 def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_squares):
     """
@@ -209,23 +230,23 @@ def delete_files_in_directory(directory_path):
        if os.path.isfile(file_path):
          os.remove(file_path)
    except OSError:
-     print("Error occurred while deleting files.")
+     logger.error("Error occurred while deleting files.")
 
-def process_single_image_in_paint_directory(image_path,
-                                            image_name,
-                                            nr_of_squares_in_row,
-                                            min_r_squared,
-                                            min_tracks_for_tau,
-                                            min_density_ratio,
-                                            max_variability,
-                                            concentration,
-                                            nr_spots,
-                                            batch_seq_nr,
-                                            experiment_nr,
-                                            experiment_seq_nr,
-                                            experiment_date,
-                                            experiment_name,
-                                            verbose=False):
+def process_single_image_in_paint_directory_traditional_mode(image_path,
+                                                             image_name,
+                                                             nr_of_squares_in_row,
+                                                             min_r_squared,
+                                                             min_tracks_for_tau,
+                                                             min_density_ratio,
+                                                             max_variability,
+                                                             concentration,
+                                                             nr_spots,
+                                                             batch_seq_nr,
+                                                             experiment_nr,
+                                                             experiment_seq_nr,
+                                                             experiment_date,
+                                                             experiment_name,
+                                                             verbose=True):
     """
 
     :param experiment_nr:
@@ -249,24 +270,24 @@ def process_single_image_in_paint_directory(image_path,
     tracks_file_name = os.path.join(image_path, "tracks", image_name + "-full-tracks.csv")
     df_tracks = get_df_from_file(tracks_file_name, header=0, skip_rows=[1, 2, 3])
     if df_tracks is None:
-        print (f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
+        logger.error (f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
         return None
 
     # Here the actual calculation work is done: df_squares is generated
-    df_squares, tau_matrix = create_df_squares(df_tracks,
-                                               image_path,
-                                               image_name,
-                                               nr_of_squares_in_row,
-                                               concentration,
-                                               nr_spots,
-                                               min_r_squared,
-                                               min_tracks_for_tau,
-                                               batch_seq_nr,
-                                               experiment_nr,
-                                               experiment_seq_nr,
-                                               experiment_date,
-                                               experiment_name,
-                                               verbose)
+    df_squares, tau_matrix = create_df_squares_traditional_mode(df_tracks,
+                                                                image_path,
+                                                                image_name,
+                                                                nr_of_squares_in_row,
+                                                                concentration,
+                                                                nr_spots,
+                                                                min_r_squared,
+                                                                min_tracks_for_tau,
+                                                                batch_seq_nr,
+                                                                experiment_nr,
+                                                                experiment_seq_nr,
+                                                                experiment_date,
+                                                                experiment_name,
+                                                                verbose)
 
 
 
@@ -293,7 +314,8 @@ def process_single_image_in_paint_directory(image_path,
 
     df_squares = identify_invalid_squares(df_squares,
                                           min_r_squared,
-                                          min_tracks_for_tau)
+                                          min_tracks_for_tau,
+                                          verbose)
 
     # Assign the label numbers to the squares
     df_with_label = df_tracks.copy()
@@ -338,20 +360,20 @@ def process_single_image_in_paint_directory(image_path,
     return df_squares
 
 
-def create_df_squares(df_tracks,
-                      image_path,
-                      image_name,
-                      nr_squares_in_row,
-                      concentration,
-                      nr_spots,
-                      min_r_squared,
-                      min_tracks_for_tau,
-                      seq_nr,
-                      experiment_nr,
-                      experiment_seq_nr,
-                      experiment_date,
-                      experiment_name,
-                      verbose):
+def create_df_squares_traditional_mode(df_tracks,
+                                       image_path,
+                                       image_name,
+                                       nr_squares_in_row,
+                                       concentration,
+                                       nr_spots,
+                                       min_r_squared,
+                                       min_tracks_for_tau,
+                                       seq_nr,
+                                       experiment_nr,
+                                       experiment_seq_nr,
+                                       experiment_date,
+                                       experiment_name,
+                                       verbose):
     # Create the matrices
     count_matrix       = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
     tau_matrix         = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
@@ -527,7 +549,7 @@ def write_matrices(image_path, image_name, tau_matrix, density_matrix, count_mat
     # Check if the grid directory exist
     dir_name = image_path + os.sep + "grid"
     if not os.path.exists(dir_name):
-        print(f"\nFunction 'write_matrices' failed: Directory {dir_name} does not exists.")
+        logger.error(f"\nFunction 'write_matrices' failed: Directory {dir_name} does not exists.")
         exit(-1)
 
     # Write the Tau matrix to file
@@ -573,7 +595,8 @@ def write_matrices(image_path, image_name, tau_matrix, density_matrix, count_mat
 
 def identify_invalid_squares(df_squares,
                              min_r_squared,
-                             min_tracks_for_tau):
+                             min_tracks_for_tau,
+                             verbose):
     """
     This function applies criteria to remove unwanted squares and report on the screen and into a file
     :param df_squares:
@@ -591,8 +614,9 @@ def identify_invalid_squares(df_squares,
     if original_count != 0:
         df_squares.loc[df_squares['Tau'] == -1, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau'] == True])
-        print(f"\n\tStarted with {original_count} squares")
-        print(f"\tEliminated {original_count - updated_count} squares with track count was lower than {min_tracks_for_tau} (no Tau calculated): left {updated_count}")
+        if verbose:
+            logger.info(f"\n\tStarted with {original_count} squares")
+            logger.info(f"\tEliminated {original_count - updated_count} squares with track count was lower than {min_tracks_for_tau} (no Tau calculated): left {updated_count}")
     else:
         updated_count = 0
 
@@ -605,7 +629,8 @@ def identify_invalid_squares(df_squares,
     if original_count != 0:
         df_squares.loc[df_squares['Tau'] == -2, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau'] == True])
-        print(f"\tEliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
+        if verbose:
+            logger.info(f"\tEliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
     else:
         updated_count = 0
 
@@ -618,7 +643,8 @@ def identify_invalid_squares(df_squares,
     if original_count != 0:
         df_squares.loc[df_squares['Tau'] == -3, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau'] == True])
-        print(f"\tEliminated {original_count - updated_count} squares for which the R2 was lower than {min_r_squared}: left {updated_count}")
+        if verbose:
+            logger.info(f"\tEliminated {original_count - updated_count} squares for which the R2 was lower than {min_r_squared}: left {updated_count}")
     else:
         updated_count = 0
 
@@ -670,14 +696,14 @@ def add_columns_to_batch_file(df_batch,
     return df_batch
 
 
-def process_images_in_paint_directory(paint_directory,
-                                      nr_of_squares_in_row,
-                                      min_r_squared,
-                                      min_tracks_for_tau,
-                                      min_density_ratio,
-                                      max_variability,
-                                      max_square_coverage,
-                                      verbose=False):
+def process_images_in_paint_directory_traditional_mode(paint_directory,
+                                                       nr_of_squares_in_row,
+                                                       min_r_squared,
+                                                       min_tracks_for_tau,
+                                                       min_density_ratio,
+                                                       max_variability,
+                                                       max_square_coverage,
+                                                       verbose=False):
     """
     :param paint_directory:
     :param nr_of_squares_in_row:
@@ -691,11 +717,11 @@ def process_images_in_paint_directory(paint_directory,
 
     df_batch = read_batch_from_file(os.path.join(paint_directory, "batch.csv"))
     if df_batch is None:
-        print(f"Function 'process_images_in_paint_directory' failed: Likely, {paint_directory} is not a valid directory containing cell image information.")
+        logger.error(f"Function 'process_images_in_paint_directory' failed: Likely, {paint_directory} is not a valid directory containing cell image information.")
         exit(1)
 
     if not check_batch_integrity(df_batch):
-        print(f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
+        logger.error(f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
         exit(1)
 
     # Needed in some cases, unclear why
@@ -725,7 +751,7 @@ def process_images_in_paint_directory(paint_directory,
     i = 1
     processed = 0
 
-    print_header(f"Processing {nr_files} images in {paint_directory}")
+    logger.info(f"Processing {nr_files} images in {paint_directory}")
 
     for index, row in df_batch.iterrows():
         ext_image_name = row["Image Name"] + '-threshold-' + str(row["Threshold"])
@@ -743,7 +769,7 @@ def process_images_in_paint_directory(paint_directory,
 
         # Get the time stamp of the tracks_file
         if not os.path.isfile(tracks_file_name):
-            print(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
+            logger.error(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
             exit(-1)
         else:
             tracks_file_timestamp = os.path.getmtime(tracks_file_name)
@@ -752,25 +778,29 @@ def process_images_in_paint_directory(paint_directory,
         process = True
         if process or squares_file_timestamp < tracks_file_timestamp:
 
-            print_header(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+            if verbose:
+                logger.info(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+            else:
+                logger.info(ext_image_name)
 
-            df_squares = process_single_image_in_paint_directory(ext_image_path,
-                                                                 ext_image_name,
-                                                                 nr_of_squares_in_row,
-                                                                 min_r_squared,
-                                                                 min_tracks_for_tau,
-                                                                 min_density_ratio,
-                                                                 max_variability,
-                                                                 concentration,
-                                                                 row["Nr Spots"],
-                                                                 row['Batch Sequence Nr'],
-                                                                 row['Experiment Nr'],
-                                                                 row['Experiment Seq Nr'],
-                                                                 row['Experiment Date'],
-                                                                 row['Experiment Name'],
-                                                                 verbose)
+
+            df_squares = process_single_image_in_paint_directory_traditional_mode(ext_image_path,
+                                                                                  ext_image_name,
+                                                                                  nr_of_squares_in_row,
+                                                                                  min_r_squared,
+                                                                                  min_tracks_for_tau,
+                                                                                  min_density_ratio,
+                                                                                  max_variability,
+                                                                                  concentration,
+                                                                                  row["Nr Spots"],
+                                                                                  row['Batch Sequence Nr'],
+                                                                                  row['Experiment Nr'],
+                                                                                  row['Experiment Seq Nr'],
+                                                                                  row['Experiment Date'],
+                                                                                  row['Experiment Name'],
+                                                                                  verbose)
             if df_squares is None:
-                print("\nAborted with error")
+                logger.error("Aborted with error")
                 return None
 
             nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
@@ -790,14 +820,14 @@ def process_images_in_paint_directory(paint_directory,
             processed += 1
 
         else:
-            print(f"Squares file already up to date: {squares_file_name}")
+            logger.info(f"Squares file already up to date: {squares_file_name}")
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv") )
     run_time = round(time.time() - time_stamp, 1)
-    print_header(f"Processed {processed} images in {paint_directory} in {run_time} seconds. Routine completed normally.")
+    logger.info(f"Processed {processed} images in {paint_directory} in {run_time} seconds. Routine completed normally.")
 
-
-root = Tk()
-root.eval('tk::PlaceWindow . center')
-GridDialog(root)
-root.mainloop()
+if __name__ == "__main__":
+    root = Tk()
+    root.eval('tk::PlaceWindow . center')
+    GridDialog(root)
+    root.mainloop()

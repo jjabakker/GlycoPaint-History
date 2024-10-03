@@ -1,34 +1,31 @@
 import os
 import time
 from tkinter import *
-from tkinter import ttk, filedialog, Toplevel
+from tkinter import ttk, filedialog
 
-import numpy as np
 import pandas as pd
 
 from src.Automation.Support.Curvefit_and_Plot import CompileDuration
 from src.Automation.Support.Curvefit_and_Plot import CurveFitAndPlot
 
-from src.Automation.Support.Generate_HeatMap  import plot_heatmap
+
 from src.Automation.Support.Support_Functions import calc_variability
 from src.Automation.Support.Support_Functions import calculate_density
 from src.Automation.Support.Support_Functions import get_default_directories
 from src.Automation.Support.Support_Functions import get_df_from_file
 from src.Automation.Support.Support_Functions import get_grid_defaults_from_file
 from src.Automation.Support.Support_Functions import get_square_coordinates
-from src.Automation.Support.Support_Functions import print_header
 from src.Automation.Support.Support_Functions import read_batch_from_file
 from src.Automation.Support.Support_Functions import save_default_directories
 from src.Automation.Support.Support_Functions import save_grid_defaults_to_file
-from src.Automation.Support.Support_Functions import write_np_to_excel
-from src.Automation.Support.Support_Functions import eliminate_isolated_squares_relaxed
 from src.Automation.Support.Support_Functions import save_squares_to_file
 from src.Automation.Support.Support_Functions import save_batch_to_file
 from src.Automation.Support.Support_Functions import check_batch_integrity
-
+from src.Automation.Support.Logger_Config import logger
 # -------------------------------------------------------------------------------------
 # Define the default parameters
 # ------------------------------------------------------------------------------------
+
 
 class GridDialog:
 
@@ -68,7 +65,6 @@ class GridDialog:
         en_min_r_squared          = ttk.Entry(frame_parameters, textvariable=self.min_r_squared, width=10)
 
         self.min_density_ratio    = DoubleVar(root, min_density_ratio)
-        #en_min_densioty_ratio     = ttk.Entry(frame_parameters, textvariable=self.min_density_ratio, width=10)
 
         self.max_variability      = DoubleVar(root, max_variability)
         en_max_variability        = ttk.Entry(frame_parameters, textvariable=self.max_variability, width=10)
@@ -134,39 +130,57 @@ class GridDialog:
 
         if os.path.isfile(os.path.join(self.paint_directory, 'Batch.csv')):
 
-            process_images_in_paint_directory(self.paint_directory,
-                                              self.nr_of_squares_in_row.get(),
-                                              self.min_r_squared.get(),
-                                              self.min_tracks_for_tau.get(),
-                                              self.max_variability.get(),
-                                              self.max_square_coverage.get(),
-                                              verbose=False)
+            process_images_in_paint_directory_single_mode(self.paint_directory,
+                                                          self.nr_of_squares_in_row.get(),
+                                                          self.min_r_squared.get(),
+                                                          self.min_tracks_for_tau.get(),
+                                                          self.max_variability.get(),
+                                                          self.max_square_coverage.get(),
+                                                          verbose=False)
             run_time = time.time() - time_stamp
 
         elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):  # Assume it is group directory
-            image_dirs = os.listdir(self.paint_directory)
-            image_dirs.sort()
-            for image_dir in image_dirs:
-                if not os.path.isdir(os.path.join(self.paint_directory, image_dir)):
-                    continue
-                if 'Output' in image_dir:
-                    continue
-                process_images_in_paint_directory(os.path.join(self.paint_directory, image_dir),
-                                                  self.nr_of_squares_in_row.get(),
-                                                  self.min_r_squared.get(),
-                                                  self.min_tracks_for_tau.get(),
-                                                  self.max_variability.get(),
-                                                  self.max_square_coverage.get(),
-                                                  verbose=False)
+
+            process_images_in_root_directory_single_mode(self.paint_directory,
+                                                         self.nr_of_squares_in_row.get(),
+                                                         self.min_r_squared.get(),
+                                                         self.min_tracks_for_tau.get(),
+                                                         self.max_variability.get(),
+                                                         self.max_square_coverage.get(),
+                                                         verbose=False)
             run_time = time.time() - time_stamp
         else:
             run_time = 0
-            print('Not an paint directory and not a root directory')
+            logger.warning('Not an paint directory and not a root directory')
 
-        print(f"\n\nTotal processing time is {run_time:.1f} seconds")
+        logger.info(f"\n\nTotal processing time is {run_time:.1f} seconds")
 
         # And then exit
         self.exit_pressed()
+
+
+def process_images_in_root_directory_single_mode(root_directory,
+                                                 nr_of_squares_in_row,
+                                                 min_r_squared,
+                                                 min_tracks_for_tau,
+                                                 max_variability,
+                                                 max_square_coverage,
+                                                 verbose):
+
+    image_dirs = os.listdir(root_directory)
+    image_dirs.sort()
+    for image_dir in image_dirs:
+        if not os.path.isdir(os.path.join(root_directory, image_dir)):
+            continue
+        if 'Output' in image_dir:
+            continue
+        process_images_in_paint_directory_single_mode(os.path.join(root_directory, image_dir),
+                                                      nr_of_squares_in_row,
+                                                      min_r_squared,
+                                                      min_tracks_for_tau,
+                                                      max_variability,
+                                                      max_square_coverage,
+                                                      verbose=False)
 
 
 def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_squares):
@@ -214,15 +228,20 @@ def process_single_image_in_paint_directory(image_path,
                                             verbose=False):
     """
 
-    :param experiment_nr:
     :param image_path:
     :param image_name:
     :param nr_of_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
+    :param min_density_ratio:
+    :param max_variability:
     :param concentration:
     :param nr_spots:
     :param batch_seq_nr:
+    :param experiment_nr:
+    :param experiment_seq_nr:
+    :param experiment_date:
+    :param experiment_name:
     :param verbose:
     :return:
     """
@@ -231,7 +250,7 @@ def process_single_image_in_paint_directory(image_path,
     tracks_file_name = os.path.join(image_path, "tracks", image_name + "-full-tracks.csv")
     df_tracks = get_df_from_file(tracks_file_name, header=0, skip_rows=[1, 2, 3])
     if df_tracks is None:
-        print (f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
+        logger.info (f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
         return None
 
     # Here the actual calculation work is done: df_squares is generated
@@ -298,8 +317,7 @@ def process_single_image_in_paint_directory(image_path,
 
     df_squares['Visible'] = (df_squares['Density Ratio Visible'] &
                              df_squares['Variability Visible'] &
-                             df_squares['Neighbour Visible'] )
-
+                             df_squares['Neighbour Visible'])
 
     label_nr = 1
     for idx, row in df_squares.iterrows():
@@ -312,7 +330,7 @@ def process_single_image_in_paint_directory(image_path,
     save_squares_to_file(df_squares, squares_file_name)
 
     # Identify the squares that contribute to the Tau calculation
-    df_squares_for_tau = df_squares[df_squares['Visible'] ]
+    df_squares_for_tau = df_squares[df_squares['Visible']]
     df_tracks_for_tau  = df_tracks[df_tracks['Square Nr'].isin(df_squares_for_tau['Square Nr'])]
     nr_tracks          = df_tracks_for_tau.shape[0]
 
@@ -334,7 +352,8 @@ def process_single_image_in_paint_directory(image_path,
         if r_squared < min_r_squared:  # Tau was calculated, but not reliable
             tau = -3
 
-    print (tau)
+    if verbose:
+        print (tau)
     return tau, r_squared, df_squares
 
 
@@ -471,8 +490,6 @@ def create_df_squares(df_tracks,
     return df_squares
 
 
-
-
 def add_columns_to_batch_file(df_batch,
                               nr_of_squares_in_row,
                               min_tracks_for_tau,
@@ -503,18 +520,20 @@ def add_columns_to_batch_file(df_batch,
     return df_batch
 
 
-def process_images_in_paint_directory(paint_directory,
-                                      nr_of_squares_in_row,
-                                      min_r_squared,
-                                      min_tracks_for_tau,
-                                      max_variability,
-                                      max_square_coverage,
-                                      verbose=False):
+def process_images_in_paint_directory_single_mode(paint_directory,
+                                                  nr_of_squares_in_row,
+                                                  min_r_squared,
+                                                  min_tracks_for_tau,
+                                                  max_variability,
+                                                  max_square_coverage,
+                                                  verbose=False):
     """
     :param paint_directory:
     :param nr_of_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
+    :param max_variability:
+    :param max_square_coverage:
     :param verbose:
     :return:
     """
@@ -523,11 +542,11 @@ def process_images_in_paint_directory(paint_directory,
 
     df_batch = read_batch_from_file(os.path.join(paint_directory, "batch.csv"))
     if df_batch is None:
-        print(f"Function 'process_images_in_paint_directory' failed: Likely, {paint_directory} is not a valid directory containing cell image information.")
+        logger.error(f"Function 'process_images_in_paint_directory' failed: Likely, {paint_directory} is not a valid directory containing cell image information.")
         exit(1)
 
     if not check_batch_integrity(df_batch):
-        print(f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
+        logger.error(f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
         exit(1)
 
     # Needed in some cases, unclear why
@@ -549,14 +568,14 @@ def process_images_in_paint_directory(paint_directory,
     # Determine what images need processing from the batch.csv file
     nr_files = len(df_batch)
     if nr_files <= 0:
-        print("\nNo files selected for processing")
+        logger.warning("\nNo files selected for processing")
         return -1
 
     # Loop though selected images to produce the individual grid_results files
     i = 1
     processed = 0
 
-    print_header(f"Processing {nr_files} images in {paint_directory}")
+    logger.info(f"Processing {nr_files} images in {paint_directory}")
 
     for index, row in df_batch.iterrows():
         ext_image_name = row["Image Name"] + '-threshold-' + str(row["Threshold"])
@@ -583,7 +602,10 @@ def process_images_in_paint_directory(paint_directory,
         process = True
         if process or squares_file_timestamp < tracks_file_timestamp:
 
-            print_header(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+            if verbose:
+                logger.info(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+            else:
+                logger.info(ext_image_name)
 
             tau, r_squared, df_squares = process_single_image_in_paint_directory(ext_image_path,
                                                                                  ext_image_name,
@@ -601,7 +623,7 @@ def process_images_in_paint_directory(paint_directory,
                                                                                  row['Experiment Name'],
                                                                                  verbose)
             if df_squares is None:
-                print("\nAborted with error")
+                logger.error("\nAborted with error")
                 return None
 
             # To calculate the density use the actual surface coordinates.
@@ -622,8 +644,7 @@ def process_images_in_paint_directory(paint_directory,
                                         concentration=concentration,
                                         magnification=1000)
 
-
-            nr_visible_squares = len(df_squares[df_squares['Visible'] == True])
+            nr_visible_squares = len(df_squares[df_squares['Visible']])
             nr_total_squares   = int(nr_of_squares_in_row * nr_of_squares_in_row)
             nr_defined_squares = nr_total_squares
             df_batch.loc[index, 'Nr Total Squares']      = nr_total_squares
@@ -643,14 +664,15 @@ def process_images_in_paint_directory(paint_directory,
             processed += 1
 
         else:
-            print(f"Squares file already up to date: {squares_file_name}")
+            logger.info(f"Squares file already up to date: {squares_file_name}")
 
-    save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv") )
+    save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv"))
     run_time = round(time.time() - time_stamp, 1)
-    print_header(f"Processed {processed} images in {paint_directory} in {run_time} seconds. Routine completed normally.")
+    logger.info(f"Processed {processed} images in {paint_directory} in {run_time} seconds. Routine completed normally.")
 
 
-root = Tk()
-root.eval('tk::PlaceWindow . center')
-GridDialog(root)
-root.mainloop()
+if __name__ == "__main__":
+    root = Tk()
+    root.eval('tk::PlaceWindow . center')
+    GridDialog(root)
+    root.mainloop()
