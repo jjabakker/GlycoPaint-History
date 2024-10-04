@@ -25,7 +25,8 @@ from src.Automation.Support.Support_Functions import (
     write_np_to_excel,
     save_squares_to_file,
     save_batch_to_file,
-    check_batch_integrity)
+    check_batch_integrity,
+    format_time_nicely)
 
 from src.Automation.Support.Logger_Config import logger
 
@@ -826,7 +827,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv") )
     run_time = round(time.time() - time_stamp, 1)
-    logger.info(f"Processed {processed} images in {paint_directory} in {run_time} seconds. ")
+    logger.info(f'Finished the full processing in  {format_time_nicely(run_time)}')
 
 if __name__ == "__main__":
     root = Tk()
