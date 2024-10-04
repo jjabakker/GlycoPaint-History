@@ -10,6 +10,10 @@ from src.Automation.Grid.Compile_Results_Files import compile_squares_file
 from src.Automation.Support.Copy_Data_From_Source import copy_data_from_source
 from src.Automation.Support.Directory_Timestamp import set_directory_timestamp
 from src.Automation.Support.Logger_Config import logger
+from src.Automation.Support.Support_Functions import format_time_nicely
+
+
+
 
 SOURCE_NEW_DIR     = '/Users/hans/Paint Source/New Probes'
 SOURCE_REGULAR_DIR = '/Users/hans/Paint Source/Regular Probes'
@@ -83,7 +87,7 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
     copy_directory(os.path.join(root_dir, 'Output'), os.path.join(dest_dir, 'Output'))
     set_directory_timestamp(root_dir)
     set_directory_timestamp(dest_dir)
-    logger.info(f"Processed mode: {mode} - probe {probe} - directory: {directory} in {time.time() - time_stamp:.1f} seconds")
+    logger.info(f"Processed mode: {mode} - probe {probe} - directory: {directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
 
 
 # Define the configuration for different processing modes
@@ -177,9 +181,9 @@ for entry in config:
 
 # Report the time it took in hours minutes seconds
 run_time = time.time() - main_stamp
-hours, remainder = divmod(run_time, 3600)
-minutes, seconds = divmod(run_time, 60)
+format_time_nicely(run_time)
 
 logger.info("")
-logger.info(f'Finished the full processing in  {hours} hours {minutes} minutes and {seconds} seconds')
+logger.info(f'Finished the full processing in  {format_time_nicely(run_time)}')
 logger.info("")
+
