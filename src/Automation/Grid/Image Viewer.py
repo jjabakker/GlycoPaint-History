@@ -14,19 +14,20 @@ from tkinter import ttk
 
 from PIL import Image, ImageTk
 
-from src.Automation.Support.Support_Functions import eliminate_isolated_squares_relaxed
-from src.Automation.Support.Support_Functions import eliminate_isolated_squares_strict
-from src.Automation.Support.Support_Functions import test_if_square_is_in_rectangle
-from src.Automation.Support.Support_Functions import create_output_directories_for_graphpad
-from src.Automation.Support.Support_Functions import get_default_directories
-from src.Automation.Support.Support_Functions import save_default_directories
-from src.Automation.Support.Support_Functions import read_batch_from_file
-from src.Automation.Support.Support_Functions import read_squares_from_file
-# from src.Automation.Support.Support_Functions import save_squares_to_file
-from src.Automation.Support.Support_Functions import save_batch_to_file
+from src.Automation.Support.Support_Functions import (
+    eliminate_isolated_squares_relaxed,
+    eliminate_isolated_squares_strict,
+    test_if_square_is_in_rectangle,
+    create_output_directories_for_graphpad,
+    get_default_directories,
+    save_default_directories,
+    read_batch_from_file,
+    read_squares_from_file,
+    save_batch_to_file)
 
-from src.Automation.Support.Analyse_All_Images import analyse_all_images
-from src.Automation.Support.Analyse_All_Images import create_summary_graphpad
+from src.Automation.Support.Analyse_All_Images import (
+    analyse_all_images,
+    create_summary_graphpad)
 
 
 def save_as_png(canvas, file_name, image_name):
