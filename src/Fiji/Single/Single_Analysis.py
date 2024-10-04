@@ -17,13 +17,15 @@ sys.path.append(paint_dir)
 
 from Trackmate import paint_trackmate
 
-from CommonSupportFunctions import create_directories
-from CommonSupportFunctions import get_default_image_directory
+from CommonSupportFunctions import (
+    create_directories,
+    get_default_image_directory)
 
-from FijiSupportFunctions import fiji_log
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
 
 from fiji.util.gui import GenericDialogPlus
+
+from LoggerConfigFiji import logger, change_file_handler
 
 
 def process_full_image(threshold, image_directory, image_name, cell_type, probe, probe_type, concentration_probe):
@@ -50,7 +52,7 @@ def process_full_image(threshold, image_directory, image_name, cell_type, probe,
 
     nr_spots, total_tracks, long_tracks = paint_trackmate(threshold, full_tracks_filename, tiff_filename)
     if nr_spots == -1:
-        fiji_log("\n'Process full image' did not manage to run 'paint_trackmate'")
+        logger.error("\n'Process full image' did not manage to run 'paint_trackmate'")
         print(getframeinfo(currentframe()).filename, getframeinfo(currentframe()).lineno)
         return -1
 
@@ -182,7 +184,7 @@ def square_analysis():
     # Ask for probe information and threshold
     probe, probe_type, threshold, concentration_probe = get_user_input(interactive=True)
     if probe == 0:
-        fiji_log("User aborted the operation")
+        logger.info("User aborted the operation")
         return 0
     cell_type = " "
 
