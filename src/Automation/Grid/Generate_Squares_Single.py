@@ -5,26 +5,25 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Automation.Support.Curvefit_and_Plot import CompileDuration
-from src.Automation.Support.Curvefit_and_Plot import CurveFitAndPlot
+from src.Automation.Support.Curvefit_and_Plot import (
+    CompileDuration,
+    CurveFitAndPlot)
 
+from src.Automation.Support.Support_Functions import (
+    calc_variability,
+    calculate_density,
+    get_default_directories,
+    get_df_from_file,
+    get_grid_defaults_from_file,
+    get_square_coordinates,
+    read_batch_from_file,
+    save_default_directories,
+    save_grid_defaults_to_file,
+    save_squares_to_file,
+    save_batch_to_file,
+    check_batch_integrity)
 
-from src.Automation.Support.Support_Functions import calc_variability
-from src.Automation.Support.Support_Functions import calculate_density
-from src.Automation.Support.Support_Functions import get_default_directories
-from src.Automation.Support.Support_Functions import get_df_from_file
-from src.Automation.Support.Support_Functions import get_grid_defaults_from_file
-from src.Automation.Support.Support_Functions import get_square_coordinates
-from src.Automation.Support.Support_Functions import read_batch_from_file
-from src.Automation.Support.Support_Functions import save_default_directories
-from src.Automation.Support.Support_Functions import save_grid_defaults_to_file
-from src.Automation.Support.Support_Functions import save_squares_to_file
-from src.Automation.Support.Support_Functions import save_batch_to_file
-from src.Automation.Support.Support_Functions import check_batch_integrity
 from src.Automation.Support.Logger_Config import logger
-# -------------------------------------------------------------------------------------
-# Define the default parameters
-# ------------------------------------------------------------------------------------
 
 
 class GridDialog:
@@ -151,9 +150,9 @@ class GridDialog:
             run_time = time.time() - time_stamp
         else:
             run_time = 0
-            logger.warning('Not an paint directory and not a root directory')
+            logger.info('Not an paint directory and not a root directory')
 
-        logger.info(f"\n\nTotal processing time is {run_time:.1f} seconds")
+        logger.debug(f"\n\nTotal processing time is {run_time:.1f} seconds")
 
         # And then exit
         self.exit_pressed()
@@ -250,7 +249,7 @@ def process_single_image_in_paint_directory(image_path,
     tracks_file_name = os.path.join(image_path, "tracks", image_name + "-full-tracks.csv")
     df_tracks = get_df_from_file(tracks_file_name, header=0, skip_rows=[1, 2, 3])
     if df_tracks is None:
-        logger.info (f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
+        logger.debug (f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
         return None
 
     # Here the actual calculation work is done: df_squares is generated
@@ -568,7 +567,7 @@ def process_images_in_paint_directory_single_mode(paint_directory,
     # Determine what images need processing from the batch.csv file
     nr_files = len(df_batch)
     if nr_files <= 0:
-        logger.warning("\nNo files selected for processing")
+        logger.info("\nNo files selected for processing")
         return -1
 
     # Loop though selected images to produce the individual grid_results files
@@ -603,9 +602,9 @@ def process_images_in_paint_directory_single_mode(paint_directory,
         if process or squares_file_timestamp < tracks_file_timestamp:
 
             if verbose:
-                logger.info(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+                logger.debug(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
             else:
-                logger.info(ext_image_name)
+                logger.debug(ext_image_name)
 
             tau, r_squared, df_squares = process_single_image_in_paint_directory(ext_image_path,
                                                                                  ext_image_name,
@@ -664,11 +663,11 @@ def process_images_in_paint_directory_single_mode(paint_directory,
             processed += 1
 
         else:
-            logger.info(f"Squares file already up to date: {squares_file_name}")
+            logger.debug(f"Squares file already up to date: {squares_file_name}")
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv"))
     run_time = round(time.time() - time_stamp, 1)
-    logger.info(f"Processed {processed} images in {paint_directory} in {run_time} seconds. Routine completed normally.")
+    logger.info(f"Processed {processed} images in {paint_directory} in {run_time} seconds.")
 
 
 if __name__ == "__main__":

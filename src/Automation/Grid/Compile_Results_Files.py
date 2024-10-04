@@ -5,15 +5,18 @@ It will create an Output directory with three files: all squares, all batches, a
 
 import os
 import re
+import time
 import pandas as pd
 
 from tkinter import *
 from tkinter import ttk, filedialog
 
-from src.Automation.Support.Support_Functions import get_default_directories
-from src.Automation.Support.Support_Functions import save_default_directories
-from src.Automation.Support.Support_Functions import read_batch_from_file
-from src.Automation.Support.Support_Functions import read_squares_from_file
+from src.Automation.Support.Support_Functions import (
+    get_default_directories,
+    save_default_directories,
+    read_batch_from_file,
+    read_squares_from_file)
+
 from src.Automation.Support.Logger_Config import logger
 
 # -------------------------------------------------------------------------------------
@@ -26,6 +29,9 @@ min_density_ratio     = 2
 
 
 def compile_squares_file(root_dir, verbose):
+
+    logger.info(f"Compiling output for {root_dir}")
+    time_stamp = time.time()
 
     # Create the dataframes to be filled
     df_all_images    = pd.DataFrame()
@@ -46,7 +52,7 @@ def compile_squares_file(root_dir, verbose):
             continue
 
         if verbose:
-            logger.info(f'\nProcessing directory: {paint_dir_path}')
+            logger.debug(f'Compiling directory: {paint_dir_path}')
 
         # Read the batch file in the directory to determine which images there are
         batch_file_name = os.path.join(paint_dir_path, 'grid_batch.csv')
@@ -159,7 +165,8 @@ def compile_squares_file(root_dir, verbose):
 
     df_all_images.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
 
-    logger.info ("\nOutput generated in directory 'Output'")
+    run_time = time.time() - time_stamp
+    logger.info (f"Compiled output for {root_dir} in {run_time:.1f} seconds")
 
 
 def split_probe_valency (row):

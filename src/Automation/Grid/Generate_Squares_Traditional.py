@@ -6,25 +6,27 @@ from tkinter import ttk, filedialog
 import numpy as np
 import pandas as pd
 
-from src.Automation.Support.Curvefit_and_Plot import CompileDuration
-from src.Automation.Support.Curvefit_and_Plot import CurveFitAndPlot
+from src.Automation.Support.Curvefit_and_Plot import (
+    CompileDuration,
+    CurveFitAndPlot)
 
 from src.Automation.Support.Generate_HeatMap  import plot_heatmap
-from src.Automation.Support.Support_Functions import calc_variability
-from src.Automation.Support.Support_Functions import calculate_density
-from src.Automation.Support.Support_Functions import get_default_directories
-from src.Automation.Support.Support_Functions import get_df_from_file
-from src.Automation.Support.Support_Functions import get_grid_defaults_from_file
-from src.Automation.Support.Support_Functions import get_square_coordinates
-from src.Automation.Support.Support_Functions import print_header
-from src.Automation.Support.Support_Functions import read_batch_from_file
-from src.Automation.Support.Support_Functions import save_default_directories
-from src.Automation.Support.Support_Functions import save_grid_defaults_to_file
-from src.Automation.Support.Support_Functions import write_np_to_excel
-from src.Automation.Support.Support_Functions import eliminate_isolated_squares_relaxed
-from src.Automation.Support.Support_Functions import save_squares_to_file
-from src.Automation.Support.Support_Functions import save_batch_to_file
-from src.Automation.Support.Support_Functions import check_batch_integrity
+
+from src.Automation.Support.Support_Functions import (
+    calc_variability,
+    calculate_density,
+    get_default_directories,
+    get_df_from_file,
+    get_grid_defaults_from_file,
+    get_square_coordinates,
+    read_batch_from_file,
+    save_default_directories,
+    save_grid_defaults_to_file,
+    write_np_to_excel,
+    save_squares_to_file,
+    save_batch_to_file,
+    check_batch_integrity)
+
 from src.Automation.Support.Logger_Config import logger
 
 # -------------------------------------------------------------------------------------
@@ -164,7 +166,7 @@ class GridDialog:
             run_time = 0
             logger.error('Not an paint directory and not a root directory')
 
-        logger.info(f"\n\nTotal processing time is {run_time:.1f} seconds")
+        logger.info(f"Total processing time is {run_time:.1f} seconds")
 
         # And then exit
         self.exit_pressed()
@@ -549,7 +551,7 @@ def write_matrices(image_path, image_name, tau_matrix, density_matrix, count_mat
     # Check if the grid directory exist
     dir_name = image_path + os.sep + "grid"
     if not os.path.exists(dir_name):
-        logger.error(f"\nFunction 'write_matrices' failed: Directory {dir_name} does not exists.")
+        logger.error(f"Function 'write_matrices' failed: Directory {dir_name} does not exists.")
         exit(-1)
 
     # Write the Tau matrix to file
@@ -615,8 +617,8 @@ def identify_invalid_squares(df_squares,
         df_squares.loc[df_squares['Tau'] == -1, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau'] == True])
         if verbose:
-            logger.info(f"\n\tStarted with {original_count} squares")
-            logger.info(f"\tEliminated {original_count - updated_count} squares with track count was lower than {min_tracks_for_tau} (no Tau calculated): left {updated_count}")
+            logger.debug(f"Started with {original_count} squares")
+            logger.debug(f"Eliminated {original_count - updated_count} squares with track count was lower than {min_tracks_for_tau} (no Tau calculated): left {updated_count}")
     else:
         updated_count = 0
 
@@ -630,7 +632,7 @@ def identify_invalid_squares(df_squares,
         df_squares.loc[df_squares['Tau'] == -2, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau'] == True])
         if verbose:
-            logger.info(f"\tEliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
+            logger.debug(f"Eliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
     else:
         updated_count = 0
 
@@ -644,7 +646,7 @@ def identify_invalid_squares(df_squares,
         df_squares.loc[df_squares['Tau'] == -3, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau'] == True])
         if verbose:
-            logger.info(f"\tEliminated {original_count - updated_count} squares for which the R2 was lower than {min_r_squared}: left {updated_count}")
+            logger.debug(f"Eliminated {original_count - updated_count} squares for which the R2 was lower than {min_r_squared}: left {updated_count}")
     else:
         updated_count = 0
 
@@ -781,7 +783,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
             if verbose:
                 logger.info(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
             else:
-                logger.info(ext_image_name)
+                logger.debug(ext_image_name)
 
 
             df_squares = process_single_image_in_paint_directory_traditional_mode(ext_image_path,
@@ -820,11 +822,11 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
             processed += 1
 
         else:
-            logger.info(f"Squares file already up to date: {squares_file_name}")
+            logger.debug(f"Squares file already up to date: {squares_file_name}")
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv") )
     run_time = round(time.time() - time_stamp, 1)
-    logger.info(f"Processed {processed} images in {paint_directory} in {run_time} seconds. Routine completed normally.")
+    logger.info(f"Processed {processed} images in {paint_directory} in {run_time} seconds. ")
 
 if __name__ == "__main__":
     root = Tk()

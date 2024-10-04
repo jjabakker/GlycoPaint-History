@@ -14,7 +14,7 @@ def copy_directory(src, dest):
 
         # Now, copy the directory
         shutil.copytree(src, dest, dirs_exist_ok=True)
-        logger.info(f"Copied directory from {src} to {dest}")
+        logger.debug(f"Copied directory from {src} to {dest}")
 
     except Exception as e:
         logger.error(f"copy_data_from_source: copy_directory: Failed to copy directory from {src} to {dest}. Error: {e}")
@@ -64,9 +64,6 @@ def copy_data_from_source(source_root, dest_root):
 
 
 if __name__ == '__main__':
-
-    # Set up logging
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Example usage
 

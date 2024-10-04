@@ -4,7 +4,7 @@ import os
 # Setup logging
 
 # Step 1: Create a custom logger
-logger = logging.getLogger('my_logger')
+logger = logging.getLogger('paint')
 
 # Step 2: Set the global logging level (this applies to all handlers unless overridden)
 logger.setLevel(logging.DEBUG)  # Logs everything from DEBUG level and above
@@ -18,7 +18,7 @@ console_handler.setLevel(logging.DEBUG)  # All logs at DEBUG level or higher go 
 file_handler.setLevel(logging.INFO)  # Only logs at INFO level or higher go to the file
 
 # Step 5: Create and set the log format
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
 console_handler.setFormatter(formatter)
 file_handler.setFormatter(formatter)
 
