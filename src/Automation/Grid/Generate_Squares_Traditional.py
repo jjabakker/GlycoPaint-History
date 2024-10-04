@@ -754,7 +754,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
     i = 1
     processed = 0
 
-    logger.info(f"Processing {nr_files} images in {paint_directory}")
+    logger.info(f"Processing {nr_files:2d} images in {paint_directory}")
 
     for index, row in df_batch.iterrows():
         ext_image_name = row["Image Name"] + '-threshold-' + str(row["Threshold"])
@@ -827,7 +827,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv") )
     run_time = round(time.time() - time_stamp, 1)
-    logger.info(f'Finished the full processing in  {format_time_nicely(run_time)}')
+    logger.info(f"Processed  {nr_files:2d} images in {paint_directory} in {format_time_nicely(run_time)}')")
 
 if __name__ == "__main__":
     root = Tk()

@@ -276,7 +276,7 @@ class ImageViewer:
         # Read the batch file. If the file is not there just return (a message will have been printed)
         self.df_batch = read_batch_from_file(self.batchfile_path, FALSE)
         if self.df_batch is None:
-            print("No 'grid_batch.csv' file, Did you run 'Process All Images.py'?")
+            print("No 'grid_batch.csv' file, Did you select an image directory?")
             return
 
         # Retrieve some info from the batch file
