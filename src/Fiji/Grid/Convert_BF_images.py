@@ -1,88 +1,104 @@
 import os
 import sys
 import shutil
-
+import logging
 from ij import IJ
 from java.lang.System import getProperty
 
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
 
-from FijiSupportFunctions import ask_user_for_image_directory
-from FijiSupportFunctions import fiji_log
-from FijiSupportFunctions import fiji_header
+from LoggerConfigFiji import logger, change_file_handler
 
+# Set up logging
+change_file_handler('Convert BF Images.log')
+
+# Import custom functions for asking the user for directories.
+from FijiSupportFunctions import ask_user_for_image_directory
 
 def convert_BF_images(image_source_directory, paint_directory, force=False):
+    """
+    Convert .nd2 BF images to JPEG and store them in a specified directory.
 
-    # Create a 'Converted BF Images' directory if it not already exists
-    bf_jpeg_dir = image_source_directory + os.sep + "Converted BF Images"
+    Args:
+        image_source_directory (str): Directory containing the .nd2 images.
+        paint_directory (str): Directory to store the converted JPEGs.
+        force (bool): Force overwrite of existing JPEG files, even if up to date.
+    """
+    # Create a 'Converted BF Images' directory if it doesn't exist
+    bf_jpeg_dir = os.path.join(image_source_directory, "Converted BF Images")
     if not os.path.isdir(bf_jpeg_dir):
         os.mkdir(bf_jpeg_dir)
 
-    fiji_log('\n\n')
-    count      = 0
-    found      = 0
-    converted  = 0
-    all_images = os.listdir(image_source_directory)
-    all_images.sort()
+    logger.info('')  # Start logging new run
+
+    count = found = converted = 0
+    all_images = sorted(os.listdir(image_source_directory))  # Sort images for predictable processing order
+
     for image_name in all_images:
-        if not image_name.startswith('._'):      # Ignore everything starting with ._
-            if image_name.endswith('.nd2'):      # It is an nd2 file
-                count += 1
-                if image_name.find('BF') != -1:  # It is a BF file
-                    # So, we have BF image of type .nd2
-                    found += 1
-                    display_name = image_name.ljust(30, ' ')
-                    input_file   = image_source_directory + os.sep + image_name
-                    output_file  = bf_jpeg_dir + os.sep + image_name
-                    output_file  = output_file.replace('nd2', 'jpg')
-                    convert      = force
-                    if not os.path.isfile(output_file):
-                        convert = True
-                    elif os.path.getmtime(output_file) < os.path.getmtime(input_file):
-                        convert = True
-                    if convert:
-                        nd2_arg = "open=[" + input_file + "]"
+        # Skip hidden files or system files
+        if image_name.startswith('._'):
+            continue
+
+        # Check if the file is a .nd2 file
+        if image_name.endswith('.nd2'):
+            count += 1
+
+            # Only process Bright Field (BF) images
+            if 'BF' in image_name:
+                found += 1
+                display_name = image_name.ljust(30, ' ')  # Align name in log for readability
+                input_file = os.path.join(image_source_directory, image_name)
+                output_file = os.path.join(bf_jpeg_dir, image_name.replace('.nd2', '.jpg'))
+
+                # Determine if the image needs to be converted (force flag or file modification check)
+                convert = force or not os.path.isfile(output_file) or os.path.getmtime(output_file) < os.path.getmtime(
+                    input_file)
+
+                if convert:
+                    try:
+                        # Open the image using Bio-Formats and save as JPEG
+                        nd2_arg = "open=[%s]" % input_file
                         IJ.run("Bio-Formats (Windowless)", nd2_arg)
-                        # IJ.run("Enhance Contrast", "saturated=0.35")
                         IJ.saveAs("Jpeg", output_file)
-                        IJ.getImage().close()
-                        fiji_log("Image " + display_name + " was updated.")
+                        IJ.getImage().close()  # Close the image after saving
+                        logger.info("Image %s was updated.", display_name)
                         converted += 1
-                    else:
-                        fiji_log("Image " + display_name + " does not require updating.")
-                        pass
-    fiji_header("\nConverted " + str(converted) + " BF images, out of " + str(found) + " BF images out of " + str(count) + " nd2 images")
-    # fiji_log("\n\n")
+                    except Exception as e:
+                        logger.error("Error converting %s: %s", display_name, str(e))
+                else:
+                    logger.info("Image %s does not require updating.", display_name)
 
-    # Copy the directory to the specified paint_directory
-    dest_dir = os.path.join(paint_directory, 'Converted BF Images')
-    if not os.path.isdir(dest_dir):
-        os.mkdir(dest_dir)
-    file_list = os.listdir(bf_jpeg_dir)
+    # Log the conversion summary
+    logger.info("\nConverted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found, count)
 
-    count = 0
-    for file in file_list:
-        shutil.copy(os.path.join(bf_jpeg_dir, file), os.path.join(dest_dir, file))
-        count += 1
 
-    fiji_header("Copied " + str(found) + " BF images, to destination paint directory: " + dest_dir)
-    fiji_log("\n\n")
+    # Copy the entire 'Converted BF Images' directory to the paint directory
+    dest_dir = os.path.join(paint_directory, "Converted BF Images")
+    if os.path.exists(dest_dir):
+        # If the destination directory already exists, remove it before copying
+        shutil.rmtree(dest_dir)
+
+    try:
+        shutil.copytree(bf_jpeg_dir, dest_dir)
+        logger.info("Copied the entire 'Converted BF Images' directory to %s", dest_dir)
+    except Exception as e:
+        logger.error("Error copying the directory %s to %s: %s", bf_jpeg_dir, dest_dir, str(e))
+
 
 
 if __name__ == "__main__":
-    # image_source_directory = ask_user_for_image_directory("Please enter the directory containing the nd2 BF files", 'Images')
-
+    # Ask user for Paint directory
     paint_directory = ask_user_for_image_directory("Specify the Paint directory", 'Paint')
-    if len(paint_directory) == 0:
-        fiji_log("\nUser aborted the batch processing.")
-        exit(0)
+    if not paint_directory:
+        logger.info("User aborted the batch processing.")
+        sys.exit(0)
 
-    # Get the directory where the images are located
+    # Ask user for the source directory of images
     images_source_directory = ask_user_for_image_directory("Specify the Image Source directory", 'Images')
-    if len(images_source_directory) == 0:
-        fiji_log("\nUser aborted the batch processing.")
-        exit(0)
+    if not images_source_directory:
+        logging.info("User aborted the batch processing.")
+        sys.exit(0)
 
+    # Run the conversion with user-specified directories
     convert_BF_images(images_source_directory, paint_directory, force=False)
