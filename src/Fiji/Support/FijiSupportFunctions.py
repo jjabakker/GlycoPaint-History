@@ -14,61 +14,6 @@ from CommonSupportFunctions import get_default_directories
 from CommonSupportFunctions import save_default_directories
 
 
-def fiji_log(message, reset=False):
-
-    """
-    Write a message to the Fiji Logger, to the console and to the log file.
-    The file is emptied by setting Reset to True
-    :param message:
-    :param reset:
-    :return:
-    """
-
-    # Write to the Fiji logger
-    model = Model()
-    model.setLogger(Logger.IJ_LOGGER)
-    model.getLogger().log(message)
-
-    # Print to the debug screen
-    print(message)
-
-    # Write to the log file
-    log_file = os.path.expanduser('~') + os.sep + "paint_log.txt"
-
-    if reset:
-        try:
-            file = open(log_file, 'w')
-        except IOError:
-            print("Can't write to the Paint log file")
-            return
-    else:
-        try:
-            file = open(log_file, 'a')
-        except IOError:
-            try:
-                file = open(log_file, 'w')
-            except IOError:
-                print("Can't write to the Paint log file")
-                return
-
-    file.write(message)
-    file.write("\n")
-    file.close()
-
-
-def fiji_header(message):
-
-    """
-    Writes a very visible message to the Fiji logger, the console and tye log file
-    :param message:
-    :return:
-    """
-    message_len = len(message)
-    fiji_log("\n\n")
-    fiji_log("-" * message_len)
-    fiji_log(message)
-    fiji_log("-" * message_len)
-
 
 def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
 

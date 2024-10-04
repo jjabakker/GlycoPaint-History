@@ -11,18 +11,21 @@ import sys
 
 import fiji.plugin.trackmate.features.FeatureFilter as FeatureFilter
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer as HyperStackDisplayer
-import java.lang
-from fiji.plugin.trackmate import Logger
-from fiji.plugin.trackmate import Model
-from fiji.plugin.trackmate import SelectionModel
-from fiji.plugin.trackmate import Settings
-from fiji.plugin.trackmate import TrackMate
+
+from fiji.plugin.trackmate import (
+    Logger,
+    Model,
+    SelectionModel,
+    Settings,
+    TrackMate)
+
 from fiji.plugin.trackmate.action import CaptureOverlayAction
 from fiji.plugin.trackmate.detection import LogDetectorFactory
 from fiji.plugin.trackmate.gui.displaysettings import DisplaySettingsIO
 from fiji.plugin.trackmate.gui.displaysettings.DisplaySettings import TrackMateObject
 from fiji.plugin.trackmate.tracking.jaqaman import SparseLAPTrackerFactory
 from fiji.plugin.trackmate.util import LogRecorder
+
 from ij import WindowManager
 from ij.io import FileSaver
 from java.lang.System import getProperty
@@ -30,9 +33,8 @@ from java.lang.System import getProperty
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
 
-from FijiSupportFunctions import fiji_log
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
-
+from LoggerConfigFiji import logger, change_file_handler
 
 def paint_trackmate(threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
@@ -105,12 +107,12 @@ def paint_trackmate(threshold, tracks_filename, image_filename):
     # Process
     ok = trackmate.checkInput()
     if not ok:
-        fiji_log('Routine paint_trackmate - checkInput failed')
+        logger.error('Routine paint_trackmate - checkInput failed')
         return -1, -1, -1
 
     ok = trackmate.process()
     if not ok:
-        fiji_log('Routine paint_trackmate - process failed')
+        logger.error('Routine paint_trackmate - process failed')
         return -1, -1, -1
 
     # ----------------
