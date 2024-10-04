@@ -1,5 +1,3 @@
-
-
 import csv
 import os
 import sys
@@ -8,7 +6,7 @@ import time
 from ij import IJ
 from java.lang.System import getProperty
 
-paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
+paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins",  "Paint")
 sys.path.append(paint_dir)
 
 from Trackmate import paint_trackmate
