@@ -566,3 +566,22 @@ def create_output_directories_for_graphpad(paint_directory):
         os.makedirs(os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'))
     if not os.path.exists(os.path.join(paint_directory, 'Output', 'graphpad', 'Density')):
         os.makedirs(os.path.join(paint_directory, 'Output', 'graphpad', 'Density'))
+
+
+def format_time_nicely(seconds):
+
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    hours   = int(hours)
+    minutes = int(minutes)
+    seconds = int(seconds)
+
+    parts = []
+    if hours:
+        parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
+    if minutes:
+        parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
+    if seconds:
+        parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
+
+    return ' and '.join(parts)
