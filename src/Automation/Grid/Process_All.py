@@ -9,11 +9,13 @@ from src.Automation.Grid.Generate_Squares_Traditional import process_images_in_r
 from src.Automation.Grid.Compile_Results_Files import compile_squares_file
 from src.Automation.Support.Copy_Data_From_Source import copy_data_from_source
 from src.Automation.Support.Directory_Timestamp import set_directory_timestamp
-from src.Automation.Support.Logger_Config import logger
+from src.Automation.Support.Logger_Config import logger, change_file_handler
 from src.Automation.Support.Support_Functions import format_time_nicely
 
 SOURCE_NEW_DIR     = '/Users/hans/Paint Source/New Probes'
 SOURCE_REGULAR_DIR = '/Users/hans/Paint Source/Regular Probes'
+
+change_file_handler('Process_All.log')
 
 paint_source_dirs = {
     'new':      SOURCE_NEW_DIR,
@@ -30,7 +32,7 @@ def copy_directory(src, dest):
         shutil.copytree(src, dest)
         logger.debug(f"Copied {src} to {dest}")
     except Exception as e:
-        logger.error(f"process_all_chatgtp - copy directories: Failed to copy {src} to {dest}. Error: {e}")
+        logger.error(f"process_all - copy directories: Failed to copy {src} to {dest}. Error: {e}")
 
 
 def run_single(root_dir, nr_of_squares):
@@ -64,10 +66,10 @@ def run_traditional(root_dir, nr_of_squares, min_density_ratio):
         logger.error(f"Failed to run traditional mode for {root_dir}. Error: {e}")
 
 
-def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares, min_density_ratio=None):
+def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares, nr_to_process, current_process, min_density_ratio=None):
 
     time_stamp = time.time()
-    msg = f"Processing mode: {mode} - probe {probe} - directory: {directory}"
+    msg = f"{current_process:2d} of {nr_to_process:2d} --- Processing mode: {mode} - probe {probe} - directory: {directory}"
     logger.info("")
     logger.info("")
     logger.info("-" * len(msg))
@@ -168,10 +170,17 @@ logger.info("")
 logger.info('Starting the full processing')
 logger.info("")
 
+nr_to_process = 0
+for entry in config:
+    if entry['flag']:
+        nr_to_process += 1
+
+current_process = 0
 for entry in config:
     if entry['flag']:
         root_dir = os.path.join(entry['source_dir'], entry['directory'])
         dest_dir = os.path.join(root_dest_dir, entry['directory'])
+        current_process += 1
         process_directory(
             directory=entry['directory'],
             root_dir=root_dir,
@@ -179,7 +188,9 @@ for entry in config:
             mode=entry['mode'],
             probe=entry['probe'],
             nr_of_squares=entry['nr_of_squares'],
-            min_density_ratio=entry.get('min_density_ratio')
+            nr_to_process=nr_to_process,
+            current_process=current_process,
+            min_density_ratio=entry.get('min_density_ratio')    # If the key does not exist, it returns ''
         )
 
 # Report the time it took in hours minutes seconds
@@ -189,4 +200,3 @@ format_time_nicely(run_time)
 logger.info("")
 logger.info(f'Finished the full processing in  {format_time_nicely(run_time)}')
 logger.info("")
-
