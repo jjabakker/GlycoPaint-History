@@ -11,21 +11,18 @@ import sys
 
 import fiji.plugin.trackmate.features.FeatureFilter as FeatureFilter
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer as HyperStackDisplayer
-
 from fiji.plugin.trackmate import (
     Logger,
     Model,
     SelectionModel,
     Settings,
     TrackMate)
-
 from fiji.plugin.trackmate.action import CaptureOverlayAction
 from fiji.plugin.trackmate.detection import LogDetectorFactory
 from fiji.plugin.trackmate.gui.displaysettings import DisplaySettingsIO
 from fiji.plugin.trackmate.gui.displaysettings.DisplaySettings import TrackMateObject
 from fiji.plugin.trackmate.tracking.jaqaman import SparseLAPTrackerFactory
 from fiji.plugin.trackmate.util import LogRecorder
-
 from ij import WindowManager
 from ij.io import FileSaver
 from java.lang.System import getProperty
@@ -77,7 +74,7 @@ def paint_trackmate(threshold, tracks_filename, image_filename):
     settings.addSpotFilter(filter1)
 
     # Configure tracker, first set the default, but then override parameters that we know are important
-    settings.trackerFactory  = SparseLAPTrackerFactory()
+    settings.trackerFactory = SparseLAPTrackerFactory()
     settings.trackerSettings = settings.trackerFactory.getDefaultSettings()
 
     # These are the important parameters
@@ -135,9 +132,9 @@ def paint_trackmate(threshold, tracks_filename, image_filename):
     # Save the image file with image with overlay as tiff
     # ---------------------------------------------------
 
-    image   = trackmate.getSettings().imp
-    logger  = LogRecorder(Logger.VOID_LOGGER)
-    capture = CaptureOverlayAction.capture(image, -1, 1, logger)
+    image = trackmate.getSettings().imp
+    tm_logger = LogRecorder(Logger.VOID_LOGGER)
+    capture = CaptureOverlayAction.capture(image, -1, 1, tm_logger)
     FileSaver(capture).saveAsTiff(image_filename)
 
     # The feature model, that stores edge and track features.
@@ -166,19 +163,19 @@ def paint_trackmate(threshold, tracks_filename, image_filename):
 
         for i in model.getTrackModel().trackIDs(True):
             # Fetch the track feature from the feature model.
-            label    = 'Track_' + str(i)
+            label = 'Track_' + str(i)
             duration = round(feature_model.getTrackFeature(i, 'TRACK_DURATION'), 3)
-            spots    = feature_model.getTrackFeature(i,       'NUMBER_SPOTS')
-            x        = round(feature_model.getTrackFeature(i, 'TRACK_X_LOCATION'), 2)
-            y        = round(feature_model.getTrackFeature(i, 'TRACK_Y_LOCATION'), 2)
+            spots = feature_model.getTrackFeature(i, 'NUMBER_SPOTS')
+            x = round(feature_model.getTrackFeature(i, 'TRACK_X_LOCATION'), 2)
+            y = round(feature_model.getTrackFeature(i, 'TRACK_Y_LOCATION'), 2)
 
             # Write the record for each track
             csvwriter.writerow([label, spots, duration, x, y])
 
     model.getLogger().log('Found ' + str(model.getTrackModel().nTracks(True)) + ' tracks.')
 
-    nr_spots        = model.getSpots().getNSpots(True)       # Get visible spots only
-    all_tracks      = model.getTrackModel().nTracks(False)   # Get all tracks
-    filtered_tracks = model.getTrackModel().nTracks(True)    # Get filtered tracks
+    nr_spots = model.getSpots().getNSpots(True)  # Get visible spots only
+    all_tracks = model.getTrackModel().nTracks(False)  # Get all tracks
+    filtered_tracks = model.getTrackModel().nTracks(True)  # Get filtered tracks
 
     return nr_spots, all_tracks, filtered_tracks
