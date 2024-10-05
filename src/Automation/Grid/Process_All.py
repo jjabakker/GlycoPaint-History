@@ -12,9 +12,6 @@ from src.Automation.Support.Directory_Timestamp import set_directory_timestamp
 from src.Automation.Support.Logger_Config import logger
 from src.Automation.Support.Support_Functions import format_time_nicely
 
-
-
-
 SOURCE_NEW_DIR     = '/Users/hans/Paint Source/New Probes'
 SOURCE_REGULAR_DIR = '/Users/hans/Paint Source/Regular Probes'
 
@@ -70,8 +67,13 @@ def run_traditional(root_dir, nr_of_squares, min_density_ratio):
 def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares, min_density_ratio=None):
 
     time_stamp = time.time()
+    msg = f"Processing mode: {mode} - probe {probe} - directory: {directory}"
     logger.info("")
+    logger.info("")
+    logger.info("-" * len(msg))
     logger.info(f"Processing mode: {mode} - probe {probe} - directory: {directory}")
+    logger.info("-" * len(msg))
+    logger.info("")
     copy_data_from_source(paint_source_dirs[probe], root_dir)
 
     if not os.path.exists(dest_dir):
@@ -85,6 +87,7 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
 
     compile_squares_file(root_dir, verbose=True)
     copy_directory(os.path.join(root_dir, 'Output'), os.path.join(dest_dir, 'Output'))
+    logger.info(f"Copied output to {os.path.join(dest_dir, 'Output')}")
     set_directory_timestamp(root_dir)
     set_directory_timestamp(dest_dir)
     logger.info(f"Processed mode: {mode} - probe {probe} - directory: {directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
@@ -107,7 +110,7 @@ config = [
      'source_dir': '/Users/hans/Paint Data/New Probes/Single/',
      'nr_of_squares': 30},
 
-    {'flag': False,
+    {'flag': True,
      'mode': 'single',
      'probe': 'new',
      'directory': 'Paint New Probes - Single - 30 Squares - 5 DR',
