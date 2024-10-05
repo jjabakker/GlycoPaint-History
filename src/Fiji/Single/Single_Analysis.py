@@ -25,7 +25,6 @@ from fiji.util.gui import GenericDialogPlus
 from LoggerConfigFiji import logger
 
 
-
 def process_full_image(threshold, image_directory, image_name, cell_type, probe, probe_type, concentration_probe):
     """
     This function runs trackmate on the full image, i.e. without any ROI identified

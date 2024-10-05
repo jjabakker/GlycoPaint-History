@@ -1,13 +1,13 @@
 import os
-from tkinter import messagebox
-from tkinter import *
-from tkinter import ttk, filedialog, Toplevel
-import pandas as pd
 import re
+from tkinter import *
+from tkinter import messagebox
+from tkinter import ttk, filedialog
+
+import pandas as pd
 
 
 def prepare_batch_file(image_source_directory, paint_directory):
-
     """
     This function creates a batch file in the image directory
     :return:
@@ -59,19 +59,19 @@ def prepare_batch_file(image_source_directory, paint_directory):
 
         # Check the filename format of both the film and the BF
         regexp = re.compile(r'(?P<exp_date>\d{6})-Exp-(?P<exp_nr>\d{1,2})-[AB][1234]-(?P<exp_seq_nr>\d{1,2})(-BF)?')
-        match  = regexp.match(image_name)
+        match = regexp.match(image_name)
         if match is None:
             format_problem = True
             print(f"Image name: {image_name} is not in the required format")
-            exp_nr     = ""
+            exp_nr = ""
             exp_seq_nr = ""
-            exp_date   = ""
-            exp_name   = ""
+            exp_date = ""
+            exp_name = ""
         else:
-            exp_nr     = match.group('exp_nr')
+            exp_nr = match.group('exp_nr')
             exp_seq_nr = match.group('exp_seq_nr')
-            exp_date   = match.group('exp_date')
-            exp_name   = f'{exp_date}-Exp-{exp_nr}'
+            exp_date = match.group('exp_date')
+            exp_name = f'{exp_date}-Exp-{exp_nr}'
 
         # For further processing skip the BF file
         if image_name.find("BF") != -1:
@@ -83,26 +83,26 @@ def prepare_batch_file(image_source_directory, paint_directory):
         image_size = os.path.getsize(os.path.join(image_source_directory, image_name))
 
         image_name = image_name.replace(".nd2", "")
-        row = {'Batch Sequence Nr' : seq_nr,
-               'Experiment Date'   : exp_date,
-               'Experiment Name'   : exp_name,
-               'Experiment Nr'     : exp_nr,
-               'Experiment Seq Nr' : exp_seq_nr,
-               'Image Name'        : image_name,
-               'Probe'             : '',
-               'Probe Type'        : '',
-               'Cell Type'         : '',
-               'Adjuvant'          : '',
-               'Concentration'     : '',
-               'Threshold'         : '',
-               'Min Density Ratio' : '10',
-               'Process'           : 'Yes',
-               'Ext Image Name'    : '-',
-               'Nr Spots'          : 0,
-               'Nr Tracks'         : 0,
-               'Image Size'        : image_size,
-               'Run Time'          : 0,
-               'Time Stamp'        : '-'
+        row = {'Batch Sequence Nr': seq_nr,
+               'Experiment Date': exp_date,
+               'Experiment Name': exp_name,
+               'Experiment Nr': exp_nr,
+               'Experiment Seq Nr': exp_seq_nr,
+               'Image Name': image_name,
+               'Probe': '',
+               'Probe Type': '',
+               'Cell Type': '',
+               'Adjuvant': '',
+               'Concentration': '',
+               'Threshold': '',
+               'Min Density Ratio': '10',
+               'Process': 'Yes',
+               'Ext Image Name': '-',
+               'Nr Spots': 0,
+               'Nr Tracks': 0,
+               'Image Size': image_size,
+               'Run Time': 0,
+               'Time Stamp': '-'
                }
         batch_df = pd.concat([batch_df, pd.DataFrame.from_records([row])])
         seq_nr += 1
@@ -114,12 +114,14 @@ def prepare_batch_file(image_source_directory, paint_directory):
     else:
         batch_df.to_csv(os.path.join(paint_directory, "Batch.csv"), index=False)
         if format_problem:
-            print(f"\nThere were filenames not in the expected format (\\d{6})-Exp-\\d{1,2}-[AB][1234]-(\\d{1,2})")
-            print("Please supply values for Batche Sequence Nr, Experiment Date, Experiment Nr, Experiment Seq Nr yourself.")
+            print(f"\nThere were filenames not in the expected format (\\d{6})-Exp-\\d{1, 2}-[AB][1234]-(\\d{1, 2})")
+            print(
+                "Please supply values for Batche Sequence Nr, Experiment Date, Experiment Nr, Experiment Seq Nr yourself.")
         print(f"\nProcess finished normally with {seq_nr - 1} images processed.")
 
     print("\n\n")
-    print("Don't forget to edit the batch file to specify correct values for Probe, Probe type, Cell Type, Adjuvant and concentration.")
+    print(
+        "Don't forget to edit the batch file to specify correct values for Probe, Probe type, Cell Type, Adjuvant and concentration.")
     print("Then choose the threshold values and select which images needs processing.")
     print("\n\n")
 
@@ -132,33 +134,33 @@ class BatchDialog:
         self.image_directory = ""
         self.paint_directory = ""
 
-        content                       = ttk.Frame(root)
-        frame_buttons                 = ttk.Frame(content, borderwidth=5, relief='ridge')
-        frame_directory               = ttk.Frame(content, borderwidth=5, relief='ridge')
+        content = ttk.Frame(root)
+        frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
+        frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
         #  Do the lay-out
-        content.grid          (column=0, row=0)
-        frame_directory.grid  (column=0, row=1, padx=5, pady=5)
-        frame_buttons.grid    (column=0, row=2, padx=5, pady=5)
+        content.grid(column=0, row=0)
+        frame_directory.grid(column=0, row=1, padx=5, pady=5)
+        frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
         # Fill the button frame
         btn_process = ttk.Button(frame_buttons, text='Process', command=self.process)
-        btn_exit    = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
-        btn_process.grid (column=0, row=1)
-        btn_exit.grid    (column=0, row=2)
+        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
+        btn_process.grid(column=0, row=1)
+        btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
-        btn_image_dir       = ttk.Button(frame_directory, text='Image Directory', width=15, command=self.change_image_dir)
-        self.lbl_image_dir  = ttk.Label(frame_directory, text=self.image_directory, width=50)
+        btn_image_dir = ttk.Button(frame_directory, text='Image Directory', width=15, command=self.change_image_dir)
+        self.lbl_image_dir = ttk.Label(frame_directory, text=self.image_directory, width=50)
 
         btn_paint_dir = ttk.Button(frame_directory, text='Paint Directory', width=15, command=self.change_paint_dir)
         self.lbl_paint_dir = ttk.Label(frame_directory, text=self.paint_directory, width=50)
 
-        btn_image_dir.grid      (column=0, row=0, padx=10, pady=5)
-        self.lbl_image_dir.grid (column=1, row=0, padx=20, pady=5)
+        btn_image_dir.grid(column=0, row=0, padx=10, pady=5)
+        self.lbl_image_dir.grid(column=1, row=0, padx=20, pady=5)
 
-        btn_paint_dir.grid      (column=0, row=1, padx=10, pady=5)
-        self.lbl_paint_dir.grid (column=1, row=1, padx=20, pady=5)
+        btn_paint_dir.grid(column=0, row=1, padx=10, pady=5)
+        self.lbl_paint_dir.grid(column=1, row=1, padx=20, pady=5)
 
     def change_image_dir(self):
         self.image_directory = filedialog.askdirectory(initialdir=self.image_directory)

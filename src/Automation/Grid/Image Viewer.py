@@ -75,11 +75,6 @@ def get_images(self, type_of_image):
     squares files, but for some reason the individual files are used here (maybe a bit safer in terms of
     corruption risk),
 
-    :param paint_directory:
-    :param df_batch:
-    :param mode:
-    :param type_of_image:
-    :return:
     """
 
     paint_directory = self.paint_directory
@@ -179,21 +174,21 @@ def get_images(self, type_of_image):
         right_valid, right_img = get_corresponding_bf(bf_dir, image_name)
 
         record = {
-            "Left Image Name"  : df_batch.iloc[index]['Ext Image Name'],
-            "Left Image"       : left_img,
-            "Cell Type"        : df_batch.iloc[index]['Cell Type'],
-            "Adjuvant"         : df_batch.iloc[index]['Adjuvant'],
-            "Probe"            : df_batch.iloc[index]['Probe'],
-            "Probe Type"       : df_batch.iloc[index]['Probe Type'],
-            "Nr Spots"         : int(df_batch.iloc[index]['Nr Spots']),
-            "Square Nrs"       : square_nrs,
-            "Squares File"     : self.squares_file_name,
-            "Left Valid"       : valid,
-            "Right Image Name" : image_name,
-            "Right Image"      : right_img,
-            "Right Valid"      : right_valid,
-            "Threshold"        : df_batch.iloc[index]['Threshold'],
-            "Tau"              : tau
+            "Left Image Name": df_batch.iloc[index]['Ext Image Name'],
+            "Left Image": left_img,
+            "Cell Type": df_batch.iloc[index]['Cell Type'],
+            "Adjuvant": df_batch.iloc[index]['Adjuvant'],
+            "Probe": df_batch.iloc[index]['Probe'],
+            "Probe Type": df_batch.iloc[index]['Probe Type'],
+            "Nr Spots": int(df_batch.iloc[index]['Nr Spots']),
+            "Square Nrs": square_nrs,
+            "Squares File": self.squares_file_name,
+            "Left Valid": valid,
+            "Right Image Name": image_name,
+            "Right Image": right_img,
+            "Right Valid": right_valid,
+            "Threshold": df_batch.iloc[index]['Threshold'],
+            "Tau": tau
         }
 
         list_images.append(record)
@@ -1193,7 +1188,7 @@ class ImageViewer:
         self.lbl_image_bf_name.set(str(self.img_no + 1) + ":  " + self.list_images[self.img_no]['Right Image Name'])
 
         # Update information labels
-        if self.list_images[self.img_no]['Adjuvant'] is  None:
+        if self.list_images[self.img_no]['Adjuvant'] is None:
             adj_label = 'No'
         else:
             adj_label = self.list_images[self.img_no]['Adjuvant']

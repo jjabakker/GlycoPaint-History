@@ -614,7 +614,7 @@ def identify_invalid_squares(df_squares,
     original_count = len(df_squares)
     if original_count != 0:
         df_squares.loc[df_squares['Tau'] == -1, 'Valid Tau'] = False
-        updated_count = len(df_squares[df_squares['Valid Tau'] == True])
+        updated_count = len(df_squares[df_squares['Valid Tau']])
         if verbose:
             logger.debug(f"Started with {original_count} squares")
             logger.debug(
@@ -630,7 +630,7 @@ def identify_invalid_squares(df_squares,
     original_count = updated_count
     if original_count != 0:
         df_squares.loc[df_squares['Tau'] == -2, 'Valid Tau'] = False
-        updated_count = len(df_squares[df_squares['Valid Tau'] == True])
+        updated_count = len(df_squares[df_squares['Valid Tau']])
         if verbose:
             logger.debug(
                 f"Eliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
@@ -645,7 +645,7 @@ def identify_invalid_squares(df_squares,
     original_count = updated_count
     if original_count != 0:
         df_squares.loc[df_squares['Tau'] == -3, 'Valid Tau'] = False
-        updated_count = len(df_squares[df_squares['Valid Tau'] == True])
+        updated_count = len(df_squares[df_squares['Valid Tau']])
         if verbose:
             logger.debug(
                 f"Eliminated {original_count - updated_count} squares for which the R2 was lower than {min_r_squared}: left {updated_count}")
@@ -808,7 +808,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
                 return None
 
             nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
-            nr_visible_squares = len(df_squares[df_squares['Visible'] == True])
+            nr_visible_squares = len(df_squares[df_squares['Visible']])
             nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
             df_batch.loc[index, 'Nr Total Squares'] = nr_total_squares
             df_batch.loc[index, 'Nr Defined Squares'] = nr_defined_squares
