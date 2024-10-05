@@ -24,7 +24,7 @@ def ReadTrackMateData(csvfilename, istrack):
     except FileNotFoundError:
         logger.error(f'Could not open {csvfilename}')
         sys.exit()
-    except:
+    except (pd.errors.ParserError, UnicodeDecodeError):
         logger.error(f'Problem parsing {csvfilename}')
         sys.exit()
 

@@ -118,7 +118,7 @@ def compile_squares_file(root_dir, verbose):
         # It can happen that image size is not filled in, handle that event
         try:
             image_size = int(image_size)
-        except:
+        except (ValueError, TypeError):
             image_size = 0
             logger.error(f"Invalid image size in {image}")
 
