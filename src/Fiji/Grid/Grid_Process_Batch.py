@@ -22,9 +22,8 @@ change_file_handler('Grid Process Batch.log')
 
 
 def grid_analysis_batch(paint_directory, image_source_directory):
-    # -----------------------------------------------------------------------------
+
     # Open the batch file to determine the columns (which should be in the paint directory)
-    # -----------------------------------------------------------------------------
 
     batch_file_name = os.path.join(paint_directory, "batch.csv")
     old_batch_file_name = os.path.join(paint_directory, "previous_batch.csv")
@@ -71,7 +70,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
     count = 0
     nr_to_process = 0
     for row in csv_reader:
-        if 'Y' in row['Process'] or 'y' in row['Process']:
+        if 'y' in row['Process'].lower():
             nr_to_process += 1
         count += 1
 

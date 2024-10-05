@@ -1,10 +1,10 @@
 import os
 import sys
 import time
-import java.lang
 
-from javax.swing import JFileChooser
+import java.lang
 from java.lang.System import getProperty
+from javax.swing import JFileChooser
 
 paint_code__dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_code__dir)
@@ -13,7 +13,6 @@ from CommonSupportFunctions import get_default_directories, save_default_directo
 
 
 def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
-
     """
     Ask the user to specify the user image directory. Present the last used value as default.
     Save the user choice.
@@ -47,7 +46,6 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
 
 
 def ask_user_for_file(prompt='Select File'):
-
     """
     Ask the user to specify the user image directory. Present the last used value as default.
     Save the user choice.
@@ -72,7 +70,6 @@ def ask_user_for_file(prompt='Select File'):
 
 
 def fiji_get_file_open_write_attribute():
-
     """
     Returns an open write attribute that works both on macOS and Windows
     :return: A string containing the open write attribute
@@ -88,7 +85,6 @@ def fiji_get_file_open_write_attribute():
 
 
 def fiji_get_file_open_append_attribute():
-
     """
     Returns an open append  attribute that works both on macOS and Windows
     :return: A string containing the open append attribute
@@ -131,7 +127,7 @@ def set_directory_timestamp(dir_path, timestamp=None):
     """
     # Check if the provided path is a valid directory
     if not os.path.isdir(dir_path):
-        print.error("Error: '{0}' is not a valid directory.".format(dir_path))
+        logger.error("Error: '{0}' is not a valid directory.".format(dir_path))
         return
 
     # If no timestamp is provided, use the current time
