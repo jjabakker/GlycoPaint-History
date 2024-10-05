@@ -2,18 +2,8 @@ import csv
 import os
 import sys
 import time
-import logging
 from ij import IJ
 from java.lang.System import getProperty
-
-# # Configure logging
-# logger = logging.getLogger('batch_logger')
-# logger.setLevel(logging.DEBUG)
-# console_handler = logging.StreamHandler()
-# console_handler.setLevel(logging.DEBUG)
-# formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-# console_handler.setFormatter(formatter)
-# logger.addHandler(console_handler)
 
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
@@ -23,7 +13,10 @@ from CommonSupportFunctions import create_directories
 from FijiSupportFunctions import (
     ask_user_for_file,
     fiji_get_file_open_write_attribute,
-    fiji_get_file_open_append_attribute)
+    fiji_get_file_open_append_attribute,
+    format_time_nicely,
+    set_directory_timestamp)
+
 from LoggerConfigFiji import logger, change_file_handler
 
 change_file_handler('Grid Process Batch Batch.log')
@@ -63,8 +56,9 @@ def grid_analysis_batch(paint_directory, image_source_directory):
         logger.info("No images selected for processing")
         return -1
 
-    logger.info("Number of images to be processed: {} out of a total of {} images.".format(nr_to_process, csv_reader.line_num-1))
+    # logger.info("Number of images to be processed: {} out of a total of {} images.".format(nr_to_process, csv_reader.line_num-1))
 
+    main_time = time.time()
     message = "Processing {} images in directory {}".format(nr_to_process, image_source_directory)
     logger.info("\n\n")
     logger.info("-" * len(message))
@@ -143,8 +137,8 @@ def grid_analysis_batch(paint_directory, image_source_directory):
             sys.exit()
 
     logger.info("Number of images processed: {}".format(nr_images_processed))
-    logger.warning("Number of images not found: {}".format(nr_images_not_found))
-    logger.warning("Number of images failed: {}".format(nr_images_failed))
+    logger.info("Number of images not found: {}".format(nr_images_not_found))
+    logger.info("Number of images failed: {}".format(nr_images_failed))
 
     if os.path.isfile(old_batch_file_name):
         os.remove(old_batch_file_name)
@@ -162,6 +156,8 @@ def grid_analysis_batch(paint_directory, image_source_directory):
         logger.error("Could not rename results file: {}".format(temp_batch_file_name))
         return -1
 
+    run_time = time.time() - main_time
+    logger.info("Processed {} images in {}".format(nr_images_processed, format_time_nicely(run_time), ))
     return 0
 
 
@@ -186,4 +182,4 @@ if __name__ == "__main__":
             grid_analysis_batch(os.path.join(row[0], row[2]), os.path.join(row[1], row[2]))
 
     run_time = round(time.time() - time_stamp, 1)
-    logger.info("Processing completed in {} seconds".format(run_time))
+    logger.info("Processing completed in {} seconds".format_time_nicely(run_time))

@@ -149,11 +149,10 @@ class GridDialog:
                                                          self.max_square_coverage.get(),
                                                          verbose=False)
             run_time = time.time() - time_stamp
+            logger.info(f"Total processing time is {format_time_nicely(run_time)}")
         else:
             run_time = 0
-            logger.info('Not an paint directory and not a root directory')
-
-        logger.debug(f"\n\nTotal processing time is {run_time:.1f} seconds")
+            logger.error('Not a paint directory and not a root directory')
 
         # And then exit
         self.exit_pressed()
@@ -664,7 +663,7 @@ def process_images_in_paint_directory_single_mode(paint_directory,
             processed += 1
 
         else:
-            logger.debug(f"Squares file already up to date: {squares_file_name}")
+            logger.info(f"Squares file already up to date: {squares_file_name}")
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv"))
     run_time = round(time.time() - time_stamp, 1)
