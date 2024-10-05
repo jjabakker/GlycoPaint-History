@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import OptimizeWarning
 from scipy.optimize import curve_fit
+from Logger_Config import logger
 
 
 def ReadTrackMateData(csvfilename, istrack):
@@ -21,10 +22,10 @@ def ReadTrackMateData(csvfilename, istrack):
     try:
         tmd = pd.read_csv(csvfilename, header=0, skiprows=[1, 2, 3])
     except FileNotFoundError:
-        print(f'Could not open {csvfilename}')
+        logger.error(f'Could not open {csvfilename}')
         sys.exit()
     except:
-        print(f'Problem parsing {csvfilename}')
+        logger.error(f'Problem parsing {csvfilename}')
         sys.exit()
 
     # Drop unused columns for 'tracks' data or 'plots' data
@@ -36,7 +37,7 @@ def ReadTrackMateData(csvfilename, istrack):
             tmd.drop(['POSITION_Z', 'MANUAL_SPOT_COLOR'], axis=1, inplace=True)
         return tmd
     except KeyError:
-        print(f'Unexpected column names in {csvfilename}')
+        logger.error(f'Unexpected column names in {csvfilename}')
         sys.exit()
 
 
@@ -51,7 +52,12 @@ def ReadTracksData(csvfilename):
 
 def monoExp(x, m, t, b):
     # Define the exponential decay function that will be used for fitting
-    return m * np.exp(-t * x) + b
+    try:
+        calc = m * np.exp(-t * x) + b
+    except OverflowError:
+        logger.error(f"Overflow error in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
+        calc = 0
+    return calc
 
 
 def CompileDuration(tracks):
@@ -99,15 +105,15 @@ def CurveFitAndPlot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histo
         m, t, b = params
     except ValueError:
         if verbose:
-            print('CurveFitAndPlot: ydata or xdata contain NaNs, or incompatible options are used')
+            logger.error('CurveFitAndPlot: ydata or xdata contain NaNs, or incompatible options are used')
         return -2, 0
     except RuntimeError:
         if verbose:
-            print('CurveFitAndPlot: The least-squares optimisation fails')
+            logger.warning('CurveFitAndPlot: The least-squares optimisation fails')
         return -2, 0
     except OptimizeWarning:
         if verbose:
-            print('CurveFitAndPlot: Covariance of the parameters can not be estimated')
+            logger.warning('CurveFitAndPlot: Covariance of the parameters can not be estimated')
         return -2, 0
 
     tauSec = (1 / t)
@@ -121,6 +127,7 @@ def CurveFitAndPlot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histo
         try:
             rSquared = 1 - np.sum(squaredDiffs) / np.sum(squaredDiffsFromMean)
         except (OptimizeWarning, RuntimeError, RuntimeWarning):
+            logger.warning('CurveFitAndPlot: OptimizeWarning, RuntimeError, RuntimeWarning')
             rSquared = 0
 
     fig, ax = plt.subplots()
@@ -149,7 +156,7 @@ def CurveFitAndPlot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histo
     if file != "":
         fig.savefig(file)
         if verbose:
-            print("\nWriting plot file: " + file)
+            logger.debug("\nWriting plot file: " + file)
 
     # Inspect the parameters
     if verbose:

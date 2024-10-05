@@ -827,7 +827,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv") )
     run_time = round(time.time() - time_stamp, 1)
-    logger.info(f"Processed  {nr_files:2d} images in {paint_directory} in {format_time_nicely(run_time)}')")
+    logger.info(f"Processed  {nr_files:2d} images in {paint_directory} in {format_time_nicely(run_time)}")
 
 if __name__ == "__main__":
     root = Tk()

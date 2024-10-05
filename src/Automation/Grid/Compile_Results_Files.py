@@ -15,7 +15,8 @@ from src.Automation.Support.Support_Functions import (
     get_default_directories,
     save_default_directories,
     read_batch_from_file,
-    read_squares_from_file)
+    read_squares_from_file,
+    format_time_nicely)
 
 from src.Automation.Support.Logger_Config import logger
 
@@ -114,6 +115,13 @@ def compile_squares_file(root_dir, verbose):
         seq_nr            = df_all_images.loc[image]['Batch Sequence Nr']
         neighbour_setting = df_all_images.loc[image]['Neighbour Setting']
 
+        # It can happen that image size is not filled in, handle that event
+        try:
+            image_size = int(image_size)
+        except:
+            image_size = 0
+            logger.error(f"Invalid image size in {image}")
+
         # Add the data that was obtained from df_all_images
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe']             = probe
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe Type']        = probe_type
@@ -121,7 +129,6 @@ def compile_squares_file(root_dir, verbose):
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Cell Type']         = cell_type
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Concentration']     = concentration
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Threshold']         = threshold
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Image Size']        = image_size
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Experiment Nr']     = int(experiment_nr)
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Batch Sequence Nr'] = int(seq_nr)
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Neighbour Setting'] = neighbour_setting
@@ -141,14 +148,10 @@ def compile_squares_file(root_dir, verbose):
     # Only keep Visible squares
     # df_all_squares = df_all_squares[df_all_squares['Visible'] == True]
 
-    # --------------------------------------------------------------
-    # Add probe valency and structure information when thesis is set
-    # --------------------------------------------------------------
 
-    thesis = True
-    if thesis:
-        df_all_squares['Valency']   = df_all_squares.apply(split_probe_valency, axis=1)
-        df_all_squares['Structure'] = df_all_squares.apply(split_probe_structure, axis=1)
+    # Add probe valency and structure information for rgular probes
+    df_all_squares['Valency']   = df_all_squares.apply(split_probe_valency, axis=1)
+    df_all_squares['Structure'] = df_all_squares.apply(split_probe_structure, axis=1)
 
     # ------------------------------------
     # Save the files
@@ -158,15 +161,16 @@ def compile_squares_file(root_dir, verbose):
     if not os.path.isdir(os.path.join(root_dir, "Output")):
         os.mkdir(os.path.join(root_dir, "Output"))
 
-    # Save the files, use csv for the really big file size
+    # Save the files,
     df_all_squares.to_csv(os.path.join(root_dir, 'Output', 'All Squares.csv'), index=False)
     df_all_images.to_csv(os.path.join(root_dir, 'Output', 'All Images.csv'), index=False)
     df_image_summary.to_csv(os.path.join(root_dir, "Output", "Image Summary.csv"), index=False)
 
+    # Save a copy for easy Imager Viewer access
     df_all_images.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
 
     run_time = time.time() - time_stamp
-    logger.info (f"Compiled output for {root_dir} in {run_time:.1f} seconds")
+    logger.info (f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
 
 
 def split_probe_valency (row):
