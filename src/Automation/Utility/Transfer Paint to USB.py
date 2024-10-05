@@ -1,9 +1,10 @@
+import logging
 import os
 import platform
 import shutil
-import logging
-import colorlog
 from tkinter.filedialog import askdirectory
+
+import colorlog
 
 # Set up color logging with black text
 log_format = "%(log_color)s%(asctime)s - %(levelname)s - %(message)s"
@@ -62,10 +63,10 @@ def copy_files():
         return
 
     # Define source directories
-    source_root             = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Code/'
-    fiji_source_root        = os.path.join(source_root, 'Paint-v8', 'src', 'Fiji')
-    common_source_root      = os.path.join(source_root, 'Paint-v8', 'src', 'Common')
-    automation_source_root  = os.path.join(source_root, 'Paint-v8', 'src', 'Automation')
+    source_root = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Code/'
+    fiji_source_root = os.path.join(source_root, 'Paint-v8', 'src', 'Fiji')
+    common_source_root = os.path.join(source_root, 'Paint-v8', 'src', 'Common')
+    automation_source_root = os.path.join(source_root, 'Paint-v8', 'src', 'Automation')
 
     # Copy code directories
     copy_code_directory(fiji_source_root, destination_dir)

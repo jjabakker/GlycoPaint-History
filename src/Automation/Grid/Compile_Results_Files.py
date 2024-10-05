@@ -6,11 +6,12 @@ It will create an Output directory with three files: all squares, all batches, a
 import os
 import re
 import time
-import pandas as pd
-
 from tkinter import *
 from tkinter import ttk, filedialog
 
+import pandas as pd
+
+from src.Automation.Support.Logger_Config import logger
 from src.Automation.Support.Support_Functions import (
     get_default_directories,
     save_default_directories,
@@ -18,25 +19,22 @@ from src.Automation.Support.Support_Functions import (
     read_squares_from_file,
     format_time_nicely)
 
-from src.Automation.Support.Logger_Config import logger
-
 # -------------------------------------------------------------------------------------
 # Define the default parameters
 # -------------------------------------------------------------------------------------
 
-max_squares_with_tau  = 20
-max_variability       = 10
-min_density_ratio     = 2
+max_squares_with_tau = 20
+max_variability = 10
+min_density_ratio = 2
 
 
 def compile_squares_file(root_dir, verbose):
-
     logger.info(f"Compiling output for {root_dir}")
     time_stamp = time.time()
 
     # Create the dataframes to be filled
-    df_all_images    = pd.DataFrame()
-    df_all_squares   = pd.DataFrame()
+    df_all_images = pd.DataFrame()
+    df_all_squares = pd.DataFrame()
     df_image_summary = pd.DataFrame()
 
     paint_dirs = os.listdir(root_dir)
@@ -47,9 +45,9 @@ def compile_squares_file(root_dir, verbose):
 
         if not os.path.isdir(paint_dir_path):  # If it is not a directory, skip it
             continue
-        if 'Output' in paint_dir:              # If it is the output directory, skip it
+        if 'Output' in paint_dir:  # If it is the output directory, skip it
             continue
-        if paint_dir.startswith('-'):          # If the image directory name starts with '-' it was marked to be ignored
+        if paint_dir.startswith('-'):  # If the image directory name starts with '-' it was marked to be ignored
             continue
 
         if verbose:
@@ -66,14 +64,16 @@ def compile_squares_file(root_dir, verbose):
 
             ext_image_name = row['Ext Image Name']
 
-            if row['Exclude']:     # Skip over images that are Excluded
+            if row['Exclude']:  # Skip over images that are Excluded
                 continue
 
-            squares_file_name = os.path.join(root_dir, paint_dir, ext_image_name, 'grid', ext_image_name + '-squares.csv')
+            squares_file_name = os.path.join(root_dir, paint_dir, ext_image_name, 'grid',
+                                             ext_image_name + '-squares.csv')
 
             df_squares = read_squares_from_file(squares_file_name)
             if df_squares is None:
-                logger.error(f'Compile Squares: No squares file found for image {ext_image_name} in the directory {paint_dir}')
+                logger.error(
+                    f'Compile Squares: No squares file found for image {ext_image_name} in the directory {paint_dir}')
                 continue
             if len(df_squares) == 0:  # Ignore it when it is empty
                 continue
@@ -81,15 +81,15 @@ def compile_squares_file(root_dir, verbose):
             # df_all_squares = pd.concat([df_all_squares, df_squares[df_squares['Visible']]])
             df_all_squares = pd.concat([df_all_squares, df_squares])
 
-        nr_cell_types    = len(df_batch['Cell Type'].unique().tolist())
-        nr_probe_types   = len(df_batch['Probe Type'].unique().tolist())
-        nr_probes        = len(df_batch['Probe'].unique().tolist())
-        nr_adjuvants     = len(df_batch['Adjuvant'].unique().tolist())
-        row              = [paint_dir, nr_cell_types, nr_probe_types, nr_adjuvants, nr_probes]
+        nr_cell_types = len(df_batch['Cell Type'].unique().tolist())
+        nr_probe_types = len(df_batch['Probe Type'].unique().tolist())
+        nr_probes = len(df_batch['Probe'].unique().tolist())
+        nr_adjuvants = len(df_batch['Adjuvant'].unique().tolist())
+        row = [paint_dir, nr_cell_types, nr_probe_types, nr_adjuvants, nr_probes]
 
         # Add the data to the all_dataframes
         df_image_summary = pd.concat([df_image_summary, pd.DataFrame([row])])
-        df_all_images    = pd.concat([df_all_images, df_batch])
+        df_all_images = pd.concat([df_all_images, df_batch])
 
     # -----------------------------------------------------------------------------
     # At this point we have the df_all_images, df_all_squares and df_image_summary complete.
@@ -104,15 +104,15 @@ def compile_squares_file(root_dir, verbose):
     for image in list_of_images:
 
         # Get data from df_batch to add to df_all_squares
-        probe             = df_all_images.loc[image]['Probe']
-        probe_type        = df_all_images.loc[image]['Probe Type']
-        adjuvant          = df_all_images.loc[image]['Adjuvant']
-        cell_type         = df_all_images.loc[image]['Cell Type']
-        concentration     = df_all_images.loc[image]['Concentration']
-        threshold         = df_all_images.loc[image]['Threshold']
-        image_size        = df_all_images.loc[image]['Image Size']
-        experiment_nr     = df_all_images.loc[image]['Experiment Nr']
-        seq_nr            = df_all_images.loc[image]['Batch Sequence Nr']
+        probe = df_all_images.loc[image]['Probe']
+        probe_type = df_all_images.loc[image]['Probe Type']
+        adjuvant = df_all_images.loc[image]['Adjuvant']
+        cell_type = df_all_images.loc[image]['Cell Type']
+        concentration = df_all_images.loc[image]['Concentration']
+        threshold = df_all_images.loc[image]['Threshold']
+        image_size = df_all_images.loc[image]['Image Size']
+        experiment_nr = df_all_images.loc[image]['Experiment Nr']
+        seq_nr = df_all_images.loc[image]['Batch Sequence Nr']
         neighbour_setting = df_all_images.loc[image]['Neighbour Setting']
 
         # It can happen that image size is not filled in, handle that event
@@ -123,13 +123,13 @@ def compile_squares_file(root_dir, verbose):
             logger.error(f"Invalid image size in {image}")
 
         # Add the data that was obtained from df_all_images
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe']             = probe
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe Type']        = probe_type
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Adjuvant']          = adjuvant
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Cell Type']         = cell_type
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Concentration']     = concentration
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Threshold']         = threshold
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Experiment Nr']     = int(experiment_nr)
+        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe'] = probe
+        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe Type'] = probe_type
+        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Adjuvant'] = adjuvant
+        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Cell Type'] = cell_type
+        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Concentration'] = concentration
+        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Threshold'] = threshold
+        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Experiment Nr'] = int(experiment_nr)
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Batch Sequence Nr'] = int(seq_nr)
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Neighbour Setting'] = neighbour_setting
 
@@ -148,9 +148,8 @@ def compile_squares_file(root_dir, verbose):
     # Only keep Visible squares
     # df_all_squares = df_all_squares[df_all_squares['Visible'] == True]
 
-
     # Add probe valency and structure information for rgular probes
-    df_all_squares['Valency']   = df_all_squares.apply(split_probe_valency, axis=1)
+    df_all_squares['Valency'] = df_all_squares.apply(split_probe_valency, axis=1)
     df_all_squares['Structure'] = df_all_squares.apply(split_probe_structure, axis=1)
 
     # ------------------------------------
@@ -170,20 +169,20 @@ def compile_squares_file(root_dir, verbose):
     df_all_images.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
 
     run_time = time.time() - time_stamp
-    logger.info (f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
+    logger.info(f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
 
 
-def split_probe_valency (row):
+def split_probe_valency(row):
     regexp = re.compile(r'(?P<valency>\d{1}) +(?P<structure>[A-Za-z]+)')
     match = regexp.match(row['Probe'])
     if match is not None:
-        valency   = match.group('valency')
+        valency = match.group('valency')
         return int(valency)
     else:
         return 0
 
 
-def split_probe_structure (row):
+def split_probe_structure(row):
     regexp = re.compile(r'(?P<valency>\d{1}) +(?P<structure>[A-Za-z]+)')
     match = regexp.match(row['Probe'])
     if match is not None:
@@ -200,27 +199,27 @@ class CompileDialog:
 
         self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
 
-        content                       = ttk.Frame(root)
-        frame_buttons                 = ttk.Frame(content, borderwidth=5, relief='ridge')
-        frame_directory               = ttk.Frame(content, borderwidth=5, relief='ridge')
+        content = ttk.Frame(root)
+        frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
+        frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
         #  Do the lay-out
-        content.grid          (column=0, row=0)
-        frame_directory.grid  (column=0, row=1, padx=5, pady=5)
-        frame_buttons.grid    (column=0, row=2, padx=5, pady=5)
+        content.grid(column=0, row=0)
+        frame_directory.grid(column=0, row=1, padx=5, pady=5)
+        frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
         # Fill the button frame
         btn_process = ttk.Button(frame_buttons, text='Process', command=self.process)
-        btn_exit    = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
-        btn_process.grid (column=0, row=1)
-        btn_exit.grid    (column=0, row=2)
+        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
+        btn_process.grid(column=0, row=1)
+        btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
-        btn_root_dir       = ttk.Button(frame_directory, text='Root Directory', width=15, command=self.change_root_dir)
-        self.lbl_root_dir  = ttk.Label(frame_directory, text=self.root_directory, width=80)
+        btn_root_dir = ttk.Button(frame_directory, text='Root Directory', width=15, command=self.change_root_dir)
+        self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=80)
 
-        btn_root_dir.grid      (column=0, row=0, padx=10, pady=5)
-        self.lbl_root_dir.grid (column=1, row=0, padx=20, pady=5)
+        btn_root_dir.grid(column=0, row=0, padx=10, pady=5)
+        self.lbl_root_dir.grid(column=1, row=0, padx=20, pady=5)
 
     def change_root_dir(self):
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
@@ -234,6 +233,7 @@ class CompileDialog:
 
     def exit_dialog(self):
         root.destroy()
+
 
 if __name__ == "__main__":
     root = Tk()

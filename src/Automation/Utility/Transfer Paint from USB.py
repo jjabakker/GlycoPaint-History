@@ -21,8 +21,8 @@ def copy_code_directory(source_dir):
                 shutil.copy(os.path.join(root, filename), destination)
                 print(f"From {root:30} copied {filename:30} to {destination}")
         print("\n")
-        for dirname in dirs:
-            pass
+        # for dirname in dirs:
+        #     pass
 
 
 def copy_files():

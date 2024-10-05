@@ -1,7 +1,8 @@
 import os
-import shutil
 import platform
+import shutil
 import subprocess
+
 # import winreg
 from src.Common.Support.CommonSupportFunctions import delete_files_in_directory
 
@@ -31,7 +32,6 @@ from src.Common.Support.CommonSupportFunctions import delete_files_in_directory
 
 
 def find_app_path_macos():
-
     """
     Function obtained from ChatGTP to locate the path of an application in macOS
 
@@ -96,7 +96,6 @@ def find_fiji_path():
 
 
 def copy_file_from_source_to_dest(source_dir, dest_dir, filename):
-
     """
     Utility function to copies a file from a source to destination directory
     :param source_dir:
@@ -129,16 +128,16 @@ def install():
     source_root = os.path.split(head_tail[0])[0]
 
     # Define the source directories
-    fiji_grid_source      = os.path.join(source_root, 'Fiji', 'Grid')
-    fiji_single_source    = os.path.join(source_root, 'Fiji', 'Single')
-    fiji_support_source   = os.path.join(source_root, 'Fiji', 'Support')
+    fiji_grid_source = os.path.join(source_root, 'Fiji', 'Grid')
+    fiji_single_source = os.path.join(source_root, 'Fiji', 'Single')
+    fiji_support_source = os.path.join(source_root, 'Fiji', 'Support')
 
     common_support_source = os.path.join(source_root, 'Common', 'Support')
 
     # Define the destination directories
-    fiji_grid_dest    = os.path.join(dest_root, 'Paint', 'Grid')
-    fiji_single_dest  = os.path.join(dest_root, 'Paint', 'Single')
-    library_dest      = os.path.join(dest_root, 'Paint')
+    fiji_grid_dest = os.path.join(dest_root, 'Paint', 'Grid')
+    fiji_single_dest = os.path.join(dest_root, 'Paint', 'Single')
+    library_dest = os.path.join(dest_root, 'Paint')
 
     # Create and empty the directories
     fiji_directories = [library_dest, fiji_grid_dest, fiji_single_dest]
@@ -171,7 +170,7 @@ def install():
         copy_file_from_source_to_dest(common_support_source, library_dest, file)
 
     # Create the Trackmate Data and Paint profile directories
-    profile_dir   = os.path.join(os.path.expanduser('~'), "Paint Profile")
+    profile_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
     trackmate_dir = os.path.join(os.path.expanduser('~'), "Trackmate Data")
 
     dirs_to_create = [profile_dir, trackmate_dir]
