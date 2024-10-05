@@ -1,5 +1,5 @@
 import logging
-import os
+from os import mkdir, path
 
 # Create a custom logger
 logger = logging.getLogger('paint')
@@ -15,10 +15,14 @@ console_handler = logging.StreamHandler()  # Logs to the console (standard outpu
 console_handler.setLevel(logging.DEBUG)  # All logs at DEBUG level or higher go to the console
 console_handler.setFormatter(formatter)
 
+
 # Create file handler
 
 def create_file_handler(file_name):
-    file_handler    = logging.FileHandler(os.path.join(os.path.expanduser('~'), file_name), mode='w')  # Logs to a file
+    file_handler_dir = path.join(path.expanduser('~'), 'Paint Logger')
+    if not path.exists(file_handler_dir):
+        mkdir(file_handler_dir)
+    file_handler = logging.FileHandler(path.join(file_handler_dir, file_name), mode='w')  # Logs to a file
     file_handler.setLevel(logging.INFO)  # Only logs at INFO level or higher go to the file
     file_handler.setFormatter(formatter)
     return file_handler
