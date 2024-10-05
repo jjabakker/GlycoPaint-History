@@ -159,7 +159,7 @@ def square_analysis():
     # There should already be an image selected.....
     try:
         imp = IJ.getImage()
-    except:
+    except (RuntimeError, Exception):
         imp = None
 
     if imp is None:

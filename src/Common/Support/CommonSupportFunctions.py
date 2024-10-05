@@ -29,7 +29,7 @@ def get_default_directories():
                 paint_directory = row[1]
             elif row[0] == 'root_directory':
                 root_directory = row[1]
-    except:
+    except Exception:
         pass
 
     return root_directory, paint_directory, images_directory
@@ -38,8 +38,7 @@ def get_default_directories():
 def save_default_directories(root_directory, paint_directory, images_directory):
     """
     Save the user defined image directory. If the configuration_dir does not exist, create it
-    :param image_directory: directory to be saved
-    :return:
+
     """
 
     configuration_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")

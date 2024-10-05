@@ -252,15 +252,20 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
                                                              verbose=True):
     """
 
-    :param experiment_nr:
     :param image_path:
     :param image_name:
     :param nr_of_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
+    :param min_density_ratio:
+    :param max_variability:
     :param concentration:
     :param nr_spots:
     :param batch_seq_nr:
+    :param experiment_nr:
+    :param experiment_seq_nr:
+    :param experiment_date:
+    :param experiment_name:
     :param verbose:
     :return:
     """
@@ -603,6 +608,7 @@ def identify_invalid_squares(df_squares,
     :param df_squares:
     :param min_r_squared:
     :param min_tracks_for_tau:
+    :param verbose:
     :return:
     """
 
@@ -708,10 +714,14 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
                                                        max_square_coverage,
                                                        verbose=False):
     """
+
     :param paint_directory:
     :param nr_of_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
+    :param min_density_ratio:
+    :param max_variability:
+    :param max_square_coverage:
     :param verbose:
     :return:
     """
