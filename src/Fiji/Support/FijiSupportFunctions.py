@@ -1,19 +1,15 @@
 import os
 import sys
+import time
 import java.lang
 
-from fiji.plugin.trackmate import Logger
-from fiji.plugin.trackmate import Model
 from javax.swing import JFileChooser
 from java.lang.System import getProperty
 
 paint_code__dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_code__dir)
 
-from CommonSupportFunctions import get_default_directories
-from CommonSupportFunctions import save_default_directories
-
-
+from CommonSupportFunctions import get_default_directories, save_default_directories
 
 def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
 
@@ -105,3 +101,45 @@ def fiji_get_file_open_append_attribute():
         open_attribute = "ab"
 
     return open_attribute
+
+
+def format_time_nicely(seconds):
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    hours = int(hours)
+    minutes = int(minutes)
+    seconds = int(seconds)
+
+    parts = []
+    if hours:
+        parts.append("{0} hour{1}".format(hours, 's' if hours > 1 else ''))
+    if minutes:
+        parts.append("{0} minute{1}".format(minutes, 's' if minutes > 1 else ''))
+    if seconds:
+        parts.append("{0} second{1}".format(seconds, 's' if seconds > 1 else ''))
+
+    return ', '.join(parts)
+    return ' and '.join(parts)
+
+
+def set_directory_timestamp(dir_path, timestamp=None):
+    """
+    Set the access and modification timestamps of a directory.
+
+    :param dir_path: Path to the directory.
+    :param timestamp: Unix timestamp (seconds since epoch) to set for access and modification times.
+                      If None, the current time will be used.
+    """
+    # Check if the provided path is a valid directory
+    if not os.path.isdir(dir_path):
+        print.error("Error: '{0}' is not a valid directory.".format(dir_path))
+        return
+
+    # If no timestamp is provided, use the current time
+    if timestamp is None:
+        timestamp = time.time()
+        print("Using current time as timestamp for '{0}'.".format(dir_path))
+
+    # Update the directory's access and modification times
+    os.utime(dir_path, (timestamp, timestamp))
+    print("Updated timestamps for directory '{0}' to {1} successfully.".format(dir_path, time.ctime(timestamp)))
