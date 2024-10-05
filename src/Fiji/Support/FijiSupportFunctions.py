@@ -74,7 +74,7 @@ def ask_user_for_file(prompt='Select File'):
 def fiji_get_file_open_write_attribute():
 
     """
-    Returns an open write attribute that works both on macOS and Windoes
+    Returns an open write attribute that works both on macOS and Windows
     :return: A string containing the open write attribute
     """
 
@@ -90,7 +90,7 @@ def fiji_get_file_open_write_attribute():
 def fiji_get_file_open_append_attribute():
 
     """
-    Returns an open append  attribute that works both on macOS and Windoes
+    Returns an open append  attribute that works both on macOS and Windows
     :return: A string containing the open append attribute
     """
 

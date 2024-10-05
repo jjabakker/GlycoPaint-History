@@ -148,7 +148,7 @@ def compile_squares_file(root_dir, verbose):
     # Only keep Visible squares
     # df_all_squares = df_all_squares[df_all_squares['Visible'] == True]
 
-    # Add probe valency and structure information for rgular probes
+    # Add probe valency and structure information for regular probes
     df_all_squares['Valency'] = df_all_squares.apply(split_probe_valency, axis=1)
     df_all_squares['Structure'] = df_all_squares.apply(split_probe_structure, axis=1)
 
@@ -195,7 +195,7 @@ def split_probe_structure(row):
 class CompileDialog:
 
     def __init__(self, root):
-        root.title('Compile Squara Data')
+        root.title('Compile Square Data')
 
         self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
 

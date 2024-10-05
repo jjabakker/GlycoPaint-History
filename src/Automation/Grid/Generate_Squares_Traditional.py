@@ -72,7 +72,7 @@ class GridDialog:
         en_min_r_squared = ttk.Entry(frame_parameters, textvariable=self.min_r_squared, width=10)
 
         self.min_density_ratio = DoubleVar(root, min_density_ratio)
-        en_min_densioty_ratio = ttk.Entry(frame_parameters, textvariable=self.min_density_ratio, width=10)
+        en_min_density_ratio = ttk.Entry(frame_parameters, textvariable=self.min_density_ratio, width=10)
 
         self.max_variability = DoubleVar(root, max_variability)
         en_max_variability = ttk.Entry(frame_parameters, textvariable=self.max_variability, width=10)
@@ -96,7 +96,7 @@ class GridDialog:
         en_nr_squares.grid(column=1, row=1)
         en_min_tracks_for_tau.grid(column=1, row=2)
         en_min_r_squared.grid(column=1, row=3)
-        en_min_densioty_ratio.grid(column=1, row=4)
+        en_min_density_ratio.grid(column=1, row=4)
         en_max_variability.grid(column=1, row=5)
         en_max_square_coverage.grid(column=1, row=6)
 

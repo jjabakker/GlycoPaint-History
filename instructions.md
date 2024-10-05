@@ -76,7 +76,7 @@ The Fiji plugin Trackmate detects spots on each frame and connects spots on subs
 
 ## Transform Brightfield images
 
-The image viewer can not handle the original Nikon nd2 format, so with the use of Fijie the nd2 brightfield images are converted to jpg format. 
+The image viewer can not handle the original Nikon nd2 format, so with the use of Fiji the nd2 brightfield images are converted to jpg format. 
 
 - Start Fiji
 - Run Plugins – Paint – Grid – Convert BF Images
@@ -100,7 +100,7 @@ The procedure to run 'Process All Images':
 - Specify as Paint directory: ~/ PaintExample/Paint/240402
 - Select parameters. Reasonable defaults are
   - Nr of Squares in row/col: 20
-  - Minimum tracks to calcuate Tau: 30
+  - Minimum tracks to calculate Tau: 30
   - Min allowable R-squared: 0.9
   - Min density ratio: 2
   - Max variability: 10
@@ -142,7 +142,7 @@ The pipeline assume that files are in Nikon's .nd2 format and will check for the
 
 ## File naming convention
 
-The convention for experiment filenames used in this version of the software is described by the following regular expression: '\d{6}-Exp-d{1,2})-[AB][1234]-\d{1,2}')
+The convention for experiment filenames used in this version of the software is described by the following regular expression: '\d{6}-Exp-d{1,2}-[AB][1234]-\d{1,2}')
 
 In plain words:
 -	6 digits (representing a date): indicating the experiment date
