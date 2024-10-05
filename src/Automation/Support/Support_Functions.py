@@ -98,7 +98,6 @@ def get_list_of_images(image_directory):
 
 
 def get_indices(x1, y1, width, height, square_seq_nr, nr_squares_in_row, granularity):
-
     """
     Given coordinates (x1, y1) of the track, calculate the indices of the grid
     
@@ -133,7 +132,7 @@ def get_square_coordinates(nr_of_squares_in_row, sequence_number):
     :param sequence_number: The sequence number of the square for which the coordinates are needed
     :return: The coordinates of the upper left (x0, y0) and lower right corner (x1, y1)
     """
-    width  = 82.0864 / nr_of_squares_in_row
+    width = 82.0864 / nr_of_squares_in_row
     height = 82.0864 / nr_of_squares_in_row
 
     i = sequence_number % nr_of_squares_in_row
@@ -162,7 +161,6 @@ def calc_variability(tracks_df, square_nr, nr_squares_in_row, granularity):
 
     # Loop over all the tracks in the square and determine where they sit in the grid
     for i in range(len(tracks_df)):
-
         # Retrieve the x and y values expressed in micrometers
         x = float(tracks_df.at[i, "TRACK_X_LOCATION"])
         y = float(tracks_df.at[i, "TRACK_Y_LOCATION"])
@@ -186,7 +184,6 @@ def calc_variability(tracks_df, square_nr, nr_squares_in_row, granularity):
 
 
 def get_df_from_file(file, header=0, skip_rows=[]):
-
     try:
         df = pd.read_csv(file, header=header, skiprows=skip_rows)
     except IOError:
@@ -199,7 +196,6 @@ def get_df_from_file(file, header=0, skip_rows=[]):
 #
 
 def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
-
     list_of_squares = []
     neighbours = []
 
@@ -212,12 +208,12 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
             df_squares.loc[index, 'Neighbour Visible'] = False
             continue
 
-        row       = square['Row Nr']
-        col       = square['Col Nr']
+        row = square['Row Nr']
+        col = square['Col Nr']
         square_nr = square['Square Nr']
 
         # Determine the neighbours to inspect
-        left  = (row, max(col - 1, 1))
+        left = (row, max(col - 1, 1))
         right = (row, min(col + 1, nr_of_squares_in_row))
         above = (max(row - 1, 1), col)
         below = (min(row + 1, nr_of_squares_in_row), col)
@@ -270,8 +266,7 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
 
 
 def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
-
-    list_of_squares   = []
+    list_of_squares = []
     neighbours = []
 
     for index, square in df_squares.iterrows():
@@ -284,23 +279,23 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
             continue
 
         # Determine the neighbours to inspect
-        row_nr    = square['Row Nr']
-        col_nr    = square['Col Nr']
+        row_nr = square['Row Nr']
+        col_nr = square['Col Nr']
         square_nr = square['Square Nr']
 
-        left  = (row_nr, max(col_nr - 1, 1))
+        left = (row_nr, max(col_nr - 1, 1))
         right = (row_nr, min(col_nr + 1, nr_squares_in_row))
         above = (max(row_nr - 1, 1), col_nr)
         below = (min(row_nr + 1, nr_squares_in_row), col_nr)
 
-        below_left  = (min(row_nr + 1, nr_squares_in_row), max(col_nr - 1, 1))
+        below_left = (min(row_nr + 1, nr_squares_in_row), max(col_nr - 1, 1))
         below_right = (min(row_nr + 1, nr_squares_in_row), min(col_nr + 1, nr_squares_in_row))
-        above_left  = (max(row_nr - 1, 1),  max(col_nr - 1, 1))
-        above_right = (max(row_nr - 1, 1),  min(col_nr + 1, nr_squares_in_row))
+        above_left = (max(row_nr - 1, 1), max(col_nr - 1, 1))
+        above_right = (max(row_nr - 1, 1), min(col_nr + 1, nr_squares_in_row))
 
         if row_nr == 1:
             if col_nr == 1:
-                neighbours = [right, below, below_right,]
+                neighbours = [right, below, below_right, ]
             elif col_nr == nr_squares_in_row:
                 neighbours = [left, below, below_left]
             else:
@@ -356,20 +351,20 @@ def get_grid_defaults_from_file():
     try:
         df = pd.read_excel(parameter_file, index_col=0)
         df.rename(columns={df.columns[0]: 'Value'}, inplace=True)
-        return (int(df.loc["nr_squares_in_row",   'Value']),
-                int(df.loc["min_tracks_for_tau",  'Value']),
-                df.loc["min_r_squared",       'Value'],
-                df.loc["min_density_ratio",   'Value'],
-                df.loc["max_variability",     'Value'],
+        return (int(df.loc["nr_squares_in_row", 'Value']),
+                int(df.loc["min_tracks_for_tau", 'Value']),
+                df.loc["min_r_squared", 'Value'],
+                df.loc["min_density_ratio", 'Value'],
+                df.loc["max_variability", 'Value'],
                 df.loc["max_square_coverage", 'Value'])
     except Exception:
         # If the file cannot be opened return reasonable default parameters
-        return (20,                       # nr_squares_in_row
-                30,                       # min_tracks_for_tau
-                0.9,                      # min_r_squared
-                2,                        # min_density_ratio
-                10,                       # max_variability
-                20)                       # max_square_coverage
+        return (20,  # nr_squares_in_row
+                30,  # min_tracks_for_tau
+                0.9,  # min_r_squared
+                2,  # min_density_ratio
+                10,  # max_variability
+                20)  # max_square_coverage
 
 
 def save_grid_defaults_to_file(nr_squares_in_row,
@@ -378,7 +373,6 @@ def save_grid_defaults_to_file(nr_squares_in_row,
                                min_density_ratio,
                                max_variability,
                                max_square_coverage):
-
     configuration_dir = os.path.expanduser('~') + os.sep + "Paint profile"
     if not os.path.isdir(configuration_dir):
         os.mkdir(configuration_dir)
@@ -410,7 +404,6 @@ def save_grid_defaults_to_file(nr_squares_in_row,
 
 
 def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
-
     # Note these are different unit systems
     # The coordinates from the squares are in micrometers
     # The coordinates from the rectangle are in pixels
@@ -459,7 +452,6 @@ def save_squares_to_file(df_squares, square_file_path):
 
 
 def read_batch_from_file(batch_file_path, only_records_to_process=True):
-
     """
     Create the process table by looking for records that were marked for processing
     :return:
@@ -538,7 +530,6 @@ def check_batch_integrity(df_batch):
 
 
 def read_squares_from_file(squares_file_path):
-
     """
     Create the squares table by looking for records that were marked for processing
     :return:
@@ -547,9 +538,8 @@ def read_squares_from_file(squares_file_path):
     try:
         df_squares = pd.read_csv(squares_file_path, header=0, skiprows=[])
     except IOError:
-        print(f'Read_squares from_file: file {squares_file_path} could not be opened.' )
+        print(f'Read_squares from_file: file {squares_file_path} could not be opened.')
         exit(-1)
-        return None
 
     df_squares.set_index('Square Nr', inplace=True, drop=False)
     return df_squares
@@ -569,10 +559,9 @@ def create_output_directories_for_graphpad(paint_directory):
 
 
 def format_time_nicely(seconds):
-
     hours, remainder = divmod(seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
-    hours   = int(hours)
+    hours = int(hours)
     minutes = int(minutes)
     seconds = int(seconds)
 

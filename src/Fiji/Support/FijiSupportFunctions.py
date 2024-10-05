@@ -11,6 +11,7 @@ sys.path.append(paint_code__dir)
 
 from CommonSupportFunctions import get_default_directories, save_default_directories
 
+
 def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
 
     """
@@ -21,7 +22,7 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
     """
     root_dir, paint_dir, images_dir = get_default_directories()
 
-    if (directory == 'Paint'):
+    if directory == 'Paint':
         def_dir = paint_dir
     else:
         def_dir = images_dir
@@ -35,7 +36,7 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
     # Check if the user selected a directory
     if result == JFileChooser.APPROVE_OPTION:
         selected_directory = file_chooser.getSelectedFile()
-        if (directory == 'Paint'):
+        if directory == 'Paint':
             paint_dir = selected_directory
         else:
             images_dir = selected_directory
@@ -53,7 +54,8 @@ def ask_user_for_file(prompt='Select File'):
     :param prompt:
     :return:
     """
-    root_dir, paint_dir, images_dir = get_default_directories()
+
+    # root_dir, paint_dir, images_dir = get_default_directories()
 
     file_chooser = JFileChooser('~')
     file_chooser.setFileSelectionMode(JFileChooser.FILES_ONLY)
@@ -72,7 +74,7 @@ def ask_user_for_file(prompt='Select File'):
 def fiji_get_file_open_write_attribute():
 
     """
-    Returns a open write attribute that works both on MacOs and Windoes
+    Returns an open write attribute that works both on macOS and Windoes
     :return: A string containing the open write attribute
     """
 
@@ -85,12 +87,10 @@ def fiji_get_file_open_write_attribute():
     return open_attribute
 
 
-
-
 def fiji_get_file_open_append_attribute():
 
     """
-    Returns an open append  attribute that works both on Mac OS and Windoes
+    Returns an open append  attribute that works both on macOS and Windoes
     :return: A string containing the open append attribute
     """
 
@@ -119,7 +119,6 @@ def format_time_nicely(seconds):
         parts.append("{0} second{1}".format(seconds, 's' if seconds > 1 else ''))
 
     return ', '.join(parts)
-    return ' and '.join(parts)
 
 
 def set_directory_timestamp(dir_path, timestamp=None):

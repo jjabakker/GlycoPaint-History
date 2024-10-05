@@ -2,24 +2,22 @@ import os
 import shutil
 import time
 
-from src.Automation.Grid.Generate_Squares_Single import process_images_in_root_directory_single_mode
-
-from src.Automation.Grid.Generate_Squares_Traditional import process_images_in_root_directory_traditional_mode
-
 from src.Automation.Grid.Compile_Results_Files import compile_squares_file
+from src.Automation.Grid.Generate_Squares_Single import process_images_in_root_directory_single_mode
+from src.Automation.Grid.Generate_Squares_Traditional import process_images_in_root_directory_traditional_mode
 from src.Automation.Support.Copy_Data_From_Source import copy_data_from_source
 from src.Automation.Support.Directory_Timestamp import set_directory_timestamp
 from src.Automation.Support.Logger_Config import logger, change_file_handler
 from src.Automation.Support.Support_Functions import format_time_nicely
 
-SOURCE_NEW_DIR     = '/Users/hans/Paint Source/New Probes'
+SOURCE_NEW_DIR = '/Users/hans/Paint Source/New Probes'
 SOURCE_REGULAR_DIR = '/Users/hans/Paint Source/Regular Probes'
 
-change_file_handler('Process_All.log')
+change_file_handler('Process All.log')
 
 paint_source_dirs = {
-    'new':      SOURCE_NEW_DIR,
-    'regular':  SOURCE_REGULAR_DIR
+    'new': SOURCE_NEW_DIR,
+    'regular': SOURCE_REGULAR_DIR
 }
 
 logger.debug("\n\n\n\nNew Run\n\n\n")
@@ -66,14 +64,14 @@ def run_traditional(root_dir, nr_of_squares, min_density_ratio):
         logger.error(f"Failed to run traditional mode for {root_dir}. Error: {e}")
 
 
-def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares, nr_to_process, current_process, min_density_ratio=None):
-
+def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares, nr_to_process, current_process,
+                      min_density_ratio=None):
     time_stamp = time.time()
-    msg = f"{current_process:2d} of {nr_to_process:2d} --- Processing mode: {mode} - probe {probe} - directory: {directory}"
+    msg = f"{current_process} of {nr_to_process} --- Processing mode: {mode} - Probe: {probe} - Directory: {directory}"
     logger.info("")
     logger.info("")
     logger.info("-" * len(msg))
-    logger.info(f"Processing mode: {mode} - probe {probe} - directory: {directory}")
+    logger.info(msg)
     logger.info("-" * len(msg))
     logger.info("")
     copy_data_from_source(paint_source_dirs[probe], root_dir)
@@ -92,7 +90,8 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
     logger.info(f"Copied output to {os.path.join(dest_dir, 'Output')}")
     set_directory_timestamp(root_dir)
     set_directory_timestamp(dest_dir)
-    logger.info(f"Processed mode: {mode} - probe {probe} - directory: {directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
+    logger.info(
+        f"Processed Mode: {mode} - Probe: {probe} - Directory: {directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
 
 
 # Define the configuration for different processing modes
@@ -190,7 +189,7 @@ for entry in config:
             nr_of_squares=entry['nr_of_squares'],
             nr_to_process=nr_to_process,
             current_process=current_process,
-            min_density_ratio=entry.get('min_density_ratio')    # If the key does not exist, it returns ''
+            min_density_ratio=entry.get('min_density_ratio')  # If the key does not exist, it returns ''
         )
 
 # Report the time it took in hours minutes seconds

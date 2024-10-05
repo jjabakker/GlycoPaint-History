@@ -32,6 +32,7 @@ from src.Automation.Support.Logger_Config import logger, change_file_handler
 
 change_file_handler('Image Viewer.log')
 
+
 def save_as_png(canvas, file_name, image_name):
     # canvas.create_text(60, 40, fill='white', text=image_name, font='Helvetica 15 bold')
     canvas.create_text(60, 40)
@@ -200,7 +201,7 @@ def get_images(self, type_of_image):
     print("\n\n")
 
     if count != len(df_batch):
-        (f"There were {len(df_batch) - count} out of {len(df_batch)} images for which no picture was available")
+        f"There were {len(df_batch) - count} out of {len(df_batch)} images for which no picture was available"
 
     return list_images
 

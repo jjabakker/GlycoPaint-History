@@ -138,7 +138,7 @@ class GridDialog:
                                                           self.max_square_coverage.get(),
                                                           verbose=False)
             run_time = time.time() - time_stamp
-
+            logger.info(f"Total processing time is {format_time_nicely(run_time)}")
         elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):  # Assume it is group directory
 
             process_images_in_root_directory_single_mode(self.paint_directory,
@@ -151,7 +151,6 @@ class GridDialog:
             run_time = time.time() - time_stamp
             logger.info(f"Total processing time is {format_time_nicely(run_time)}")
         else:
-            run_time = 0
             logger.error('Not a paint directory and not a root directory')
 
         # And then exit

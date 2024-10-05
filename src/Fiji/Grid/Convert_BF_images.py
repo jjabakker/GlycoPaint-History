@@ -16,6 +16,7 @@ change_file_handler('Convert BF Images.log')
 # Import custom functions for asking the user for directories.
 from FijiSupportFunctions import ask_user_for_image_directory
 
+
 def convert_BF_images(image_source_directory, paint_directory, force=False):
     """
     Convert .nd2 BF images to JPEG and store them in a specified directory.
@@ -72,7 +73,6 @@ def convert_BF_images(image_source_directory, paint_directory, force=False):
     # Log the conversion summary
     logger.info("\nConverted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found, count)
 
-
     # Copy the entire 'Converted BF Images' directory to the paint directory
     dest_dir = os.path.join(paint_directory, "Converted BF Images")
     if os.path.exists(dest_dir):
@@ -84,7 +84,6 @@ def convert_BF_images(image_source_directory, paint_directory, force=False):
         logger.info("Copied the entire 'Converted BF Images' directory to %s", dest_dir)
     except Exception as e:
         logger.error("Error copying the directory %s to %s: %s", bf_jpeg_dir, dest_dir, str(e))
-
 
 
 if __name__ == "__main__":

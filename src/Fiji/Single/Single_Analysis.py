@@ -145,14 +145,13 @@ def get_user_input(interactive):
 
     return probe, probe_type, threshold, concentration_probe
 
-
 def square_analysis():
     """
     This routine needs to be run on every single image for which the square analysis needs to be performed.
     It simply runs Trackmate on the full image and stores the tracks and image file
 
     Later this information is used to determine which squares are the critical ones and for them the
-    Tau's are calculated.
+    Taus are calculated.
     :return:
     """
 

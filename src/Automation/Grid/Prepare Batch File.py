@@ -5,6 +5,7 @@ from tkinter import ttk, filedialog, Toplevel
 import pandas as pd
 import re
 
+
 def prepare_batch_file(image_source_directory, paint_directory):
 
     """

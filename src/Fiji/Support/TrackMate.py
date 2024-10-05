@@ -36,6 +36,7 @@ sys.path.append(paint_dir)
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
 from LoggerConfigFiji import logger, change_file_handler
 
+
 def paint_trackmate(threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
 

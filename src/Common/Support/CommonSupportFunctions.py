@@ -32,7 +32,7 @@ def get_default_directories():
     except:
         pass
 
-    return (root_directory, paint_directory, images_directory)
+    return root_directory, paint_directory, images_directory
 
 
 def save_default_directories(root_directory, paint_directory, images_directory):

@@ -9,9 +9,8 @@ import pandas as pd
 from src.Automation.Support.Curvefit_and_Plot import (
     CompileDuration,
     CurveFitAndPlot)
-
-from src.Automation.Support.Generate_HeatMap  import plot_heatmap
-
+from src.Automation.Support.Generate_HeatMap import plot_heatmap
+from src.Automation.Support.Logger_Config import logger
 from src.Automation.Support.Support_Functions import (
     calc_variability,
     calculate_density,
@@ -28,7 +27,6 @@ from src.Automation.Support.Support_Functions import (
     check_batch_integrity,
     format_time_nicely)
 
-from src.Automation.Support.Logger_Config import logger
 
 # -------------------------------------------------------------------------------------
 # Define the default parameters
@@ -50,68 +48,68 @@ class GridDialog:
 
         root.title('Batch grid processing')
 
-        content          = ttk.Frame(root)
+        content = ttk.Frame(root)
         frame_parameters = ttk.Frame(content, borderwidth=5, relief='ridge',
                                      width=200, height=100, padding=(30, 30, 30, 30))
-        frame_buttons    = ttk.Frame(content, borderwidth=5, relief='ridge')
-        frame_directory  = ttk.Frame(content, borderwidth=5, relief='ridge')
+        frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
+        frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
         # Fill the parameter frame
-        lbl_nr_squares          = ttk.Label(frame_parameters, text='Nr of Squares in row/col', width=30, anchor=W)
-        lbl_min_tracks_for_tau  = ttk.Label(frame_parameters, text='Minimum tracks to calculate Tau', width=30, anchor=W)
-        lbl_min_r2              = ttk.Label(frame_parameters, text='Min allowable R-squared', width=30, anchor=W)
-        lbl_min_density_ratio   = ttk.Label(frame_parameters, text='Min density ratio', width=30, anchor=W)
-        lbl_max_variability     = ttk.Label(frame_parameters, text='Max variability', width=30, anchor=W)
+        lbl_nr_squares = ttk.Label(frame_parameters, text='Nr of Squares in row/col', width=30, anchor=W)
+        lbl_min_tracks_for_tau = ttk.Label(frame_parameters, text='Minimum tracks to calculate Tau', width=30, anchor=W)
+        lbl_min_r2 = ttk.Label(frame_parameters, text='Min allowable R-squared', width=30, anchor=W)
+        lbl_min_density_ratio = ttk.Label(frame_parameters, text='Min density ratio', width=30, anchor=W)
+        lbl_max_variability = ttk.Label(frame_parameters, text='Max variability', width=30, anchor=W)
         lbl_max_square_coverage = ttk.Label(frame_parameters, text='Max squares coverage', width=30, anchor=W)
 
         self.nr_of_squares_in_row = IntVar(root, nr_of_squares_in_row)
-        en_nr_squares             = ttk.Entry(frame_parameters, textvariable=self.nr_of_squares_in_row, width=10)
+        en_nr_squares = ttk.Entry(frame_parameters, textvariable=self.nr_of_squares_in_row, width=10)
 
-        self.min_tracks_for_tau   = IntVar(root, min_tracks_for_tau)
-        en_min_tracks_for_tau     = ttk.Entry(frame_parameters, textvariable=self.min_tracks_for_tau, width=10)
+        self.min_tracks_for_tau = IntVar(root, min_tracks_for_tau)
+        en_min_tracks_for_tau = ttk.Entry(frame_parameters, textvariable=self.min_tracks_for_tau, width=10)
 
-        self.min_r_squared        = DoubleVar(root, min_r_squared)
-        en_min_r_squared          = ttk.Entry(frame_parameters, textvariable=self.min_r_squared, width=10)
+        self.min_r_squared = DoubleVar(root, min_r_squared)
+        en_min_r_squared = ttk.Entry(frame_parameters, textvariable=self.min_r_squared, width=10)
 
-        self.min_density_ratio    = DoubleVar(root, min_density_ratio)
-        en_min_densioty_ratio     = ttk.Entry(frame_parameters, textvariable=self.min_density_ratio, width=10)
+        self.min_density_ratio = DoubleVar(root, min_density_ratio)
+        en_min_densioty_ratio = ttk.Entry(frame_parameters, textvariable=self.min_density_ratio, width=10)
 
-        self.max_variability      = DoubleVar(root, max_variability)
-        en_max_variability        = ttk.Entry(frame_parameters, textvariable=self.max_variability, width=10)
+        self.max_variability = DoubleVar(root, max_variability)
+        en_max_variability = ttk.Entry(frame_parameters, textvariable=self.max_variability, width=10)
 
-        self.max_square_coverage  = DoubleVar(root, max_square_coverage)
-        en_max_square_coverage    = ttk.Entry(frame_parameters, textvariable=self.max_square_coverage, width=10)
+        self.max_square_coverage = DoubleVar(root, max_square_coverage)
+        en_max_square_coverage = ttk.Entry(frame_parameters, textvariable=self.max_square_coverage, width=10)
 
         #  Do the lay-out
-        content.grid                (column=0, row=0)
-        frame_parameters.grid       (column=0, row=0, columnspan=3, rowspan=2, padx=5, pady=5)
-        frame_buttons.grid          (column=0, row=4, padx=5, pady=5)
-        frame_directory.grid        (column=0, row=5, padx=5, pady=5)
+        content.grid(column=0, row=0)
+        frame_parameters.grid(column=0, row=0, columnspan=3, rowspan=2, padx=5, pady=5)
+        frame_buttons.grid(column=0, row=4, padx=5, pady=5)
+        frame_directory.grid(column=0, row=5, padx=5, pady=5)
 
-        lbl_nr_squares.grid         (column=0, row=1, padx=5, pady=5)
-        lbl_min_tracks_for_tau.grid (column=0, row=2, padx=5, pady=5)
-        lbl_min_r2.grid             (column=0, row=3, padx=5, pady=5)
-        lbl_min_density_ratio.grid  (column=0, row=4, padx=5, pady=5)
-        lbl_max_variability.grid    (column=0, row=5, padx=5, pady=5)
+        lbl_nr_squares.grid(column=0, row=1, padx=5, pady=5)
+        lbl_min_tracks_for_tau.grid(column=0, row=2, padx=5, pady=5)
+        lbl_min_r2.grid(column=0, row=3, padx=5, pady=5)
+        lbl_min_density_ratio.grid(column=0, row=4, padx=5, pady=5)
+        lbl_max_variability.grid(column=0, row=5, padx=5, pady=5)
         lbl_max_square_coverage.grid(column=0, row=6, padx=5, pady=5)
 
-        en_nr_squares.grid          (column=1, row=1)
-        en_min_tracks_for_tau.grid  (column=1, row=2)
-        en_min_r_squared.grid       (column=1, row=3)
-        en_min_densioty_ratio.grid  (column=1, row=4)
-        en_max_variability.grid     (column=1, row=5)
-        en_max_square_coverage.grid (column=1, row=6)
+        en_nr_squares.grid(column=1, row=1)
+        en_min_tracks_for_tau.grid(column=1, row=2)
+        en_min_r_squared.grid(column=1, row=3)
+        en_min_densioty_ratio.grid(column=1, row=4)
+        en_max_variability.grid(column=1, row=5)
+        en_max_square_coverage.grid(column=1, row=6)
 
         # Fill the button frame
 
         btn_process = ttk.Button(frame_buttons, text='Process', command=self.process_grid)
-        btn_exit    = ttk.Button(frame_buttons, text='Exit', command=self.exit_pressed)
+        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_pressed)
 
         btn_process.grid(column=0, row=1)
         btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
-        btn_change_dir     = ttk.Button(frame_directory, text='Change Directory', width=15, command=self.change_dir)
+        btn_change_dir = ttk.Button(frame_directory, text='Change Directory', width=15, command=self.change_dir)
         self.lbl_directory = ttk.Label(frame_directory, text=self.paint_directory, width=80)
 
         btn_change_dir.grid(column=0, row=0, padx=10, pady=5)
@@ -181,7 +179,6 @@ def process_images_in_root_directory_traditional_mode(root_directory,
                                                       max_variability,
                                                       max_square_coverage,
                                                       verbose):
-
     image_dirs = os.listdir(root_directory)
     image_dirs.sort()
     for image_dir in image_dirs:
@@ -197,6 +194,7 @@ def process_images_in_root_directory_traditional_mode(root_directory,
                                                            max_variability,
                                                            max_square_coverage,
                                                            verbose=False)
+
 
 def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_squares):
     """
@@ -216,7 +214,7 @@ def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_s
     for i in range(len(count_values) - 1, 0, -1):
         if count_values[i] > 0:
             total += count_values[i]
-            n     += 1
+            n += 1
             if n >= nr_of_average_count_squares:
                 break
     if n == 0:
@@ -225,15 +223,17 @@ def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_s
         average = total / n
     return average
 
+
 def delete_files_in_directory(directory_path):
-   try:
-     files = os.listdir(directory_path)
-     for file in files:
-       file_path = os.path.join(directory_path, file)
-       if os.path.isfile(file_path):
-         os.remove(file_path)
-   except OSError:
-     logger.error("Error occurred while deleting files.")
+    try:
+        files = os.listdir(directory_path)
+        for file in files:
+            file_path = os.path.join(directory_path, file)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+    except OSError:
+        logger.error("Error occurred while deleting files.")
+
 
 def process_single_image_in_paint_directory_traditional_mode(image_path,
                                                              image_name,
@@ -273,7 +273,7 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
     tracks_file_name = os.path.join(image_path, "tracks", image_name + "-full-tracks.csv")
     df_tracks = get_df_from_file(tracks_file_name, header=0, skip_rows=[1, 2, 3])
     if df_tracks is None:
-        logger.error (f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
+        logger.error(f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
         return None
 
     # Here the actual calculation work is done: df_squares is generated
@@ -292,8 +292,6 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
                                                                 experiment_name,
                                                                 verbose)
 
-
-
     # -------------------------------------------------------------------------------
     # Determine the density ratio
     # -------------------------------------------------------------------------------
@@ -301,7 +299,8 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
     # Calculate the average of the lowest average_count_squares
     # TODO The hardcoded 0.1 should be changed
 
-    background_tracks = calc_average_track_count_of_lowest_squares(df_squares, int(0.1 * nr_of_squares_in_row * nr_of_squares_in_row))
+    background_tracks = calc_average_track_count_of_lowest_squares(df_squares,
+                                                                   int(0.1 * nr_of_squares_in_row * nr_of_squares_in_row))
 
     # Write the Density Ratio
     if background_tracks == 0:
@@ -325,7 +324,7 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
     df_temp = df_squares[df_squares['Label Nr'] != 0]
     for index, row in df_temp.iterrows():
         square = row['Square Nr']
-        label  = row['Label Nr']
+        label = row['Label Nr']
         df_with_label.loc[df_with_label['Square Nr'] == square, 'Label Nr'] = label
 
     # The tracks dataframe has been changed, so write a copy to file
@@ -349,7 +348,7 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
     df_squares['Visible'] = (df_squares['Valid Tau'] &
                              df_squares['Density Ratio Visible'] &
                              df_squares['Variability Visible'] &
-                             df_squares['Neighbour Visible'] )
+                             df_squares['Neighbour Visible'])
 
     # Write the filtered squares results
     squares_file_name = os.path.join(image_path, "grid", image_name + "-squares.csv")
@@ -378,9 +377,9 @@ def create_df_squares_traditional_mode(df_tracks,
                                        experiment_name,
                                        verbose):
     # Create the matrices
-    count_matrix       = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
-    tau_matrix         = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
-    density_matrix     = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
+    count_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
+    tau_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
+    density_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
     variability_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
 
     # Add a label and square column to the tracks dataframe, if it does not already exist, else reset it
@@ -433,7 +432,7 @@ def create_df_squares_traditional_mode(df_tracks,
         if nr_tracks > 0:
             df_tracks_square.sort_values(by=['TRACK_DURATION'], inplace=True)
         if nr_tracks == 0:
-            average_long_track  = 0
+            average_long_track = 0
         elif nr_tracks < 10:
             average_long_track = df_tracks_square.iloc[nr_tracks - 1]['TRACK_DURATION']
         else:
@@ -444,7 +443,7 @@ def create_df_squares_traditional_mode(df_tracks,
         # Calculate the Tau
         # -----------------
 
-        if nr_tracks < min_tracks_for_tau:                 # Too few points to curve fit
+        if nr_tracks < min_tracks_for_tau:  # Too few points to curve fit
             tau = -1
             r_squared = 0
         else:
@@ -457,12 +456,11 @@ def create_df_squares_traditional_mode(df_tracks,
                                              file=plt_file,
                                              plot_to_screen=False,
                                              verbose=False)
-            if tau == -2:                                 # Tau calculation failed
+            if tau == -2:  # Tau calculation failed
                 r_squared = 0
             tau = int(tau)
-            if r_squared < min_r_squared:                # Tau was calculated, but not reliable
+            if r_squared < min_r_squared:  # Tau was calculated, but not reliable
                 tau = -3
-
 
         # ----------------------------------------------------------------------------------
         # To calculate the density use the actual surface coordinates.
@@ -484,42 +482,42 @@ def create_df_squares_traditional_mode(df_tracks,
                                     magnification=1000)
 
         # Enter the calculated values in the tau, density, and variability matrices
-        variability                        = calc_variability(df_tracks_square, i, nr_squares_in_row, 10)
-        tau_matrix[row_nr, col_nr]         = int(tau)
-        density_matrix[row_nr, col_nr]     = int(density)
+        variability = calc_variability(df_tracks_square, i, nr_squares_in_row, 10)
+        tau_matrix[row_nr, col_nr] = int(tau)
+        density_matrix[row_nr, col_nr] = int(density)
         variability_matrix[row_nr, col_nr] = int(variability * 100)
-        count_matrix[row_nr, col_nr]       = nr_tracks
+        count_matrix[row_nr, col_nr] = nr_tracks
 
         # Create the new squares record to add
-        row = {'Experiment Date'               : experiment_date,
-               'Ext Image Name'                : image_name,
-               'Experiment Name'               : experiment_name,
-               'Experiment Nr'                 : experiment_nr,
-               'Experiment Seq Nr'             : experiment_seq_nr,
-               'Batch Sequence Nr'             : int(seq_nr),
-               'Label Nr'                      : 0,
-               'Square Nr'                     : int(i),
-               'Row Nr'                        : int(row_nr + 1),
-               'Col Nr'                        : int(col_nr + 1),
-               'X0'                            : round(x0, 2),
-               'X1'                            : round(x1, 2),
-               'Y0'                            : round(y0, 2),
-               'Y1'                            : round(y1, 2),
-               'Nr Spots'                      : int(nr_spots),
-               'Nr Tracks'                     : int(nr_tracks),
-               'Tau'                           : round(tau, 0),
-               'Valid Tau'                     : True,
-               'Density'                       : round(density, 1),
-               'Average Long Track Duration'   : round(average_long_track, 1),
-               'Total Track Duration'          : round(total_track_duration, 1),
-               'Variability'                   : round(variability, 2),
-               'R2'                            : round(r_squared, 2),
-               'Density Ratio'                 : 0.0,
-               'Cell Id'                       : 0,
-               'Visible'                       : True,
-               'Neighbour Visible'             : True,
-               'Variability Visible'           : True,
-               'Density Ratio Visible'         : True
+        row = {'Experiment Date': experiment_date,
+               'Ext Image Name': image_name,
+               'Experiment Name': experiment_name,
+               'Experiment Nr': experiment_nr,
+               'Experiment Seq Nr': experiment_seq_nr,
+               'Batch Sequence Nr': int(seq_nr),
+               'Label Nr': 0,
+               'Square Nr': int(i),
+               'Row Nr': int(row_nr + 1),
+               'Col Nr': int(col_nr + 1),
+               'X0': round(x0, 2),
+               'X1': round(x1, 2),
+               'Y0': round(y0, 2),
+               'Y1': round(y1, 2),
+               'Nr Spots': int(nr_spots),
+               'Nr Tracks': int(nr_tracks),
+               'Tau': round(tau, 0),
+               'Valid Tau': True,
+               'Density': round(density, 1),
+               'Average Long Track Duration': round(average_long_track, 1),
+               'Total Track Duration': round(total_track_duration, 1),
+               'Variability': round(variability, 2),
+               'R2': round(r_squared, 2),
+               'Density Ratio': 0.0,
+               'Cell Id': 0,
+               'Visible': True,
+               'Neighbour Visible': True,
+               'Variability Visible': True,
+               'Density Ratio Visible': True
                }
 
         # And add it to the squares dataframe
@@ -619,7 +617,8 @@ def identify_invalid_squares(df_squares,
         updated_count = len(df_squares[df_squares['Valid Tau'] == True])
         if verbose:
             logger.debug(f"Started with {original_count} squares")
-            logger.debug(f"Eliminated {original_count - updated_count} squares with track count was lower than {min_tracks_for_tau} (no Tau calculated): left {updated_count}")
+            logger.debug(
+                f"Eliminated {original_count - updated_count} squares with track count was lower than {min_tracks_for_tau} (no Tau calculated): left {updated_count}")
     else:
         updated_count = 0
 
@@ -633,7 +632,8 @@ def identify_invalid_squares(df_squares,
         df_squares.loc[df_squares['Tau'] == -2, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau'] == True])
         if verbose:
-            logger.debug(f"Eliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
+            logger.debug(
+                f"Eliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
     else:
         updated_count = 0
 
@@ -647,7 +647,8 @@ def identify_invalid_squares(df_squares,
         df_squares.loc[df_squares['Tau'] == -3, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau'] == True])
         if verbose:
-            logger.debug(f"Eliminated {original_count - updated_count} squares for which the R2 was lower than {min_r_squared}: left {updated_count}")
+            logger.debug(
+                f"Eliminated {original_count - updated_count} squares for which the R2 was lower than {min_r_squared}: left {updated_count}")
     else:
         updated_count = 0
 
@@ -674,27 +675,26 @@ def add_columns_to_batch_file(df_batch,
                               min_r_squared,
                               min_density_ratio,
                               max_variability):
-
     mask = ((df_batch['Process'] == 'Yes') |
             (df_batch['Process'] == 'yes') |
             (df_batch['Process'] == 'Y') |
             (df_batch['Process'] == 'y'))
-    df_batch.loc[mask, 'Min Tracks for Tau']    = int(min_tracks_for_tau)
-    df_batch.loc[mask, 'Min R Squared']         = min_r_squared
+    df_batch.loc[mask, 'Min Tracks for Tau'] = int(min_tracks_for_tau)
+    df_batch.loc[mask, 'Min R Squared'] = min_r_squared
     df_batch.loc[mask, 'Nr Of Squares per Row'] = int(nr_of_squares_in_row)
 
-    df_batch['Exclude']               = False
-    df_batch['Neighbour Setting']     = 'Free'
-    df_batch['Variability Setting']   = max_variability
+    df_batch['Exclude'] = False
+    df_batch['Neighbour Setting'] = 'Free'
+    df_batch['Variability Setting'] = max_variability
     df_batch['Density Ratio Setting'] = min_density_ratio
-    df_batch['Nr Total Squares']      = 0         # Defined by the nr of squares per row
-    df_batch['Nr Defined Squares']    = 0         # The number of squares for which a Tau was successfully calculated
-    df_batch['Nr Visible Squares']    = 0         # The number of squares that also meet the density and variability hurdle
-    df_batch['Nr Invisible Squares']  = 0
-    df_batch['Nr Rejected Squares']   = 0         # The difference between Nr Defined and Visible squares
-    df_batch['Max Squares Ratio']     = 0
-    df_batch['Squares Ratio']         = 0.0
-    df_batch['Nr Invisible Squares']  = 0
+    df_batch['Nr Total Squares'] = 0  # Defined by the nr of squares per row
+    df_batch['Nr Defined Squares'] = 0  # The number of squares for which a Tau was successfully calculated
+    df_batch['Nr Visible Squares'] = 0  # The number of squares that also meet the density and variability hurdle
+    df_batch['Nr Invisible Squares'] = 0
+    df_batch['Nr Rejected Squares'] = 0  # The difference between Nr Defined and Visible squares
+    df_batch['Max Squares Ratio'] = 0
+    df_batch['Squares Ratio'] = 0.0
+    df_batch['Nr Invisible Squares'] = 0
 
     return df_batch
 
@@ -720,19 +720,21 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
 
     df_batch = read_batch_from_file(os.path.join(paint_directory, "batch.csv"))
     if df_batch is None:
-        logger.error(f"Function 'process_images_in_paint_directory' failed: Likely, {paint_directory} is not a valid directory containing cell image information.")
+        logger.error(
+            f"Function 'process_images_in_paint_directory' failed: Likely, {paint_directory} is not a valid directory containing cell image information.")
         exit(1)
 
     if not check_batch_integrity(df_batch):
-        logger.error(f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
+        logger.error(
+            f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
         exit(1)
 
     # Needed in some cases, unclear why
     df_batch['Batch Sequence Nr'] = df_batch['Batch Sequence Nr'].astype(int)
     df_batch['Experiment Seq Nr'] = df_batch['Experiment Seq Nr'].astype(int)
-    df_batch['Experiment Nr']     = df_batch['Experiment Nr'].astype(int)
-    df_batch['Experiment Date']   = df_batch['Experiment Date'].astype(int)
-    df_batch['Threshold']         = df_batch['Threshold'].astype(int)
+    df_batch['Experiment Nr'] = df_batch['Experiment Nr'].astype(int)
+    df_batch['Experiment Date'] = df_batch['Experiment Date'].astype(int)
+    df_batch['Threshold'] = df_batch['Threshold'].astype(int)
 
     # Need to make sure that there is a meaningful index
     df_batch.set_index('Batch Sequence Nr', inplace=True, drop=False)
@@ -759,7 +761,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
     for index, row in df_batch.iterrows():
         ext_image_name = row["Image Name"] + '-threshold-' + str(row["Threshold"])
         ext_image_path = os.path.join(paint_directory, ext_image_name)
-        concentration  = row["Concentration"]
+        concentration = row["Concentration"]
 
         squares_file_name = os.path.join(ext_image_path, "grid", ext_image_name + "-squares.csv")
         tracks_file_name = os.path.join(ext_image_path, "tracks", ext_image_name + "-full-tracks.csv")
@@ -786,7 +788,6 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
             else:
                 logger.debug(ext_image_name)
 
-
             df_squares = process_single_image_in_paint_directory_traditional_mode(ext_image_path,
                                                                                   ext_image_name,
                                                                                   nr_of_squares_in_row,
@@ -808,16 +809,16 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
 
             nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
             nr_visible_squares = len(df_squares[df_squares['Visible'] == True])
-            nr_total_squares   = int(nr_of_squares_in_row * nr_of_squares_in_row)
-            df_batch.loc[index, 'Nr Total Squares']      = nr_total_squares
-            df_batch.loc[index, 'Nr Defined Squares']    = nr_defined_squares
-            df_batch.loc[index, 'Nr Visible Squares']    = nr_visible_squares
-            df_batch.loc[index, 'Nr Invisible Squares']  = nr_defined_squares -  nr_visible_squares
-            df_batch.loc[index, 'Squares Ratio']         = round(100 * nr_defined_squares / nr_total_squares)
-            df_batch.loc[index, 'Max Squares Ratio']     = max_square_coverage
-            df_batch.loc[index, 'Nr Rejected Squares']   = nr_total_squares - nr_defined_squares
-            df_batch.loc[index, 'Exclude']               = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
-            df_batch.loc[index, 'Ext Image Name']        = ext_image_name
+            nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
+            df_batch.loc[index, 'Nr Total Squares'] = nr_total_squares
+            df_batch.loc[index, 'Nr Defined Squares'] = nr_defined_squares
+            df_batch.loc[index, 'Nr Visible Squares'] = nr_visible_squares
+            df_batch.loc[index, 'Nr Invisible Squares'] = nr_defined_squares - nr_visible_squares
+            df_batch.loc[index, 'Squares Ratio'] = round(100 * nr_defined_squares / nr_total_squares)
+            df_batch.loc[index, 'Max Squares Ratio'] = max_square_coverage
+            df_batch.loc[index, 'Nr Rejected Squares'] = nr_total_squares - nr_defined_squares
+            df_batch.loc[index, 'Exclude'] = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
+            df_batch.loc[index, 'Ext Image Name'] = ext_image_name
 
             i += 1
             processed += 1
@@ -825,9 +826,10 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
         else:
             logger.debug(f"Squares file already up to date: {squares_file_name}")
 
-    save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv") )
+    save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv"))
     run_time = round(time.time() - time_stamp, 1)
     logger.info(f"Processed  {nr_files:2d} images in {paint_directory} in {format_time_nicely(run_time)}")
+
 
 if __name__ == "__main__":
     root = Tk()

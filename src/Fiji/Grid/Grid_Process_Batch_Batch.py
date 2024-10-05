@@ -21,6 +21,7 @@ from LoggerConfigFiji import logger, change_file_handler
 
 change_file_handler('Grid Process Batch Batch.log')
 
+
 def grid_analysis_batch(paint_directory, image_source_directory):
 
     batch_file_name = os.path.join(paint_directory, "batch.csv")

@@ -54,7 +54,8 @@ def get_timestamp_from_string(date_str, format_str='%Y-%m-%d %H:%M:%S'):
 
 if __name__ == '__main__':
     # Example of using current time for timestamp
-    set_directory_timestamp('/Users/hans/Paint Data/Regular Probes/Single/Paint Regular Probes - Single - 30 Squares - 5 DR')
+    set_directory_timestamp(
+        '/Users/hans/Paint Data/Regular Probes/Single/Paint Regular Probes - Single - 30 Squares - 5 DR')
 
     # Example of using a specific timestamp
     specific_time = get_timestamp_from_string('2023-01-01 12:00:00')

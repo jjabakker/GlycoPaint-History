@@ -16,8 +16,9 @@ console_handler.setLevel(logging.DEBUG)  # All logs at DEBUG level or higher go 
 console_handler.setFormatter(formatter)
 
 # Create file handler
+
 def create_file_handler(file_name):
-    file_handler    = logging.FileHandler(os.path.join(os.path.expanduser('~'), file_name), mode ='w')  # Logs to a file
+    file_handler    = logging.FileHandler(os.path.join(os.path.expanduser('~'), file_name), mode='w')  # Logs to a file
     file_handler.setLevel(logging.INFO)  # Only logs at INFO level or higher go to the file
     file_handler.setFormatter(formatter)
     return file_handler

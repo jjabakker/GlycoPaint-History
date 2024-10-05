@@ -22,6 +22,7 @@ MAX_SQUARES_WITH_TAU = 20
 MAX_VARIABILITY = 10
 MIN_DENSITY_RATIO = 2
 
+
 def inspect_batch_files(root_dir):
     """
     Inspects batch files in the given root directory and generates an output summary.
@@ -76,6 +77,7 @@ def inspect_batch_files(root_dir):
         logging.info(f"Output file saved at: {output_file}")
     except Exception as e:
         logging.error(f"Failed to save output file '{output_file}': {e}")
+
 
 class InspectDialog:
     """
@@ -133,6 +135,7 @@ class InspectDialog:
         Closes the application.
         """
         root.destroy()
+
 
 if __name__ == '__main__':
     root = Tk()
