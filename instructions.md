@@ -142,7 +142,7 @@ The pipeline assume that files are in Nikon's .nd2 format and will check for the
 
 ## File naming convention
 
-The convention for experiment filenames used in this version of the software is described by the following regular expression: '\d{6}-Exp-d{1,2}-[AB][1234]-\d{1,2}')
+The convention for experiment filenames used in this version of the software is described by the following regular expression: '\d{6}-Exp-d{1,2}-[AB][1234]-\d{1,2}'
 
 In plain words:
 -	6 digits (representing a date): indicating the experiment date

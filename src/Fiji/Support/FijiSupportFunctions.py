@@ -17,6 +17,7 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
     Ask the user to specify the user image directory. Present the last used value as default.
     Save the user choice.
     :param prompt:
+    :param directory:
     :return:
     """
     root_dir, paint_dir, images_dir = get_default_directories()
