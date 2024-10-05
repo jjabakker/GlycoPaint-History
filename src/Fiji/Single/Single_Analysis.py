@@ -1,16 +1,13 @@
-
+import csv
 import os
 import sys
-import csv
+from inspect import currentframe, getframeinfo
 
 from fiji.plugin.trackmate import Logger
 from fiji.plugin.trackmate import Model
 from ij import IJ
-from ij import WindowManager
 from ij.plugin.frame import RoiManager
 from java.lang.System import getProperty
-
-from inspect import currentframe, getframeinfo
 
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
@@ -25,11 +22,11 @@ from FijiSupportFunctions import fiji_get_file_open_write_attribute
 
 from fiji.util.gui import GenericDialogPlus
 
-from LoggerConfigFiji import logger, change_file_handler
+from LoggerConfigFiji import logger
+
 
 
 def process_full_image(threshold, image_directory, image_name, cell_type, probe, probe_type, concentration_probe):
-
     """
     This function runs trackmate on the full image, i.e. without any ROI identified
     The results are written to:
@@ -46,9 +43,9 @@ def process_full_image(threshold, image_directory, image_name, cell_type, probe,
     :return:
     """
 
-    full_results_file    = image_directory + os.sep + image_name + os.sep + image_name + "-full-results.csv"
+    full_results_file = image_directory + os.sep + image_name + os.sep + image_name + "-full-results.csv"
     full_tracks_filename = image_directory + os.sep + image_name + os.sep + "tracks" + os.sep + image_name + "-full-tracks.csv"
-    tiff_filename        = image_directory + os.sep + image_name + os.sep + "img" + os.sep + image_name + ".tiff"
+    tiff_filename = image_directory + os.sep + image_name + os.sep + "img" + os.sep + image_name + ".tiff"
 
     nr_spots, total_tracks, long_tracks = paint_trackmate(threshold, full_tracks_filename, tiff_filename)
     if nr_spots == -1:
@@ -64,21 +61,22 @@ def process_full_image(threshold, image_directory, image_name, cell_type, probe,
     export_file = open(full_results_file, open_attribute)
     export_writer = csv.writer(export_file)
 
-    fields = ["Image Name", "Cell Type", "Probe", "Probe Type", "Concentration", "Threshold", "F Spots", "F Total Tracks",
-              "F Long Tracks", "F Area"]
+    fields = ["Image Name", "Cell Type", "Probe", "Probe Type", "Concentration", "Threshold", "F Spots",
+              "F Total Tracks", "F Long Tracks", "F Area"]
     export_writer.writerow(fields)
 
     area = round(82.0864 * 82.0864, 0)
 
-    fields = [image_name, cell_type, probe, probe_type, concentration_probe, threshold, nr_spots, total_tracks, long_tracks, area]
+    fields = [image_name, cell_type, probe, probe_type, concentration_probe, threshold, nr_spots, total_tracks,
+              long_tracks, area]
     export_writer.writerow(fields)
 
     export_file.close()
 
     return 0
 
-def get_user_input(interactive):
 
+def get_user_input(interactive):
     """
     :param interactive:
     :return:
@@ -87,9 +85,9 @@ def get_user_input(interactive):
     model = Model()
     model.setLogger(Logger.IJ_LOGGER)
 
-    threshold           = 5.0
-    probe               = "1 Mono"
-    probe_type          = "Simple"
+    threshold = 5.0
+    probe = "1 Mono"
+    probe_type = "Simple"
     concentration_probe = 1
 
     # See if there is a choices file. If there is, take the default values from there
@@ -144,6 +142,7 @@ def get_user_input(interactive):
             return 0, 0, 0, 0
 
     return probe, probe_type, threshold, concentration_probe
+
 
 def square_analysis():
     """
