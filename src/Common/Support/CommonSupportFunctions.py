@@ -11,11 +11,11 @@ def get_default_directories():
     :return:
     """
     configuration_dir = os.path.expanduser('~') + os.sep + "Paint Profile"
-    parameter_file    = os.path.join(configuration_dir, "default_directories.csv")
+    parameter_file = os.path.join(configuration_dir, "default_directories.csv")
 
     image_directory = os.path.expanduser('~')
     paint_directory = os.path.expanduser('~')
-    root_directory  = os.path.expanduser('~')
+    root_directory = os.path.expanduser('~')
 
     try:
         f = open(parameter_file, 'rt')
@@ -25,7 +25,7 @@ def get_default_directories():
 
     try:
         for row in KeyError, IndexError:
-            if row[0]  == 'images_directory':
+            if row[0] == 'images_directory':
                 images_directory = row[1]
             elif row[0] == 'paint_directory':
                 paint_directory = row[1]
@@ -44,7 +44,7 @@ def save_default_directories(root_directory, paint_directory, images_directory):
     """
 
     configuration_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
-    parameter_file    = os.path.join(configuration_dir, "default_directories.csv")
+    parameter_file = os.path.join(configuration_dir, "default_directories.csv")
 
     if not os.path.isdir(configuration_dir):
         os.mkdir(configuration_dir)
@@ -111,9 +111,9 @@ def create_directories(image_directory, delete_existing=True):
             delete_files_in_directory(image_directory)
 
     tracks_dir = os.path.join(image_directory, "tracks")  # Where all cells track files will be stored
-    plt_dir    = os.path.join(image_directory, "plt")     # Where all cells plt files will be stored
-    grid_dir   = os.path.join(image_directory, "grid")    # Where all grid files will be stored
-    img_dir    = os.path.join(image_directory, "img")     # Where all cells img files will be stored
+    plt_dir = os.path.join(image_directory, "plt")  # Where all cells plt files will be stored
+    grid_dir = os.path.join(image_directory, "grid")  # Where all grid files will be stored
+    img_dir = os.path.join(image_directory, "img")  # Where all cells img files will be stored
 
     dirs_to_create = [tracks_dir, plt_dir, grid_dir, img_dir]
 
@@ -125,6 +125,3 @@ def create_directories(image_directory, delete_existing=True):
                 delete_files_in_directory(directory)
 
     return tracks_dir, plt_dir, img_dir
-
-
-

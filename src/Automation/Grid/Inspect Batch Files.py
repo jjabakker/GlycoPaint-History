@@ -1,8 +1,9 @@
-import os
-import pandas as pd
 import logging
+import os
 from tkinter import *
 from tkinter import ttk, filedialog
+
+import pandas as pd
 
 from src.Automation.Support.Support_Functions import (
     get_default_directories,
@@ -44,9 +45,9 @@ def inspect_batch_files(root_dir):
 
         if not os.path.isdir(paint_dir_path):  # If it's not a directory, skip it
             continue
-        if 'Output' in paint_dir:             # Skip the output directory
+        if 'Output' in paint_dir:  # Skip the output directory
             continue
-        if paint_dir.startswith('-'):         # Skip directories marked with '-'
+        if paint_dir.startswith('-'):  # Skip directories marked with '-'
             continue
 
         logging.info(f'Inspecting directory: {paint_dir_path}')
@@ -94,22 +95,22 @@ class InspectDialog:
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
         #  Do the lay-out
-        content.grid          (column=0, row=0)
-        frame_directory.grid  (column=0, row=1, padx=5, pady=5)
-        frame_buttons.grid    (column=0, row=2, padx=5, pady=5)
+        content.grid(column=0, row=0)
+        frame_directory.grid(column=0, row=1, padx=5, pady=5)
+        frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
         # Fill the button frame
         btn_process = ttk.Button(frame_buttons, text='Process', command=self.process)
-        btn_exit    = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
-        btn_process.grid (column=0, row=1)
-        btn_exit.grid    (column=0, row=2)
+        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
+        btn_process.grid(column=0, row=1)
+        btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
-        btn_root_dir       = ttk.Button(frame_directory, text='Root Directory', width=15, command=self.change_root_dir)
-        self.lbl_root_dir  = ttk.Label(frame_directory, text=self.root_directory, width=50)
+        btn_root_dir = ttk.Button(frame_directory, text='Root Directory', width=15, command=self.change_root_dir)
+        self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=50)
 
-        btn_root_dir.grid      (column=0, row=0, padx=10, pady=5)
-        self.lbl_root_dir.grid (column=1, row=0, padx=20, pady=5)
+        btn_root_dir.grid(column=0, row=0, padx=10, pady=5)
+        self.lbl_root_dir.grid(column=1, row=0, padx=20, pady=5)
 
     def change_root_dir(self):
         """
