@@ -37,7 +37,12 @@ logger.addHandler(file_handler)
 
 def change_file_handler(file_name):
     global file_handler
+    global logger_file_name_assigned
 
     logger.removeHandler(file_handler)
     file_handler = create_file_handler(file_name)
     logger.addHandler(file_handler)
+    logger_file_name_assigned = True
+
+
+logger_file_name_assigned = False
