@@ -105,7 +105,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
             process = row['Process']
             image_file = row['Ext Image Name']
 
-        except Exception:
+        except KeyError, IndexError:
             logger.error("Error in batch file format")
             sys.exit(-1)
 
@@ -188,7 +188,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
         os.remove(old_batch_file_name)
     try:
         os.rename(batch_file_name, old_batch_file_name)
-    except OSError as e:
+    except OSError:
         logger.error("Could not rename batch file: " + old_batch_file_name)
         return -1
 
@@ -196,7 +196,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
         os.remove(batch_file_name)
     try:
         os.rename(temp_batch_file_name, batch_file_name)
-    except OSError as e:
+    except OSError:
         logger.error("Could not rename results file: " + temp_batch_file_name)
         return -1
 

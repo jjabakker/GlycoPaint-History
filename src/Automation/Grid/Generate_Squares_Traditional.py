@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 
 from src.Automation.Support.Curvefit_and_Plot import (
-    CompileDuration,
-    CurveFitAndPlot)
+    compile_duration,
+    curve_fit_and_plot)
 from src.Automation.Support.Generate_HeatMap import plot_heatmap
 from src.Automation.Support.Support_Functions import (
     calc_variability,
@@ -455,15 +455,15 @@ def create_df_squares_traditional_mode(df_tracks,
             tau = -1
             r_squared = 0
         else:
-            duration_data = CompileDuration(df_tracks_square)
+            duration_data = compile_duration(df_tracks_square)
             plt_file = image_path + os.sep + "plt" + os.sep + image_name + "-square-" + str(i) + ".png"
-            tau, r_squared = CurveFitAndPlot(plot_data=duration_data,
-                                             nr_tracks=nr_tracks,
-                                             plot_max_x=5,
-                                             plot_title=" ",
-                                             file=plt_file,
-                                             plot_to_screen=False,
-                                             verbose=False)
+            tau, r_squared = curve_fit_and_plot(plot_data=duration_data,
+                                                nr_tracks=nr_tracks,
+                                                plot_max_x=5,
+                                                plot_title=" ",
+                                                file=plt_file,
+                                                plot_to_screen=False,
+                                                verbose=False)
             if tau == -2:  # Tau calculation failed
                 r_squared = 0
             tau = int(tau)
@@ -793,7 +793,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
             tracks_file_timestamp = os.path.getmtime(tracks_file_name)
 
         # Force processing
-        process = True
+        # process = True
         if process or squares_file_timestamp < tracks_file_timestamp:
 
             if verbose:

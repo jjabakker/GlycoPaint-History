@@ -8,7 +8,7 @@ from scipy.optimize import curve_fit
 from src.Automation.Support.Logger_Config import logger
 
 
-def ReadTrackMateData(csvfilename, istrack):
+def read_track_mate_data(csvfilename, istrack):
     """
     Function is not to be called externally, but by ReadTracksData or ReadSpotsData
     Read in the data file (it can be either 'tracks' or 'spots').
@@ -41,16 +41,16 @@ def ReadTrackMateData(csvfilename, istrack):
         sys.exit()
 
 
-def ReadTracksData(csvfilename):
+def read_tracks_data(csvfilename):
     """
     :param csvfilename:
     :return:
     """
 
-    return ReadTrackMateData(csvfilename, istrack=True)
+    return read_track_mate_data(csvfilename, istrack=True)
 
 
-def monoExp(x, m, t, b):
+def mono_exp(x, m, t, b):
     # Define the exponential decay function that will be used for fitting
     try:
         calc = m * np.exp(-t * x) + b
@@ -60,7 +60,7 @@ def monoExp(x, m, t, b):
     return calc
 
 
-def CompileDuration(tracks):
+def compile_duration(tracks):
     """
     The function produces a histogram
     :param tracks: a dataframe containing the histogram data
@@ -76,8 +76,8 @@ def CompileDuration(tracks):
     return histdata
 
 
-def CurveFitAndPlot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histogram', file="", plot_to_screen=True,
-                    verbose=True):
+def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histogram', file="", plot_to_screen=True,
+                       verbose=True):
     """
     :param plot_data:
     :param nr_tracks
@@ -101,7 +101,7 @@ def CurveFitAndPlot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histo
     p0 = (2000, 4, 10)  # this is more what we see
 
     try:
-        params, cv = curve_fit(monoExp, x, y, p0)
+        params, cv = curve_fit(mono_exp, x, y, p0)
         m, t, b = params
     except ValueError:
         if verbose:
@@ -116,28 +116,28 @@ def CurveFitAndPlot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histo
             logger.warning('CurveFitAndPlot: Covariance of the parameters can not be estimated')
         return -2, 0
 
-    tauSec = (1 / t)
+    tau_sec = (1 / t)
 
     # Determine quality of the fit
-    squaredDiffs = np.square(y - monoExp(x, m, t, b))
-    squaredDiffsFromMean = np.square(y - np.mean(y))
-    if np.sum(squaredDiffsFromMean) == 0:
-        rSquared = 0
+    squared_diffs = np.square(y - mono_exp(x, m, t, b))
+    squared_diffs_from_mean = np.square(y - np.mean(y))
+    if np.sum(squared_diffs_from_mean) == 0:
+        r_squared = 0
     else:
         try:
-            rSquared = 1 - np.sum(squaredDiffs) / np.sum(squaredDiffsFromMean)
+            r_squared = 1 - np.sum(squared_diffs) / np.sum(squared_diffs_from_mean)
         except (OptimizeWarning, RuntimeError, RuntimeWarning):
             logger.warning('CurveFitAndPlot: OptimizeWarning, RuntimeError, RuntimeWarning')
-            rSquared = 0
+            r_squared = 0
 
     fig, ax = plt.subplots()
     ax.plot(x, y, linewidth=1.0, label="Data")
-    ax.plot(x, monoExp(x, m, t, b), linewidth=1.0, label="Fitted")
+    ax.plot(x, mono_exp(x, m, t, b), linewidth=1.0, label="Fitted")
 
     x_middle = plot_max_x / 2 - plot_max_x * 0.1
     y_middle = y.max() / 2
-    plt.text(x_middle, y_middle, f"Tau = {tauSec * 1e3:.0f} ms")
-    plt.text(x_middle, 0.8 * y_middle, f"R2 = {rSquared:.4f} ms")
+    plt.text(x_middle, y_middle, f"Tau = {tau_sec * 1e3:.0f} ms")
+    plt.text(x_middle, 0.8 * y_middle, f"R2 = {r_squared:.4f} ms")
     plt.text(x_middle, 0.6 * y_middle, f"Number or tracks is {nr_tracks}")
     plt.text(x_middle, 0.4 * y_middle, f"Zoomed in from 0 to {plot_max_x:.0f} s")
 
@@ -161,10 +161,10 @@ def CurveFitAndPlot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histo
     # Inspect the parameters
     if verbose:
         print("")
-        print(f'R² = {rSquared:.4f}')
+        print(f'R² = {r_squared:.4f}')
         print(f'Y = {m:.3f} * e^(-{t:.3f} * x) + {b:.3f}')
-        print(f'Tau = {tauSec * 1e3:.0f} ms')
+        print(f'Tau = {tau_sec * 1e3:.0f} ms')
 
     plt.close()
-    tauSec *= 1000
-    return tauSec, rSquared
+    tau_sec *= 1000
+    return tau_sec, r_squared

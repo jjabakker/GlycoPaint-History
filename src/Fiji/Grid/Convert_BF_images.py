@@ -17,7 +17,7 @@ change_file_handler('Convert BF Images.log')
 from FijiSupportFunctions import ask_user_for_image_directory
 
 
-def convert_BF_images(image_source_directory, paint_directory, force=False):
+def convert_bf_images(image_source_directory, paint_directory, force=False):
     """
     Convert .nd2 BF images to JPEG and store them in a specified directory.
 
@@ -100,4 +100,4 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # Run the conversion with user-specified directories
-    convert_BF_images(images_source_directory, paint_directory, force=False)
+    convert_bf_images(images_source_directory, paint_directory, force=False)

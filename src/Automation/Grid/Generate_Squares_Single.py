@@ -6,8 +6,8 @@ from tkinter import ttk, filedialog
 import pandas as pd
 
 from src.Automation.Support.Curvefit_and_Plot import (
-    CompileDuration,
-    CurveFitAndPlot)
+    compile_duration,
+    curve_fit_and_plot)
 
 from src.Automation.Support.Support_Functions import (
     calc_variability,
@@ -339,13 +339,13 @@ def process_single_image_in_paint_directory(image_path,
         tau = -1
         r_squared = 0
     else:
-        duration_data = CompileDuration(df_tracks_for_tau)
+        duration_data = compile_duration(df_tracks_for_tau)
         plt_file = image_path + os.sep + "plt" + os.sep + image_name + ".png"
-        tau, r_squared = CurveFitAndPlot(plot_data=duration_data,
-                                         nr_tracks=nr_tracks,
-                                         plot_max_x=5,
-                                         plot_title=" ",
-                                         file=plt_file, plot_to_screen=False, verbose=False)
+        tau, r_squared = curve_fit_and_plot(plot_data=duration_data,
+                                            nr_tracks=nr_tracks,
+                                            plot_max_x=5,
+                                            plot_title=" ",
+                                            file=plt_file, plot_to_screen=False, verbose=False)
         if tau == -2:  # Tau calculation failed
             r_squared = 0
         tau = int(tau)

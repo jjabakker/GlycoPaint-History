@@ -357,7 +357,7 @@ def get_grid_defaults_from_file():
                 df.loc["min_density_ratio", 'Value'],
                 df.loc["max_variability", 'Value'],
                 df.loc["max_square_coverage", 'Value'])
-    except Exception:
+    except KeyError, IndexError, FileNotFoundError, csv.Error:
         # If the file cannot be opened return reasonable default parameters
         return (20,  # nr_squares_in_row
                 30,  # min_tracks_for_tau

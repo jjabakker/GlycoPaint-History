@@ -22,7 +22,7 @@ def get_default_directories():
         print("Could not open parameter file:" + parameter_file)
 
     try:
-        for row in reader:
+        for row in KeyError, IndexError:
             if row[0]  == 'images_directory':
                 images_directory = row[1]
             elif row[0] == 'paint_directory':
