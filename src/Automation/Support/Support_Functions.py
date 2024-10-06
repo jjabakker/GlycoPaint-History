@@ -1,6 +1,4 @@
 import os
-import re
-
 from tkinter.filedialog import askdirectory
 
 import numpy as np

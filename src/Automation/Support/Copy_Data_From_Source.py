@@ -1,6 +1,5 @@
 import os
 import shutil
-import logging
 
 from src.Automation.Support.Logger_Config import logger
 
@@ -17,7 +16,8 @@ def copy_directory(src, dest):
         logger.debug(f"Copied directory from {src} to {dest}")
 
     except Exception as e:
-        logger.error(f"copy_data_from_source: copy_directory: Failed to copy directory from {src} to {dest}. Error: {e}")
+        logger.error(
+            f"copy_data_from_source: copy_directory: Failed to copy directory from {src} to {dest}. Error: {e}")
 
 
 def copy_data_from_source(source_root, dest_root):
@@ -52,7 +52,8 @@ def copy_data_from_source(source_root, dest_root):
         exp_dirs.sort()
 
         for exp in exp_dirs:
-            src_dirs = [d for d in os.listdir(os.path.join(source_root, exp)) if os.path.isdir(os.path.join(source_root, exp, d))]
+            src_dirs = [d for d in os.listdir(os.path.join(source_root, exp)) if
+                        os.path.isdir(os.path.join(source_root, exp, d))]
             src_dirs.sort()
 
             for src_dir in src_dirs:
@@ -64,7 +65,6 @@ def copy_data_from_source(source_root, dest_root):
 
 
 if __name__ == '__main__':
-
     # Example usage
 
     copy_data_from_source(

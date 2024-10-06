@@ -22,7 +22,6 @@ change_file_handler('Grid Process Batch.log')
 
 
 def grid_analysis_batch(paint_directory, image_source_directory):
-
     # Open the batch file to determine the columns (which should be in the paint directory)
 
     batch_file_name = os.path.join(paint_directory, "batch.csv")

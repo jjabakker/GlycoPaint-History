@@ -2,7 +2,7 @@ import csv
 import os
 import sys
 import time
-from ij import IJ
+
 from java.lang.System import getProperty
 
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
@@ -11,20 +11,14 @@ sys.path.append(paint_dir)
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint", "Grid")
 sys.path.append(paint_dir)
 
-from Trackmate import paint_trackmate
-from CommonSupportFunctions import create_directories
 from FijiSupportFunctions import (
     ask_user_for_file,
-    fiji_get_file_open_write_attribute,
-    fiji_get_file_open_append_attribute,
-    format_time_nicely,
-    set_directory_timestamp)
+    format_time_nicely)
 from Grid_Process_Batch import grid_analysis_batch
 
 from LoggerConfigFiji import logger, change_file_handler
 
 change_file_handler('Grid Process Batch Batch.log')
-
 
 if __name__ == "__main__":
 
