@@ -24,8 +24,10 @@ from src.Automation.Support.Support_Functions import (
     check_batch_integrity,
     format_time_nicely)
 
-from src.Automation.Support.Logger_Config import logger
+from src.Automation.Support.Logger_Config import logger, change_file_handler, logger_file_name_assigned
 
+if not logger_file_name_assigned:
+    change_file_handler('Generate Squares Single.log')
 
 class GridDialog:
 
@@ -248,7 +250,7 @@ def process_single_image_in_paint_directory(image_path,
     df_tracks = get_df_from_file(tracks_file_name, header=0, skip_rows=[1, 2, 3])
     if df_tracks is None:
         logger.debug(f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
-        return None
+        return
 
     # Here the actual calculation work is done: df_squares is generated
     df_squares = create_df_squares(df_tracks,
@@ -545,7 +547,7 @@ def process_images_in_paint_directory_single_mode(paint_directory,
     if not check_batch_integrity(df_batch):
         logger.error(
             f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
-        exit(1)
+        return
 
     # Needed in some cases, unclear why
     df_batch['Batch Sequence Nr'] = df_batch['Batch Sequence Nr'].astype(int)
@@ -567,7 +569,7 @@ def process_images_in_paint_directory_single_mode(paint_directory,
     nr_files = len(df_batch)
     if nr_files <= 0:
         logger.info("\nNo files selected for processing")
-        return -1
+        return
 
     # Loop though selected images to produce the individual grid_results files
     i = 1
@@ -591,8 +593,8 @@ def process_images_in_paint_directory_single_mode(paint_directory,
 
         # Get the time stamp of the tracks_file
         if not os.path.isfile(tracks_file_name):
-            print(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
-            exit(-1)
+            logger.error(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
+            continue
         else:
             tracks_file_timestamp = os.path.getmtime(tracks_file_name)
 
@@ -621,8 +623,8 @@ def process_images_in_paint_directory_single_mode(paint_directory,
                                                                                  row['Experiment Name'],
                                                                                  verbose)
             if df_squares is None:
-                logger.error("\nAborted with error")
-                return None
+                logger.error("process_single_image_in_paint_directory: did not return correctly")
+                continue
 
             # To calculate the density use the actual surface coordinates.
             # Assume 2000 frames (100 sec) -  need to check - this is not always the case

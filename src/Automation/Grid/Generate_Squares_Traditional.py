@@ -10,7 +10,6 @@ from src.Automation.Support.Curvefit_and_Plot import (
     CompileDuration,
     CurveFitAndPlot)
 from src.Automation.Support.Generate_HeatMap import plot_heatmap
-from src.Automation.Support.Logger_Config import logger
 from src.Automation.Support.Support_Functions import (
     calc_variability,
     calculate_density,
@@ -27,6 +26,10 @@ from src.Automation.Support.Support_Functions import (
     check_batch_integrity,
     format_time_nicely)
 
+from src.Automation.Support.Logger_Config import logger, change_file_handler, logger_file_name_assigned
+
+if not logger_file_name_assigned:
+    change_file_handler('Generate Squares Single.log')
 
 # -------------------------------------------------------------------------------------
 # Define the default parameters
@@ -785,7 +788,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
         # Get the time stamp of the tracks_file
         if not os.path.isfile(tracks_file_name):
             logger.error(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
-            exit(-1)
+            continue
         else:
             tracks_file_timestamp = os.path.getmtime(tracks_file_name)
 
