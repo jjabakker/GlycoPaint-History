@@ -105,7 +105,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
             process = row['Process']
             image_file = row['Ext Image Name']
 
-        except KeyError, IndexError:
+        except (KeyError, IndexError):
             logger.error("Error in batch file format")
             sys.exit(-1)
 
