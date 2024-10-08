@@ -28,9 +28,6 @@ from src.Automation.Support.Support_Functions import (
 
 change_file_handler('Image Viewer.log')
 
-
-# Test test test test
-
 def save_as_png(canvas, file_name, image_name):
     # canvas.create_text(60, 40, fill='white', text=image_name, font='Helvetica 15 bold')
     canvas.create_text(60, 40)
@@ -80,7 +77,7 @@ def get_images(self, type_of_image):
     df_batch = self.df_batch
     mode = self.mode
 
-    # Create an empty lst that will hold the images
+    # Create an empty list that will hold the images
     list_images = []
 
     # Cycle through the batch file
@@ -1411,6 +1408,12 @@ SelectViewerDialog(root)
 root.mainloop()
 
 if proceed:
+    if conf_file.endswith('batch.csv') :
+        root_directory = os.path.split(conf_file)[0]
+        mode ='Directory'
+    else:
+        root_directory = os.path.split(conf_file)[0]
+        mode ='Conf File'
     root = Tk()
     root.eval('tk::PlaceWindow . center')
     image_viewer = ImageViewer(root, root_directory, conf_file, mode)
