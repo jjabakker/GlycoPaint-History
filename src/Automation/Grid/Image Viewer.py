@@ -127,6 +127,8 @@ def get_images(self, type_of_image):
                 if img.find("grid-roi") == -1 and img.find("heat") == -1:
 
                     # Retrieve image
+                    if img.startswith('.'):
+                        continue
                     left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
                     count += 1
 
