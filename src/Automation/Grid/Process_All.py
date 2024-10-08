@@ -80,7 +80,6 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
         os.makedirs(dest_dir)
 
     if mode == 'single':
-
         run_single(root_dir, nr_of_squares)
     elif mode == 'traditional':
         run_traditional(root_dir, nr_of_squares, min_density_ratio)

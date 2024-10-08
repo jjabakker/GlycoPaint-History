@@ -3,8 +3,6 @@ import os
 import sys
 
 
-
-
 def get_default_directories():
     """
     Reads from file the user image directory that was saved earlier
