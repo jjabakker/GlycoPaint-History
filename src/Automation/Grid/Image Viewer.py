@@ -7,6 +7,8 @@ import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
+#from pathlib import Path
+#import logging
 
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
@@ -26,28 +28,23 @@ from src.Automation.Support.Support_Functions import (
     read_squares_from_file,
     save_batch_to_file)
 
+# Log to an appropriately named file
 change_file_handler('Image Viewer.log')
 
 
-# Test test test test
-
-def save_as_png(canvas, file_name, image_name):
-    # canvas.create_text(60, 40, fill='white', text=image_name, font='Helvetica 15 bold')
+def save_as_png(canvas, file_name):
     canvas.create_text(60, 40)
     canvas.postscript(file=file_name + '.eps')
     img = Image.open(file_name + '.eps')
-    img.save(file_name + '.png', 'png')
+    img.save(f"{file_name}.png", 'png')
 
 
 def save_square_info_to_batch(self):
     for index, row in self.df_batch.iterrows():
-        # image_name = row['Ext Image Name']
-        # squares_file_path = os.path.join(self.paint_directory, image_name, 'grid', image_name + '-squares.csv')
         self.squares_file_name = self.list_images[self.img_no]['Squares File']
         df_squares = read_squares_from_file(self.squares_file_name)
         if df_squares is None:
-            logger.errro(
-                " Function 'save_square_info_to_batch' failed: - Square file {squares_file_path} does not exist")
+            logger.error("Function 'save_square_info_to_batch' failed: - Square file does not exist")
             sys.exit()
         if len(df_squares) > 0:
             nr_visible_squares = len(df_squares[df_squares['Visible']])
@@ -62,23 +59,14 @@ def save_square_info_to_batch(self):
         self.df_batch.loc[index, 'Nr Total Squares'] = nr_total_squares
         self.df_batch.loc[index, 'Squares Ratio'] = squares_ratio
 
-
 def set_for_all_neighbour_state(self):
     self.df_batch['Neighbour Setting'] = self.neighbour_var.get()
 
-
 def get_images(self, type_of_image):
-    """
-    Get the images for the left canvas. Either an image with squares or a heatmap.
-    The data is all in the Combined Filtered Results spreadsheet (which is a compilation of the individual
-    squares files, but for some reason the individual files are used here (maybe a bit safer in terms of
-    corruption risk),
-
-    """
 
     paint_directory = self.paint_directory
     df_batch = self.df_batch
-    mode = self.mode
+    _mode = self.mode
 
     # Create an empty lst that will hold the images
     list_images = []
@@ -92,7 +80,7 @@ def get_images(self, type_of_image):
 
         image_name = df_batch.iloc[index]['Ext Image Name']
 
-        if mode == 'Directory':
+        if _mode == 'Directory':
             image_path = os.path.join(paint_directory, image_name)
         else:
             image_path = os.path.join(paint_directory, str(df_batch.iloc[index]['Experiment Date']), image_name)
@@ -105,7 +93,7 @@ def get_images(self, type_of_image):
         if not os.path.isdir(img_dir):
             continue
 
-        if mode == 'Directory':
+        if _mode == 'Directory':
             bf_dir = os.path.join(paint_directory, "Converted BF Images")
         else:
             bf_dir = os.path.join(paint_directory, str(df_batch.iloc[index]['Experiment Date']), "Converted BF Images")
@@ -123,12 +111,11 @@ def get_images(self, type_of_image):
         square_nrs = []
 
         for img in all_images_in_img_dir:
+            if img.startswith('.'):
+                continue
             if type_of_image == "ROI":  # Look for a file that has 'grid-roi' in the filename
                 if img.find("grid-roi") == -1 and img.find("heat") == -1:
 
-                    # Retrieve image
-                    if img.startswith('.'):
-                        continue
                     left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
                     count += 1
 
@@ -250,19 +237,23 @@ def get_corresponding_bf(bf_dir, image_name):
 
 class ImageViewer:
 
-    def __init__(self, root, directory, conf_file, mode):
+    def __init__(self, _root, directory, _conf_file, _mode):
 
-        # Remember the root, because you need it later to close
-        self.image_viewer_root = root
-        root.title('Image Viewer')
+        # Initialise
+        self.start_y = None
+        self.rect = None
+        self.squares_file_name = None
+        self.start_x = None
+        self.image_viewer_root = _root
+        _root.title('Image Viewer')
 
         self.neighbour_mode = ""  # We can't know for sure what mode is displayed, so leave it ambiguous
         self.img_no = 0
         self.show_squares = True
         self.user_change = False
 
-        self.mode = mode
-        self.conf_file = conf_file
+        self.mode = _mode
+        self.conf_file = _conf_file
         self.paint_directory = directory
 
         if self.mode == 'Directory':
@@ -270,7 +261,7 @@ class ImageViewer:
             self.batchfile_path = os.path.join(self.paint_directory, 'grid_batch.csv')
         else:
             self.paint_directory = os.path.split(self.conf_file)[0]
-            self.batchfile_path = os.path.join(self.paint_directory, conf_file)
+            self.batchfile_path = os.path.join(self.paint_directory, _conf_file)
 
         # Read the batch file. If the file is not there just return (a message will have been printed)
         self.df_batch = read_batch_from_file(self.batchfile_path, FALSE)
@@ -301,7 +292,7 @@ class ImageViewer:
         # --------------------------
 
         # Define the frames
-        content = ttk.Frame(root, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        content = ttk.Frame(_root, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         frame_images = ttk.Frame(content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_picture_left = ttk.Frame(frame_images, borderwidth=2, relief='groove', width=516, height=670,
                                             padding=(0, 0, 0, 0))
@@ -323,7 +314,7 @@ class ImageViewer:
         # Define the canvas for the left image and fill with picture
         self.cn_left_image = tk.Canvas(self.frame_picture_left, width=512, height=512)
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-        root.bind('<Key>', self.key_pressed)
+        _root.bind('<Key>', self.key_pressed)
 
         # Define the canvas for the right image (bf) and fill with picture
         self.cn_right_image = tk.Canvas(self.frame_picture_right, width=512, height=512)
@@ -337,20 +328,20 @@ class ImageViewer:
         self.cb_image_names.set(self.list_images[self.img_no]['Left Image Name'])
 
         # Define the label for the right image name (bf)
-        self.lbl_image_bf_name = StringVar(root, "1:  " + self.list_images[self.img_no]['Right Image Name'])
+        self.lbl_image_bf_name = StringVar(_root, "1:  " + self.list_images[self.img_no]['Right Image Name'])
         lbl_image_bf_name = ttk.Label(self.frame_picture_right, textvariable=self.lbl_image_bf_name)
 
         # Define the label for info1
         cell_info = f"({self.list_images[self.img_no]['Cell Type']}) - ({self.list_images[self.img_no]['Adjuvant']}) - ({self.list_images[self.img_no]['Probe Type']}) - ({self.list_images[self.img_no]['Probe']})"
 
-        self.text_for_info1 = StringVar(root, cell_info)
+        self.text_for_info1 = StringVar(_root, cell_info)
         lbl_info1 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info1)
 
         # Define the label  for info2
         info1 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
         if self.list_images[self.img_no]['Tau'] != 0:
             info1 = f"{info1} - Tau: {int(self.list_images[self.img_no]['Tau'])}"
-        self.text_for_info2 = StringVar(root, info1)
+        self.text_for_info2 = StringVar(_root, info1)
         lbl_info2 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
 
         # Define the label  for info3
@@ -529,8 +520,8 @@ class ImageViewer:
         bn_excel.grid(column=0, row=2, padx=5, pady=5)
         bn_histogram.grid(column=0, row=3, padx=5, pady=5)
 
-        root.bind('<Right>', lambda event: self.go_forward_backward('Forward'))
-        root.bind('<Left>', lambda event: self.go_forward_backward('Backward'))
+        _root.bind('<Right>', lambda event: self.go_forward_backward('Forward'))
+        _root.bind('<Left>', lambda event: self.go_forward_backward('Backward'))
 
         # self.select_squares_for_display()
 
@@ -614,13 +605,13 @@ class ImageViewer:
             # Delete the squares and write the canvas as an eps file
             self.cn_left_image.delete("all")
             self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name), image_name)
+            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
             # Add the squares and write the canvas as an eps file
             self.select_squares_for_display()
             self.display_selected_squares()
             image_name = image_name + '-squares'
-            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name), image_name)
+            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
         # Find all the eps files and delete them
         eps_files = os.listdir(squares_dir)
@@ -656,7 +647,7 @@ class ImageViewer:
             self.save_image_state()
         exit()
 
-    def image_selected(self, event):
+    def image_selected(self, _):
 
         image_name = self.cb_image_names.get()
         logger.debug(image_name)
@@ -800,7 +791,7 @@ class ImageViewer:
         # Updating the numerical value of the slider is not needed with tk widget
         pass
 
-    def variability_changed(self, event):
+    def variability_changed(self, _):
         self.user_change = True
 
         if self.mode_var.get() == 'HEAT':  # Should not happen,as the slider is disabled, but still....
@@ -809,7 +800,7 @@ class ImageViewer:
         self.select_squares_for_display()
         self.display_selected_squares()
 
-    def density_ratio_changed(self, event):
+    def density_ratio_changed(self, _):
         self.user_change = True
 
         if self.mode_var.get() == 'HEAT':
@@ -818,7 +809,7 @@ class ImageViewer:
         self.select_squares_for_display()
         self.display_selected_squares()
 
-    def provide_report_on_all_squares(self, event):
+    def provide_report_on_all_squares(self, _):
 
         cell_ids = self.df_squares['Cell Id'].unique()
         cell_ids.sort()
@@ -865,13 +856,7 @@ class ImageViewer:
             print(df_cells)
             print('\n')
 
-    def provide_report_on_cell(self, event, cell_nr):
-        """
-        Display a bar chart plot for the selected cell
-        :param event:
-        :param cell_nr:
-        :return:
-        """
+    def provide_report_on_cell(self, _, cell_nr):
 
         # Retrieve the squares for the selected cell
         df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
@@ -1110,44 +1095,73 @@ class ImageViewer:
 
         self.display_selected_squares()
 
+
+    # def select_mode_button(self):
+    #
+    #     if self.mode_var.get() == "HEAT":
+    #         self.rb_neighbour_free.configure(state=DISABLED)
+    #         self.rb_neighbour_strict.configure(state=DISABLED)
+    #         self.rb_neighbour_relaxed.configure(state=DISABLED)
+    #
+    #         self.rb_cell0.configure(state=DISABLED)
+    #         self.rb_cell1.configure(state=DISABLED)
+    #         self.rb_cell2.configure(state=DISABLED)
+    #         self.rb_cell3.configure(state=DISABLED)
+    #         self.rb_cell4.configure(state=DISABLED)
+    #         self.rb_cell5.configure(state=DISABLED)
+    #         self.rb_cell6.configure(state=DISABLED)
+    #
+    #         self.sc_variability.configure(state=DISABLED, takefocus=False)
+    #         self.sc_density_ratio.configure(state=DISABLED, takefocus=False)
+    #
+    #     elif self.mode_var.get() == "ROI":
+    #         self.rb_neighbour_free.configure(state=NORMAL)
+    #         self.rb_neighbour_strict.configure(state=NORMAL)
+    #         self.rb_neighbour_relaxed.configure(state=NORMAL)
+    #
+    #         self.rb_cell0.configure(state=NORMAL)
+    #         self.rb_cell1.configure(state=NORMAL)
+    #         self.rb_cell2.configure(state=NORMAL)
+    #         self.rb_cell3.configure(state=NORMAL)
+    #         self.rb_cell4.configure(state=NORMAL)
+    #         self.rb_cell5.configure(state=NORMAL)
+    #         self.rb_cell6.configure(state=NORMAL)
+    #
+    #         self.sc_variability.configure(state=NORMAL)
+    #         self.sc_density_ratio.configure(state=NORMAL)
+    #     else:
+    #         logger.error('Big trouble!')
+    #
+    #     self.list_images = get_images(self, self.mode_var.get())
+    #
+    #     self.img_no = self.img_no - 1
+    #     self.go_forward_backward('Forward')
+
+    def configure_widgets_state(self, state):
+        self.rb_neighbour_free.configure(state=state)
+        self.rb_neighbour_strict.configure(state=state)
+        self.rb_neighbour_relaxed.configure(state=state)
+
+        self.rb_cell0.configure(state=state)
+        self.rb_cell1.configure(state=state)
+        self.rb_cell2.configure(state=state)
+        self.rb_cell3.configure(state=state)
+        self.rb_cell4.configure(state=state)
+        self.rb_cell5.configure(state=state)
+        self.rb_cell6.configure(state=state)
+
+        self.sc_variability.configure(state=state, takefocus=(state == NORMAL))
+        self.sc_density_ratio.configure(state=state, takefocus=(state == NORMAL))
+
     def select_mode_button(self):
-
         if self.mode_var.get() == "HEAT":
-            self.rb_neighbour_free.configure(state=DISABLED)
-            self.rb_neighbour_strict.configure(state=DISABLED)
-            self.rb_neighbour_relaxed.configure(state=DISABLED)
-
-            self.rb_cell0.configure(state=DISABLED)
-            self.rb_cell1.configure(state=DISABLED)
-            self.rb_cell2.configure(state=DISABLED)
-            self.rb_cell3.configure(state=DISABLED)
-            self.rb_cell4.configure(state=DISABLED)
-            self.rb_cell5.configure(state=DISABLED)
-            self.rb_cell6.configure(state=DISABLED)
-
-            self.sc_variability.configure(state=DISABLED, takefocus=False)
-            self.sc_density_ratio.configure(state=DISABLED, takefocus=False)
-
+            self.configure_widgets_state(DISABLED)
         elif self.mode_var.get() == "ROI":
-            self.rb_neighbour_free.configure(state=NORMAL)
-            self.rb_neighbour_strict.configure(state=NORMAL)
-            self.rb_neighbour_relaxed.configure(state=NORMAL)
-
-            self.rb_cell0.configure(state=NORMAL)
-            self.rb_cell1.configure(state=NORMAL)
-            self.rb_cell2.configure(state=NORMAL)
-            self.rb_cell3.configure(state=NORMAL)
-            self.rb_cell4.configure(state=NORMAL)
-            self.rb_cell5.configure(state=NORMAL)
-            self.rb_cell6.configure(state=NORMAL)
-
-            self.sc_variability.configure(state=NORMAL)
-            self.sc_density_ratio.configure(state=NORMAL)
+            self.configure_widgets_state(NORMAL)
         else:
             logger.error('Big trouble!')
 
         self.list_images = get_images(self, self.mode_var.get())
-
         self.img_no = self.img_no - 1
         self.go_forward_backward('Forward')
 
@@ -1301,14 +1315,14 @@ mode = ''
 
 class SelectViewerDialog:
 
-    def __init__(self, root):
+    def __init__(self, _root: tk.Tk)  ->  None:
 
-        root.title('Image Viewer')
+        _root.title('Image Viewer')
 
         self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
         self.conf_file = ''
 
-        content = ttk.Frame(root)
+        content = ttk.Frame(_root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
@@ -1345,7 +1359,7 @@ class SelectViewerDialog:
         self.rb_mode_directory.grid(column=2, row=0, padx=10, pady=5)
         self.rb_mode_conf_file.grid(column=2, row=1, padx=10, pady=5)
 
-    def change_root_dir(self):
+    def change_root_dir(self) -> None:
 
         global root_directory
         global conf_file
@@ -1358,7 +1372,7 @@ class SelectViewerDialog:
             self.rb_mode_directory.focus()
             self.lbl_root_dir.config(text=self.root_directory)
 
-    def change_conf_file(self):
+    def change_conf_file(self) -> None:
         global root_directory
         global conf_file
         global mode
@@ -1372,7 +1386,7 @@ class SelectViewerDialog:
             self.lbl_conf_file.config(text=self.conf_file)
             # save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
 
-    def process(self):
+    def process(self) -> None:
         global proceed
         global root_directory
         global conf_file
@@ -1397,7 +1411,8 @@ class SelectViewerDialog:
             proceed = True
             root.destroy()
 
-    def exit_dialog(self):
+    @staticmethod
+    def exit_dialog() -> None:
 
         global proceed
 

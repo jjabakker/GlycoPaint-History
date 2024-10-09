@@ -173,7 +173,7 @@ def compile_squares_file(root_dir, verbose):
 
 
 def split_probe_valency(row):
-    regexp = re.compile(r'(?P<valency>\d{1}) +(?P<structure>[A-Za-z]+)')
+    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
     match = regexp.match(row['Probe'])
     if match is not None:
         valency = match.group('valency')
@@ -183,7 +183,7 @@ def split_probe_valency(row):
 
 
 def split_probe_structure(row):
-    regexp = re.compile(r'(?P<valency>\d{1}) +(?P<structure>[A-Za-z]+)')
+    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
     match = regexp.match(row['Probe'])
     if match is not None:
         structure = match.group('structure')
@@ -194,7 +194,7 @@ def split_probe_structure(row):
 
 class CompileDialog:
 
-    def __init__(self, root):
+    def __init__(self, _root):
         root.title('Compile Square Data')
 
         self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
