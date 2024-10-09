@@ -26,6 +26,9 @@ from src.Automation.Support.Support_Functions import (
     save_batch_to_file,
     check_batch_integrity,
     format_time_nicely)
+from src.Automation.Support.Grid_Support_Functions import (
+    calc_average_track_count_of_lowest_squares
+)
 
 if not logger_file_name_assigned:
     change_file_handler('Generate Squares Single.log')
@@ -38,7 +41,7 @@ if not logger_file_name_assigned:
 
 class GridDialog:
 
-    def __init__(self, root):
+    def __init__(self, _root):
 
         # Retrieve the earlier saved parameters from disk, if nothing was saved provide reasonable defaults
         (nr_of_squares_in_row,
@@ -49,9 +52,9 @@ class GridDialog:
          max_square_coverage) = get_grid_defaults_from_file()
         self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
 
-        root.title('Batch grid processing')
+        _root.title('Batch grid processing')
 
-        content = ttk.Frame(root)
+        content = ttk.Frame(_root)
         frame_parameters = ttk.Frame(content, borderwidth=5, relief='ridge',
                                      width=200, height=100, padding=(30, 30, 30, 30))
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
@@ -65,22 +68,22 @@ class GridDialog:
         lbl_max_variability = ttk.Label(frame_parameters, text='Max variability', width=30, anchor=W)
         lbl_max_square_coverage = ttk.Label(frame_parameters, text='Max squares coverage', width=30, anchor=W)
 
-        self.nr_of_squares_in_row = IntVar(root, nr_of_squares_in_row)
+        self.nr_of_squares_in_row = IntVar(_root, nr_of_squares_in_row)
         en_nr_squares = ttk.Entry(frame_parameters, textvariable=self.nr_of_squares_in_row, width=10)
 
-        self.min_tracks_for_tau = IntVar(root, min_tracks_for_tau)
+        self.min_tracks_for_tau = IntVar(_root, min_tracks_for_tau)
         en_min_tracks_for_tau = ttk.Entry(frame_parameters, textvariable=self.min_tracks_for_tau, width=10)
 
-        self.min_r_squared = DoubleVar(root, min_r_squared)
+        self.min_r_squared = DoubleVar(_root, min_r_squared)
         en_min_r_squared = ttk.Entry(frame_parameters, textvariable=self.min_r_squared, width=10)
 
-        self.min_density_ratio = DoubleVar(root, min_density_ratio)
+        self.min_density_ratio = DoubleVar(_root, min_density_ratio)
         en_min_density_ratio = ttk.Entry(frame_parameters, textvariable=self.min_density_ratio, width=10)
 
-        self.max_variability = DoubleVar(root, max_variability)
+        self.max_variability = DoubleVar(_root, max_variability)
         en_max_variability = ttk.Entry(frame_parameters, textvariable=self.max_variability, width=10)
 
-        self.max_square_coverage = DoubleVar(root, max_square_coverage)
+        self.max_square_coverage = DoubleVar(_root, max_square_coverage)
         en_max_square_coverage = ttk.Entry(frame_parameters, textvariable=self.max_square_coverage, width=10)
 
         #  Do the lay-out
@@ -198,33 +201,6 @@ def process_images_in_root_directory_traditional_mode(root_directory,
                                                            max_square_coverage,
                                                            verbose=False)
 
-
-def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_squares):
-    """
-    The function calculates the average track count of the lowest average_count_squares squares with a track count > 0.
-    The df_squares df is already sorted on track number.
-    All we have to do is access backwards, ignore 0 values and only then start counting.
-
-    :param df_squares:
-    :param nr_of_average_count_squares:
-    :return:
-    """
-
-    count_values = list(df_squares['Nr Tracks'])
-
-    total = 0
-    n = 0
-    for i in range(len(count_values) - 1, 0, -1):
-        if count_values[i] > 0:
-            total += count_values[i]
-            n += 1
-            if n >= nr_of_average_count_squares:
-                break
-    if n == 0:
-        average = 0
-    else:
-        average = total / n
-    return average
 
 
 def delete_files_in_directory(directory_path):

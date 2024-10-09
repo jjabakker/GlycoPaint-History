@@ -128,13 +128,13 @@ def prepare_batch_file(image_source_directory, paint_directory):
 
 class BatchDialog:
 
-    def __init__(self, root):
-        root.title('Prepare batch file')
+    def __init__(self, _root):
+        _root.title('Prepare batch file')
 
         self.image_directory = ""
         self.paint_directory = ""
 
-        content = ttk.Frame(root)
+        content = ttk.Frame(_root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
@@ -176,7 +176,7 @@ class BatchDialog:
         if self.image_directory == "" or self.paint_directory == "":
             message = 'The image directory needs to point to where the images are.\n\n'
             message += 'The paint directory is where the batch.csv will be placed.'
-            proceed = messagebox.showwarning(title='Warning', message=message)
+            messagebox.showwarning(title='Warning', message=message)
         else:
             prepare_batch_file(self.image_directory, self.paint_directory)
 

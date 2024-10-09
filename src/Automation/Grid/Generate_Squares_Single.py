@@ -22,7 +22,11 @@ from src.Automation.Support.Support_Functions import (
     save_squares_to_file,
     save_batch_to_file,
     check_batch_integrity,
-    format_time_nicely)
+    format_time_nicely
+)
+from src.Automation.Support.Grid_Support_Functions import (
+    calc_average_track_count_of_lowest_squares
+)
 
 if not logger_file_name_assigned:
     change_file_handler('Generate Squares Single.log')
@@ -181,32 +185,7 @@ def process_images_in_root_directory_single_mode(root_directory,
                                                       verbose=False)
 
 
-def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_squares):
-    """
-    The function calculates the average track count of the lowest average_count_squares squares with a track count > 0.
-    The df_squares df is already sorted on track number.
-    All we have to do is access backwards, ignore 0 values and only then start counting.
 
-    :param df_squares:
-    :param nr_of_average_count_squares:
-    :return:
-    """
-
-    count_values = list(df_squares['Nr Tracks'])
-
-    total = 0
-    n = 0
-    for i in range(len(count_values) - 1, 0, -1):
-        if count_values[i] > 0:
-            total += count_values[i]
-            n += 1
-            if n >= nr_of_average_count_squares:
-                break
-    if n == 0:
-        average = 0
-    else:
-        average = total / n
-    return average
 
 
 def process_single_image_in_paint_directory(image_path,
