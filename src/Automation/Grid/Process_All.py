@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+import json
 
 from src.Automation.Grid.Compile_Results_Files import compile_squares_file
 from src.Automation.Grid.Generate_Squares_Single import process_images_in_root_directory_single_mode
@@ -93,69 +94,9 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
         f"Processed Mode: {mode} - Probe: {probe} - Directory: {directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
 
 
-# Define the configuration for different processing modes
-config = [
-    # Single modes
-    {'flag': True,
-     'mode': 'single',
-     'probe': 'new',
-     'directory': 'Paint New Probes - Single - 30 Squares - 10 DR',
-     'source_dir': '/Users/hans/Paint Data/New Probes/Single/',
-     'nr_of_squares': 30},
-
-    {'flag': True,
-     'mode': 'single',
-     'probe': 'new',
-     'directory': 'Paint New Probes - Single - 30 Squares - 30 DR',
-     'source_dir': '/Users/hans/Paint Data/New Probes/Single/',
-     'nr_of_squares': 30},
-
-    {'flag': True,
-     'mode': 'single',
-     'probe': 'new',
-     'directory': 'Paint New Probes - Single - 30 Squares - 5 DR',
-     'source_dir': '/Users/hans/Paint Data/New Probes/Single/',
-     'nr_of_squares': 30},
-
-    {'flag': True,
-     'mode': 'single',
-     'probe': 'regular',
-     'directory': 'Paint Regular Probes - Single - 30 Squares - 10 DR',
-     'source_dir': '/Users/hans/Paint Data/Regular Probes/Single/',
-     'nr_of_squares': 30},
-
-    {'flag': True,
-     'mode': 'single',
-     'probe': 'regular',
-     'directory': 'Paint Regular Probes - Single - 30 Squares - 30 DR',
-     'source_dir': '/Users/hans/Paint Data/Regular Probes/Single/',
-     'nr_of_squares': 30},
-
-    # Traditional modes
-    {'flag': True,
-     'mode': 'traditional',
-     'probe': 'new',
-     'directory': 'Paint New Probes - Traditional - 20 Squares - 2 DR',
-     'source_dir': '/Users/hans/Paint Data/New Probes/Traditional/',
-     'nr_of_squares': 20,
-     'min_density_ratio': 2},
-
-    {'flag': True,
-     'mode': 'traditional',
-     'probe': 'new',
-     'directory': 'Paint New Probes - Traditional - 30 Squares - 2 DR',
-     'source_dir': '/Users/hans/Paint Data/New Probes/Traditional/',
-     'nr_of_squares': 30,
-     'min_density_ratio': 2},
-
-    {'flag': True,
-     'mode': 'traditional',
-     'probe': 'regular',
-     'directory': 'Paint Regular Probes - Traditional - 20 Squares - 2 DR',
-     'source_dir': '/Users/hans/Paint Data/Regular Probes/Traditional/',
-     'nr_of_squares': 20,
-     'min_density_ratio': 2}
-]
+# Reading the config data from a JSON file
+with open('/Users/hans/Paint Source/paint data generation.json', 'r') as file:
+    config = json.load(file)
 
 # Destination directory
 root_dest_dir = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Code/Paint-R/Data/'
