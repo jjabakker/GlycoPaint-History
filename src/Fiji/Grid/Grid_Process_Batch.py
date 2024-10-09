@@ -71,7 +71,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
                 if 'y' in row['Process'].lower():
                     file_count += 1
                     logger.info("Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Ext Image Name'])
-                    status, row = process_row(row, image_source_directory)
+                    status, row = process_row(row, image_source_directory, paint_directory)
                     if status == 'OK':
                         nr_images_processed += 1
                     elif status == 'NOT_FOUND':
@@ -108,7 +108,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
             return
 
 
-def process_row(row, image_source_directory):
+def process_row(row, image_source_directory, paint_directory):
 
     status = 'OK'
     adjuvant = row['Adjuvant']

@@ -27,15 +27,15 @@ if __name__ == "__main__":
         logger.info("User aborted the batch processing.")
         sys.exit(0)
 
-    try:
-        batch_file = open(batch_file_name, 'rt')
-        csv_reader = csv.reader(batch_file)
-        for batch_column_names in csv_reader:  # Read the first row into batch_column_names and then stop
-            break
-        batch_file.close()
-    except IOError:
-        logger.error("Could not open batch file:" + batch_file_name)
-        sys.exit(-1)
+    # try:
+    #     batch_file = open(batch_file_name, 'rt')
+    #     csv_reader = csv.reader(batch_file)
+    #     for batch_column_names in csv_reader:  # Read the first row into batch_column_names and then stop
+    #         break
+    #     batch_file.close()
+    # except IOError:
+    #     logger.error("Could not open batch file:" + batch_file_name)
+    #     sys.exit(-1)
 
     try:
         batch_file = open(batch_file_name, 'rt')
