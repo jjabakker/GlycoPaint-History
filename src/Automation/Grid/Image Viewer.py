@@ -25,7 +25,8 @@ from src.Automation.Support.Support_Functions import (
     save_default_directories,
     read_batch_from_file,
     read_squares_from_file,
-    save_batch_to_file)
+    save_batch_to_file,
+    save_squares_to_file)
 
 # Log to an appropriately named file
 change_file_handler('Image Viewer.log')
@@ -388,7 +389,7 @@ class ImageViewer:
         self.cell_var = StringVar(value=1)
         self.rb_cell0 = Radiobutton(frame_cells, text="Not on cell", width=width_rb,
                                     variable=self.cell_var, value=0)
-        self.rb_cell1 = Radiobutton(frame_cells, text="On cell 1", width=width_rb, bg="blue", fg="white",
+        self.rb_cell1 = Radiobutton(frame_cells, text="On cell 1", width=width_rb, bg="red", fg="white",
                                     variable=self.cell_var, value=1)
         self.rb_cell2 = Radiobutton(frame_cells, text="On cell 2", width=width_rb, bg="yellow", fg="black",
                                     variable=self.cell_var, value=2)
@@ -569,20 +570,14 @@ class ImageViewer:
         self.cn_left_image.focus_set()
         paint_logger.debug(f'Key pressed {event.keysym}')
 
-        if event.keysym == 't':
-            if self.show_squares:
-                self.cn_left_image.delete("all")
-                self.cn_left_image.create_image(0, 0, anchor=NW,
-                                                image=self.list_images[self.img_no]['Left Image'])
-                self.show_squares = False
-            else:
-                self.display_selected_squares()
-                self.show_squares = True
-
-        if event.keysym == 'r':
-            self.show_squares_numbers = not self.show_squares_numbers
+        if event.keysym == 's':
+            self.show_squares = not self.show_squares
             self.display_selected_squares()
+
+        if event.keysym == 'n':
+            self.show_squares_numbers = not self.show_squares_numbers
             self.show_squares = True
+            self.display_selected_squares()
 
         if event.keysym == 'o':
             self.output_pictures()
@@ -935,16 +930,17 @@ class ImageViewer:
         self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.define_rectangle(e))
         self.cn_left_image.bind('<B1-Motion>', lambda e: self.increase_rectangle_size(e))
 
-        # If there are no squares you can stop here
-        if len(self.df_squares) > 0:
-            for index, row in self.df_squares.iterrows():
-                if row['Visible']:
-                    self.draw_single_square(row)
+        if self.show_squares:
+            # If there are no squares you can stop here
+            if len(self.df_squares) > 0:
+                for index, row in self.df_squares.iterrows():
+                    if row['Visible']:
+                        self.draw_single_square(row)
         return self.df_squares
 
     def draw_single_square(self, squares_row):
 
-        colour_table = {1: ('blue', 'white'),
+        colour_table = {1: ('red', 'white'),
                         2: ('yellow', 'white'),
                         3: ('green', 'white'),
                         4: ('magenta', 'white'),
@@ -1286,16 +1282,13 @@ class ImageViewer:
         return self.df_batch
 
     def write_squares(self):
-
-        pass
-
-        # It is in fact not necessary to write the squares file. It is reinterpreted every time it is loaded which square are visible
-        # if self.mode == 'Directory':
-        #     squares_file_name = os.path.join(self.paint_directory, self.image_name, 'grid', self.image_name + '-squares.csv')
-        # else:
-        #     squares_file_name = os.path.join(self.paint_directory, str(self.df_batch.iloc[self.img_no]['Experiment Date']),  self.image_name, 'grid',
-        #                                      self.image_name + '-squares.csv')
-        # save_squares_to_file(self.df_squares, squares_file_name)
+        # It is necessary to the squares file, because the user may have made changes
+        if self.mode == 'Directory':
+            squares_file_name = os.path.join(self.paint_directory, self.image_name, 'grid', self.image_name + '-squares.csv')
+        else:
+            squares_file_name = os.path.join(self.paint_directory, str(self.df_batch.iloc[self.img_no]['Experiment Date']),  self.image_name, 'grid',
+                                             self.image_name + '-squares.csv')
+        save_squares_to_file(self.df_squares, squares_file_name)
 
     def write_grid_batch(self):
         save_batch_to_file(self.df_batch, self.batchfile_path)
