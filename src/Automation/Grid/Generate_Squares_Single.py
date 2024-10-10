@@ -22,11 +22,10 @@ from src.Automation.Support.Support_Functions import (
     save_squares_to_file,
     save_batch_to_file,
     check_batch_integrity,
-    format_time_nicely
-)
-from src.Automation.Support.Grid_Support_Functions import (
+    format_time_nicely,
     calc_average_track_count_of_lowest_squares
 )
+
 
 if not paint_logger_file_name_assigned:
     change_file_handler('Generate Squares Single.log')
