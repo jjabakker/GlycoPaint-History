@@ -31,7 +31,7 @@ paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + 
 sys.path.append(paint_dir)
 
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
-from LoggerConfigFiji import logger
+from LoggerConfigFiji import paint_logger
 
 
 def paint_trackmate(threshold, tracks_filename, image_filename):
@@ -105,12 +105,12 @@ def paint_trackmate(threshold, tracks_filename, image_filename):
     # Process
     ok = trackmate.checkInput()
     if not ok:
-        logger.error('Routine paint_trackmate - checkInput failed')
+        paint_logger.error('Routine paint_trackmate - checkInput failed')
         return -1, -1, -1
 
     ok = trackmate.process()
     if not ok:
-        logger.error('Routine paint_trackmate - process failed')
+        paint_logger.error('Routine paint_trackmate - process failed')
         return -1, -1, -1
 
     # ----------------

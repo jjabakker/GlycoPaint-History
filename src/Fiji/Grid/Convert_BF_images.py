@@ -9,7 +9,7 @@ from java.lang.System import getProperty
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
 
-from LoggerConfigFiji import logger, change_file_handler
+from LoggerConfigFiji import paint_logger, change_file_handler
 
 # Set up logging
 change_file_handler('Convert BF Images.log')
@@ -32,7 +32,7 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
     if not os.path.isdir(bf_jpeg_dir):
         os.mkdir(bf_jpeg_dir)
 
-    logger.info('')  # Start logging new run
+    paint_logger.info('')  # Start logging new run
 
     count = found = converted = 0
     all_images = sorted(os.listdir(image_source_directory))  # Sort images for predictable processing order
@@ -64,15 +64,15 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
                         IJ.run("Bio-Formats (Windowless)", nd2_arg)
                         IJ.saveAs("Jpeg", output_file)
                         IJ.getImage().close()  # Close the image after saving
-                        logger.info("Image %s was updated.", display_name)
+                        paint_logger.info("Image %s was updated.", display_name)
                         converted += 1
                     except Exception as e:
-                        logger.error("Error converting %s: %s", display_name, str(e))
+                        paint_logger.error("Error converting %s: %s", display_name, str(e))
                 else:
-                    logger.info("Image %s does not require updating.", display_name)
+                    paint_logger.info("Image %s does not require updating.", display_name)
 
     # Log the conversion summary
-    logger.info("\nConverted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found, count)
+    paint_logger.info("\nConverted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found, count)
 
     # Copy the entire 'Converted BF Images' directory to the paint directory
     dest_dir = os.path.join(paint_directory, "Converted BF Images")
@@ -82,16 +82,16 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
 
     try:
         shutil.copytree(bf_jpeg_dir, dest_dir)
-        logger.info("Copied the entire 'Converted BF Images' directory to %s", dest_dir)
+        paint_logger.info("Copied the entire 'Converted BF Images' directory to %s", dest_dir)
     except Exception as e:
-        logger.error("Error copying the directory %s to %s: %s", bf_jpeg_dir, dest_dir, str(e))
+        paint_logger.error("Error copying the directory %s to %s: %s", bf_jpeg_dir, dest_dir, str(e))
 
 
 if __name__ == "__main__":
     # Ask user for Paint directory
     paint_directory = ask_user_for_image_directory("Specify the Paint directory", 'Paint')
     if not paint_directory:
-        logger.info("User aborted the batch processing.")
+        paint_logger.info("User aborted the batch processing.")
         sys.exit(0)
 
     # Ask user for the source directory of images

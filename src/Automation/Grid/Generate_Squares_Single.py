@@ -8,7 +8,7 @@ import pandas as pd
 from src.Automation.Support.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
-from src.Automation.Support.Logger_Config import logger, change_file_handler, logger_file_name_assigned
+from src.Automation.Support.Logger_Config import paint_logger, change_file_handler, paint_logger_file_name_assigned
 from src.Automation.Support.Support_Functions import (
     calc_variability,
     calculate_density,
@@ -28,7 +28,7 @@ from src.Automation.Support.Grid_Support_Functions import (
     calc_average_track_count_of_lowest_squares
 )
 
-if not logger_file_name_assigned:
+if not paint_logger_file_name_assigned:
     change_file_handler('Generate Squares Single.log')
 
 
@@ -143,7 +143,7 @@ class GridDialog:
                                                           self.max_square_coverage.get(),
                                                           verbose=False)
             run_time = time.time() - time_stamp
-            logger.info(f"Total processing time is {format_time_nicely(run_time)}")
+            paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
         elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):  # Assume it is group directory
 
             process_images_in_root_directory_single_mode(self.paint_directory,
@@ -154,9 +154,9 @@ class GridDialog:
                                                          self.max_square_coverage.get(),
                                                          verbose=False)
             run_time = time.time() - time_stamp
-            logger.info(f"Total processing time is {format_time_nicely(run_time)}")
+            paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
         else:
-            logger.error('Not a paint directory and not a root directory')
+            paint_logger.error('Not a paint directory and not a root directory')
 
         # And then exit
         self.exit_pressed()
@@ -227,7 +227,7 @@ def process_single_image_in_paint_directory(image_path,
     tracks_file_name = os.path.join(image_path, "tracks", image_name + "-full-tracks.csv")
     df_tracks = get_df_from_file(tracks_file_name, header=0, skip_rows=[1, 2, 3])
     if df_tracks is None:
-        logger.debug(f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
+        paint_logger.debug(f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
         return
 
     # Here the actual calculation work is done: df_squares is generated
@@ -518,12 +518,12 @@ def process_images_in_paint_directory_single_mode(paint_directory,
 
     df_batch = read_batch_from_file(os.path.join(paint_directory, "batch.csv"))
     if df_batch is None:
-        logger.error(
+        paint_logger.error(
             f"Function 'process_images_in_paint_directory' failed: Likely, {paint_directory} is not a valid directory containing cell image information.")
         exit(1)
 
     if not check_batch_integrity(df_batch):
-        logger.error(
+        paint_logger.error(
             f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
         return
 
@@ -546,14 +546,14 @@ def process_images_in_paint_directory_single_mode(paint_directory,
     # Determine what images need processing from the batch.csv file
     nr_files = len(df_batch)
     if nr_files <= 0:
-        logger.info("\nNo files selected for processing")
+        paint_logger.info("\nNo files selected for processing")
         return
 
     # Loop though selected images to produce the individual grid_results files
     i = 1
     processed = 0
 
-    logger.info(f"Processing {nr_files:2d} images in {paint_directory}")
+    paint_logger.info(f"Processing {nr_files:2d} images in {paint_directory}")
 
     for index, row in df_batch.iterrows():
         ext_image_name = row["Image Name"] + '-threshold-' + str(row["Threshold"])
@@ -571,7 +571,7 @@ def process_images_in_paint_directory_single_mode(paint_directory,
 
         # Get the time stamp of the tracks_file
         if not os.path.isfile(tracks_file_name):
-            logger.error(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
+            paint_logger.error(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
             continue
         else:
             tracks_file_timestamp = os.path.getmtime(tracks_file_name)
@@ -581,9 +581,9 @@ def process_images_in_paint_directory_single_mode(paint_directory,
         if process or squares_file_timestamp < tracks_file_timestamp:
 
             if verbose:
-                logger.debug(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+                paint_logger.debug(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
             else:
-                logger.debug(ext_image_name)
+                paint_logger.debug(ext_image_name)
 
             tau, r_squared, df_squares = process_single_image_in_paint_directory(ext_image_path,
                                                                                  ext_image_name,
@@ -601,7 +601,7 @@ def process_images_in_paint_directory_single_mode(paint_directory,
                                                                                  row['Experiment Name'],
                                                                                  verbose)
             if df_squares is None:
-                logger.error("process_single_image_in_paint_directory: did not return correctly")
+                paint_logger.error("process_single_image_in_paint_directory: did not return correctly")
                 continue
 
             # To calculate the density use the actual surface coordinates.
@@ -642,12 +642,12 @@ def process_images_in_paint_directory_single_mode(paint_directory,
             processed += 1
 
         else:
-            logger.info(f"Squares file already up to date: {squares_file_name}")
+            paint_logger.info(f"Squares file already up to date: {squares_file_name}")
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv"))
     run_time = round(time.time() - time_stamp, 1)
 
-    logger.info(f"Processed  {processed:2d} images in {paint_directory} in {format_time_nicely(run_time)}")
+    paint_logger.info(f"Processed  {processed:2d} images in {paint_directory} in {format_time_nicely(run_time)}")
 
 
 if __name__ == "__main__":

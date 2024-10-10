@@ -1,7 +1,7 @@
 import os
 import time
 
-from src.Automation.Support.Logger_Config import logger
+from src.Automation.Support.Logger_Config import paint_logger
 
 
 def set_directory_timestamp(dir_path, timestamp=None):
@@ -14,7 +14,7 @@ def set_directory_timestamp(dir_path, timestamp=None):
     """
     # Check if the provided path is a valid directory
     if not os.path.isdir(dir_path):
-        logger.error(f"Error: '{dir_path}' is not a valid directory.")
+        paint_logger.error(f"Error: '{dir_path}' is not a valid directory.")
         return
 
     # If no timestamp is provided, use the current time
@@ -24,16 +24,16 @@ def set_directory_timestamp(dir_path, timestamp=None):
     try:
         # Update the directory's access and modification times
         os.utime(dir_path, (timestamp, timestamp))
-        logger.debug(f"Updated timestamps for directory '{dir_path}' successfully.")
+        paint.loggerdebug(f"Updated timestamps for directory '{dir_path}' successfully.")
 
     except PermissionError:
-        logger.error(f"Error: Permission denied while setting timestamps for '{dir_path}'.")
+        paint_logger.error(f"Error: Permission denied while setting timestamps for '{dir_path}'.")
 
     except FileNotFoundError:
-        logger.error(f"Error: Directory '{dir_path}' not found.")
+        paint_logger.error(f"Error: Directory '{dir_path}' not found.")
 
     except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}")
+        paint_logger.error(f"An unexpected error occurred: {e}")
 
 
 # Example Usage: Set timestamps to a specific date
