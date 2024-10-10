@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from src.Automation.Support.Logger_Config import paint_logger
+from src.Common.Support.LoggerConfig import paint_logger
 
 
 def copy_directory(src, dest):

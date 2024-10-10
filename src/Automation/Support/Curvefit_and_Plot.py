@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.optimize import OptimizeWarning
 from scipy.optimize import curve_fit
 
-from src.Automation.Support.Logger_Config import paint_logger
+from src.Common.Support.LoggerConfig import paint_logger
 
 
 def read_track_mate_data(csvfilename, istrack):

@@ -11,7 +11,7 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Automation.Support.Logger_Config import paint_logger
+from src.Common.Support.LoggerConfig import paint_logger
 from src.Automation.Support.Support_Functions import (
     get_default_directories,
     save_default_directories,

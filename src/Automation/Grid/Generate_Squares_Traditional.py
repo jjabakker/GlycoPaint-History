@@ -10,7 +10,7 @@ from src.Automation.Support.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
 from src.Automation.Support.Generate_HeatMap import plot_heatmap
-from src.Automation.Support.Logger_Config import paint_logger, change_file_handler, paint_logger_file_name_assigned
+from src.Common.Support.LoggerConfig import paint_logger, change_file_handler, paint_logger_file_name_assigned
 from src.Automation.Support.Support_Functions import (
     calc_variability,
     calculate_density,

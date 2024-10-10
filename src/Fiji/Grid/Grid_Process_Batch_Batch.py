@@ -5,19 +5,20 @@ import time
 
 from java.lang.System import getProperty
 
+# This is necessary to import the FijiSupport and LoggerConfig module
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
-
-paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint", "Grid")
-sys.path.append(paint_dir)
-
+from LoggerConfig import paint_logger, change_file_handler
 from FijiSupportFunctions import (
     ask_user_for_file,
     format_time_nicely)
+
+# This is necessary to import the Grid_Process_Batch module
+paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint", "Grid")
+sys.path.append(paint_dir)
 from Grid_Process_Batch import grid_analysis_batch
 
-from LoggerConfig import paint_logger, change_file_handler
-
+# Set an appropriate name for the log file
 change_file_handler('Grid Process Batch Batch.log')
 
 if __name__ == "__main__":

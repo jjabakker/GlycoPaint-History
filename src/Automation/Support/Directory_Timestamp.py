@@ -1,7 +1,7 @@
 import os
 import time
 
-from src.Automation.Support.Logger_Config import paint_logger
+from src.Common.Support.LoggerConfig import paint_logger
 
 
 def set_directory_timestamp(dir_path, timestamp=None):

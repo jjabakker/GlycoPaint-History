@@ -9,7 +9,7 @@ from java.lang.System import getProperty
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
 
-from LoggerConfigFiji import paint_logger, change_file_handler
+from LoggerConfig import paint_logger, change_file_handler
 
 # Set up logging
 change_file_handler('Convert BF Images.log')
