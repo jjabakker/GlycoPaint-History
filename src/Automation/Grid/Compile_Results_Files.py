@@ -17,16 +17,17 @@ from src.Automation.Support.Support_Functions import (
     save_default_directories,
     read_batch_from_file,
     read_squares_from_file,
-    format_time_nicely)
+    format_time_nicely,
+    split_probe_structure,
+    split_probe_valency)
 
-# -------------------------------------------------------------------------------------
-# Define the default parameters
-# -------------------------------------------------------------------------------------
 
-not_used_max_squares_with_tau = 20
-not_used_max_variability = 10
-not_used_min_density_ratio = 2
 
+#-----------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
+# The routine that does the work
+#-----------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
 
 def compile_squares_file(root_dir, verbose):
     paint_logger.info(f"Compiling output for {root_dir}")
@@ -59,14 +60,11 @@ def compile_squares_file(root_dir, verbose):
         for index, row in df_batch.iterrows():
 
             ext_image_name = row['Ext Image Name']
-
             if row['Exclude']:  # Skip over images that are Excluded
                 continue
 
-            squares_file_name = os.path.join(root_dir, paint_dir, ext_image_name, 'grid',
-                                             ext_image_name + '-squares.csv')
-
-            df_squares = read_squares_from_file(squares_file_name)
+            df_squares = read_squares_from_file(os.path.join(root_dir, paint_dir, ext_image_name, 'grid',
+                                                             ext_image_name, '-squares.csv'))
             if df_squares is None:
                 paint_logger.error(
                     f'Compile Squares: No squares file found for image {ext_image_name} in the directory {paint_dir}')
@@ -74,9 +72,9 @@ def compile_squares_file(root_dir, verbose):
             if len(df_squares) == 0:  # Ignore it when it is empty
                 continue
 
-            # df_all_squares = pd.concat([df_all_squares, df_squares[df_squares['Visible']]])
             df_all_squares = pd.concat([df_all_squares, df_squares])
 
+        # Determine how many unique for cell type, probe type, adjuvant, and probe there are in the batch
         row = [
             paint_dir,
             df_batch['Cell Type'].nunique(),
@@ -134,7 +132,7 @@ def compile_squares_file(root_dir, verbose):
     # Drop irrelevant columns in df_all_squares
     df_all_squares = df_all_squares.drop(['Neighbour Visible', 'Variability Visible', 'Density Ratio Visible'], axis=1)
 
-    # Drop the info on squares that have no tracks
+    # Drop the squares that have no tracks
     df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
 
     # Change ext_image_name to image_name
@@ -142,9 +140,6 @@ def compile_squares_file(root_dir, verbose):
 
     # Set the columns for df_image_summary
     df_image_summary.columns = ['Image', 'Nr Cell Types', 'Nr Probe Types', 'Adjuvants', 'Nr Probes']
-
-    # Only keep Visible squares
-    # df_all_squares = df_all_squares[df_all_squares['Visible'] == True]
 
     # Add probe valency and structure information for regular probes
     df_all_squares['Valency'] = df_all_squares.apply(split_probe_valency, axis=1)
@@ -168,26 +163,11 @@ def compile_squares_file(root_dir, verbose):
     run_time = time.time() - time_stamp
     paint_logger.info(f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
 
-
-def split_probe_valency(row):
-    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
-    match = regexp.match(row['Probe'])
-    if match is not None:
-        valency = match.group('valency')
-        return int(valency)
-    else:
-        return 0
-
-
-def split_probe_structure(row):
-    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
-    match = regexp.match(row['Probe'])
-    if match is not None:
-        structure = match.group('structure')
-        return structure
-    else:
-        return ""
-
+#-----------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
+# The dialog box to specify the root directory
+#-----------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
 
 class CompileDialog:
 

@@ -664,3 +664,24 @@ def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_s
     else:
         average = total / n
     return average
+
+
+
+def split_probe_valency(row):
+    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
+    match = regexp.match(row['Probe'])
+    if match is not None:
+        valency = match.group('valency')
+        return int(valency)
+    else:
+        return 0
+
+
+def split_probe_structure(row):
+    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
+    match = regexp.match(row['Probe'])
+    if match is not None:
+        structure = match.group('structure')
+        return structure
+    else:
+        return ""
