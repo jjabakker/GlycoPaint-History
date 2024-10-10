@@ -72,10 +72,8 @@ def save_default_directories(root_directory, paint_directory, images_directory):
                 'root_directory': root_directory
             })
 
-            print(f"Data successfully written to {csv_file_path}")
-
     except Exception as e:
-        print(f"An error occurred while writing to the file: {e}")
+        print(f"An error occurred while writing to the file: {e}")   #TODO: Add logging
 
 
 def delete_files_in_directory(directory_path):

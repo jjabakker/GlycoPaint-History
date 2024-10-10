@@ -4,14 +4,12 @@ It will create an Output directory with three files: all squares, all batches, a
 """
 
 import os
-import re
 import time
 from tkinter import *
 from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Common.Support.LoggerConfig import paint_logger
 from src.Automation.Support.Support_Functions import (
     get_default_directories,
     save_default_directories,
@@ -20,14 +18,14 @@ from src.Automation.Support.Support_Functions import (
     format_time_nicely,
     split_probe_structure,
     split_probe_valency)
+from src.Common.Support.LoggerConfig import paint_logger
 
 
-
-#-----------------------------------------------------------------------------------------------------------------------
-#-----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
 # The routine that does the work
-#-----------------------------------------------------------------------------------------------------------------------
-#-----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
 
 def compile_squares_file(root_dir, verbose):
     paint_logger.info(f"Compiling output for {root_dir}")
@@ -64,7 +62,7 @@ def compile_squares_file(root_dir, verbose):
                 continue
 
             df_squares = read_squares_from_file(os.path.join(root_dir, paint_dir, ext_image_name, 'grid',
-                                                             ext_image_name, '-squares.csv'))
+                                                             ext_image_name + '-squares.csv'))
             if df_squares is None:
                 paint_logger.error(
                     f'Compile Squares: No squares file found for image {ext_image_name} in the directory {paint_dir}')
@@ -163,11 +161,12 @@ def compile_squares_file(root_dir, verbose):
     run_time = time.time() - time_stamp
     paint_logger.info(f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
 
-#-----------------------------------------------------------------------------------------------------------------------
-#-----------------------------------------------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
 # The dialog box to specify the root directory
-#-----------------------------------------------------------------------------------------------------------------------
-#-----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
 
 class CompileDialog:
 

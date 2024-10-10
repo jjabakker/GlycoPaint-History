@@ -7,7 +7,7 @@ from src.Common.Support.LoggerConfig import paint_logger
 def copy_data_from_paint_source_to_paint_data(source_root, dest_root):
     """
     Copies (Trackmate) data from the Paint Source root to the appropriate Paint Data root
-    Only the imahes directories are copied, not the Output directory or the csv files
+    Only the images directories are copied, not the Output directory or the csv files
 
     :param source_root:
     :param dest_root:
