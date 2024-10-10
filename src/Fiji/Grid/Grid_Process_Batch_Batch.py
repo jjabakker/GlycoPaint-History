@@ -16,7 +16,7 @@ from FijiSupportFunctions import (
     format_time_nicely)
 from Grid_Process_Batch import grid_analysis_batch
 
-from LoggerConfigFiji import logger, change_file_handler
+from LoggerConfigFiji import paint_logger, change_file_handler
 
 change_file_handler('Grid Process Batch Batch.log')
 
@@ -24,31 +24,45 @@ if __name__ == "__main__":
 
     batch_file_name = ask_user_for_file("Specify the batch file")
     if not batch_file_name:
-        logger.info("User aborted the batch processing.")
+        paint_logger.info("User aborted the batch processing.")
         sys.exit(0)
 
-    # try:
-    #     batch_file = open(batch_file_name, 'rt')
-    #     csv_reader = csv.reader(batch_file)
-    #     for batch_column_names in csv_reader:  # Read the first row into batch_column_names and then stop
-    #         break
-    #     batch_file.close()
-    # except IOError:
-    #     logger.error("Could not open batch file:" + batch_file_name)
-    #     sys.exit(-1)
-
     try:
-        batch_file = open(batch_file_name, 'rt')
-        csv_reader = csv.DictReader(batch_file)
-    except IOError:
-        logger.errro("Could not open batch file:" + batch_file_name)
-        sys.exit(-1)
+        # Use `with` to open the file and ensure it is closed after reading
+        with open(batch_file_name, mode='r') as file:
+            # Create a DictReader object
+            csv_reader = csv.DictReader(file)
 
-    time_stamp = time.time()
-    for row in csv_reader:
-        if 'y' in row['Process'].lower():
-            grid_analysis_batch(paint_directory=os.path.join(row['Source'], row['Image']),
-                                image_source_directory=os.path.join(row['Destination'], row['Image']))
+            # Check if the required columns are present
+            required_columns = ['Source', 'Destination', 'Process']
+            if not all(col in csv_reader.fieldnames for col in required_columns):
+                paint_logger.error("Error: Missing one or more required columns: {}".format(required_columns))
+                sys.exit()
 
-    run_time = round(time.time() - time_stamp, 1)
-    logger.info("Processing completed in {} seconds".format(format_time_nicely(run_time)))
+            # Read and print each row
+            time_stamp = time.time()
+            for row in csv_reader:
+                if 'y' in row['Process'].lower():
+                    message = "Processing image '{}'".format(row['Image'])
+                    paint_logger.info("")
+                    paint_logger.info("-" * len(message))
+                    paint_logger.info(message)
+                    paint_logger.info("-" * len(message))
+                    grid_analysis_batch(paint_directory=os.path.join(row['Source'], row['Image']),
+                                        image_source_directory=os.path.join(row['Destination'], row['Image']))
+                    paint_logger.info("")
+                    paint_logger.info("")
+            run_time = round(time.time() - time_stamp, 1)
+            paint_logger.info("Processing completed in {} seconds".format(format_time_nicely(run_time)))
+
+    except csv.Error as e:
+        paint_logger.error("grid_process_batc_batch: Error reading CSV file: {}".format(e))
+    except Exception as e:
+        paint_logger.error("grid_process_batc_batch: An unexpected error occurred: {}".format(e))
+
+
+
+
+
+
+
