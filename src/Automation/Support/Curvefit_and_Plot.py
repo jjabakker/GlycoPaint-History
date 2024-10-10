@@ -58,11 +58,11 @@ def mono_exp(x, m, t, b):
     except OverflowError:
         paint_logger.error(f"Overflow error in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
         calc = 0
-    except RuntimeWarning:
-        paint_logger.error(f"RuntimeWarning in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
+    except (RuntimeWarning, RuntimeError):
+        paint_logger.error(f"RuntimeWarning/Error in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
         calc = 0
-    except Exception:
-        paint_logger.error(f"Error in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
+    except FloatingPointError:
+        paint_logger.error(f"Floating Point Error in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
         calc = 0
     return calc
 
