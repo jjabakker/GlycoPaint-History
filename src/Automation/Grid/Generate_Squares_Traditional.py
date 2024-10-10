@@ -10,7 +10,6 @@ from src.Automation.Support.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
 from src.Automation.Support.Generate_HeatMap import plot_heatmap
-from src.Common.Support.LoggerConfig import paint_logger, change_file_handler, paint_logger_file_name_assigned
 from src.Automation.Support.Support_Functions import (
     calc_variability,
     calculate_density,
@@ -28,6 +27,7 @@ from src.Automation.Support.Support_Functions import (
     format_time_nicely,
     calc_average_track_count_of_lowest_squares
 )
+from src.Common.Support.LoggerConfig import paint_logger, change_file_handler, paint_logger_file_name_assigned
 
 if not paint_logger_file_name_assigned:
     change_file_handler('Generate Squares Single.log')
@@ -196,7 +196,6 @@ def process_images_in_root_directory_traditional_mode(root_directory,
                                                            verbose=False)
 
 
-
 def delete_files_in_directory(directory_path):
     try:
         files = os.listdir(directory_path)
@@ -339,9 +338,6 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
 
     return df_squares
 
-    if verbose:
-        print(tau)
-    return tau, r_squared, df_squares
 
 def create_df_squares_traditional_mode(df_tracks,
                                        image_path,
