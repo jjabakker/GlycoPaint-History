@@ -6,12 +6,6 @@ from src.Common.Support.LoggerConfig import paint_logger
 
 def copy_directory(src, dest):
     try:
-        # Check if the destination directory exists
-        # if os.path.exists(dest):
-        #     # If it exists, remove it to allow overwriting
-        #     shutil.rmtree(dest)
-
-        # Now, copy the directory
         shutil.copytree(src, dest, dirs_exist_ok=True)
         paint_logger.debug(f"Copied directory from {src} to {dest}")
 

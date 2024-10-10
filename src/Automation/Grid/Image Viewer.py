@@ -1104,47 +1104,6 @@ class ImageViewer:
         self.display_selected_squares()
 
 
-    # def select_mode_button(self):
-    #
-    #     if self.mode_var.get() == "HEAT":
-    #         self.rb_neighbour_free.configure(state=DISABLED)
-    #         self.rb_neighbour_strict.configure(state=DISABLED)
-    #         self.rb_neighbour_relaxed.configure(state=DISABLED)
-    #
-    #         self.rb_cell0.configure(state=DISABLED)
-    #         self.rb_cell1.configure(state=DISABLED)
-    #         self.rb_cell2.configure(state=DISABLED)
-    #         self.rb_cell3.configure(state=DISABLED)
-    #         self.rb_cell4.configure(state=DISABLED)
-    #         self.rb_cell5.configure(state=DISABLED)
-    #         self.rb_cell6.configure(state=DISABLED)
-    #
-    #         self.sc_variability.configure(state=DISABLED, takefocus=False)
-    #         self.sc_density_ratio.configure(state=DISABLED, takefocus=False)
-    #
-    #     elif self.mode_var.get() == "ROI":
-    #         self.rb_neighbour_free.configure(state=NORMAL)
-    #         self.rb_neighbour_strict.configure(state=NORMAL)
-    #         self.rb_neighbour_relaxed.configure(state=NORMAL)
-    #
-    #         self.rb_cell0.configure(state=NORMAL)
-    #         self.rb_cell1.configure(state=NORMAL)
-    #         self.rb_cell2.configure(state=NORMAL)
-    #         self.rb_cell3.configure(state=NORMAL)
-    #         self.rb_cell4.configure(state=NORMAL)
-    #         self.rb_cell5.configure(state=NORMAL)
-    #         self.rb_cell6.configure(state=NORMAL)
-    #
-    #         self.sc_variability.configure(state=NORMAL)
-    #         self.sc_density_ratio.configure(state=NORMAL)
-    #     else:
-    #         paint_logger.error('Big trouble!')
-    #
-    #     self.list_images = get_images(self, self.mode_var.get())
-    #
-    #     self.img_no = self.img_no - 1
-    #     self.go_forward_backward('Forward')
-
     def configure_widgets_state(self, state):
         self.rb_neighbour_free.configure(state=state)
         self.rb_neighbour_strict.configure(state=state)
