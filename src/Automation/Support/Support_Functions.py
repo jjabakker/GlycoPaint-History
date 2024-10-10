@@ -492,7 +492,7 @@ def read_batch_from_file(batch_file_path, only_records_to_process=True):
         #                     (df_batch['Process'] == 'yes') |
         #                     (df_batch['Process'] == 'Y') |
         #                     (df_batch['Process'] == 'y')]
-        df_batch = df_batch[('y' in df_batch['Process'].lower())]
+        df_batch = df_batch[df_batch['Process'].str.lower().isin(['yes', 'y'])]
 
     df_batch.set_index('Ext Image Name', inplace=True, drop=False)
 

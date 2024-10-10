@@ -32,9 +32,11 @@ change_file_handler('Image Viewer.log')
 
 
 def save_as_png(canvas, file_name):
-    canvas.create_text(60, 40)
-    canvas.postscript(file=file_name + '.eps')
-    img = Image.open(file_name + '.eps')
+    # First save as a postscript file
+    canvas.postscript(file=file_name + '.ps', colormode='color')
+
+    # Then let PIL convert to a png file
+    img = Image.open(file_name + '.ps')
     img.save(f"{file_name}.png", 'png')
 
 
@@ -243,6 +245,7 @@ class ImageViewer:
         self.rect = None
         self.squares_file_name = None
         self.start_x = None
+        self.show_squares_numbers = True
         self.image_viewer_root = _root
         _root.title('Image Viewer')
 
@@ -576,6 +579,11 @@ class ImageViewer:
                 self.display_selected_squares()
                 self.show_squares = True
 
+        if event.keysym == 'r':
+            self.show_squares_numbers = not self.show_squares_numbers
+            self.display_selected_squares()
+            self.show_squares = True
+
         if event.keysym == 'o':
             self.output_pictures()
 
@@ -601,12 +609,12 @@ class ImageViewer:
             image_name = self.list_images[self.img_no]['Left Image Name']
             paint_logger.debug(image_name)
 
-            # Delete the squares and write the canvas as an eps file
+            # Delete the squares and write the canvas with just the tracks
             self.cn_left_image.delete("all")
             self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
-            # Add the squares and write the canvas as an eps file
+            # Add the squares and write the canvas complete with squares
             self.select_squares_for_display()
             self.display_selected_squares()
             image_name = image_name + '-squares'
@@ -963,13 +971,16 @@ class ImageViewer:
                                                 col_nr * width + width,
                                                 row_nr * height + height,
                                                 outline="white",
+                                                # outline="red",
+                                                width=0.5,
                                                 tags=square_tag)
-            text_item = self.cn_left_image.create_text(col_nr * width + 0.5 * width,
-                                                       row_nr * width + 0.5 * width,
-                                                       text=str(label_nr),
-                                                       font=('Arial', -10),
-                                                       fill="white",
-                                                       tags=text_tag)
+            if self.show_squares_numbers:
+                text_item = self.cn_left_image.create_text(col_nr * width + 0.5 * width,
+                                                           row_nr * width + 0.5 * width,
+                                                           text=str(label_nr),
+                                                           font=('Arial', -10),
+                                                           fill="white",
+                                                           tags=text_tag)
         else:  # A square is allocated to a cell
             self.cn_left_image.create_rectangle(col_nr * width,
                                                 row_nr * width,
@@ -978,20 +989,22 @@ class ImageViewer:
                                                 outline=colour_table[self.df_squares.loc[square_nr]['Cell Id']][0],
                                                 width=3,
                                                 tags=square_tag)
-            text_item = self.cn_left_image.create_text(col_nr * width + 0.5 * width,
-                                                       row_nr * width + 0.5 * width,
-                                                       text=str(self.df_squares.loc[square_nr]['Label Nr']),
-                                                       font=('Arial', -10),
-                                                       fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1],
-                                                       tags=text_tag)
+            if self.show_squares_numbers:
+                text_item = self.cn_left_image.create_text(col_nr * width + 0.5 * width,
+                                                           row_nr * width + 0.5 * width,
+                                                           text=str(self.df_squares.loc[square_nr]['Label Nr']),
+                                                           font=('Arial', -10),
+                                                           fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1],
+                                                           tags=text_tag)
 
         # The new square is made clickable -  for now use the text item
-        self.cn_left_image.tag_bind(text_item, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
-        self.cn_left_image.tag_bind(text_item, '<Button-2>', lambda e: self.provide_information_on_square(e,
-                                                                                                          self.df_squares.loc[
-                                                                                                              square_nr][
-                                                                                                              'Label Nr'],
-                                                                                                          square_nr))
+        if self.show_squares_numbers:
+            self.cn_left_image.tag_bind(text_item, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
+            self.cn_left_image.tag_bind(text_item, '<Button-2>', lambda e: self.provide_information_on_square(e,
+                                                                                                              self.df_squares.loc[
+                                                                                                                  square_nr][
+                                                                                                                  'Label Nr'],
+                                                                                                              square_nr))
 
     def square_assigned_to_cell(self, square_nr):
 

@@ -58,6 +58,12 @@ def mono_exp(x, m, t, b):
     except OverflowError:
         paint_logger.error(f"Overflow error in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
         calc = 0
+    except RuntimeWarning:
+        paint_logger.error(f"RuntimeWarning in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
+        calc = 0
+    except Exception:
+        paint_logger.error(f"Error in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
+        calc = 0
     return calc
 
 
@@ -110,11 +116,15 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
         return -2, 0
     except RuntimeError:
         if verbose:
-            paint.loggerwarning('CurveFitAndPlot: The least-squares optimisation fails')
+            paint_logger.warning('CurveFitAndPlot: The least-squares optimisation fails')
         return -2, 0
     except OptimizeWarning:
         if verbose:
-            paint.loggerwarning('CurveFitAndPlot: Covariance of the parameters can not be estimated')
+            paint_logger.warning('CurveFitAndPlot: Covariance of the parameters can not be estimated')
+        return -2, 0
+    except Exception:
+        if verbose:
+            paint_logger.warning('CurveFitAndPlot: Exception')
         return -2, 0
 
     tau_sec = (1 / t)
@@ -128,7 +138,7 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
         try:
             r_squared = 1 - np.sum(squared_diffs) / np.sum(squared_diffs_from_mean)
         except (OptimizeWarning, RuntimeError, RuntimeWarning):
-            paint.loggerwarning('CurveFitAndPlot: OptimizeWarning, RuntimeError, RuntimeWarning')
+            paint_logger.warning('CurveFitAndPlot: OptimizeWarning, RuntimeError, RuntimeWarning')
             r_squared = 0
 
     fig, ax = plt.subplots()
@@ -157,7 +167,7 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
     if file != "":
         fig.savefig(file)
         if verbose:
-            paint.loggerdebug("\nWriting plot file: " + file)
+            paint_logger.debug("\nWriting plot file: " + file)
 
     # Inspect the parameters
     if verbose:
