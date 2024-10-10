@@ -17,14 +17,7 @@ SOURCE_REGULAR_DIR = '/Users/hans/Paint Source/Regular Probes'
 ROOT_DEST_DIR      = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Code/Paint-R/Data/'
 CONF_FILE          = '/Users/hans/Paint Source/paint data generation.json'
 
-change_file_handler('Process All.log')
 
-paint_source_dirs = {
-    'new': SOURCE_NEW_DIR,
-    'regular': SOURCE_REGULAR_DIR
-}
-
-paint_logger.debug("\n\n\n\nNew Run\n\n\n")
 
 
 def copy_directory(src, dest):
@@ -97,53 +90,67 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
     paint_logger.info(
         f"Processed Mode: {mode} - Probe: {probe} - Directory: {directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
 
-try:
-    with open(CONF_FILE, 'r') as file:
-        config = json.load(file)
-except FileNotFoundError:
-    paint_logger.error(f"The configuration file {CONF_FILE} was not found.")
-    config = []
-    sys.exit(1)
-except json.JSONDecodeError:
-    paint_logger.error(f"Failed to decode JSON from the configuration file {CONF_FILE}.")
-    config = []
-    sys.exit(1)
 
-# Main loop to process each configuration based on flags
+def main():
 
-main_stamp = time.time()
+    change_file_handler('Process All.log')
 
-paint_logger.info("")
-paint_logger.info('Starting the full processing')
-paint_logger.info("")
+    paint_source_dirs = {
+        'new': SOURCE_NEW_DIR,
+        'regular': SOURCE_REGULAR_DIR
+    }
 
-nr_to_process = 0
-for entry in config:
-    if entry['flag']:
-        nr_to_process += 1
+    paint_logger.debug("\n\n\n\nNew Run\n\n\n")
 
-current_process = 0
-for entry in config:
-    if entry['flag']:
-        root_dir = os.path.join(entry['source_dir'], entry['directory'])
-        dest_dir = os.path.join(ROOT_DEST_DIR, entry['directory'])
-        current_process += 1
-        process_directory(
-            directory=entry['directory'],
-            root_dir=root_dir,
-            dest_dir=dest_dir,
-            mode=entry['mode'],
-            probe=entry['probe'],
-            nr_of_squares=entry['nr_of_squares'],
-            nr_to_process=nr_to_process,
-            current_process=current_process,
-            min_density_ratio=entry.get('min_density_ratio')  # If the key does not exist, it returns ''
-        )
+    # Load the configuration file
+    try:
+        with open(CONF_FILE, 'r') as file:
+            config = json.load(file)
+    except FileNotFoundError:
+        paint_logger.error(f"The configuration file {CONF_FILE} was not found.")
+        config = []
+        sys.exit(1)
+    except json.JSONDecodeError:
+        paint_logger.error(f"Failed to decode JSON from the configuration file {CONF_FILE}.")
+        config = []
+        sys.exit(1)
 
-# Report the time it took in hours minutes seconds
-run_time = time.time() - main_stamp
-format_time_nicely(run_time)
+    # Main loop to process each configuration based on flags
 
-paint_logger.info("")
-paint_logger.info(f'Finished the full processing in  {format_time_nicely(run_time)}')
-paint_logger.info("")
+    main_stamp = time.time()
+
+    paint_logger.info("")
+    paint_logger.info('Starting the full processing')
+    paint_logger.info("")
+
+    nr_to_process = sum(1 for entry in config if entry['flag'])
+
+    current_process = 0
+    for entry in config:
+        if entry['flag']:
+            root_dir = os.path.join(entry['source_dir'], entry['directory'])
+            dest_dir = os.path.join(ROOT_DEST_DIR, entry['directory'])
+            current_process += 1
+            process_directory(
+                directory=entry['directory'],
+                root_dir=root_dir,
+                dest_dir=dest_dir,
+                mode=entry['mode'],
+                probe=entry['probe'],
+                nr_of_squares=entry['nr_of_squares'],
+                nr_to_process=nr_to_process,
+                current_process=current_process,
+                min_density_ratio=entry.get('min_density_ratio')  # If the key does not exist, it returns ''
+            )
+
+    # Report the time it took in hours minutes seconds
+    run_time = time.time() - main_stamp
+    format_time_nicely(run_time)
+
+    paint_logger.info("")
+    paint_logger.info(f'Finished the full processing in  {format_time_nicely(run_time)}')
+    paint_logger.info("")
+
+
+if __name__ == '__main__':
+    main()
