@@ -24,7 +24,7 @@ def set_directory_timestamp(dir_path, timestamp=None):
     try:
         # Update the directory's access and modification times
         os.utime(dir_path, (timestamp, timestamp))
-        paint.loggerdebug(f"Updated timestamps for directory '{dir_path}' successfully.")
+        paint_logger.debug(f"Updated timestamps for directory '{dir_path}' successfully.")
 
     except PermissionError:
         paint_logger.error(f"Error: Permission denied while setting timestamps for '{dir_path}'.")
