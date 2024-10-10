@@ -1,5 +1,7 @@
 import csv
 import os
+import re
+import shutil
 from tkinter.filedialog import askdirectory
 
 import numpy as np
@@ -59,23 +61,6 @@ def ask_user_for_paint_directory(title='Select Folder'):
     if len(image_directory) != 0:
         save_default_directories(root_dir, paint_dir, images_dir)
     return image_directory
-
-
-# def get_list_of_images(image_directory):
-#     """
-#     The function returns a list of all directories (images) in the specified image directory
-#     :param image_directory:
-#     :return:
-#     """
-#     image_list = []
-#     images_in_directory = os.listdir(image_directory)
-#     images_in_directory.sort()
-#
-#     for image_name in images_in_directory:
-#         if os.path.isfile(image_directory + os.sep + image_name):
-#             continue
-#         image_list.append(image_name)
-#     return image_list
 
 
 def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr: int, nr_squares_in_row: int, granularity: int) -> tuple[int, int]:
@@ -350,14 +335,13 @@ def get_grid_defaults_from_file() -> dict:
                 return def_parameters
 
             # Access the first row of data
-            row = rows[0]
             return rows[0]
-            return {'nr_squares_in_row': row['nr_squares_in_row'],
-                    'min_tracks_for_tau': row['min_tracks_for_tau'],
-                    'min_r_squared': row['min_r_squared'],
-                    'min_density_ratio': row['min_density_ratio'],
-                    'max_variability': row['max_variability'],
-                    'max_square_coverage': row['max_square_coverage']}
+            # return {'nr_squares_in_row': row['nr_squares_in_row'],
+            #         'min_tracks_for_tau': row['min_tracks_for_tau'],
+            #         'min_r_squared': row['min_r_squared'],
+            #         'min_density_ratio': row['min_density_ratio'],
+            #         'max_variability': row['max_variability'],
+            #         'max_square_coverage': row['max_square_coverage']}
 
 
     except FileNotFoundError as e:
@@ -402,10 +386,8 @@ def save_grid_defaults_to_file(nr_squares_in_row,
                 'max_variability': max_variability,
                 'max_square_coverage': max_square_coverage})
 
-            print(f"Data successfully written to {parameter_file_path}")
-
     except Exception as e:
-        print(f"An error occurred while writing to the file: {e}")
+        print(f"An error occurred while writing to the file: {e}")       # TODO: Replace with logger
 
 
 
@@ -685,3 +667,37 @@ def split_probe_structure(row):
         return structure
     else:
         return ""
+
+
+def copy_directory(src, dest):
+
+    try:
+        shutil.rmtree(dest, ignore_errors=True)
+        paint_logger.debug(f"Removed {dest}")
+    except FileNotFoundError as e:
+        paint_logger.error(f"FileNotFoundError: {e}")
+    except PermissionError as e:
+        paint_logger.error(f"PermissionError: {e}")
+    except OSError as e:
+        paint_logger.error(f"OSError: {e}")
+    except RecursionError as e:
+        paint_logger.error(f"RecursionError: {e}")
+    except Exception as e:
+        paint_logger.error(f"An unexpected error occurred: {e}")
+        paint_logger.error(f"process_all - copy directories: Failed to rmtree {dest} - {e}")
+
+    try:
+        shutil.copytree(src, dest)
+        paint_logger.debug(f"Copied {src} to {dest}")
+    except FileNotFoundError as e:
+        paint_logger.error(f"FileNotFoundError: {e}")
+    except FileExistsError as e:
+        paint_logger.error(f"FileExistsError: {e}")
+    except PermissionError as e:
+        paint_logger.error(f"PermissionError: {e}")
+    except OSError as e:
+        paint_logger.error(f"OSError: {e}")
+    except RecursionError as e:
+        paint_logger.error(f"RecursionError: {e}")
+    except Exception as e:
+        paint_logger.error(f"An unexpected error occurred: {e}")
