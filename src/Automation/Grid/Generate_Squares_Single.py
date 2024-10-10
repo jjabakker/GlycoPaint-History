@@ -34,7 +34,7 @@ if not paint_logger_file_name_assigned:
 
 class GridDialog:
 
-    def __init__(self, root):
+    def __init__(self, _root):
 
         # Retrieve the earlier saved parameters from disk, if nothing was saved provide reasonable defaults
         (nr_of_squares_in_row,
@@ -45,9 +45,9 @@ class GridDialog:
          max_square_coverage) = get_grid_defaults_from_file()
         self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
 
-        root.title('Batch grid processing')
+        _root.title('Batch grid processing')
 
-        content = ttk.Frame(root)
+        content = ttk.Frame(_root)
         frame_parameters = ttk.Frame(content, borderwidth=5, relief='ridge',
                                      width=200, height=100, padding=(30, 30, 30, 30))
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
@@ -60,21 +60,21 @@ class GridDialog:
         lbl_max_variability = ttk.Label(frame_parameters, text='Max variability', width=30, anchor=W)
         lbl_max_square_coverage = ttk.Label(frame_parameters, text='Max squares coverage', width=30, anchor=W)
 
-        self.nr_of_squares_in_row = IntVar(root, nr_of_squares_in_row)
+        self.nr_of_squares_in_row = IntVar(_root, nr_of_squares_in_row)
         en_nr_squares = ttk.Entry(frame_parameters, textvariable=self.nr_of_squares_in_row, width=10)
 
-        self.min_tracks_for_tau = IntVar(root, min_tracks_for_tau)
+        self.min_tracks_for_tau = IntVar(_root, min_tracks_for_tau)
         en_min_tracks_for_tau = ttk.Entry(frame_parameters, textvariable=self.min_tracks_for_tau, width=10)
 
-        self.min_r_squared = DoubleVar(root, min_r_squared)
+        self.min_r_squared = DoubleVar(_root, min_r_squared)
         en_min_r_squared = ttk.Entry(frame_parameters, textvariable=self.min_r_squared, width=10)
 
-        self.min_density_ratio = DoubleVar(root, min_density_ratio)
+        self.min_density_ratio = DoubleVar(_root, min_density_ratio)
 
-        self.max_variability = DoubleVar(root, max_variability)
+        self.max_variability = DoubleVar(_root, max_variability)
         en_max_variability = ttk.Entry(frame_parameters, textvariable=self.max_variability, width=10)
 
-        self.max_square_coverage = DoubleVar(root, max_square_coverage)
+        self.max_square_coverage = DoubleVar(_root, max_square_coverage)
         en_max_square_coverage = ttk.Entry(frame_parameters, textvariable=self.max_square_coverage, width=10)
 
         #  Do the lay-out
@@ -223,11 +223,15 @@ def process_single_image_in_paint_directory(image_path,
     :return:
     """
 
+    # Empty the plt directory
+    plt_path = os.path.join(image_path, "plt")
+    #delete_files_in_directory(plt_path)  TODO
+
     # Read the full-track file from the 'tracks' directory (use special reading parameters!)
     tracks_file_name = os.path.join(image_path, "tracks", image_name + "-full-tracks.csv")
     df_tracks = get_df_from_file(tracks_file_name, header=0, skip_rows=[1, 2, 3])
     if df_tracks is None:
-        paint_logger.debug(f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
+        paint_logger.error(f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
         return
 
     # Here the actual calculation work is done: df_squares is generated
@@ -442,7 +446,7 @@ def create_df_squares(df_tracks,
                'Y1': round(y1, 2),
                'Nr Spots': int(nr_spots),
                'Nr Tracks': int(nr_tracks),
-               'Tau': 0,
+               'Tau': round(tau, 0),
                'Valid Tau': True,
                'Density': round(density, 1),
                'Average Long Track Duration': round(average_long_track, 1),
@@ -642,7 +646,7 @@ def process_images_in_paint_directory_single_mode(paint_directory,
             processed += 1
 
         else:
-            logger.info(f"Squares file already up to date: {squares_file_name}")
+            paint_logger.debug(f"Squares file already up to date: {squares_file_name}")
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv"))
     run_time = round(time.time() - time_stamp, 1)

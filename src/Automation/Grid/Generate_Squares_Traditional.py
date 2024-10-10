@@ -25,18 +25,14 @@ from src.Automation.Support.Support_Functions import (
     save_squares_to_file,
     save_batch_to_file,
     check_batch_integrity,
-    format_time_nicely)
+    format_time_nicely
+)
 from src.Automation.Support.Grid_Support_Functions import (
     calc_average_track_count_of_lowest_squares
 )
 
 if not paint_logger_file_name_assigned:
     change_file_handler('Generate Squares Single.log')
-
-
-# -------------------------------------------------------------------------------------
-# Define the default parameters
-# ------------------------------------------------------------------------------------
 
 
 class GridDialog:
@@ -345,6 +341,9 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
 
     return df_squares
 
+    if verbose:
+        print(tau)
+    return tau, r_squared, df_squares
 
 def create_df_squares_traditional_mode(df_tracks,
                                        image_path,
@@ -693,7 +692,6 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
                                                        max_square_coverage,
                                                        verbose=False):
     """
-
     :param paint_directory:
     :param nr_of_squares_in_row:
     :param min_r_squared:
@@ -716,7 +714,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
     if not check_batch_integrity(df_batch):
         paint_logger.error(
             f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
-        exit(1)
+        return
 
     # Needed in some cases, unclear why
     df_batch['Batch Sequence Nr'] = df_batch['Batch Sequence Nr'].astype(int)
@@ -738,8 +736,8 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
     # Determine what images need processing from the batch.csv file
     nr_files = len(df_batch)
     if nr_files <= 0:
-        print("\nNo files selected for processing")
-        return -1
+        paint_logger.info("No files selected for processing")
+        return
 
     # Loop though selected images to produce the individual grid_results files
     i = 1
@@ -773,7 +771,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
         if process or (squares_file_timestamp < tracks_file_timestamp):
 
             if verbose:
-                paint_logger.info(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+                paint_logger.debug(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
             else:
                 paint_logger.debug(ext_image_name)
 
