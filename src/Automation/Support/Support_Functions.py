@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from src.Common.Support.CommonSupportFunctions import get_default_directories, save_default_directories
+from src.Common.Support.LoggerConfig import paint_logger
 
 pd.options.mode.copy_on_write = True
 
@@ -40,8 +41,8 @@ def ask_user_for_paint_directory(title='Select Folder'):
     """
     Asks the user for the paint directory.
     Present the previous used value and then save the users choice.
-    :param title: 
-    :return: 
+    :param title:
+    :return:
     """
 
     # Retrieve the default from file
@@ -60,21 +61,21 @@ def ask_user_for_paint_directory(title='Select Folder'):
     return image_directory
 
 
-def get_list_of_images(image_directory):
-    """
-    The function returns a list of all directories (images) in the specified image directory
-    :param image_directory:
-    :return:
-    """
-    image_list = []
-    images_in_directory = os.listdir(image_directory)
-    images_in_directory.sort()
-
-    for image_name in images_in_directory:
-        if os.path.isfile(image_directory + os.sep + image_name):
-            continue
-        image_list.append(image_name)
-    return image_list
+# def get_list_of_images(image_directory):
+#     """
+#     The function returns a list of all directories (images) in the specified image directory
+#     :param image_directory:
+#     :return:
+#     """
+#     image_list = []
+#     images_in_directory = os.listdir(image_directory)
+#     images_in_directory.sort()
+#
+#     for image_name in images_in_directory:
+#         if os.path.isfile(image_directory + os.sep + image_name):
+#             continue
+#         image_list.append(image_name)
+#     return image_list
 
 
 def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr: int, nr_squares_in_row: int, granularity: int) -> tuple[int, int]:
@@ -315,32 +316,59 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
     return df_squares, list_of_squares
 
 
-def get_grid_defaults_from_file():
-    """
-    Retrieves the last used grid parameters from file. Ifv the file does not exist, default parameters are returned.
-    :return: A data dictionary with the parameters
-    """
+def get_grid_defaults_from_file() -> dict:
 
-    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint profile")
-    parameter_file = configuration_dir + os.sep + "grid_parameters.xlsx"
+    configuration_dir = os.path.expanduser('~') + os.sep + "Paint Profile"
+    parameter_file_path = os.path.join(configuration_dir, "grid_parameters.csv")
+
+    def_parameters = {'nr_squares_in_row': 20,
+                      'min_tracks_for_tau': 30,
+                      'min_r_squared': 0.9,
+                      'min_density_ratio': 2,
+                      'max_variability': 10,
+                      'max_square_coverage': 100}
+
     try:
-        df = pd.read_excel(parameter_file, index_col=0)
-        df.rename(columns={df.columns[0]: 'Value'}, inplace=True)
-        return (int(df.loc["nr_squares_in_row", 'Value']),
-                int(df.loc["min_tracks_for_tau", 'Value']),
-                df.loc["min_r_squared", 'Value'],
-                df.loc["min_density_ratio", 'Value'],
-                df.loc["max_variability", 'Value'],
-                df.loc["max_square_coverage", 'Value'])
-    except (KeyError, IndexError, FileNotFoundError, csv.Error):
-        # If the file cannot be opened return reasonable default parameters
-        return (20,  # nr_squares_in_row
-                30,  # min_tracks_for_tau
-                0.9,  # min_r_squared
-                2,  # min_density_ratio
-                10,  # max_variability
-                20)  # max_square_coverage
+        # Check if the file exists
+        if not os.path.exists(parameter_file_path):
+            return def_parameters
 
+        # Open and read the CSV file
+        with open(parameter_file_path, mode='r', newline='') as file:
+            reader = csv.DictReader(file)  # Use DictReader to access columns by header names
+
+            # Ensure required columns are present
+            required_columns = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio', 'max_variability', 'max_square_coverage']
+            for col in required_columns:
+                if col not in reader.fieldnames:
+                    # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
+                    return def_parameters
+
+            # Ensure file is not empty
+            rows = list(reader)  # Read all rows into a list to check content
+            if not rows:
+                return def_parameters
+
+            # Access the first row of data
+            row = rows[0]
+            return rows[0]
+            return {'nr_squares_in_row': row['nr_squares_in_row'],
+                    'min_tracks_for_tau': row['min_tracks_for_tau'],
+                    'min_r_squared': row['min_r_squared'],
+                    'min_density_ratio': row['min_density_ratio'],
+                    'max_variability': row['max_variability'],
+                    'max_square_coverage': row['max_square_coverage']}
+
+
+    except FileNotFoundError as e:
+        print(e)
+    except KeyError as e:
+        print(f"Error: {e}")
+    except ValueError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    return def_parameters
 
 def save_grid_defaults_to_file(nr_squares_in_row,
                                min_tracks_for_tau,
@@ -348,11 +376,48 @@ def save_grid_defaults_to_file(nr_squares_in_row,
                                min_density_ratio,
                                max_variability,
                                max_square_coverage):
-    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint profile")
-    if not os.path.isdir(configuration_dir):
-        os.mkdir(configuration_dir)
 
-    parameter_file = configuration_dir + os.sep + "grid_parameters.xlsx"
+    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
+    parameter_file_path = os.path.join(configuration_dir, "grid_parameters.csv")
+
+    os.makedirs(configuration_dir, exist_ok=True)
+
+    try:
+
+        fieldnames = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio', 'max_variability',  'max_square_coverage']
+
+        # Open the file in write mode ('w') and overwrite any existing content
+        with open(parameter_file_path, mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+            # Write the header
+            writer.writeheader()
+
+            # Write the data as a row
+            writer.writerow({
+                'nr_squares_in_row': nr_squares_in_row,
+                'min_tracks_for_tau': min_tracks_for_tau,
+                'min_r_squared': min_r_squared,
+                'min_density_ratio': min_density_ratio,
+                'max_variability': max_variability,
+                'max_square_coverage': max_square_coverage})
+
+            print(f"Data successfully written to {parameter_file_path}")
+
+    except Exception as e:
+        print(f"An error occurred while writing to the file: {e}")
+
+
+
+def save_grid_defaults_to_file1(nr_squares_in_row,
+                               min_tracks_for_tau,
+                               min_r_squared,
+                               min_density_ratio,
+                               max_variability,
+                               max_square_coverage):
+    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint profile")
+    parameter_file = os.path.join(configuration_dir, "grid_parameters.csv")
+    os.makedirs(configuration_dir, exist_ok=True)
 
     df = pd.DataFrame.from_dict({'Parameter': ['nr_squares_in_row',
                                                'min_tracks_for_tau',

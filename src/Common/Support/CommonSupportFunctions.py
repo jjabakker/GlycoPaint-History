@@ -3,7 +3,6 @@ import os
 import sys
 
 
-
 def get_default_directories():
 
     configuration_dir = os.path.expanduser('~') + os.sep + "Paint Profile"
@@ -17,7 +16,7 @@ def get_default_directories():
     try:
         # Check if the file exists
         if not os.path.exists(parameter_file):
-            raise FileNotFoundError(f"The file '{csv_file_path}' was not found.")
+            return root_directory, paint_directory, image_directory
 
         # Open and read the CSV file
         with open(parameter_file, mode='r', newline='') as file:
@@ -52,7 +51,7 @@ def get_default_directories():
 def save_default_directories(root_directory, paint_directory, images_directory):
 
     configuration_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
-    parameter_file = os.path.join(configuration_dir, "default_directories.csv")
+    parameter_file_path = os.path.join(configuration_dir, "default_directories.csv")
 
     os.makedirs(configuration_dir, exist_ok=True)
     try:
@@ -60,7 +59,7 @@ def save_default_directories(root_directory, paint_directory, images_directory):
         fieldnames = ['images_directory', 'paint_directory', 'root_directory']
 
         # Open the file in write mode ('w') and overwrite any existing content
-        with open(csv_file_path, mode='w', newline='') as file:
+        with open(parameter_file_path, mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
             # Write the header
