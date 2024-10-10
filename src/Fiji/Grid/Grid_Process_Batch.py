@@ -9,8 +9,9 @@ from java.lang.System import getProperty
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
 
-paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint", "Grid")
-sys.path.append(paint_dir)
+
+# paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint", "Grid")
+# sys.path.append(paint_dir)
 
 from Trackmate import paint_trackmate
 from CommonSupportFunctions import create_directories
