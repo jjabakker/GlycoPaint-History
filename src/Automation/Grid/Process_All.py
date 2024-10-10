@@ -1,6 +1,5 @@
 import os
 import sys
-import shutil
 import time
 import json
 
@@ -8,28 +7,18 @@ from src.Automation.Grid.Compile_Results_Files import compile_squares_file
 from src.Automation.Grid.Generate_Squares_Single import process_images_in_root_directory_single_mode
 from src.Automation.Grid.Generate_Squares_Traditional import process_images_in_root_directory_traditional_mode
 from src.Automation.Support.Copy_Data_From_Source import copy_data_from_paint_source_to_paint_data
-from src.Automation.Support.Directory_Timestamp import set_directory_timestamp
+from src.Automation.Support.Directory_Timestamp import set_directory_timestamp, get_timestamp_from_string
 from src.Common.Support.LoggerConfig import paint_logger, change_file_handler
-from src.Automation.Support.Support_Functions import format_time_nicely
+from src.Automation.Support.Support_Functions import copy_directory,  format_time_nicely
 
 SOURCE_NEW_DIR     = '/Users/hans/Paint Source/New Probes'
 SOURCE_REGULAR_DIR = '/Users/hans/Paint Source/Regular Probes'
 ROOT_DEST_DIR      = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Code/Paint-R/Data/'
 CONF_FILE          = '/Users/hans/Paint Source/paint data generation.json'
+TIME_STAMP         = '2024-10-11 00:00:00'         # '%Y-%m-%d %H:%M:%S
 
 
-
-
-def copy_directory(src, dest):
-    try:
-        shutil.rmtree(dest, ignore_errors=True)
-        shutil.copytree(src, dest)
-        paint_logger.debug(f"Copied {src} to {dest}")
-    except Exception as e:
-        paint_logger.error(f"process_all - copy directories: Failed to copy {src} to {dest}. Error: {e}")
-
-
-def run_single(root_dir, nr_of_squares):
+def run_single(root_dir: str, nr_of_squares: int) -> None:
     try:
         process_images_in_root_directory_single_mode(
             root_dir,
@@ -44,7 +33,9 @@ def run_single(root_dir, nr_of_squares):
         paint_logger.error(f"Failed to run single mode for {root_dir}. Error: {e}")
 
 
-def run_traditional(root_dir, nr_of_squares, min_density_ratio):
+def run_traditional(root_dir: str,
+                    nr_of_squares: int,
+                    min_density_ratio: float) -> None:
     try:
         process_images_in_root_directory_traditional_mode(
             root_dir,
@@ -60,8 +51,21 @@ def run_traditional(root_dir, nr_of_squares, min_density_ratio):
         paint_logger.error(f"Failed to run traditional mode for {root_dir}. Error: {e}")
 
 
-def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares, nr_to_process, current_process,
-                      min_density_ratio=None):
+def process_directory(directory: str,
+                      root_dir: str,
+                      dest_dir: str,
+                      mode: str,
+                      probe: str,
+                      nr_of_squares: int,
+                      nr_to_process: int,
+                      current_process: int,
+                      min_density_ratio: float = None):
+
+    paint_source_dirs = {
+        'new': SOURCE_NEW_DIR,
+        'regular': SOURCE_REGULAR_DIR
+    }
+
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} --- Processing mode: {mode} - Probe: {probe} - Directory: {directory}"
     paint_logger.info("")
@@ -71,22 +75,34 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
     paint_logger.info("-" * len(msg))
     paint_logger.info("")
 
+
+    # Copy the data from Paint Source to the appropriate directory in Paint Data
     if not copy_data_from_paint_source_to_paint_data(paint_source_dirs[probe], root_dir):
         return
 
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
 
+    # Do the grid processing
     if mode == 'single':
         run_single(root_dir, nr_of_squares)
     elif mode == 'traditional':
         run_traditional(root_dir, nr_of_squares, min_density_ratio)
 
+    # Compile the squares file
     compile_squares_file(root_dir, verbose=True)
+
+    # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine
     copy_directory(os.path.join(root_dir, 'Output'), os.path.join(dest_dir, 'Output'))
     paint_logger.info(f"Copied output to {os.path.join(dest_dir, 'Output')}")
-    set_directory_timestamp(root_dir)
-    set_directory_timestamp(dest_dir)
+
+    specific_time = get_timestamp_from_string(TIME_STAMP)
+    if specific_time:
+        set_directory_timestamp(os.path.join(dest_dir, 'Output'), specific_time)
+    else:
+        paint_logger.error(f"Time string '{TIME_STAMP}' is not a valid date string.")
+
+    paint_logger.info("")
     paint_logger.info(
         f"Processed Mode: {mode} - Probe: {probe} - Directory: {directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
 
@@ -94,11 +110,6 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
 def main():
 
     change_file_handler('Process All.log')
-
-    paint_source_dirs = {
-        'new': SOURCE_NEW_DIR,
-        'regular': SOURCE_REGULAR_DIR
-    }
 
     paint_logger.debug("\n\n\n\nNew Run\n\n\n")
 
@@ -120,7 +131,7 @@ def main():
     main_stamp = time.time()
 
     paint_logger.info("")
-    paint_logger.info('Starting the full processing')
+    paint_logger.info('Starting the copying from Paint Data to the R space')
     paint_logger.info("")
 
     nr_to_process = sum(1 for entry in config if entry['flag'])
@@ -130,6 +141,7 @@ def main():
         if entry['flag']:
             root_dir = os.path.join(entry['source_dir'], entry['directory'])
             dest_dir = os.path.join(ROOT_DEST_DIR, entry['directory'])
+            # paint_logger.warning(f"Processing {entry}")
             current_process += 1
             process_directory(
                 directory=entry['directory'],
@@ -148,7 +160,7 @@ def main():
     format_time_nicely(run_time)
 
     paint_logger.info("")
-    paint_logger.info(f'Finished the full processing in  {format_time_nicely(run_time)}')
+    paint_logger.info('Finished the copying from Paint Data to the R space')
     paint_logger.info("")
 
 
