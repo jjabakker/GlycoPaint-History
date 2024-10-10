@@ -546,7 +546,7 @@ def process_images_in_paint_directory_single_mode(paint_directory,
     # Determine what images need processing from the batch.csv file
     nr_files = len(df_batch)
     if nr_files <= 0:
-        paint_logger.info("\nNo files selected for processing")
+        paint_logger.info("No files selected for processing")
         return
 
     # Loop though selected images to produce the individual grid_results files
@@ -642,7 +642,7 @@ def process_images_in_paint_directory_single_mode(paint_directory,
             processed += 1
 
         else:
-            paint_logger.info(f"Squares file already up to date: {squares_file_name}")
+            logger.info(f"Squares file already up to date: {squares_file_name}")
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv"))
     run_time = round(time.time() - time_stamp, 1)
