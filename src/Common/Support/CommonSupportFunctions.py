@@ -35,6 +35,49 @@ def get_default_directories():
     return root_directory, paint_directory, image_directory
 
 
+def get_default_directories():
+
+    try:
+        # Check if the file exists
+        if not os.path.exists(csv_file_path):
+            raise FileNotFoundError(f"The file '{csv_file_path}' was not found.")
+
+        # Open and read the CSV file
+        with open(csv_file_path, mode='r', newline='') as file:
+            reader = csv.DictReader(file)  # Use DictReader to access columns by header names
+
+            # Ensure file is not empty
+            rows = list(reader)  # Read all rows into a list to check content
+            if not rows:
+                raise ValueError("The CSV file is empty.")
+
+            # Ensure required columns are present
+            required_columns = ['images_directory', 'paint_directory', 'root_directory']
+            for col in required_columns:
+                if col not in reader.fieldnames:
+                    raise KeyError(f"Required column '{col}' is missing from the CSV file.")
+
+            # Access the first row of data
+            row = rows[0]
+            images_directory = row['images_directory']
+            paint_directory = row['paint_directory']
+            root_directory = row['root_directory']
+
+            # Print the directories
+            print(f"Images Directory: {images_directory}")
+            print(f"Paint Directory: {paint_directory}")
+            print(f"Root Directory: {root_directory}")
+
+    except FileNotFoundError as e:
+        print(e)
+    except KeyError as e:
+        print(f"Error: {e}")
+    except ValueError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+
 def save_default_directories(root_directory, paint_directory, images_directory):
     """
     Save the user defined image directory. If the configuration_dir does not exist, create it

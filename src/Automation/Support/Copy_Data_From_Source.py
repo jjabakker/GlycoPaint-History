@@ -4,21 +4,19 @@ import shutil
 from src.Common.Support.LoggerConfig import paint_logger
 
 
-def copy_directory(src, dest):
+def copy_data_from_paint_source_to_paint_data(source_root, dest_root):
+    """
+    Copies (Trackmate) data from the Paint Source root to the appropriate Paint Data root
+    Only the imahes directories are copied, not the Output directory or the csv files
+
+    :param source_root:
+    :param dest_root:
+    :return:
+    """
+
+    # Delete
     try:
-        shutil.copytree(src, dest, dirs_exist_ok=True)
-        paint_logger.debug(f"Copied directory from {src} to {dest}")
-
-    except Exception as e:
-        paint_logger.error(
-            f"copy_data_from_source: copy_directory: Failed to copy directory from {src} to {dest}. Error: {e}")
-
-
-def copy_data_from_source(source_root, dest_root):
-    try:
-
-        # Delete the image directories
-
+        # Get all the directories in the destination root
         exp_dirs = [d for d in os.listdir(dest_root) if os.path.isdir(os.path.join(dest_root, d))]
         exp_dirs.sort()
 
@@ -26,11 +24,14 @@ def copy_data_from_source(source_root, dest_root):
             if 'Output' in exp:
                 continue
 
+            # Create a path to the Experiment directories
             exp_path = os.path.join(dest_root, exp)
 
+            # Find out which directories exist for each experiment
             image_dirs = [d for d in os.listdir(exp_path) if os.path.isdir(os.path.join(exp_path, d))]
             image_dirs.sort()
 
+            # Delete each of these directories if they are not the Output or Converted
             for image_dir in image_dirs:
                 if 'Output' in image_dir or 'Converted' in image_dir:
                     continue
@@ -51,17 +52,27 @@ def copy_data_from_source(source_root, dest_root):
             src_dirs.sort()
 
             for src_dir in src_dirs:
+                # Do the actual copying
                 dest_dir = os.path.join(dest_root, exp, src_dir)
-                copy_directory(os.path.join(source_root, exp, src_dir), dest_dir)
+                try:
+                    shutil.copytree(os.path.join(source_root, exp, src_dir), dest_dir, dirs_exist_ok=True)
+                    paint_logger.debug(f"Copied directory from {os.path.join(source_root, exp, src_dir)} to {dest_dir}")
+
+                except Exception as e:
+                    paint_logger.error(
+                        f"copy_data_from_source: copy_directory: Failed to copy directory from {src} to {dest}. Error: {e}")
+
+
+        return True
 
     except Exception as e:
         paint_logger.error(f"copy_data_from_source: Failed to process directories in {dest_root}. Error: {e}")
-
+        return False
 
 if __name__ == '__main__':
     # Example usage
 
-    copy_data_from_source(
+    copy_data_from_paint_source_to_paint_data(
         source_root='/Users/hans/Paint Source/New Probes',
         dest_root='/Users/hans/Paint Data/New Probes/Single/Test - Paint New Probes - Single - 30 Squares - 10 DR'
     )

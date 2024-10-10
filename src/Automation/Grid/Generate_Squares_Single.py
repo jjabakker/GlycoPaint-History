@@ -350,15 +350,9 @@ def create_df_squares(df_tracks,
                       experiment_name,
                       verbose):
     # Add a label and square column to the tracks dataframe, if it does not already exist, else reset it
-    if 'Square Nr' in df_tracks.columns:
-        df_tracks['Square Nr'] = 0
-    else:
-        df_tracks['Square Nr'] = 0
 
-    if 'Label' in df_tracks.columns:
-        df_tracks['Label Nr'] = 0
-    else:
-        df_tracks['Label Nr'] = 0
+    df_tracks['Square Nr'] = 0
+    df_tracks['Label Nr'] = 0
 
     # Create an empty squares dataframe, that will contain the data for each square
     df_squares = pd.DataFrame()
@@ -445,7 +439,7 @@ def create_df_squares(df_tracks,
                'Y1': round(y1, 2),
                'Nr Spots': int(nr_spots),
                'Nr Tracks': int(nr_tracks),
-               'Tau': round(tau, 0),
+               'Tau': 0,
                'Valid Tau': True,
                'Density': round(density, 1),
                'Average Long Track Duration': round(average_long_track, 1),

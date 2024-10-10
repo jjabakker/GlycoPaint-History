@@ -1,29 +1,23 @@
-import os
 import csv
+import os
 from tkinter.filedialog import askdirectory
 
 import numpy as np
 import pandas as pd
 
-from src.Common.Support.CommonSupportFunctions import get_default_directories
-from src.Common.Support.CommonSupportFunctions import save_default_directories
+from src.Common.Support.CommonSupportFunctions import get_default_directories, save_default_directories
 
 pd.options.mode.copy_on_write = True
 
 
-def write_np_to_excel(matrix, filename):
-    """
-    The function takes a NumPy matrix and writes it to an Excel file
-    :param matrix:
-    :param filename:
-    :return:
-    """
+def write_np_to_excel(matrix: np.ndarray, filename: str) -> None:
+
     df = pd.DataFrame(matrix)
     df.reset_index(inplace=True)
     df.to_excel(filename, index=False, index_label='None', header='False', float_format="%0.2f")
 
 
-def calculate_density(nr_tracks, area, time, concentration, magnification):
+def calculate_density(nr_tracks: int, area: float, time: float, concentration: float, magnification: float) -> float:
     """
     The function implements a simple algorithm to calculate the density
     :param nr_tracks:
@@ -40,19 +34,6 @@ def calculate_density(nr_tracks, area, time, concentration, magnification):
     density *= magnification
     density = round(density, 1)
     return density
-
-
-# def print_header(message):
-#     """
-#     Simple function to print a clearly visible header
-#     :param message:
-#     :return:
-#     """
-#     message_len = len(message)
-#     print("\n\n")
-#     print("-" * message_len)
-#     print(message)
-#     print("-" * message_len)
 
 
 def ask_user_for_paint_directory(title='Select Folder'):
@@ -96,28 +77,25 @@ def get_list_of_images(image_directory):
     return image_list
 
 
-def get_indices(x1, y1, width, height, square_seq_nr, nr_squares_in_row, granularity):
+def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr: int, nr_squares_in_row: int, granularity: int) -> tuple[int, int]:
     """
     Given coordinates (x1, y1) of the track, calculate the indices of the grid
-    
+
     :param x1: The x coordinate of the track
     :param y1: The y coordinate of the track
     :param width: The width of a grid in the square
     :param height: The height of a grid in the square
     :param square_seq_nr: The number of the square for which the variability is calculated
     :param nr_squares_in_row: The numbers of rows and columns in the full image
-    :param granularity: Specifies how fine the grid is that is overlaid on the square 
-    :return:
+    :param granularity: Specifies how fine the grid is that is overlaid on the square
+    :return: The indices (xi, yi) of the grid
     """
 
-    x_index = square_seq_nr % nr_squares_in_row
-    y_index = square_seq_nr // nr_squares_in_row
+    # Calculate the top-left corner (x0, y0) of the square
+    x0 = (square_seq_nr % nr_squares_in_row) * width
+    y0 = (square_seq_nr // nr_squares_in_row) * height
 
-    # Determine the upper left corner of the square
-    x0 = x_index * width
-    y0 = y_index * height
-
-    # Determine the grid coordinates
+    # Calculate the grid indices (xi, yi) for the track
     xi = int(((x1 - x0) / width) * granularity)
     yi = int(((y1 - y0) / height) * granularity)
 
@@ -243,8 +221,8 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
             neighbour_square_nr = int((nb[0] - 1) * nr_of_squares_in_row + (nb[1] - 1))
             if neighbour_square_nr in df_squares.index:
                 if (df_squares.loc[neighbour_square_nr, 'Variability Visible'] and
-                        df_squares.loc[neighbour_square_nr, 'Density Ratio Visible'] and
-                        df_squares.loc[neighbour_square_nr, 'Valid Tau']):
+                    df_squares.loc[neighbour_square_nr, 'Density Ratio Visible'] and
+                    df_squares.loc[neighbour_square_nr, 'Valid Tau']):
                     nr_of_neighbours += 1
 
         # Record the results
@@ -356,12 +334,12 @@ def get_grid_defaults_from_file():
                 df.loc["max_square_coverage", 'Value'])
     except (KeyError, IndexError, FileNotFoundError, csv.Error):
         # If the file cannot be opened return reasonable default parameters
-        return (20,   # nr_squares_in_row
-                30,   # min_tracks_for_tau
+        return (20,  # nr_squares_in_row
+                30,  # min_tracks_for_tau
                 0.9,  # min_r_squared
-                2,    # min_density_ratio
-                10,   # max_variability
-                20)   # max_square_coverage
+                2,  # min_density_ratio
+                10,  # max_variability
+                20)  # max_square_coverage
 
 
 def save_grid_defaults_to_file(nr_squares_in_row,
@@ -555,11 +533,6 @@ def check_batch_integrity(df_batch):
 
 
 def read_squares_from_file(squares_file_path):
-    """
-    Create the squares table by looking for records that were marked for processing
-    :return:
-    """
-
     try:
         df_squares = pd.read_csv(squares_file_path, header=0, skiprows=[])
     except IOError:
@@ -579,20 +552,7 @@ def create_output_directories_for_graphpad(paint_directory):
     ]
 
     for directory in directories:
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-# def create_output_directories_for_graphpad(paint_directory):
-#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'pdf', 'Tau')):
-#         os.makedirs(os.path.join(paint_directory, 'Output', 'pdf', 'Tau'))
-#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'pdf', 'Tau')):
-#         os.makedirs(os.path.join(paint_directory, 'Output', 'pdf', 'Tau'))
-#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'pdf', 'Density')):
-#         os.makedirs(os.path.join(paint_directory, 'Output', 'pdf', 'Density'))
-#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'graphpad', 'Tau')):
-#         os.makedirs(os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'))
-#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'graphpad', 'Density')):
-#         os.makedirs(os.path.join(paint_directory, 'Output', 'graphpad', 'Density'))
+        os.makedirs(directory, exist_ok=True)
 
 
 def format_time_nicely(seconds):

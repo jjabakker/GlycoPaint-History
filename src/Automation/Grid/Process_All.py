@@ -7,7 +7,7 @@ import json
 from src.Automation.Grid.Compile_Results_Files import compile_squares_file
 from src.Automation.Grid.Generate_Squares_Single import process_images_in_root_directory_single_mode
 from src.Automation.Grid.Generate_Squares_Traditional import process_images_in_root_directory_traditional_mode
-from src.Automation.Support.Copy_Data_From_Source import copy_data_from_source
+from src.Automation.Support.Copy_Data_From_Source import copy_data_from_paint_source_to_paint_data
 from src.Automation.Support.Directory_Timestamp import set_directory_timestamp
 from src.Common.Support.LoggerConfig import paint_logger, change_file_handler
 from src.Automation.Support.Support_Functions import format_time_nicely
@@ -16,8 +16,8 @@ SOURCE_NEW_DIR     = '/Users/hans/Paint Source/New Probes'
 SOURCE_REGULAR_DIR = '/Users/hans/Paint Source/Regular Probes'
 ROOT_DEST_DIR      = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Code/Paint-R/Data/'
 
-# CONF_FILE = '/Users/hans/Paint Source/paint data generation.json'
-CONF_FILE = '/Users/hans/Paint Source/paint data generation - addendum.json'
+CONF_FILE = '/Users/hans/Paint Source/paint data generation.json'
+#CONF_FILE = '/Users/hans/Paint Source/paint data generation - addendum.json'
 
 change_file_handler('Process All.log')
 
@@ -79,7 +79,9 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
     paint_logger.info(msg)
     paint_logger.info("-" * len(msg))
     paint_logger.info("")
-    copy_data_from_source(paint_source_dirs[probe], root_dir)
+
+    if not copy_data_from_paint_source_to_paint_data(paint_source_dirs[probe], root_dir):
+        return
 
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)

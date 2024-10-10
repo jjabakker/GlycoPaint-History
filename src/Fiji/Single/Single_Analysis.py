@@ -42,14 +42,14 @@ def process_full_image(threshold, image_directory, image_name, cell_type, probe,
     :return:
     """
 
-    full_results_file = image_directory + os.sep + image_name + os.sep + image_name + "-full-results.csv"
-    full_tracks_filename = image_directory + os.sep + image_name + os.sep + "tracks" + os.sep + image_name + "-full-tracks.csv"
-    tiff_filename = image_directory + os.sep + image_name + os.sep + "img" + os.sep + image_name + ".tiff"
+    full_results_file = os.path.join(image_directory, image_name, image_name, "-full-results.csv")
+    full_tracks_filename = os.path.join(image_directory, image_name, "tracks", image_name, "-full-tracks.csv")
+    tiff_filename = os.path.join(image_directory, image_name, "img", image_name, ".tiff")
 
     nr_spots, total_tracks, long_tracks = paint_trackmate(threshold, full_tracks_filename, tiff_filename)
     if nr_spots == -1:
         paint_logger.error("\n'Process full image' did not manage to run 'paint_trackmate'")
-        print(getframeinfo(currentframe()).filename, getframeinfo(currentframe()).lineno)
+        paint_logger.error(getframeinfo(currentframe()).filename, getframeinfo(currentframe()).lineno)
         return -1
 
     # ----------------------

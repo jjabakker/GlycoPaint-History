@@ -23,9 +23,9 @@ from src.Automation.Support.Support_Functions import (
 # Define the default parameters
 # -------------------------------------------------------------------------------------
 
-max_squares_with_tau = 20
-max_variability = 10
-min_density_ratio = 2
+not_used_max_squares_with_tau = 20
+not_used_max_variability = 10
+not_used_min_density_ratio = 2
 
 
 def compile_squares_file(root_dir, verbose):
@@ -43,11 +43,7 @@ def compile_squares_file(root_dir, verbose):
 
         paint_dir_path = os.path.join(root_dir, paint_dir)
 
-        if not os.path.isdir(paint_dir_path):  # If it is not a directory, skip it
-            continue
-        if 'Output' in paint_dir:  # If it is the output directory, skip it
-            continue
-        if paint_dir.startswith('-'):  # If the image directory name starts with '-' it was marked to be ignored
+        if not os.path.isdir(paint_dir_path) or 'Output' in paint_dir or paint_dir.startswith('-'):
             continue
 
         if verbose:
@@ -81,11 +77,12 @@ def compile_squares_file(root_dir, verbose):
             # df_all_squares = pd.concat([df_all_squares, df_squares[df_squares['Visible']]])
             df_all_squares = pd.concat([df_all_squares, df_squares])
 
-        nr_cell_types = len(df_batch['Cell Type'].unique().tolist())
-        nr_probe_types = len(df_batch['Probe Type'].unique().tolist())
-        nr_probes = len(df_batch['Probe'].unique().tolist())
-        nr_adjuvants = len(df_batch['Adjuvant'].unique().tolist())
-        row = [paint_dir, nr_cell_types, nr_probe_types, nr_adjuvants, nr_probes]
+        row = [
+            paint_dir,
+            df_batch['Cell Type'].nunique(),
+            df_batch['Probe Type'].nunique(),
+            df_batch['Adjuvant'].nunique(),
+            df_batch['Probe'].nunique()]
 
         # Add the data to the all_dataframes
         df_image_summary = pd.concat([df_image_summary, pd.DataFrame([row])])
@@ -119,7 +116,8 @@ def compile_squares_file(root_dir, verbose):
         try:
             image_size = int(image_size)
         except (ValueError, TypeError):
-            image_size = 0
+            # If the specified images size was not valid (not a number), set it to 0
+            df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Image Size'] = 0
             paint_logger.error(f"Invalid image size in {image}")
 
         # Add the data that was obtained from df_all_images
@@ -157,8 +155,7 @@ def compile_squares_file(root_dir, verbose):
     # -------------------------------------
 
     # Check if Output directory exists, create if necessary
-    if not os.path.isdir(os.path.join(root_dir, "Output")):
-        os.mkdir(os.path.join(root_dir, "Output"))
+    os.makedirs(os.path.join(root_dir, "Output"), exist_ok=True)
 
     # Save the files,
     df_all_squares.to_csv(os.path.join(root_dir, 'Output', 'All Squares.csv'), index=False)
