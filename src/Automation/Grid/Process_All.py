@@ -15,9 +15,7 @@ from src.Automation.Support.Support_Functions import format_time_nicely
 SOURCE_NEW_DIR     = '/Users/hans/Paint Source/New Probes'
 SOURCE_REGULAR_DIR = '/Users/hans/Paint Source/Regular Probes'
 ROOT_DEST_DIR      = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Code/Paint-R/Data/'
-
-CONF_FILE = '/Users/hans/Paint Source/paint data generation.json'
-#CONF_FILE = '/Users/hans/Paint Source/paint data generation - addendum.json'
+CONF_FILE          = '/Users/hans/Paint Source/paint data generation.json'
 
 change_file_handler('Process All.log')
 
@@ -98,9 +96,6 @@ def process_directory(directory, root_dir, dest_dir, mode, probe, nr_of_squares,
     set_directory_timestamp(dest_dir)
     paint_logger.info(
         f"Processed Mode: {mode} - Probe: {probe} - Directory: {directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
-
-
-
 
 try:
     with open(CONF_FILE, 'r') as file:
