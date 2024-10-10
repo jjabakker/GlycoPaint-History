@@ -8,7 +8,6 @@ import pandas as pd
 from src.Automation.Support.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
-from src.Common.Support.LoggerConfig import paint_logger, change_file_handler, paint_logger_file_name_assigned
 from src.Automation.Support.Support_Functions import (
     calc_variability,
     calculate_density,
@@ -25,7 +24,7 @@ from src.Automation.Support.Support_Functions import (
     format_time_nicely,
     calc_average_track_count_of_lowest_squares
 )
-
+from src.Common.Support.LoggerConfig import paint_logger, change_file_handler, paint_logger_file_name_assigned
 
 if not paint_logger_file_name_assigned:
     change_file_handler('Generate Squares Single.log')
@@ -163,13 +162,14 @@ class GridDialog:
         self.exit_pressed()
 
 
-def process_images_in_root_directory_single_mode(root_directory,
-                                                 nr_of_squares_in_row,
-                                                 min_r_squared,
-                                                 min_tracks_for_tau,
-                                                 max_variability,
-                                                 max_square_coverage,
-                                                 verbose):
+def process_images_in_root_directory_single_mode(root_directory: str,
+                                                 nr_of_squares_in_row: int,
+                                                 min_r_squared: float,
+                                                 min_tracks_for_tau: int,
+                                                 max_variability: float,
+                                                 max_square_coverage: float,
+                                                 verbose: bool):
+
     image_dirs = os.listdir(root_directory)
     image_dirs.sort()
     for image_dir in image_dirs:
@@ -186,47 +186,26 @@ def process_images_in_root_directory_single_mode(root_directory,
                                                       verbose=False)
 
 
+def process_single_image_in_paint_directory(image_path: str,
+                                            image_name: str,
+                                            nr_of_squares_in_row: int,
+                                            min_r_squared: float,
+                                            min_tracks_for_tau: int,
+                                            min_density_ratio: float,
+                                            max_variability: float,
+                                            concentration: float,
+                                            nr_spots: int,
+                                            batch_seq_nr: int,
+                                            experiment_nr: int,
+                                            experiment_seq_nr: int,
+                                            experiment_date: str,
+                                            experiment_name: str,
+                                            verbose: bool = False) -> tuple:
 
-
-
-def process_single_image_in_paint_directory(image_path,
-                                            image_name,
-                                            nr_of_squares_in_row,
-                                            min_r_squared,
-                                            min_tracks_for_tau,
-                                            min_density_ratio,
-                                            max_variability,
-                                            concentration,
-                                            nr_spots,
-                                            batch_seq_nr,
-                                            experiment_nr,
-                                            experiment_seq_nr,
-                                            experiment_date,
-                                            experiment_name,
-                                            verbose=False):
-    """
-
-    :param image_path:
-    :param image_name:
-    :param nr_of_squares_in_row:
-    :param min_r_squared:
-    :param min_tracks_for_tau:
-    :param min_density_ratio:
-    :param max_variability:
-    :param concentration:
-    :param nr_spots:
-    :param batch_seq_nr:
-    :param experiment_nr:
-    :param experiment_seq_nr:
-    :param experiment_date:
-    :param experiment_name:
-    :param verbose:
-    :return:
-    """
 
     # Empty the plt directory
     plt_path = os.path.join(image_path, "plt")
-    #delete_files_in_directory(plt_path)  TODO
+    # delete_files_in_directory(plt_path)  TODO
 
     # Read the full-track file from the 'tracks' directory (use special reading parameters!)
     tracks_file_name = os.path.join(image_path, "tracks", image_name + "-full-tracks.csv")
@@ -340,17 +319,17 @@ def process_single_image_in_paint_directory(image_path,
     return tau, r_squared, df_squares
 
 
-def create_df_squares(df_tracks,
-                      image_name,
-                      nr_squares_in_row,
-                      concentration,
-                      nr_spots,
-                      seq_nr,
-                      experiment_nr,
-                      experiment_seq_nr,
-                      experiment_date,
-                      experiment_name,
-                      verbose):
+def create_df_squares(df_tracks: pd.DataFrame,
+                      image_name: str,
+                      nr_squares_in_row: int,
+                      concentration: float,
+                      nr_spots: int,
+                      seq_nr: int,
+                      experiment_nr: int,
+                      experiment_seq_nr: int,
+                      experiment_date: str,
+                      experiment_name: str,
+                      verbose: bool) -> pd.DataFrame:
     # Add a label and square column to the tracks dataframe, if it does not already exist, else reset it
 
     df_tracks['Square Nr'] = 0
@@ -495,23 +474,13 @@ def add_columns_to_batch_file(df_batch,
     return df_batch
 
 
-def process_images_in_paint_directory_single_mode(paint_directory,
-                                                  nr_of_squares_in_row,
-                                                  min_r_squared,
-                                                  min_tracks_for_tau,
-                                                  max_variability,
-                                                  max_square_coverage,
-                                                  verbose=False):
-    """
-    :param paint_directory:
-    :param nr_of_squares_in_row:
-    :param min_r_squared:
-    :param min_tracks_for_tau:
-    :param max_variability:
-    :param max_square_coverage:
-    :param verbose:
-    :return:
-    """
+def process_images_in_paint_directory_single_mode(paint_directory: str,
+                                                  nr_of_squares_in_row: int,
+                                                  min_r_squared: float,
+                                                  min_tracks_for_tau: int,
+                                                  max_variability: float,
+                                                  max_square_coverage: float,
+                                                  verbose: bool = False) -> None:
 
     time_stamp = time.time()
 
