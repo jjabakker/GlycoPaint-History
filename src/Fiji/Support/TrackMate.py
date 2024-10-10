@@ -31,7 +31,7 @@ paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + 
 sys.path.append(paint_dir)
 
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
-from LoggerConfigFiji import paint_logger
+from LoggerConfig import paint_logger
 
 
 def paint_trackmate(threshold, tracks_filename, image_filename):

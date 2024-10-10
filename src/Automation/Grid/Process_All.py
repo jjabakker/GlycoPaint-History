@@ -9,7 +9,7 @@ from src.Automation.Grid.Generate_Squares_Single import process_images_in_root_d
 from src.Automation.Grid.Generate_Squares_Traditional import process_images_in_root_directory_traditional_mode
 from src.Automation.Support.Copy_Data_From_Source import copy_data_from_source
 from src.Automation.Support.Directory_Timestamp import set_directory_timestamp
-from src.Automation.Support.Logger_Config import paint_logger, change_file_handler
+from src.Common.Support.LoggerConfig import paint_logger
 from src.Automation.Support.Support_Functions import format_time_nicely
 
 SOURCE_NEW_DIR     = '/Users/hans/Paint Source/New Probes'

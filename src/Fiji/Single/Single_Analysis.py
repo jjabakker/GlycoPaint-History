@@ -22,7 +22,7 @@ from FijiSupportFunctions import fiji_get_file_open_write_attribute
 
 from fiji.util.gui import GenericDialogPlus
 
-from LoggerConfigFiji import paint_logger
+from LoggerConfig import paint_logger
 
 
 def process_full_image(threshold, image_directory, image_name, cell_type, probe, probe_type, concentration_probe):

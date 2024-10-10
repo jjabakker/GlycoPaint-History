@@ -15,7 +15,7 @@ from PIL import Image, ImageTk
 from src.Automation.Support.Analyse_All_Images import (
     analyse_all_images,
     create_summary_graphpad)
-from src.Automation.Support.Logger_Config import paint_logger, change_file_handler
+from src.Common.Support.LoggerConfig import paint_logger, change_file_handler
 from src.Automation.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,

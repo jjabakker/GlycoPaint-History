@@ -16,7 +16,7 @@ from FijiSupportFunctions import (
     format_time_nicely)
 from Grid_Process_Batch import grid_analysis_batch
 
-from LoggerConfigFiji import paint_logger, change_file_handler
+from LoggerConfig import paint_logger, change_file_handler
 
 change_file_handler('Grid Process Batch Batch.log')
 

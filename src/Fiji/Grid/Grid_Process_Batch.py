@@ -19,7 +19,7 @@ from FijiSupportFunctions import (
     fiji_get_file_open_append_attribute,
     ask_user_for_image_directory)
 
-from LoggerConfigFiji import paint_logger, change_file_handler
+from LoggerConfig import paint_logger, change_file_handler
 
 change_file_handler('Grid Process Batch.log')
 
