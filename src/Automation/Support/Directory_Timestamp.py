@@ -1,20 +1,22 @@
 import os
 import time
 
+from scipy.optimize import direct
+
 from src.Common.Support.LoggerConfig import paint_logger
 
 
-def set_directory_timestamp(dir_path, timestamp=None):
+def set_directory_timestamp(dir_to_change, timestamp=None):
     """
     Set the access and modification timestamps of a directory.
 
-    :param dir_path: Path to the directory.
+    :param dir_to_change: Path to the directory.
     :param timestamp: Unix timestamp (seconds since epoch) to set for access and modification times.
                       If None, the current time will be used.
     """
     # Check if the provided path is a valid directory
-    if not os.path.isdir(dir_path):
-        paint_logger.error(f"Error: '{dir_path}' is not a valid directory.")
+    if not os.path.isdir(dir_to_change):
+        paint_logger.error(f"Error: '{dir_to_change}' is not a valid directory.")
         return
 
     # If no timestamp is provided, use the current time
@@ -22,16 +24,24 @@ def set_directory_timestamp(dir_path, timestamp=None):
         timestamp = time.time()
 
     try:
-        # Update the directory's access and modification times
-        os.utime(dir_path, (timestamp, timestamp))
-        paint_logger.debug(f"Updated timestamps for directory '{dir_path}' successfully.")
+        for dirpath, dirnames, filenames in os.walk(dir_to_change):
 
+            # Set timestamp for each file in the directory
+            os.utime(dir_to_change, (timestamp, timestamp))
+            for dirname in dirnames:
+                filepath = os.path.join(dirpath, dirname)
+                os.utime (filepath, (timestamp,timestamp))
+            for filename in filenames:
+                filepath = os.path.join(dirpath, filename)
+                os.utime (filepath, (timestamp,timestamp))
+        paint_logger.debug(f"Updated timestamps for directory '{dir_to_change}' successfully.")
+
+    except (PermissionError, OSError, FileNotFoundError):
+        paint_logger.error(f"Failed to update timestamps for directory '{dir_to_change}'.")
     except PermissionError:
-        paint_logger.error(f"Error: Permission denied while setting timestamps for '{dir_path}'.")
-
+        paint_logger.error(f"Error: Permission denied while setting timestamps for '{dir_to_change}'.")
     except FileNotFoundError:
-        paint_logger.error(f"Error: Directory '{dir_path}' not found.")
-
+        paint_logger.error(f"Error: Directory '{dir_to_change}' not found.")
     except Exception as e:
         paint_logger.error(f"An unexpected error occurred: {e}")
 
@@ -53,11 +63,15 @@ def get_timestamp_from_string(date_str, format_str='%Y-%m-%d %H:%M:%S'):
 
 
 if __name__ == '__main__':
+
+    # directory = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data'
+    directory = '/Users/hans/Downloads/Code'
+
     # Example of using current time for timestamp
-    set_directory_timestamp(
-        '/Users/hans/Paint Data/Regular Probes/Single/Paint Regular Probes - Single - 30 Squares - 5 DR')
+    # set_directory_timestamp(directory)
 
     # Example of using a specific timestamp
-    specific_time = get_timestamp_from_string('2023-01-01 12:00:00')
+    time_string = '2024-10-11 00:00:00'
+    specific_time = get_timestamp_from_string(time_string)
     if specific_time:
-        set_directory_timestamp('/path/to/directory', specific_time)
+        set_directory_timestamp(directory, specific_time)
