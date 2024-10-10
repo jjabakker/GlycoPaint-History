@@ -356,12 +356,12 @@ def get_grid_defaults_from_file():
                 df.loc["max_square_coverage", 'Value'])
     except (KeyError, IndexError, FileNotFoundError, csv.Error):
         # If the file cannot be opened return reasonable default parameters
-        return (20,  # nr_squares_in_row
-                30,  # min_tracks_for_tau
+        return (20,   # nr_squares_in_row
+                30,   # min_tracks_for_tau
                 0.9,  # min_r_squared
-                2,  # min_density_ratio
-                10,  # max_variability
-                20)  # max_square_coverage
+                2,    # min_density_ratio
+                10,   # max_variability
+                20)   # max_square_coverage
 
 
 def save_grid_defaults_to_file(nr_squares_in_row,
@@ -401,43 +401,70 @@ def save_grid_defaults_to_file(nr_squares_in_row,
 
 
 def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
-    # Note these are different unit systems
-    # The coordinates from the squares are in micrometers
-    # The coordinates from the rectangle are in pixels
-    # One or the other needs to be converted before you can compare
+    """
+    Test if the square is in the rectangle specified by the user.
+    Note these are different unit systems
+    The coordinates from the squares are in micrometers
+    The coordinates from the rectangle are in pixels
+    One or the other needs to be converted before you can compare
+    :param x0:
+    :param y0:
+    :param x1:
+    :param y1:
+    :param xr0:
+    :param yr0:
+    :param xr1:
+    :param yr1:
+    :return:
+    """
 
-    x0 = x0 / 82.0864 * 512
-    y0 = y0 / 82.0864 * 512
-    x1 = x1 / 82.0864 * 512
-    y1 = y1 / 82.0864 * 512
+    # Convert square coordinates from micrometers to pixels
+    x0, y0, x1, y1 = [coord / 82.0864 * 512 for coord in [x0, y0, x1, y1]]
 
-    c1 = c2 = c3 = c4 = False
-
+    # Determine if the square is within the rectangle
     if xr0 < xr1 and yr0 < yr1:
-        c1 = x0 >= xr0
-        c2 = x1 <= xr1
-        c3 = y0 >= yr0
-        c4 = y1 <= yr1
+        return x0 >= xr0 and x1 <= xr1 and y0 >= yr0 and y1 <= yr1
+    elif xr0 < xr1 and yr0 > yr1:
+        return x0 >= xr0 and x1 <= xr1 and y0 >= yr1 and y1 <= yr0
+    elif xr0 > xr1 and yr0 > yr1:
+        return x0 >= xr1 and x1 <= xr0 and y0 >= yr1 and y1 <= yr0
+    elif xr0 > xr1 and yr0 < yr1:
+        return x0 >= xr1 and x1 <= xr0 and y0 >= yr0 and y1 <= yr1
 
-    if xr0 < xr1 and yr0 > yr1:
-        c1 = x0 >= xr0
-        c2 = x1 <= xr1
-        c3 = y0 >= yr1
-        c4 = y1 <= yr0
+    return False
 
-    if xr0 > xr1 and yr0 > yr1:
-        c1 = x0 >= xr1
-        c2 = x1 <= xr0
-        c3 = y0 >= yr1
-        c4 = y1 <= yr0
-
-    if xr0 > xr1 and yr0 < yr1:
-        c1 = x0 >= xr1
-        c2 = x1 <= xr0
-        c3 = y0 >= yr0
-        c4 = y1 <= yr1
-
-    return c1 and c2 and c3 and c4
+    # x0 = x0 / 82.0864 * 512
+    # y0 = y0 / 82.0864 * 512
+    # x1 = x1 / 82.0864 * 512
+    # y1 = y1 / 82.0864 * 512
+    #
+    # c1 = c2 = c3 = c4 = False
+    #
+    # if xr0 < xr1 and yr0 < yr1:
+    #     c1 = x0 >= xr0
+    #     c2 = x1 <= xr1
+    #     c3 = y0 >= yr0
+    #     c4 = y1 <= yr1
+    #
+    # if xr0 < xr1 and yr0 > yr1:
+    #     c1 = x0 >= xr0
+    #     c2 = x1 <= xr1
+    #     c3 = y0 >= yr1
+    #     c4 = y1 <= yr0
+    #
+    # if xr0 > xr1 and yr0 > yr1:
+    #     c1 = x0 >= xr1
+    #     c2 = x1 <= xr0
+    #     c3 = y0 >= yr1
+    #     c4 = y1 <= yr0
+    #
+    # if xr0 > xr1 and yr0 < yr1:
+    #     c1 = x0 >= xr1
+    #     c2 = x1 <= xr0
+    #     c3 = y0 >= yr0
+    #     c4 = y1 <= yr1
+    #
+    # return c1 and c2 and c3 and c4
 
 
 def save_batch_to_file(df_batch, batch_file_path):
@@ -461,10 +488,11 @@ def read_batch_from_file(batch_file_path, only_records_to_process=True):
 
     # Only process the records the user has indicated to be of interest
     if only_records_to_process:
-        df_batch = df_batch[(df_batch['Process'] == 'Yes') |
-                            (df_batch['Process'] == 'yes') |
-                            (df_batch['Process'] == 'Y') |
-                            (df_batch['Process'] == 'y')]
+        # df_batch = df_batch[(df_batch['Process'] == 'Yes') |
+        #                     (df_batch['Process'] == 'yes') |
+        #                     (df_batch['Process'] == 'Y') |
+        #                     (df_batch['Process'] == 'y')]
+        df_batch = df_batch[('y' in df_batch['Process'].lower())]
 
     df_batch.set_index('Ext Image Name', inplace=True, drop=False)
 
@@ -543,16 +571,28 @@ def read_squares_from_file(squares_file_path):
 
 
 def create_output_directories_for_graphpad(paint_directory):
-    if not os.path.exists(os.path.join(paint_directory, 'Output', 'pdf', 'Tau')):
-        os.makedirs(os.path.join(paint_directory, 'Output', 'pdf', 'Tau'))
-    if not os.path.exists(os.path.join(paint_directory, 'Output', 'pdf', 'Tau')):
-        os.makedirs(os.path.join(paint_directory, 'Output', 'pdf', 'Tau'))
-    if not os.path.exists(os.path.join(paint_directory, 'Output', 'pdf', 'Density')):
-        os.makedirs(os.path.join(paint_directory, 'Output', 'pdf', 'Density'))
-    if not os.path.exists(os.path.join(paint_directory, 'Output', 'graphpad', 'Tau')):
-        os.makedirs(os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'))
-    if not os.path.exists(os.path.join(paint_directory, 'Output', 'graphpad', 'Density')):
-        os.makedirs(os.path.join(paint_directory, 'Output', 'graphpad', 'Density'))
+    directories = [
+        os.path.join(paint_directory, 'Output', 'pdf', 'Tau'),
+        os.path.join(paint_directory, 'Output', 'pdf', 'Density'),
+        os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'),
+        os.path.join(paint_directory, 'Output', 'graphpad', 'Density')
+    ]
+
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+# def create_output_directories_for_graphpad(paint_directory):
+#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'pdf', 'Tau')):
+#         os.makedirs(os.path.join(paint_directory, 'Output', 'pdf', 'Tau'))
+#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'pdf', 'Tau')):
+#         os.makedirs(os.path.join(paint_directory, 'Output', 'pdf', 'Tau'))
+#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'pdf', 'Density')):
+#         os.makedirs(os.path.join(paint_directory, 'Output', 'pdf', 'Density'))
+#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'graphpad', 'Tau')):
+#         os.makedirs(os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'))
+#     if not os.path.exists(os.path.join(paint_directory, 'Output', 'graphpad', 'Density')):
+#         os.makedirs(os.path.join(paint_directory, 'Output', 'graphpad', 'Density'))
 
 
 def format_time_nicely(seconds):
@@ -571,3 +611,5 @@ def format_time_nicely(seconds):
         parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
 
     return ' and '.join(parts)
+
+
