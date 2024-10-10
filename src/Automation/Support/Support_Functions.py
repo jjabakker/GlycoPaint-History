@@ -1,4 +1,5 @@
 import os
+import csv
 from tkinter.filedialog import askdirectory
 
 import numpy as np
@@ -41,17 +42,17 @@ def calculate_density(nr_tracks, area, time, concentration, magnification):
     return density
 
 
-def print_header(message):
-    """
-    Simple function to print a clearly visible header
-    :param message:
-    :return:
-    """
-    message_len = len(message)
-    print("\n\n")
-    print("-" * message_len)
-    print(message)
-    print("-" * message_len)
+# def print_header(message):
+#     """
+#     Simple function to print a clearly visible header
+#     :param message:
+#     :return:
+#     """
+#     message_len = len(message)
+#     print("\n\n")
+#     print("-" * message_len)
+#     print(message)
+#     print("-" * message_len)
 
 
 def ask_user_for_paint_directory(title='Select Folder'):
@@ -190,8 +191,6 @@ def get_df_from_file(file, header=0, skip_rows=[]):
 
     return df
 
-
-#
 
 def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
     list_of_squares = []
@@ -344,7 +343,7 @@ def get_grid_defaults_from_file():
     :return: A data dictionary with the parameters
     """
 
-    configuration_dir = os.path.expanduser('~') + os.sep + "Paint profile"
+    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint profile")
     parameter_file = configuration_dir + os.sep + "grid_parameters.xlsx"
     try:
         df = pd.read_excel(parameter_file, index_col=0)
@@ -371,7 +370,7 @@ def save_grid_defaults_to_file(nr_squares_in_row,
                                min_density_ratio,
                                max_variability,
                                max_square_coverage):
-    configuration_dir = os.path.expanduser('~') + os.sep + "Paint profile"
+    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint profile")
     if not os.path.isdir(configuration_dir):
         os.mkdir(configuration_dir)
 
