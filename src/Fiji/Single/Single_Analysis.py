@@ -22,7 +22,7 @@ from FijiSupportFunctions import fiji_get_file_open_write_attribute
 
 from fiji.util.gui import GenericDialogPlus
 
-from LoggerConfigFiji import logger
+from LoggerConfigFiji import paint_logger
 
 
 def process_full_image(threshold, image_directory, image_name, cell_type, probe, probe_type, concentration_probe):
@@ -48,7 +48,7 @@ def process_full_image(threshold, image_directory, image_name, cell_type, probe,
 
     nr_spots, total_tracks, long_tracks = paint_trackmate(threshold, full_tracks_filename, tiff_filename)
     if nr_spots == -1:
-        logger.error("\n'Process full image' did not manage to run 'paint_trackmate'")
+        paint_logger.error("\n'Process full image' did not manage to run 'paint_trackmate'")
         print(getframeinfo(currentframe()).filename, getframeinfo(currentframe()).lineno)
         return -1
 
@@ -181,7 +181,7 @@ def square_analysis():
     # Ask for probe information and threshold
     probe, probe_type, threshold, concentration_probe = get_user_input(interactive=True)
     if probe == 0:
-        logger.info("User aborted the operation")
+        paint_logger.info("User aborted the operation")
         return 0
     cell_type = " "
 

@@ -10,7 +10,7 @@ from src.Automation.Support.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
 from src.Automation.Support.Generate_HeatMap import plot_heatmap
-from src.Automation.Support.Logger_Config import logger, change_file_handler, logger_file_name_assigned
+from src.Automation.Support.Logger_Config import paint_logger, change_file_handler, logger_file_name_assigned
 from src.Automation.Support.Support_Functions import (
     calc_variability,
     calculate_density,
@@ -169,9 +169,9 @@ class GridDialog:
             run_time = time.time() - time_stamp
         else:
             run_time = 0
-            logger.error('Not an paint directory and not a root directory')
+            paint_logger.error('Not an paint directory and not a root directory')
 
-        logger.info(f"Total processing time is {run_time:.1f} seconds")
+        paint_logger.info(f"Total processing time is {run_time:.1f} seconds")
 
         # And then exit
         self.exit_pressed()
@@ -211,7 +211,7 @@ def delete_files_in_directory(directory_path):
             if os.path.isfile(file_path):
                 os.remove(file_path)
     except OSError:
-        logger.error("Error occurred while deleting files.")
+        paint_logger.error("Error occurred while deleting files.")
 
 
 def process_single_image_in_paint_directory_traditional_mode(image_path,
@@ -257,7 +257,7 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
     tracks_file_name = os.path.join(image_path, "tracks", image_name + "-full-tracks.csv")
     df_tracks = get_df_from_file(tracks_file_name, header=0, skip_rows=[1, 2, 3])
     if df_tracks is None:
-        logger.error(f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
+        paint_logger.error(f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
         return None
 
     # Here the actual calculation work is done: df_squares is generated
@@ -534,7 +534,7 @@ def write_matrices(image_path, image_name, tau_matrix, density_matrix, count_mat
     # Check if the grid directory exist
     dir_name = image_path + os.sep + "grid"
     if not os.path.exists(dir_name):
-        logger.error(f"Function 'write_matrices' failed: Directory {dir_name} does not exists.")
+        paint_logger.error(f"Function 'write_matrices' failed: Directory {dir_name} does not exists.")
         exit(-1)
 
     # Write the Tau matrix to file
@@ -601,8 +601,8 @@ def identify_invalid_squares(df_squares,
         df_squares.loc[df_squares['Tau'] == -1, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau']])
         if verbose:
-            logger.debug(f"Started with {original_count} squares")
-            logger.debug(
+            paint_logger.debug(f"Started with {original_count} squares")
+            paint_logger.debug(
                 f"Eliminated {original_count - updated_count} squares with track count was lower than {min_tracks_for_tau} (no Tau calculated): left {updated_count}")
     else:
         updated_count = 0
@@ -617,7 +617,7 @@ def identify_invalid_squares(df_squares,
         df_squares.loc[df_squares['Tau'] == -2, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau']])
         if verbose:
-            logger.debug(
+            paint_logger.debug(
                 f"Eliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
     else:
         updated_count = 0
@@ -632,7 +632,7 @@ def identify_invalid_squares(df_squares,
         df_squares.loc[df_squares['Tau'] == -3, 'Valid Tau'] = False
         updated_count = len(df_squares[df_squares['Valid Tau']])
         if verbose:
-            logger.debug(
+            paint_logger.debug(
                 f"Eliminated {original_count - updated_count} squares for which the R2 was lower than {min_r_squared}: left {updated_count}")
     else:
         updated_count = 0
@@ -709,12 +709,12 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
 
     df_batch = read_batch_from_file(os.path.join(paint_directory, "batch.csv"))
     if df_batch is None:
-        logger.error(
+        paint_logger.error(
             f"Function 'process_images_in_paint_directory' failed: Likely, {paint_directory} is not a valid directory containing cell image information.")
         exit(1)
 
     if not check_batch_integrity(df_batch):
-        logger.error(
+        paint_logger.error(
             f"Function 'process_images_in_paint_directory' failed: The batch file in {paint_directory} is not in the valid format.")
         exit(1)
 
@@ -745,7 +745,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
     i = 1
     processed = 0
 
-    logger.info(f"Processing {nr_files:2d} images in {paint_directory}")
+    paint_logger.info(f"Processing {nr_files:2d} images in {paint_directory}")
 
     for index, row in df_batch.iterrows():
         ext_image_name = row["Image Name"] + '-threshold-' + str(row["Threshold"])
@@ -763,19 +763,19 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
 
         # Get the time stamp of the tracks_file
         if not os.path.isfile(tracks_file_name):
-            logger.error(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
+            paint_logger.error(f"process_single_image_in_paint_directory: tracks file {tracks_file_name} not found")
             continue
         else:
             tracks_file_timestamp = os.path.getmtime(tracks_file_name)
 
         # Force processing
         # process = True
-        if process or squares_file_timestamp < tracks_file_timestamp:
+        if process or (squares_file_timestamp < tracks_file_timestamp):
 
             if verbose:
-                logger.info(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+                paint_logger.info(f"Processing file {i} of {nr_files}: seq nr: {index} name: {ext_image_name}")
             else:
-                logger.debug(ext_image_name)
+                paint_logger.debug(ext_image_name)
 
             df_squares = process_single_image_in_paint_directory_traditional_mode(ext_image_path,
                                                                                   ext_image_name,
@@ -793,7 +793,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
                                                                                   row['Experiment Name'],
                                                                                   verbose)
             if df_squares is None:
-                logger.error("Aborted with error")
+                paint_logger.error("Aborted with error")
                 return None
 
             nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
@@ -813,11 +813,11 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
             processed += 1
 
         else:
-            logger.debug(f"Squares file already up to date: {squares_file_name}")
+            paint_logger.debug(f"Squares file already up to date: {squares_file_name}")
 
     save_batch_to_file(df_batch, os.path.join(paint_directory, "grid_batch.csv"))
     run_time = round(time.time() - time_stamp, 1)
-    logger.info(f"Processed  {nr_files:2d} images in {paint_directory} in {format_time_nicely(run_time)}")
+    paint_logger.info(f"Processed  {nr_files:2d} images in {paint_directory} in {format_time_nicely(run_time)}")
 
 
 if __name__ == "__main__":

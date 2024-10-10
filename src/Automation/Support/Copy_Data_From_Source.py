@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from src.Automation.Support.Logger_Config import logger
+from src.Automation.Support.Logger_Config import paint_logger
 
 
 def copy_directory(src, dest):
@@ -13,10 +13,10 @@ def copy_directory(src, dest):
 
         # Now, copy the directory
         shutil.copytree(src, dest, dirs_exist_ok=True)
-        logger.debug(f"Copied directory from {src} to {dest}")
+        paint_logger.debug(f"Copied directory from {src} to {dest}")
 
     except Exception as e:
-        logger.error(
+        paint_logger.error(
             f"copy_data_from_source: copy_directory: Failed to copy directory from {src} to {dest}. Error: {e}")
 
 
@@ -61,7 +61,7 @@ def copy_data_from_source(source_root, dest_root):
                 copy_directory(os.path.join(source_root, exp, src_dir), dest_dir)
 
     except Exception as e:
-        logger.error(f"copy_data_from_source: Failed to process directories in {dest_root}. Error: {e}")
+        paint_logger.error(f"copy_data_from_source: Failed to process directories in {dest_root}. Error: {e}")
 
 
 if __name__ == '__main__':

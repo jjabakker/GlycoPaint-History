@@ -6,7 +6,10 @@ import time
 from ij import IJ
 from java.lang.System import getProperty
 
-paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
+paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
+sys.path.append(paint_dir)
+
+paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint", "Grid")
 sys.path.append(paint_dir)
 
 from Trackmate import paint_trackmate
@@ -16,7 +19,7 @@ from FijiSupportFunctions import (
     fiji_get_file_open_append_attribute,
     ask_user_for_image_directory)
 
-from LoggerConfigFiji import logger, change_file_handler
+from LoggerConfigFiji import paint_logger, change_file_handler
 
 change_file_handler('Grid Process Batch.log')
 
@@ -28,7 +31,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
     old_batch_file_name = os.path.join(paint_directory, "previous_batch.csv")
 
     if not os.path.exists(batch_file_name):
-        logger.error("Error: The file '{}' does not exist.".format(batch_file_name))
+        paint_logger.error("Error: The file '{}' does not exist.".format(batch_file_name))
         sys.exit()
 
     with open(batch_file_name, mode='r') as batch_file:
@@ -36,7 +39,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
         csv_reader = csv.DictReader(batch_file)
         if not {'Batch Sequence Nr','Experiment Date', 'Experiment Name', 'Experiment Nr',	'Experiment Seq Nr', 'Image Name',
                 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant',	'Concentration', 'Threshold', 'Process'} <= set(csv_reader.fieldnames):
-            logger.error("Error: Missing expected column headers ")
+            paint_logger.error("Error: Missing expected column headers ")
             sys.exit()
 
         try:
@@ -48,11 +51,11 @@ def grid_analysis_batch(paint_directory, image_source_directory):
                     nr_to_process += 1
                 count += 1
             if nr_to_process == 0:
-                logger.warning("No images selected for processing")
+                paint_logger.warning("No images selected for processing")
                 return -1
 
             message = "Processing " + str(nr_to_process) + " images in directory " + image_source_directory
-            logger.info(message)
+            paint_logger.info(message)
 
             # Initialise the temp_batch_file with the column headers
             temp_batch_file_name = initialise_temp_batch(paint_directory, csv_reader.fieldnames)
@@ -70,7 +73,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
             for row in csv_reader:  # Here we are reading the batch file
                 if 'y' in row['Process'].lower():
                     file_count += 1
-                    logger.info("Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Ext Image Name'])
+                    paint_logger.info("Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Ext Image Name'])
                     status, row = process_row(row, image_source_directory, paint_directory)
                     if status == 'OK':
                         nr_images_processed += 1
@@ -81,16 +84,16 @@ def grid_analysis_batch(paint_directory, image_source_directory):
 
                 write_row_to_temp_batch(row, temp_batch_file_name, csv_reader.fieldnames)
 
-            logger.info("Number of images processed successfully:         " + str(nr_images_processed))
-            logger.info("Number of images not found:                      " + str(nr_images_not_found))
-            logger.info("Number of images not not successfully processed: " + str(nr_images_failed))
+            paint_logger.info("Number of images processed successfully:      " + str(nr_images_processed))
+            paint_logger.info("Number of images not found:                   " + str(nr_images_not_found))
+            paint_logger.info("Number of images not  successfully processed: " + str(nr_images_failed))
 
             if os.path.isfile(old_batch_file_name):
                 os.remove(old_batch_file_name)
             try:
                 os.rename(batch_file_name, old_batch_file_name)
             except OSError:
-                logger.error("Could not rename batch file: " + old_batch_file_name)
+                paint_logger.error("Could not rename batch file: " + old_batch_file_name)
                 return -1
 
             if os.path.isfile(batch_file_name):
@@ -98,13 +101,13 @@ def grid_analysis_batch(paint_directory, image_source_directory):
             try:
                 os.rename(temp_batch_file_name, batch_file_name)
             except OSError:
-                logger.error("Could not rename results file: " + temp_batch_file_name)
+                paint_logger.error("Could not rename results file: " + temp_batch_file_name)
                 return -1
 
             return 0
 
         except KeyError as e:
-            logger.error("Missing expected column in row: {e}")
+            paint_logger.error("Missing expected column in row: {e}")
             return
 
 
@@ -121,7 +124,7 @@ def process_row(row, image_source_directory, paint_directory):
     image_file_name = os.path.join(image_source_directory, image_name + '.nd2')
 
     if not os.path.exists(image_file_name):
-        logger.warning("\nProcessing: Failed to open image: " + image_file_name)
+        paint_logger.warning("\nProcessing: Failed to open image: " + image_file_name)
         row['Image Size'] = '-'
         status = 'NOT_FOUND'
     else:
@@ -141,13 +144,13 @@ def process_row(row, image_source_directory, paint_directory):
 
         nr_spots, total_tracks, long_tracks = paint_trackmate(threshold, tracks_filename, tiff_filename)
         if nr_spots == -1:
-            logger.error("\n'Process single image' did not manage to run 'paint_trackmate'")
+            paint_logger.error("\n'Process single image' did not manage to run 'paint_trackmate'")
             status = 'FAILED'
         else:
             time.sleep(3)  # Display the image for 3 seconds
         run_time = round(time.time() - time_stamp, 1)
 
-        logger.debug('Nr of spots: ' + str(nr_spots) + " processed in " + str(run_time) + " seconds")
+        paint_logger.debug('Nr of spots: ' + str(nr_spots) + " processed in " + str(run_time) + " seconds")
         imp.close()
 
         # Update the row
@@ -169,7 +172,7 @@ def initialise_temp_batch(paint_directory, column_names):
         temp_batch_file.close()
         return temp_batch_file_name
     except IOError:
-        logger.error("Could not open results file:" + temp_batch_file_name)
+        paint_logger.error("Could not open results file:" + temp_batch_file_name)
         sys.exit(-1)
 
 
@@ -186,17 +189,17 @@ if __name__ == "__main__":
 
     paint_directory = ask_user_for_image_directory("Specify the Paint directory", 'Paint')
     if len(paint_directory) == 0:
-        logger.warning("\nUser aborted the batch processing.")
+        paint_logger.warning("\nUser aborted the batch processing.")
         exit(0)
 
     # Get the directory where the images are located
     images_directory = ask_user_for_image_directory("Specify the Image Source directory", 'Images')
     if len(images_directory) == 0:
-        logger.warning("\nUser aborted the batch processing.")
+        paint_logger.warning("\nUser aborted the batch processing.")
         exit(0)
 
     time_stamp = time.time()
     grid_analysis_batch(paint_directory, images_directory)
     run_time = time.time() - time_stamp
     run_time = round(run_time, 1)
-    logger.info("\nProcessing completed in " + str(run_time) + " seconds")
+    paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")

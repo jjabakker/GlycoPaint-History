@@ -3,10 +3,10 @@ import os
 from os import mkdir
 
 # Create a custom logger
-logger = logging.getLogger('paint')
+paint_logger = logging.getLogger('paint')
 
 # Set the global logging level (this applies to all handlers unless overridden)
-logger.setLevel(logging.DEBUG)  # Logs everything from DEBUG level and above
+paint_logger.setLevel(logging.DEBUG)  # Logs everything from DEBUG level and above
 
 # Create and set the log format
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
@@ -30,19 +30,19 @@ def create_file_handler(file_name):
 
 file_handler = create_file_handler('paint.log')
 
-# Step 6: Add handlers to the logger
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
+# Add handlers to the logger
+paint_logger.addHandler(console_handler)
+paint_logger.addHandler(file_handler)
 
 
 def change_file_handler(file_name):
     global file_handler
     global logger_file_name_assigned
 
-    logger.removeHandler(file_handler)
+    paint_logger.removeHandler(file_handler)
     file_handler = create_file_handler(file_name)
-    logger.addHandler(file_handler)
-    logger_file_name_assigned = True
+    paint_logger.addHandler(file_handler)
+    paint_logger_file_name_assigned = True
 
 
-logger_file_name_assigned = False
+paint_logger_file_name_assigned = False

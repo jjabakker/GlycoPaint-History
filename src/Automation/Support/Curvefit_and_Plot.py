@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.optimize import OptimizeWarning
 from scipy.optimize import curve_fit
 
-from src.Automation.Support.Logger_Config import logger
+from src.Automation.Support.Logger_Config import paint_logger
 
 
 def read_track_mate_data(csvfilename, istrack):
@@ -23,10 +23,10 @@ def read_track_mate_data(csvfilename, istrack):
     try:
         tmd = pd.read_csv(csvfilename, header=0, skiprows=[1, 2, 3])
     except FileNotFoundError:
-        logger.error(f'Could not open {csvfilename}')
+        paint_logger.error(f'Could not open {csvfilename}')
         sys.exit()
     except (pd.errors.ParserError, UnicodeDecodeError):
-        logger.error(f'Problem parsing {csvfilename}')
+        paint_logger.error(f'Problem parsing {csvfilename}')
         sys.exit()
 
     # Drop unused columns for 'tracks' data or 'plots' data
@@ -38,7 +38,7 @@ def read_track_mate_data(csvfilename, istrack):
             tmd.drop(['POSITION_Z', 'MANUAL_SPOT_COLOR'], axis=1, inplace=True)
         return tmd
     except KeyError:
-        logger.error(f'Unexpected column names in {csvfilename}')
+        paint_logger.error(f'Unexpected column names in {csvfilename}')
         sys.exit()
 
 
@@ -56,7 +56,7 @@ def mono_exp(x, m, t, b):
     try:
         calc = m * np.exp(-t * x) + b
     except OverflowError:
-        logger.error(f"Overflow error in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
+        paint_logger.error(f"Overflow error in monoExp: m = x = {x}, {m}, t = {t}, b = {b}")
         calc = 0
     return calc
 
@@ -106,15 +106,15 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
         m, t, b = params
     except ValueError:
         if verbose:
-            logger.error('CurveFitAndPlot: ydata or xdata contain NaNs, or incompatible options are used')
+            paint_logger.error('CurveFitAndPlot: ydata or xdata contain NaNs, or incompatible options are used')
         return -2, 0
     except RuntimeError:
         if verbose:
-            logger.warning('CurveFitAndPlot: The least-squares optimisation fails')
+            paint.loggerwarning('CurveFitAndPlot: The least-squares optimisation fails')
         return -2, 0
     except OptimizeWarning:
         if verbose:
-            logger.warning('CurveFitAndPlot: Covariance of the parameters can not be estimated')
+            paint.loggerwarning('CurveFitAndPlot: Covariance of the parameters can not be estimated')
         return -2, 0
 
     tau_sec = (1 / t)
@@ -128,7 +128,7 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
         try:
             r_squared = 1 - np.sum(squared_diffs) / np.sum(squared_diffs_from_mean)
         except (OptimizeWarning, RuntimeError, RuntimeWarning):
-            logger.warning('CurveFitAndPlot: OptimizeWarning, RuntimeError, RuntimeWarning')
+            paint.loggerwarning('CurveFitAndPlot: OptimizeWarning, RuntimeError, RuntimeWarning')
             r_squared = 0
 
     fig, ax = plt.subplots()
@@ -157,7 +157,7 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
     if file != "":
         fig.savefig(file)
         if verbose:
-            logger.debug("\nWriting plot file: " + file)
+            paint.loggerdebug("\nWriting plot file: " + file)
 
     # Inspect the parameters
     if verbose:

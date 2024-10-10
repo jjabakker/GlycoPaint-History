@@ -11,7 +11,7 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Automation.Support.Logger_Config import logger
+from src.Automation.Support.Logger_Config import paint_logger
 from src.Automation.Support.Support_Functions import (
     get_default_directories,
     save_default_directories,
@@ -29,7 +29,7 @@ min_density_ratio = 2
 
 
 def compile_squares_file(root_dir, verbose):
-    logger.info(f"Compiling output for {root_dir}")
+    paint_logger.info(f"Compiling output for {root_dir}")
     time_stamp = time.time()
 
     # Create the dataframes to be filled
@@ -51,13 +51,13 @@ def compile_squares_file(root_dir, verbose):
             continue
 
         if verbose:
-            logger.debug(f'Compiling directory: {paint_dir_path}')
+            paint_logger.debug(f'Compiling directory: {paint_dir_path}')
 
         # Read the batch file in the directory to determine which images there are
         batch_file_name = os.path.join(paint_dir_path, 'grid_batch.csv')
         df_batch = read_batch_from_file(batch_file_name, only_records_to_process=True)
         if df_batch is None:
-            logger.error(f"Function 'compile_squares_file' failed: Batch file {batch_file_name} does not exist")
+            paint_logger.error(f"Function 'compile_squares_file' failed: Batch file {batch_file_name} does not exist")
             exit()
 
         for index, row in df_batch.iterrows():
@@ -72,7 +72,7 @@ def compile_squares_file(root_dir, verbose):
 
             df_squares = read_squares_from_file(squares_file_name)
             if df_squares is None:
-                logger.error(
+                paint_logger.error(
                     f'Compile Squares: No squares file found for image {ext_image_name} in the directory {paint_dir}')
                 continue
             if len(df_squares) == 0:  # Ignore it when it is empty
@@ -120,7 +120,7 @@ def compile_squares_file(root_dir, verbose):
             image_size = int(image_size)
         except (ValueError, TypeError):
             image_size = 0
-            logger.error(f"Invalid image size in {image}")
+            paint_logger.error(f"Invalid image size in {image}")
 
         # Add the data that was obtained from df_all_images
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe'] = probe
@@ -169,7 +169,7 @@ def compile_squares_file(root_dir, verbose):
     df_all_images.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
 
     run_time = time.time() - time_stamp
-    logger.info(f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
+    paint_logger.info(f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
 
 
 def split_probe_valency(row):

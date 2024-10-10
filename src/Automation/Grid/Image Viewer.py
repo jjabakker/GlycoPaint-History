@@ -8,7 +8,6 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 #from pathlib import Path
-#import logging
 
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
@@ -16,7 +15,7 @@ from PIL import Image, ImageTk
 from src.Automation.Support.Analyse_All_Images import (
     analyse_all_images,
     create_summary_graphpad)
-from src.Automation.Support.Logger_Config import logger, change_file_handler
+from src.Automation.Support.Logger_Config import paint_logger, change_file_handler
 from src.Automation.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
@@ -44,7 +43,7 @@ def save_square_info_to_batch(self):
         self.squares_file_name = self.list_images[self.img_no]['Squares File']
         df_squares = read_squares_from_file(self.squares_file_name)
         if df_squares is None:
-            logger.error("Function 'save_square_info_to_batch' failed: - Square file does not exist")
+            paint_logger.error("Function 'save_square_info_to_batch' failed: - Square file does not exist")
             sys.exit()
         if len(df_squares) > 0:
             nr_visible_squares = len(df_squares[df_squares['Visible']])
@@ -125,7 +124,7 @@ def get_images(self, type_of_image):
                     if df_squares is not None:
                         square_nrs = list(df_squares['Square Nr'])
                     else:
-                        logger.error("No square numbers found (?)")
+                        paint_logger.error("No square numbers found (?)")
                         square_nrs = []
                     valid = True
                 else:
@@ -198,7 +197,7 @@ def get_corresponding_bf(bf_dir, image_name):
     """
 
     if not os.path.exists(bf_dir):
-        logger.error(
+        paint_logger.error(
             "Function 'get_corresponding_bf' failed - The directory for jpg versions of BF images does not exist. Run 'Convert BF Images' first")
         sys.exit()
 
@@ -266,7 +265,7 @@ class ImageViewer:
         # Read the batch file. If the file is not there just return (a message will have been printed)
         self.df_batch = read_batch_from_file(self.batchfile_path, FALSE)
         if self.df_batch is None:
-            logger.error("No 'grid_batch.csv' file, Did you select an image directory?")
+            paint_logger.error("No 'grid_batch.csv' file, Did you select an image directory?")
             return
 
         # Retrieve some info from the batch file
@@ -279,7 +278,7 @@ class ImageViewer:
 
         self.list_images = get_images(self, 'ROI')
         if len(self.list_images) == 0:
-            logger.error(
+            paint_logger.error(
                 f"Function 'ImageViewer Init' failed - No images were found below directory {self.paint_directory}.")
             sys.exit()
 
@@ -565,7 +564,7 @@ class ImageViewer:
 
     def key_pressed(self, event):
         self.cn_left_image.focus_set()
-        logger.debug(f'Key pressed {event.keysym}')
+        paint_logger.debug(f'Key pressed {event.keysym}')
 
         if event.keysym == 't':
             if self.show_squares:
@@ -600,7 +599,7 @@ class ImageViewer:
             self.go_forward_backward('Forward')
 
             image_name = self.list_images[self.img_no]['Left Image Name']
-            logger.debug(image_name)
+            paint_logger.debug(image_name)
 
             # Delete the squares and write the canvas as an eps file
             self.cn_left_image.delete("all")
@@ -650,7 +649,7 @@ class ImageViewer:
     def image_selected(self, _):
 
         image_name = self.cb_image_names.get()
-        logger.debug(image_name)
+        paint_logger.debug(image_name)
         index = self.list_of_image_names.index(image_name)
         self.img_no = index - 1
         self.go_forward_backward('Forward')
@@ -862,7 +861,7 @@ class ImageViewer:
         df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
         df_visible = df_selection[df_selection['Visible']]
         if len(df_visible) == 0:
-            logger.debug(f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
+            paint_logger.debug(f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
         else:
             tau_values = list(df_visible['Tau'])
             labels = list(df_visible['Label Nr'])
@@ -1130,7 +1129,7 @@ class ImageViewer:
     #         self.sc_variability.configure(state=NORMAL)
     #         self.sc_density_ratio.configure(state=NORMAL)
     #     else:
-    #         logger.error('Big trouble!')
+    #         paint_logger.error('Big trouble!')
     #
     #     self.list_images = get_images(self, self.mode_var.get())
     #
@@ -1159,7 +1158,7 @@ class ImageViewer:
         elif self.mode_var.get() == "ROI":
             self.configure_widgets_state(NORMAL)
         else:
-            logger.error('Big trouble!')
+            paint_logger.error('Big trouble!')
 
         self.list_images = get_images(self, self.mode_var.get())
         self.img_no = self.img_no - 1
@@ -1261,7 +1260,7 @@ class ImageViewer:
         self.squares_file_name = os.path.join(self.paint_directory, image_name, 'grid', image_name + '-squares.csv')
         self.df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
         if self.df_squares is None:
-            logger.error(f"Function 'read_squares' failed - Squares file {self.squares_file_name} was not found.")
+            paint_logger.error(f"Function 'read_squares' failed - Squares file {self.squares_file_name} was not found.")
             sys.exit()
         return self.df_squares
 
@@ -1269,7 +1268,7 @@ class ImageViewer:
         batch_file_path = os.path.join(self.paint_directory, self.image_name, 'grid_batch.csv')
         self.df_batch = read_batch_from_file(batch_file_path)
         if self.df_batch is None:
-            logger.error(f"Function 'read_batch' failed - Squares file {batch_file_path} was not found.")
+            paint_logger.error(f"Function 'read_batch' failed - Squares file {batch_file_path} was not found.")
             sys.exit()
         return self.df_batch
 
@@ -1398,13 +1397,13 @@ class SelectViewerDialog:
         if mode == "Directory":
             root_directory = self.root_directory
             if not os.path.isdir(root_directory):
-                logger.error('Whoops')
+                paint_logger.error('Whoops')
                 error = True
 
         else:
             conf_file = self.conf_file
             if not os.path.isfile(conf_file):
-                logger.error('Whoops')
+                paint_logger.error('Whoops')
                 error = True
 
         if not error:
@@ -1428,5 +1427,11 @@ root.mainloop()
 if proceed:
     root = Tk()
     root.eval('tk::PlaceWindow . center')
+    paint_logger.debug(f'Mode: {mode}')
+    if mode == 'Directory':
+        paint_logger.info(f'Root directory: {root_directory}')
+    else:
+        paint_logger.debug(f'Configuration file: {conf_file}')
+
     image_viewer = ImageViewer(root, root_directory, conf_file, mode)
     root.mainloop()

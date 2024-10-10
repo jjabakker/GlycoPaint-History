@@ -128,7 +128,7 @@ def set_directory_timestamp(dir_path, timestamp=None):
     """
     # Check if the provided path is a valid directory
     if not os.path.isdir(dir_path):
-        logger.error("Error: '{0}' is not a valid directory.".format(dir_path))
+        paint_logger.error("Error: '{0}' is not a valid directory.".format(dir_path))
         return
 
     # If no timestamp is provided, use the current time
