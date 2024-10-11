@@ -2,7 +2,6 @@
 This function takes as input the directory under which the various experiments are held.
 It will create an Output directory with three files: all squares, all batches, and batches summary.
 """
-
 import os
 import time
 from tkinter import *
@@ -15,12 +14,9 @@ from src.Automation.Support.Support_Functions import (
     save_default_directories,
     read_batch_from_file,
     read_squares_from_file,
-    format_time_nicely,
-    split_probe_structure,
-    split_probe_valency)
+    format_time_nicely)
+
 from src.Common.Support.LoggerConfig import paint_logger
-
-
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
 # The routine that does the work
@@ -139,10 +135,6 @@ def compile_squares_file(root_dir, verbose):
     # Set the columns for df_image_summary
     df_image_summary.columns = ['Image', 'Nr Cell Types', 'Nr Probe Types', 'Adjuvants', 'Nr Probes']
 
-    # Add probe valency and structure information for regular probes
-    df_all_squares['Valency'] = df_all_squares.apply(split_probe_valency, axis=1)
-    df_all_squares['Structure'] = df_all_squares.apply(split_probe_structure, axis=1)
-
     # ------------------------------------
     # Save the files
     # -------------------------------------
@@ -162,11 +154,6 @@ def compile_squares_file(root_dir, verbose):
     paint_logger.info(f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
 
 
-# -----------------------------------------------------------------------------------------------------------------------
-# -----------------------------------------------------------------------------------------------------------------------
-# The dialog box to specify the root directory
-# -----------------------------------------------------------------------------------------------------------------------
-# -----------------------------------------------------------------------------------------------------------------------
 
 class CompileDialog:
 
