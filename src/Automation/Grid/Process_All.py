@@ -1,21 +1,32 @@
+import json
 import os
 import sys
 import time
-import json
 
 from src.Automation.Grid.Compile_Results_Files import compile_squares_file
 from src.Automation.Grid.Generate_Squares_Single import process_images_in_root_directory_single_mode
 from src.Automation.Grid.Generate_Squares_Traditional import process_images_in_root_directory_traditional_mode
 from src.Automation.Support.Copy_Data_From_Source import copy_data_from_paint_source_to_paint_data
-from src.Automation.Support.Directory_Timestamp import set_directory_timestamp, get_timestamp_from_string
+from src.Automation.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
+from src.Automation.Support.Support_Functions import copy_directory, format_time_nicely
 from src.Common.Support.LoggerConfig import paint_logger, change_file_handler
-from src.Automation.Support.Support_Functions import copy_directory,  format_time_nicely
 
-SOURCE_NEW_DIR     = '/Users/hans/Paint Source/New Probes'
-SOURCE_REGULAR_DIR = '/Users/hans/Paint Source/Regular Probes'
-ROOT_DEST_DIR      = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Code/Paint-R/Data/'
-CONF_FILE          = '/Users/hans/Paint Source/paint data generation.json'
-TIME_STAMP         = '2024-10-11 00:00:00'         # '%Y-%m-%d %H:%M:%S
+PAINT_DEBUG = False
+
+if PAINT_DEBUG:
+    CONF_FILE = '/Users/hans/Paint Source/paint data generation - test.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source'
+    PAINT_DATA = '/Users/Hans/Paint Data Test'
+    R_DATA_DEST = '/Users/hans/R Data'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data New'
+    TIME_STAMP = '2024-10-11 11:11:11'  # '%Y-%m-%d %H:%M:%S
+
+else:
+    CONF_FILE = '/Users/hans/Paint Source/paint data generation - production.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source'
+    PAINT_DATA = '/Users/Hans/Paint Data'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data New'
+    TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
 def run_single(root_dir: str, nr_of_squares: int) -> None:
@@ -51,23 +62,18 @@ def run_traditional(root_dir: str,
         paint_logger.error(f"Failed to run traditional mode for {root_dir}. Error: {e}")
 
 
-def process_directory(directory: str,
-                      root_dir: str,
-                      dest_dir: str,
+def process_directory(paint_source_dir,
+                      process_directory: str,
+                      paint_data_dir: str,
+                      r_dest_dir: str,
                       mode: str,
                       probe: str,
                       nr_of_squares: int,
                       nr_to_process: int,
                       current_process: int,
                       min_density_ratio: float = None):
-
-    paint_source_dirs = {
-        'new': SOURCE_NEW_DIR,
-        'regular': SOURCE_REGULAR_DIR
-    }
-
     time_stamp = time.time()
-    msg = f"{current_process} of {nr_to_process} --- Processing mode: {mode} - Probe: {probe} - Directory: {directory}"
+    msg = f"{current_process} of {nr_to_process} --- Processing mode: {mode} - Probe: {probe} - Directory: {process_directory}"
     paint_logger.info("")
     paint_logger.info("")
     paint_logger.info("-" * len(msg))
@@ -75,43 +81,45 @@ def process_directory(directory: str,
     paint_logger.info("-" * len(msg))
     paint_logger.info("")
 
-
     # Copy the data from Paint Source to the appropriate directory in Paint Data
-    if not copy_data_from_paint_source_to_paint_data(paint_source_dirs[probe], root_dir):
+    if not copy_data_from_paint_source_to_paint_data(paint_source_dir, paint_data_dir):
         return
 
-    if not os.path.exists(dest_dir):
-        os.makedirs(dest_dir)
+    if not os.path.exists(r_dest_dir):
+        os.makedirs(r_dest_dir)
 
     # Do the grid processing
-    if mode == 'single':
-        run_single(root_dir, nr_of_squares)
-    elif mode == 'traditional':
-        run_traditional(root_dir, nr_of_squares, min_density_ratio)
+    if mode == 'Single':
+        run_single(paint_data_dir, nr_of_squares)
+    elif mode == 'Traditional':
+        run_traditional(paint_data_dir, nr_of_squares, min_density_ratio)
+    else:
+        paint_logger.error(f"Invalid mode '{mode}' for {process_directory}.")
+        return
 
     # Compile the squares file
-    compile_squares_file(root_dir, verbose=True)
+    compile_squares_file(paint_data_dir, verbose=True)
 
-    # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine
-    copy_directory(os.path.join(root_dir, 'Output'), os.path.join(dest_dir, 'Output'))
-    paint_logger.info(f"Copied output to {os.path.join(dest_dir, 'Output')}")
+    # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine)
+    output_source = os.path.join(paint_data_dir, 'Output')
+    output_destination = os.path.join(r_dest_dir, 'Output')
+    copy_directory(output_source, output_destination)
+    paint_logger.info(f"Copied output to {output_destination}")
 
+    # Set the timestamp for the R data destination directory
     specific_time = get_timestamp_from_string(TIME_STAMP)
     if specific_time:
-        set_directory_timestamp(os.path.join(dest_dir, 'Output'), specific_time)
+        set_directory_tree_timestamp(r_dest_dir, specific_time)
     else:
         paint_logger.error(f"Time string '{TIME_STAMP}' is not a valid date string.")
 
     paint_logger.info("")
     paint_logger.info(
-        f"Processed Mode: {mode} - Probe: {probe} - Directory: {directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
+        f"Processed Mode: {mode} - Probe: {probe} - Directory: {process_directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
 
 
 def main():
-
     change_file_handler('Process All.log')
-
-    paint_logger.debug("\n\n\n\nNew Run\n\n\n")
 
     # Load the configuration file
     try:
@@ -128,30 +136,38 @@ def main():
 
     # Main loop to process each configuration based on flags
 
+    nr_to_process = sum(1 for entry in config if entry['flag'])
     main_stamp = time.time()
 
     paint_logger.info("")
-    paint_logger.info('Starting the copying from Paint Data to the R space')
     paint_logger.info("")
+    paint_logger.info(f"New Run - {'Debug' if PAINT_DEBUG else 'Production'} mode")
+    paint_logger.info("")
+    paint_logger.info(f'The configuration file is: {CONF_FILE}')
+    paint_logger.info(f'The Paint Source directory is: {PAINT_SOURCE}')
+    paint_logger.info(f'The Paint Data directory is: {PAINT_DATA}')
+    paint_logger.info(f'The R Output directory is: {R_DATA_DEST}')
+    paint_logger.info(f'The number of directories to process is: {nr_to_process}')
 
     nr_to_process = sum(1 for entry in config if entry['flag'])
 
-    current_process = 0
+    current_process_seq_nr = 0
     for entry in config:
         if entry['flag']:
-            root_dir = os.path.join(entry['source_dir'], entry['directory'])
-            dest_dir = os.path.join(ROOT_DEST_DIR, entry['directory'])
-            # paint_logger.warning(f"Processing {entry}")
-            current_process += 1
+            paint_source_dir = os.path.join(PAINT_SOURCE, entry['probe'])
+            paint_data_dir = os.path.join(PAINT_DATA, entry['probe'], entry['mode'], entry['directory'])
+            r_dest_dir = os.path.join(R_DATA_DEST, entry['directory'])
+            current_process_seq_nr += 1
             process_directory(
-                directory=entry['directory'],
-                root_dir=root_dir,
-                dest_dir=dest_dir,
+                paint_source_dir=paint_source_dir,
+                process_directory=entry['directory'],
+                paint_data_dir=paint_data_dir,
+                r_dest_dir=r_dest_dir,
                 mode=entry['mode'],
                 probe=entry['probe'],
                 nr_of_squares=entry['nr_of_squares'],
                 nr_to_process=nr_to_process,
-                current_process=current_process,
+                current_process=current_process_seq_nr,
                 min_density_ratio=entry.get('min_density_ratio')  # If the key does not exist, it returns ''
             )
 
@@ -160,7 +176,7 @@ def main():
     format_time_nicely(run_time)
 
     paint_logger.info("")
-    paint_logger.info('Finished the copying from Paint Data to the R space')
+    paint_logger.info(f"Finished the whole process in:  {format_time_nicely(run_time)}")
     paint_logger.info("")
 
 
