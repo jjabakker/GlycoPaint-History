@@ -26,16 +26,33 @@ def create_file_handler(file_name):
     file_handler.setLevel(logging.INFO)  # Only logs at INFO level or higher go to the file
     file_handler.setFormatter(formatter)
     return file_handler
-
-
 file_handler = create_file_handler('paint.log')
+
+
+def paint_logger_file_handle_set_level(level):
+    global file_handler
+
+    if level not in (logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL):
+        raise ValueError(f"Invalid level: {level}")
+    else:
+        file_handler.setLevel(level)
+
+def paint_logger_console_handle_set_level(level):
+    global console_handler
+
+    if level not in (logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL):
+        raise ValueError(f"Invalid level: {level}")
+    else:
+        console_handler.setLevel(level)
+
+
 
 # Add handlers to the logger
 paint_logger.addHandler(console_handler)
 paint_logger.addHandler(file_handler)
 
 
-def change_file_handler(file_name):
+def paint_logger_change_file_handler_name(file_name):
     global file_handler
     global paint_logger_file_name_assigned
 

@@ -16,7 +16,15 @@ from src.Automation.Support.Support_Functions import (
     read_squares_from_file,
     format_time_nicely)
 
-from src.Common.Support.LoggerConfig import paint_logger
+from src.Common.Support.LoggerConfig import (
+    paint_logger,
+    paint_logger_change_file_handler_name,
+    paint_logger_file_name_assigned)
+
+if not paint_logger_file_name_assigned:
+    paint_logger_change_file_handler_name('Compile Squares.log')
+
+
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
 # The routine that does the work
@@ -42,7 +50,7 @@ def compile_squares_file(root_dir: str, verbose: bool):
             continue
 
         if verbose:
-            paint_logger.debug(f'Compiling directory: {paint_dir_path}')
+            paint_logger.debug(f'Adding directory: {paint_dir_path}')
 
         # Read the batch file in the directory to determine which images there are
         batch_file_name = os.path.join(paint_dir_path, 'grid_batch.csv')

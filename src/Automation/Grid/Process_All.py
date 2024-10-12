@@ -3,15 +3,26 @@ import os
 import sys
 import time
 
+from pandas.io.formats.info import INFO_DOCSTRING
+
 from src.Automation.Grid.Compile_Results_Files import compile_squares_file
 from src.Automation.Grid.Generate_Squares_Single import process_images_in_root_directory_single_mode
 from src.Automation.Grid.Generate_Squares_Traditional import process_images_in_root_directory_traditional_mode
 from src.Automation.Support.Copy_Data_From_Source import copy_data_from_paint_source_to_paint_data
 from src.Automation.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
 from src.Automation.Support.Support_Functions import copy_directory, format_time_nicely
-from src.Common.Support.LoggerConfig import paint_logger, change_file_handler
+from src.Common.Support.LoggerConfig import (
+    paint_logger,
+    paint_logger_change_file_handler_name,
+    paint_logger_console_handle_set_level
+)
 
-PAINT_DEBUG = False
+import logging
+
+paint_logger_change_file_handler_name('Process All.log')
+paint_logger_console_handle_set_level(logging.DEBUG)
+
+PAINT_DEBUG = True
 
 if PAINT_DEBUG:
     CONF_FILE = '/Users/hans/Paint Source/paint data generation - test.json'
@@ -71,7 +82,7 @@ def process_directory(paint_source_dir,
                       nr_of_squares: int,
                       nr_to_process: int,
                       current_process: int,
-                      min_density_ratio: float = None):
+                      min_density_ratio: float = None) -> bool:
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} --- Processing mode: {mode} - Probe: {probe} - Directory: {process_directory}"
     paint_logger.info("")
@@ -81,9 +92,19 @@ def process_directory(paint_source_dir,
     paint_logger.info("-" * len(msg))
     paint_logger.info("")
 
+    # Check if the Paint Source directory exists
+    if not os.path.exists(paint_source_dir):
+        paint_logger.error(f"Paint Source directory {paint_source_dir} does not exist.")
+        return False
+
+    # Check if the Paint Data directory exists
+    if not os.path.exists(paint_data_dir):
+        paint_logger.error(f"Paint Data directory {paint_data_dir} does not exist.")
+        return False
+
     # Copy the data from Paint Source to the appropriate directory in Paint Data
     if not copy_data_from_paint_source_to_paint_data(paint_source_dir, paint_data_dir):
-        return
+        return False
 
     if not os.path.exists(r_dest_dir):
         os.makedirs(r_dest_dir)
@@ -95,7 +116,7 @@ def process_directory(paint_source_dir,
         run_traditional(paint_data_dir, nr_of_squares, min_density_ratio)
     else:
         paint_logger.error(f"Invalid mode '{mode}' for {process_directory}.")
-        return
+        return False
 
     # Compile the squares file
     compile_squares_file(paint_data_dir, verbose=True)
@@ -116,10 +137,11 @@ def process_directory(paint_source_dir,
     paint_logger.info("")
     paint_logger.info(
         f"Processed Mode: {mode} - Probe: {probe} - Directory: {process_directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
-
+    return True
 
 def main():
-    change_file_handler('Process All.log')
+
+    # paint_logger_change_file_handler_name('Process All.log')
 
     # Load the configuration file
     try:
@@ -152,24 +174,25 @@ def main():
     nr_to_process = sum(1 for entry in config if entry['flag'])
 
     current_process_seq_nr = 0
+    error_count = 0
     for entry in config:
         if entry['flag']:
             paint_source_dir = os.path.join(PAINT_SOURCE, entry['probe'])
             paint_data_dir = os.path.join(PAINT_DATA, entry['probe'], entry['mode'], entry['directory'])
             r_dest_dir = os.path.join(R_DATA_DEST, entry['directory'])
             current_process_seq_nr += 1
-            process_directory(
-                paint_source_dir=paint_source_dir,
-                process_directory=entry['directory'],
-                paint_data_dir=paint_data_dir,
-                r_dest_dir=r_dest_dir,
-                mode=entry['mode'],
-                probe=entry['probe'],
-                nr_of_squares=entry['nr_of_squares'],
-                nr_to_process=nr_to_process,
-                current_process=current_process_seq_nr,
-                min_density_ratio=entry.get('min_density_ratio')  # If the key does not exist, it returns ''
-            )
+            if not process_directory(
+                    paint_source_dir=paint_source_dir,
+                    process_directory=entry['directory'],
+                    paint_data_dir=paint_data_dir,
+                    r_dest_dir=r_dest_dir,
+                    mode=entry['mode'],
+                    probe=entry['probe'],
+                    nr_of_squares=entry['nr_of_squares'],
+                    nr_to_process=nr_to_process,
+                    current_process=current_process_seq_nr,
+                    min_density_ratio=entry.get('min_density_ratio')):
+                error_count += 1
 
     # Report the time it took in hours minutes seconds
     run_time = time.time() - main_stamp
@@ -179,6 +202,12 @@ def main():
     paint_logger.info(f"Finished the whole process in:  {format_time_nicely(run_time)}")
     paint_logger.info("")
 
+    if error_count > 0:
+        paint_logger.error('-' * 80)
+        paint_logger.error('-' * 80)
+        paint_logger.error(f"Errors occurred in {error_count} of {nr_to_process} directories.")
+        paint_logger.error('-' * 80)
+        paint_logger.error('-' * 80)
 
 if __name__ == '__main__':
     main()

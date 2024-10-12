@@ -24,10 +24,10 @@ from src.Automation.Support.Support_Functions import (
     format_time_nicely,
     calc_average_track_count_of_lowest_squares
 )
-from src.Common.Support.LoggerConfig import paint_logger, change_file_handler, paint_logger_file_name_assigned
+from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name, paint_logger_file_name_assigned
 
 if not paint_logger_file_name_assigned:
-    change_file_handler('Generate Squares Single.log')
+    paint_logger_change_file_handler_name('Generate Squares Single.log')
 
 
 class GridDialog:
@@ -45,7 +45,7 @@ class GridDialog:
 
         self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
 
-        _root.title('Batch grid processing')
+        _root.title('Batch grid processing - Single Mode')
 
         content = ttk.Frame(_root)
         frame_parameters = ttk.Frame(content, borderwidth=5, relief='ridge',
