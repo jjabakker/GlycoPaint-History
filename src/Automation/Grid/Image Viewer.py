@@ -15,7 +15,7 @@ from PIL import Image, ImageTk
 from src.Automation.Support.Analyse_All_Images import (
     analyse_all_images,
     create_summary_graphpad)
-from src.Common.Support.LoggerConfig import paint_logger, change_file_handler
+from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 from src.Automation.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
@@ -29,7 +29,7 @@ from src.Automation.Support.Support_Functions import (
     save_squares_to_file)
 
 # Log to an appropriately named file
-change_file_handler('Image Viewer.log')
+paint_logger_change_file_handler_name('Image Viewer.log')
 
 
 def save_as_png(canvas, file_name):
