@@ -171,14 +171,14 @@ class GridDialog:
         self.exit_pressed()
 
 
-def process_images_in_root_directory_traditional_mode(root_directory,
-                                                      nr_of_squares_in_row,
-                                                      min_r_squared,
-                                                      min_tracks_for_tau,
-                                                      min_density_ratio,
-                                                      max_variability,
-                                                      max_square_coverage,
-                                                      verbose):
+def process_images_in_root_directory_traditional_mode(root_directory: str,
+                                                     nr_of_squares_in_row: int,
+                                                     min_r_squared: float,
+                                                     min_tracks_for_tau: int,
+                                                     min_density_ratio: float,
+                                                     max_variability: float,
+                                                     max_square_coverage: float,
+                                                     verbose: bool):
     image_dirs = os.listdir(root_directory)
     image_dirs.sort()
     for image_dir in image_dirs:
@@ -207,40 +207,22 @@ def delete_files_in_directory(directory_path):
         paint_logger.error("Error occurred while deleting files.")
 
 
-def process_single_image_in_paint_directory_traditional_mode(image_path,
-                                                             image_name,
-                                                             nr_of_squares_in_row,
-                                                             min_r_squared,
-                                                             min_tracks_for_tau,
-                                                             min_density_ratio,
-                                                             max_variability,
-                                                             concentration,
-                                                             nr_spots,
-                                                             batch_seq_nr,
-                                                             experiment_nr,
-                                                             experiment_seq_nr,
-                                                             experiment_date,
-                                                             experiment_name,
-                                                             verbose=True):
-    """
+def process_single_image_in_paint_directory_traditional_mode(image_path: str,
+                                                             image_name: str,
+                                                             nr_of_squares_in_row: int,
+                                                             min_r_squared: float,
+                                                             min_tracks_for_tau: int,
+                                                             min_density_ratio: float,
+                                                             max_variability: float,
+                                                             concentration: float,
+                                                             nr_spots: int,
+                                                             batch_seq_nr: int,
+                                                             experiment_nr: int,
+                                                             experiment_seq_nr: int,
+                                                             experiment_date: str,
+                                                             experiment_name: str,
+                                                             verbose: bool = True):
 
-    :param image_path:
-    :param image_name:
-    :param nr_of_squares_in_row:
-    :param min_r_squared:
-    :param min_tracks_for_tau:
-    :param min_density_ratio:
-    :param max_variability:
-    :param concentration:
-    :param nr_spots:
-    :param batch_seq_nr:
-    :param experiment_nr:
-    :param experiment_seq_nr:
-    :param experiment_date:
-    :param experiment_name:
-    :param verbose:
-    :return:
-    """
 
     # Empty the plt directory
     plt_path = os.path.join(image_path, "plt")
@@ -339,20 +321,20 @@ def process_single_image_in_paint_directory_traditional_mode(image_path,
     return df_squares
 
 
-def create_df_squares_traditional_mode(df_tracks,
-                                       image_path,
-                                       image_name,
-                                       nr_squares_in_row,
-                                       concentration,
-                                       nr_spots,
-                                       min_r_squared,
-                                       min_tracks_for_tau,
-                                       seq_nr,
-                                       experiment_nr,
-                                       experiment_seq_nr,
-                                       experiment_date,
-                                       experiment_name,
-                                       verbose):
+def create_df_squares_traditional_mode(df_tracks: pd.DataFrame,
+                                       image_path: str,
+                                       image_name: str,
+                                       nr_squares_in_row: int,
+                                       concentration: float,
+                                       nr_spots: int,
+                                       min_r_squared: float,
+                                       min_tracks_for_tau: int,
+                                       seq_nr: int,
+                                       experiment_nr: int,
+                                       experiment_seq_nr: int,
+                                       experiment_date: str,
+                                       experiment_name: str,
+                                       verbose: bool) -> pd.DataFrame:
     # Create the matrices
     count_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
     tau_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
@@ -511,21 +493,20 @@ def create_df_squares_traditional_mode(df_tracks,
     return df_squares, tau_matrix
 
 
-def write_matrices(image_path, image_name, tau_matrix, density_matrix, count_matrix, variability_matrix, verbose):
+def write_matrices(image_path: str,
+                   image_name: str,
+                   tau_matrix: np.ndarray,
+                   density_matrix: np.ndarray,
+                   count_matrix: np.ndarray,
+                   variability_matrix: np.ndarray,
+                   verbose: bool):
     """
     Simply utility function to write the matrices to disk.
     If the grid directory does not exist, exit.
-    :param image_path:
-    :param image_name:
-    :param tau_matrix:
-    :param density_matrix:
-    :param count_matrix:
-    :param variability_matrix:
-    :param verbose:
-    :return:
     """
+
     # Check if the grid directory exist
-    dir_name = image_path + os.sep + "grid"
+    dir_name = os.path.join(image_path, "grid")
     if not os.path.exists(dir_name):
         paint_logger.error(f"Function 'write_matrices' failed: Directory {dir_name} does not exists.")
         exit(-1)
@@ -571,10 +552,10 @@ def write_matrices(image_path, image_name, tau_matrix, density_matrix, count_mat
     return 0
 
 
-def identify_invalid_squares(df_squares,
-                             min_r_squared,
-                             min_tracks_for_tau,
-                             verbose):
+def identify_invalid_squares(df_squares: pd.DataFrame,
+                             min_r_squared: float,
+                             min_tracks_for_tau: int,
+                             verbose: bool) -> pd.DataFrame:
     """
     This function applies criteria to remove unwanted squares and report on the screen and into a file
     :param df_squares:
@@ -653,6 +634,7 @@ def add_columns_to_batch_file(df_batch,
                               min_r_squared,
                               min_density_ratio,
                               max_variability):
+
     mask = ((df_batch['Process'] == 'Yes') |
             (df_batch['Process'] == 'yes') |
             (df_batch['Process'] == 'Y') |

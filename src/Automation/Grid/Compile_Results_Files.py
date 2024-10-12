@@ -23,7 +23,7 @@ from src.Common.Support.LoggerConfig import paint_logger
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
 
-def compile_squares_file(root_dir, verbose):
+def compile_squares_file(root_dir: str, verbose: bool):
     paint_logger.info(f"Compiling output for {root_dir}")
     time_stamp = time.time()
 
@@ -184,17 +184,17 @@ class CompileDialog:
         btn_root_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_root_dir.grid(column=1, row=0, padx=20, pady=5)
 
-    def change_root_dir(self):
+    def change_root_dir(self) -> None:
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
         save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
         if len(self.root_directory) != 0:
             self.lbl_root_dir.config(text=self.root_directory)
 
-    def process(self):
+    def process(self)-> None:
         compile_squares_file(root_dir=self.root_directory, verbose=True)
         root.destroy()
 
-    def exit_dialog(self):
+    def exit_dialog(self)-> None:
         root.destroy()
 
 
