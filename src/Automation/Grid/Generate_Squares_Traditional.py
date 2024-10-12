@@ -38,12 +38,13 @@ class GridDialog:
     def __init__(self, _root):
 
         # Retrieve the earlier saved parameters from disk, if nothing was saved provide reasonable defaults
-        (nr_of_squares_in_row,
-         min_tracks_for_tau,
-         min_r_squared,
-         min_density_ratio,
-         max_variability,
-         max_square_coverage) = get_grid_defaults_from_file()
+        values = get_grid_defaults_from_file()
+        nr_squares_in_row = values['nr_squares_in_row']
+        min_tracks_for_tau = values['min_tracks_for_tau']
+        min_r_squared = values['min_r_squared']
+        min_density_ratio = values['min_density_ratio']
+        max_variability = values['max_variability']
+        max_square_coverage = values['max_square_coverage']
         self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
 
         _root.title('Batch grid processing')
@@ -62,8 +63,8 @@ class GridDialog:
         lbl_max_variability = ttk.Label(frame_parameters, text='Max variability', width=30, anchor=W)
         lbl_max_square_coverage = ttk.Label(frame_parameters, text='Max squares coverage', width=30, anchor=W)
 
-        self.nr_of_squares_in_row = IntVar(_root, nr_of_squares_in_row)
-        en_nr_squares = ttk.Entry(frame_parameters, textvariable=self.nr_of_squares_in_row, width=10)
+        self.nr_squares_in_row = IntVar(_root, nr_squares_in_row)
+        en_nr_squares = ttk.Entry(frame_parameters, textvariable=self.nr_squares_in_row, width=10)
 
         self.min_tracks_for_tau = IntVar(_root, min_tracks_for_tau)
         en_min_tracks_for_tau = ttk.Entry(frame_parameters, textvariable=self.min_tracks_for_tau, width=10)
@@ -128,7 +129,7 @@ class GridDialog:
 
         time_stamp = time.time()
 
-        save_grid_defaults_to_file(self.nr_of_squares_in_row.get(),
+        save_grid_defaults_to_file(self.nr_squares_in_row.get(),
                                    self.min_tracks_for_tau.get(),
                                    self.min_r_squared.get(),
                                    self.min_density_ratio.get(),
@@ -141,7 +142,7 @@ class GridDialog:
         if os.path.isfile(os.path.join(self.paint_directory, 'Batch.csv')):
 
             process_images_in_paint_directory_traditional_mode(self.paint_directory,
-                                                               self.nr_of_squares_in_row.get(),
+                                                               self.nr_squares_in_row.get(),
                                                                self.min_r_squared.get(),
                                                                self.min_tracks_for_tau.get(),
                                                                self.min_density_ratio.get(),
@@ -153,7 +154,7 @@ class GridDialog:
         elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):  # Assume it is group directory
 
             process_images_in_root_directory_traditional_mode(self.paint_directory,
-                                                              self.nr_of_squares_in_row.get(),
+                                                              self.nr_squares_in_row.get(),
                                                               self.min_r_squared.get(),
                                                               self.min_tracks_for_tau.get(),
                                                               self.min_density_ratio.get(),
