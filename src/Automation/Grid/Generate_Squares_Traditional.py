@@ -744,7 +744,7 @@ def process_images_in_paint_directory_traditional_mode(paint_directory,
             tracks_file_timestamp = os.path.getmtime(tracks_file_name)
 
         # Force processing
-        # process = True
+        process = True
         if process or (squares_file_timestamp < tracks_file_timestamp):
 
             if verbose:

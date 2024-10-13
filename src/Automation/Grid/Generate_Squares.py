@@ -130,38 +130,37 @@ class GridDialog:
 
         time_stamp = time.time()
 
-        save_grid_defaults_to_file(self.nr_squares_in_row.get(),
-                                   self.min_tracks_for_tau.get(),
-                                   self.min_r_squared.get(),
-                                   self.min_density_ratio.get(),
-                                   self.max_variability.get(),
-                                   self.max_square_coverage.get())
+        save_grid_defaults_to_file(
+            self.nr_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
+            self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get())
         save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
 
         # See if this really is a paint directory or maybe a root directory containing paint directories
 
         if os.path.isfile(os.path.join(self.paint_directory, 'Batch.csv')):
 
-            process_images_in_paint_directory(self.paint_directory,
-                                              self.nr_squares_in_row.get(),
-                                              self.min_r_squared.get(),
-                                              self.min_tracks_for_tau.get(),
-                                              self.min_density_ratio.get(),
-                                              self.max_variability.get(),
-                                              self.max_square_coverage.get(),
+            process_images_in_paint_directory(
+                self.paint_directory,
+                self.nr_squares_in_row.get(),
+                self.min_r_squared.get(),
+                self.min_tracks_for_tau.get(),
+                self.min_density_ratio.get(),
+                self.max_variability.get(),
+                self.max_square_coverage.get(),
                                               verbose=False)
             run_time = time.time() - time_stamp
 
         elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):  # Assume it is group directory
 
-            process_images_in_root_directory(self.paint_directory,
-                                             self.nr_squares_in_row.get(),
-                                             self.min_r_squared.get(),
-                                             self.min_tracks_for_tau.get(),
-                                             self.min_density_ratio.get(),
-                                             self.max_variability.get(),
-                                             self.max_square_coverage.get(),
-                                             verbose=False)
+            process_images_in_root_directory(
+                self.paint_directory,
+                self.nr_squares_in_row.get(),
+                self.min_r_squared.get(),
+                self.min_tracks_for_tau.get(),
+                self.min_density_ratio.get(),
+                self.max_variability.get(),
+                self.max_square_coverage.get(),
+                verbose=False)
             run_time = time.time() - time_stamp
             paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
         else:
@@ -174,14 +173,15 @@ class GridDialog:
         self.exit_pressed()
 
 
-def process_images_in_root_directory(root_directory: str,
-                                     nr_of_squares_in_row: int,
-                                     min_r_squared: float,
-                                     min_tracks_for_tau: int,
-                                     min_density_ratio: float,
-                                     max_variability: float,
-                                     max_square_coverage: float,
-                                     verbose: bool):
+def process_images_in_root_directory(
+        root_directory: str,
+        nr_of_squares_in_row: int,
+        min_r_squared: float,
+        min_tracks_for_tau: int,
+        min_density_ratio: float,
+        max_variability: float,
+        max_square_coverage: float,
+        verbose: bool):
     image_dirs = os.listdir(root_directory)
     image_dirs.sort()
     for image_dir in image_dirs:
@@ -189,13 +189,14 @@ def process_images_in_root_directory(root_directory: str,
             continue
         if 'Output' in image_dir:
             continue
-        process_images_in_paint_directory(os.path.join(root_directory, image_dir),
-                                          nr_of_squares_in_row,
-                                          min_r_squared,
-                                          min_tracks_for_tau,
-                                          min_density_ratio,
-                                          max_variability,
-                                          max_square_coverage,
+        process_images_in_paint_directory(
+            os.path.join(root_directory, image_dir),
+            nr_of_squares_in_row,
+            min_r_squared,
+            min_tracks_for_tau,
+            min_density_ratio,
+            max_variability,
+            max_square_coverage,
                                           verbose=False)
 
 
@@ -210,21 +211,22 @@ def delete_files_in_directory(directory_path):
         paint_logger.error("Error occurred while deleting files.")
 
 
-def process_single_image_in_paint_directory(image_path: str,
-                                            image_name: str,
-                                            nr_of_squares_in_row: int,
-                                            min_r_squared: float,
-                                            min_tracks_for_tau: int,
-                                            min_density_ratio: float,
-                                            max_variability: float,
-                                            concentration: float,
-                                            nr_spots: int,
-                                            batch_seq_nr: int,
-                                            experiment_nr: int,
-                                            experiment_seq_nr: int,
-                                            experiment_date: str,
-                                            experiment_name: str,
-                                            verbose: bool = False) -> tuple:
+def process_single_image_in_paint_directory(
+        image_path: str,
+        image_name: str,
+        nr_of_squares_in_row: int,
+        min_r_squared: float,
+        min_tracks_for_tau: int,
+        min_density_ratio: float,
+        max_variability: float,
+        concentration: float,
+        nr_spots: int,
+        batch_seq_nr: int,
+        experiment_nr: int,
+        experiment_seq_nr: int,
+        experiment_date: str,
+        experiment_name: str,
+        verbose: bool = False) -> tuple:
 
     # Empty the plt directory
     plt_path = os.path.join(image_path, "plt")
@@ -238,29 +240,17 @@ def process_single_image_in_paint_directory(image_path: str,
         return None
 
     # A df_squares is generated and for every square the Tau and density ratio is calculated
-    df_squares, tau_matrix = create_df_squares(df_tracks,
-                                               image_path,
-                                               image_name,
-                                               nr_of_squares_in_row,
-                                               concentration,
-                                               nr_spots,
-                                               min_r_squared,
-                                               min_tracks_for_tau,
-                                               batch_seq_nr,
-                                               experiment_nr,
-                                               experiment_seq_nr,
-                                               experiment_date,
-                                               experiment_name,
-                                               verbose)
+    df_squares, tau_matrix = create_df_squares(
+        df_tracks, image_path, image_name, nr_of_squares_in_row, concentration, nr_spots,
+        min_r_squared, min_tracks_for_tau, batch_seq_nr, experiment_nr, experiment_seq_nr,
+        experiment_date, experiment_name, verbose)
 
     # -------------------------------------------------------------------------------
     # Do the filtering, eliminate all squares for which no valid Tau exists
     # -------------------------------------------------------------------------------
 
-    df_squares = identify_invalid_squares(df_squares,
-                                          min_r_squared,
-                                          min_tracks_for_tau,
-                                          verbose)
+    df_squares = identify_invalid_squares(
+        df_squares, min_r_squared, min_tracks_for_tau, verbose)
 
     # Assign the label numbers to the squares
     df_with_label = df_tracks.copy()
@@ -308,9 +298,18 @@ def process_single_image_in_paint_directory(image_path: str,
         plt_file = os.path.join(image_path, "img", image_name + "-heatmap.png")
         plot_heatmap(tau_matrix, plt_file)
 
-    # -----------------------------------------------------------------------------------
-    # Now do th single mopde processing: determine a single Tau and Density per image
-    # -----------------------------------------------------------------------------------
+    # Now do the single mode processing: determine a single Tau and Density per image
+    tau, r_squared = calc_tau_density_for_image(df_squares, df_tracks, min_tracks_for_tau, min_r_squared, image_path, image_name)
+
+    return df_squares, tau, r_squared
+
+def calc_tau_density_for_image(
+        df_squares: pd.DataFrame,
+        df_tracks: pd.DataFrame,
+        min_tracks_for_tau: int,
+        min_r_squared: float,
+        image_path: str,
+        image_name: str) -> tuple:
 
     # Identify the squares that contribute to the Tau calculation
     df_squares_for_single_tau = df_squares[df_squares['Visible']]
@@ -324,34 +323,32 @@ def process_single_image_in_paint_directory(image_path: str,
     else:
         duration_data = compile_duration(df_tracks_for_tau)
         plt_file = image_path + os.sep + "plt" + os.sep + image_name + ".png"
-        tau, r_squared = curve_fit_and_plot(plot_data=duration_data,
-                                            nr_tracks=nr_tracks,
-                                            plot_max_x=5,
-                                            plot_title=" ",
-                                            file=plt_file, plot_to_screen=False, verbose=False)
+        tau, r_squared = curve_fit_and_plot(
+            plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
+            file=plt_file, plot_to_screen=False, verbose=False)
         if tau == -2:  # Tau calculation failed
             r_squared = 0
         tau = int(tau)
         if r_squared < min_r_squared:  # Tau was calculated, but not reliable
             tau = -3
+    return tau, r_squared
 
-    return df_squares, tau, r_squared
 
-
-def create_df_squares(df_tracks: pd.DataFrame,
-                      image_path: str,
-                      image_name: str,
-                      nr_squares_in_row: int,
-                      concentration: float,
-                      nr_spots: int,
-                      min_r_squared: float,
-                      min_tracks_for_tau: int,
-                      seq_nr: int,
-                      experiment_nr: int,
-                      experiment_seq_nr: int,
-                      experiment_date: str,
-                      experiment_name: str,
-                      verbose: bool) -> pd.DataFrame:
+def create_df_squares(
+        df_tracks: pd.DataFrame,
+        image_path: str,
+        image_name: str,
+        nr_squares_in_row: int,
+        concentration: float,
+        nr_spots: int,
+        min_r_squared: float,
+        min_tracks_for_tau: int,
+        seq_nr: int,
+        experiment_nr: int,
+        experiment_seq_nr: int,
+        experiment_date: str,
+        experiment_name: str,
+        verbose: bool) -> pd.DataFrame:
 
     # Create the matrices
     tau_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
@@ -421,13 +418,9 @@ def create_df_squares(df_tracks: pd.DataFrame,
         else:
             duration_data = compile_duration(df_tracks_square)
             plt_file = image_path + os.sep + "plt" + os.sep + image_name + "-square-" + str(i) + ".png"
-            tau, r_squared = curve_fit_and_plot(plot_data=duration_data,
-                                                nr_tracks=nr_tracks,
-                                                plot_max_x=5,
-                                                plot_title=" ",
-                                                file=plt_file,
-                                                plot_to_screen=False,
-                                                verbose=False)
+            tau, r_squared = curve_fit_and_plot(
+                plot_data=duration_data,  nr_tracks=nr_tracks,  plot_max_x=5, plot_title=" ",
+                file=plt_file, plot_to_screen=False, verbose=False)
             if tau == -2:  # Tau calculation failed
                 r_squared = 0
             tau = int(tau)
@@ -447,11 +440,8 @@ def create_df_squares(df_tracks: pd.DataFrame,
         # ----------------------------------------------------------------------------------
 
         area = (x1 - x0) * (y1 - y0)
-        density = calculate_density(nr_tracks=nr_tracks,
-                                    area=area,
-                                    time=100,
-                                    concentration=concentration,
-                                    magnification=1000)
+        density = calculate_density(nr_tracks=nr_tracks, area=area, time=100,
+                                    concentration=concentration, magnification=1000)
 
         variability = calc_variability(df_tracks_square, i, nr_squares_in_row, 10)
 
@@ -525,13 +515,14 @@ def create_df_squares(df_tracks: pd.DataFrame,
     return df_squares, tau_matrix
 
 
-def write_matrices(image_path: str,
-                   image_name: str,
-                   tau_matrix: np.ndarray,
-                   density_matrix: np.ndarray,
-                   count_matrix: np.ndarray,
-                   variability_matrix: np.ndarray,
-                   verbose: bool):
+def write_matrices(
+        image_path: str,
+        image_name: str,
+        tau_matrix: np.ndarray,
+        density_matrix: np.ndarray,
+        count_matrix: np.ndarray,
+        variability_matrix: np.ndarray,
+        verbose: bool):
     """
     Simply utility function to write the matrices to disk.
     If the grid directory does not exist, exit.
@@ -584,10 +575,11 @@ def write_matrices(image_path: str,
     return 0
 
 
-def identify_invalid_squares(df_squares: pd.DataFrame,
-                             min_r_squared: float,
-                             min_tracks_for_tau: int,
-                             verbose: bool) -> pd.DataFrame:
+def identify_invalid_squares(
+        df_squares: pd.DataFrame,
+        min_r_squared: float,
+        min_tracks_for_tau: int,
+        verbose: bool) -> pd.DataFrame:
 
     # -------------------------------------------------------------------------------------------------------------
     # Start with the full count of squares.
@@ -652,12 +644,14 @@ def identify_invalid_squares(df_squares: pd.DataFrame,
     return df_squares
 
 
-def add_columns_to_batch_file(df_batch: pd.DataFrame,
-                              nr_of_squares_in_row: int,
-                              min_tracks_for_tau: int,
-                              min_r_squared: float,
-                              min_density_ratio: float,
-                              max_variability: float):
+def add_columns_to_batch_file(
+        df_batch: pd.DataFrame,
+        nr_of_squares_in_row: int,
+        min_tracks_for_tau: int,
+        min_r_squared: float,
+        min_density_ratio: float,
+        max_variability: float):
+
     mask = ((df_batch['Process'] == 'Yes') |
             (df_batch['Process'] == 'yes') |
             (df_batch['Process'] == 'Y') |
@@ -682,14 +676,16 @@ def add_columns_to_batch_file(df_batch: pd.DataFrame,
     return df_batch
 
 
-def process_images_in_paint_directory(paint_directory: str,
-                                      nr_of_squares_in_row: int,
-                                      min_r_squared: float,
-                                      min_tracks_for_tau: int,
-                                      min_density_ratio: float,
-                                      max_variability: float,
-                                      max_square_coverage: float,
-                                      verbose: bool = False):
+def process_images_in_paint_directory(
+        paint_directory: str,
+        nr_of_squares_in_row: int,
+        min_r_squared: float,
+        min_tracks_for_tau: int,
+        min_density_ratio: float,
+        max_variability: float,
+        max_square_coverage: float,
+        verbose: bool = False):
+
     time_stamp = time.time()
 
     df_batch = read_batch_from_file(os.path.join(paint_directory, "batch.csv"))
@@ -713,12 +709,8 @@ def process_images_in_paint_directory(paint_directory: str,
     # Need to make sure that there is a meaningful index
     df_batch.set_index('Batch Sequence Nr', inplace=True, drop=False)
 
-    df_batch = add_columns_to_batch_file(df_batch,
-                                         nr_of_squares_in_row,
-                                         min_tracks_for_tau,
-                                         min_r_squared,
-                                         min_density_ratio,
-                                         max_variability)
+    df_batch = add_columns_to_batch_file(df_batch, nr_of_squares_in_row, min_tracks_for_tau,
+                                         min_r_squared, min_density_ratio, max_variability)
 
     # Determine what images need processing from the batch.csv file
     nr_files = len(df_batch)
@@ -762,31 +754,18 @@ def process_images_in_paint_directory(paint_directory: str,
             else:
                 paint_logger.debug(ext_image_name)
 
-            df_squares, tau, r_squared = process_single_image_in_paint_directory(ext_image_path,
-                                                                                 ext_image_name,
-                                                                                 nr_of_squares_in_row,
-                                                                                 min_r_squared,
-                                                                                 min_tracks_for_tau,
-                                                                                 row['Min Density Ratio'],
-                                                                                 max_variability,
-                                                                                 concentration,
-                                                                                 row["Nr Spots"],
-                                                                                 row['Batch Sequence Nr'],
-                                                                                 row['Experiment Nr'],
-                                                                                 row['Experiment Seq Nr'],
-                                                                                 row['Experiment Date'],
-                                                                                 row['Experiment Name'],
-                                                                                 verbose)
+            df_squares, tau, r_squared = process_single_image_in_paint_directory(
+                ext_image_path, ext_image_name, nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
+                row['Min Density Ratio'], max_variability, concentration, row["Nr Spots"], row['Batch Sequence Nr'],
+                row['Experiment Nr'], row['Experiment Seq Nr'], row['Experiment Date'], row['Experiment Name'], verbose)
             if df_squares is None:
                 paint_logger.error("Aborted with error")
                 return None
 
             area = pow(82.0864 / nr_of_squares_in_row, 2) * len(df_squares)
-            density = calculate_density(nr_tracks=sum(df_squares['Nr Tracks']),
-                                        area=area,
-                                        time=100,
-                                        concentration=concentration,
-                                        magnification=1000)
+            density = calculate_density(
+                nr_tracks=sum(df_squares['Nr Tracks']), area=area, time=100,
+                concentration=concentration, magnification=1000)
 
             nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
             nr_visible_squares = len(df_squares[df_squares['Visible']])
