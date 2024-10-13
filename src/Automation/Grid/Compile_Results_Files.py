@@ -14,7 +14,8 @@ from src.Automation.Support.Support_Functions import (
     save_default_directories,
     read_batch_from_file,
     read_squares_from_file,
-    format_time_nicely)
+    format_time_nicely,
+    correct_all_images_column_types)
 
 from src.Common.Support.LoggerConfig import (
     paint_logger,
@@ -130,6 +131,9 @@ def compile_squares_file(root_dir: str, verbose: bool):
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Experiment Nr'] = int(experiment_nr)
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Batch Sequence Nr'] = int(seq_nr)
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Neighbour Setting'] = neighbour_setting
+
+    # Ensure column types are correct
+    correct_all_images_column_types(df_all_images)
 
     # Drop irrelevant columns in df_all_squares
     df_all_squares = df_all_squares.drop(['Neighbour Visible', 'Variability Visible', 'Density Ratio Visible'], axis=1)

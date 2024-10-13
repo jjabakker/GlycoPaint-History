@@ -22,7 +22,17 @@ def write_np_to_excel(matrix: np.ndarray, filename: str) -> None:
 
 def calculate_density(nr_tracks: int, area: float, time: float, concentration: float, magnification: float) -> float:
     """
-    The function implements a simple algorithm to calculate the density
+    The function implements a simple algorithm to calculate the density of tracks in a square.
+    To calculate the density use the actual surface coordinates.
+    Assume 2000 frames (100 sec) -  need to check - this is not always the case
+    Multiply by 1000 to get an easier  number
+    Area is calculated with Fiji info:
+        Width:  82.0864 microns(512)
+        Height: 82.0864 microns(512)
+    The area of a square then is (82.0854/nr_of_squares_in_row)^2
+
+    To normalise concentration we divide by the supplied concentration
+
     :param nr_tracks:
     :param area:
     :param time: Normally 100 sec (2000 frames)
@@ -30,6 +40,7 @@ def calculate_density(nr_tracks: int, area: float, time: float, concentration: f
     :param magnification: use 1000 to getr easier numbers
     :return: the density
     """
+
 
     density = nr_tracks / area
     density /= time
@@ -336,13 +347,6 @@ def get_grid_defaults_from_file() -> dict:
 
             # Access the first row of data
             return rows[0]
-            # return {'nr_squares_in_row': row['nr_squares_in_row'],
-            #         'min_tracks_for_tau': row['min_tracks_for_tau'],
-            #         'min_r_squared': row['min_r_squared'],
-            #         'min_density_ratio': row['min_density_ratio'],
-            #         'max_variability': row['max_variability'],
-            #         'max_square_coverage': row['max_square_coverage']}
-
 
     except FileNotFoundError as e:
         print(e)
@@ -513,10 +517,6 @@ def read_batch_from_file(batch_file_path, only_records_to_process=True):
 
     # Only process the records the user has indicated to be of interest
     if only_records_to_process:
-        # df_batch = df_batch[(df_batch['Process'] == 'Yes') |
-        #                     (df_batch['Process'] == 'yes') |
-        #                     (df_batch['Process'] == 'Y') |
-        #                     (df_batch['Process'] == 'y')]
         df_batch = df_batch[df_batch['Process'].str.lower().isin(['yes', 'y'])]
 
     df_batch.set_index('Ext Image Name', inplace=True, drop=False)
@@ -559,24 +559,64 @@ def check_grid_batch_integrity(df_batch):
 
 
 def check_batch_integrity(df_batch):
-    return {'Batch Sequence Nr',
-            'Experiment Date',
-            'Experiment Name',
-            'Experiment Nr',
-            'Experiment Seq Nr',
-            'Image Name',
-            'Probe',
-            'Probe Type',
-            'Cell Type',
-            'Adjuvant',
-            'Concentration',
-            'Threshold',
-            'Process',
-            'Ext Image Name',
-            'Nr Spots',
-            'Image Size',
-            'Run Time',
-            'Time Stamp'}.issubset(df_batch.columns)
+    """
+    Check if the batch file has the expected columns and makes sure that the types are correct
+    :param df_batch:
+    :return:
+    """
+    expected_columns = {
+        'Batch Sequence Nr',
+        'Experiment Date',
+        'Experiment Name',
+        'Experiment Nr',
+        'Experiment Seq Nr',
+        'Image Name',
+        'Probe',
+        'Probe Type',
+        'Cell Type',
+        'Adjuvant',
+        'Concentration',
+        'Threshold',
+        'Process',
+        'Ext Image Name',
+        'Nr Spots',
+        'Image Size',
+        'Run Time',
+        'Time Stamp'}.issubset(df_batch.columns)
+
+    if expected_columns:
+        # Make sure that there is a meaningful index           # TODO: Check if this is not causing problems
+        df_batch.set_index('Batch Sequence Nr', inplace=True, drop=False)
+        return True
+    else:
+        return False
+
+
+def correct_all_images_column_types(df_batch):
+    """
+    Set the column types for the batch file
+    :param df_batch:
+    :return:
+    """
+
+    try:
+        df_batch['Batch Sequence Nr'] = df_batch['Batch Sequence Nr'].astype(int)
+        df_batch['Experiment Seq Nr'] = df_batch['Experiment Seq Nr'].astype(int)
+        df_batch['Experiment Nr'] = df_batch['Experiment Nr'].astype(int)
+        df_batch['Experiment Date'] = df_batch['Experiment Date'].astype(int)
+        df_batch['Threshold'] = df_batch['Threshold'].astype(int)
+        df_batch['Min Tracks for Tau'] = df_batch['Min Tracks for Tau'].astype(int)
+        df_batch['Min R Squared'] = df_batch['Min R Squared'].astype(float)
+        df_batch['Nr Of Squares per Row'] = df_batch['Nr Of Squares per Row'].astype(int)
+        df_batch['Nr Visible Squares'] = df_batch['Nr Visible Squares'].astype(int)
+        df_batch['Nr Invisible Squares'] = df_batch['Nr Invisible Squares'].astype(int)
+        df_batch['Nr Total Squares'] = df_batch['Nr Total Squares'].astype(int)
+        df_batch['Nr Defined Squares'] = df_batch['Nr Defined Squares'].astype(int)
+        df_batch['Nr Rejected Squares'] = df_batch['Nr Rejected Squares'].astype(int)
+
+    except (ValueError, TypeError):
+        return False
+    return True
 
 
 def read_squares_from_file(squares_file_path):
@@ -632,10 +672,11 @@ def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_s
     """
 
     count_values = list(df_squares['Nr Tracks'])
+    count_values.sort(reverse=True)
 
     total = 0
     n = 0
-    for i in range(len(count_values) - 1, 0, -1):
+    for i in range(len(count_values) - 1, -1, -1):
         if count_values[i] > 0:
             total += count_values[i]
             n += 1
@@ -701,3 +742,17 @@ def copy_directory(src, dest):
         paint_logger.error(f"RecursionError: {e}")
     except Exception as e:
         paint_logger.error(f"An unexpected error occurred: {e}")
+
+
+
+def get_area_of_square(nr_of_squares_in_row):
+
+    MICROMETER_PER_PIXEL = 0.1602804      # Referenced from Fiji
+    PIXEL_PER_IMAGE = 512                 # Referenced from Fiji
+
+    MICROMETER_PER_IMAGE = MICROMETER_PER_PIXEL * PIXEL_PER_IMAGE
+
+    micrometer_per_square = MICROMETER_PER_IMAGE / nr_of_squares_in_row
+    area = micrometer_per_square * micrometer_per_square
+
+    return area
