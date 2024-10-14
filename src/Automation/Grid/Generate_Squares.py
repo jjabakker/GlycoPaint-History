@@ -275,7 +275,7 @@ def process_all_images_in_paint_directory(
 
             df_squares, tau, r_squared = process_single_image_in_paint_directory(
                 ext_image_path, ext_image_name, nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
-                row['Min Density Ratio'], max_variability, concentration, row["Nr Spots"], row['Batch Sequence Nr'],
+                min_density_ratio, max_variability, concentration, row["Nr Spots"], row['Batch Sequence Nr'],
                 row['Experiment Nr'], row['Experiment Seq Nr'], row['Experiment Date'], row['Experiment Name'], verbose)
             if df_squares is None:
                 paint_logger.error("Aborted with error")
