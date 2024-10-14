@@ -39,157 +39,172 @@ from src.Common.Support.LoggerConfig import (
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
 
+import tkinter as tk
+from tkinter import ttk, filedialog
+import os
+import time
+
 
 class GridDialog:
+    DEFAULT_MAX_SQUARE_COVERAGE = 100  # Use constant for non-changing values
 
-    def __init__(self, _root):
+    def __init__(self, root):
+        self.root = root
+        self.load_saved_parameters()  # Initialize saved parameters and directories
+        self.create_ui(root)
+        root.title('Batch Grid Processing')
 
-        # Retrieve the earlier saved parameters from disk, if nothing was saved provide reasonable defaults
+    def load_saved_parameters(self):
+        """Load parameters from disk or use default values if unavailable."""
         values = get_grid_defaults_from_file()
-        nr_squares_in_row = values['nr_squares_in_row']
-        min_tracks_for_tau = values['min_tracks_for_tau']
-        min_r_squared = values['min_r_squared']
-        min_density_ratio = values['min_density_ratio']
-        max_variability = values['max_variability']
-        # max_square_coverage = values['max_square_coverage'] # Don't expose Max Square Coverage
-        max_square_coverage = 100
-        process_single = values['process_single']
-        process_traditional = values['process_traditional']
-
-        # Get the earlier saved directories from disk, if nothing was saved provide reasonable defaults
+        self.nr_squares_in_row = tk.IntVar(value=values.get('nr_squares_in_row', 10))
+        self.min_tracks_for_tau = tk.IntVar(value=values.get('min_tracks_for_tau', 10))
+        self.min_r_squared = tk.DoubleVar(value=values.get('min_r_squared', 0.5))
+        self.min_density_ratio = tk.DoubleVar(value=values.get('min_density_ratio', 0.5))
+        self.max_variability = tk.DoubleVar(value=values.get('max_variability', 0.5))
+        self.max_square_coverage = tk.DoubleVar(value=GridDialog.DEFAULT_MAX_SQUARE_COVERAGE)
+        self.process_single = tk.IntVar(value=values.get('process_single', 0))
+        self.process_traditional = tk.IntVar(value=values.get('process_traditional', 1))
         self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
 
-        _root.title('Batch grid processing')
+    def create_ui(self, root):
+        """Create and layout the UI components."""
+        content = ttk.Frame(root)
 
-        # Define the frames
-        content = ttk.Frame(_root)
-        frame_parameters = ttk.Frame(content, borderwidth=5, relief='ridge', width=200, height=100, padding=(30, 30, 30, 30))
-        frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
-        frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
-        frame_processing = ttk.Frame(content, borderwidth=5, relief='ridge')
+        # Define frames
+        frame_parameters = self.create_frame(content, 30)
+        frame_processing = self.create_frame(content)
+        frame_directory = self.create_frame(content)
+        frame_buttons = self.create_frame(content)
 
-        # Define the controls for the parameter frame
-        lbl_nr_squares = ttk.Label(frame_parameters, text='Nr of Squares in row/col', width=30, anchor=tk.W)
-        lbl_min_tracks_for_tau = ttk.Label(frame_parameters, text='Minimum tracks to calculate Tau', width=30, anchor=tk.W)
-        lbl_min_r2 = ttk.Label(frame_parameters, text='Min allowable R-squared', width=30, anchor=tk.W)
-        lbl_min_density_ratio = ttk.Label(frame_parameters, text='Min density ratio', width=30, anchor=tk.W)
-        lbl_max_variability = ttk.Label(frame_parameters, text='Max variability', width=30, anchor=tk.W)
-        lbl_max_square_coverage = ttk.Label(frame_parameters, text='Max squares coverage', width=30, anchor=tk.W)
+        # Create controls in frames
+        self.create_parameter_controls(frame_parameters)
+        self.create_processing_controls(frame_processing)
+        self.create_directory_controls(frame_directory)
+        self.create_button_controls(frame_buttons)
 
-        self.nr_squares_in_row = IntVar(_root, nr_squares_in_row)
-        en_nr_squares = ttk.Entry(frame_parameters, textvariable=self.nr_squares_in_row, width=10)
+        # Grid configuration for proper layout
+        content.grid(column=0, row=0, sticky="nsew")
 
-        self.min_tracks_for_tau = IntVar(_root, min_tracks_for_tau)
-        en_min_tracks_for_tau = ttk.Entry(frame_parameters, textvariable=self.min_tracks_for_tau, width=10)
+        # Add weight to center the frames within the grid
+        root.grid_rowconfigure(0, weight=1)  # Center vertically
+        root.grid_columnconfigure(0, weight=1)  # Center horizontally
 
-        self.min_r_squared = DoubleVar(_root, min_r_squared)
-        en_min_r_squared = ttk.Entry(frame_parameters, textvariable=self.min_r_squared, width=10)
+        # Layout the frames
+        frame_parameters.grid(column=0, row=0, padx=5, pady=5, sticky="nsew")
+        frame_processing.grid(column=1, row=0, padx=5, pady=5, sticky="nsew")
+        frame_directory.grid(column=0, row=1, columnspan=2, padx=5, pady=5, sticky="nsew")
 
-        self.min_density_ratio = DoubleVar(_root, min_density_ratio)
-        en_min_density_ratio = ttk.Entry(frame_parameters, textvariable=self.min_density_ratio, width=10)
+        # Center the button frame exactly in the middle
+        frame_buttons.grid(column=0, row=2, columnspan=2, padx=5, pady=5, sticky="nsew")
+        root.grid_rowconfigure(2, weight=1)
+        root.grid_columnconfigure(0, weight=1)
 
-        self.max_variability = DoubleVar(_root, max_variability)
-        en_max_variability = ttk.Entry(frame_parameters, textvariable=self.max_variability, width=10)
+    def create_frame(self, parent, padding=5):
+        """Helper method to create a standard frame."""
+        return ttk.Frame(parent, borderwidth=5, relief='ridge', padding=(padding, padding, padding, padding))
 
-        self.max_square_coverage = DoubleVar(_root, max_square_coverage)
-        en_max_square_coverage = ttk.Entry(frame_parameters, textvariable=self.max_square_coverage, width=10)
+    def create_parameter_controls(self, frame):
+        """Create parameter controls for the UI."""
+        params = [
+            ("Nr of Squares in row/col", self.nr_squares_in_row, 1),
+            ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2),
+            ("Min allowable R-squared", self.min_r_squared, 3),
+            ("Min density ratio", self.min_density_ratio, 4),
+            ("Max variability", self.max_variability, 5),
+        ]
 
-        # Lay out the parameter frame
-        lbl_nr_squares.grid(column=0, row=1, padx=5, pady=5)
-        lbl_min_tracks_for_tau.grid(column=0, row=2, padx=5, pady=5)
-        lbl_min_r2.grid(column=0, row=3, padx=5, pady=5)
-        lbl_min_density_ratio.grid(column=0, row=4, padx=5, pady=5)
-        lbl_max_variability.grid(column=0, row=5, padx=5, pady=5)
-        # lbl_max_square_coverage.grid(column=0, row=6, padx=5, pady=5)     # Don't expose Max Square Coverage
+        for label_text, var, row in params:
+            self.create_labeled_entry(frame, label_text, var, row)
 
-        en_nr_squares.grid(column=1, row=1)
-        en_min_tracks_for_tau.grid(column=1, row=2)
-        en_min_r_squared.grid(column=1, row=3)
-        en_min_density_ratio.grid(column=1, row=4)
-        en_max_variability.grid(column=1, row=5)
-        # en_max_square_coverage.grid(column=1, row=6)                      # Don't expose Max Square Coverage
+    def create_labeled_entry(self, frame, label_text, var, row):
+        """Helper method to create a label and corresponding entry."""
+        label = ttk.Label(frame, text=label_text, width=30, anchor=tk.W)
+        label.grid(column=0, row=row, padx=5, pady=5)
+        entry = ttk.Entry(frame, textvariable=var, width=10)
+        entry.grid(column=1, row=row)
 
-        # Define the controls for the processing frame
-        self.process_single = IntVar(_root, process_single)  # Control variable for the first checkbox
-        self.process_traditional = IntVar(_root, process_traditional)  # Control variable for the second checkbox
+    def create_processing_controls(self, frame):
+        """Create the processing checkboxes."""
+        self.create_checkbox(frame, "Process Traditional", self.process_traditional, 0)
+        self.create_checkbox(frame, "Process Single", self.process_single, 1)
 
-        ck_process_traditional = ttk.Checkbutton(frame_processing, text="Process Traditional", variable=self.process_traditional)
-        ck_process_single = ttk.Checkbutton(frame_processing, text="Process single", variable=self.process_single)
+    def create_checkbox(self, frame, text, var, row):
+        """Helper method to create a labeled checkbox."""
+        checkbox = ttk.Checkbutton(frame, text=text, variable=var)
+        checkbox.grid(column=0, row=row, padx=5, pady=10, sticky=tk.W)
+        checkbox.config(padding=(10, 0, 0, 0))
 
-        # Lay out the processing frame
-        ck_process_traditional.grid(column=0, row=0, padx=5, pady = 10, sticky=tk.W)
-        ck_process_single.grid(column=0, row=1, padx=5, pady = 10, sticky=tk.W)
-        ck_process_traditional.config(padding=(10, 0, 0, 0))
-        ck_process_single.config(padding=(10, 0, 0, 0))
-
-        # Define the controls for the button frame
-        btn_process = ttk.Button(frame_buttons, text='Process', command=self.process_grid)
-        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_pressed)
-
-        # Lay out the button frame
-        btn_process.grid(column=0, row=1, sticky=tk.W )
-        btn_exit.grid(column=0, row=2, sticky=tk.W )
-
-        # Define the controls for the directory frame
-        btn_change_dir = ttk.Button(frame_directory, text='Change Directory', width=15, command=self.change_dir)
-        self.lbl_directory = ttk.Label(frame_directory, text=self.paint_directory, width=80)
-
-        # Lay out the directory frame
+    def create_directory_controls(self, frame):
+        """Create controls for directory management."""
+        btn_change_dir = ttk.Button(frame, text='Change Directory', width=15, command=self.change_dir)
+        self.lbl_directory = ttk.Label(frame, text=self.paint_directory, width=80)
         btn_change_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_directory.grid(column=1, row=0, padx=20, pady=5)
 
-        #  Do the frame lay-out
-        content.grid(column=0, row=0)
-        frame_parameters.grid(column=0, row=0, sticky=tk.N, columnspan=2, rowspan=4, padx=5, pady=5)
-        frame_processing.grid(column=2, row=0, sticky=tk.N, padx=5, pady=5)
-        frame_directory.grid(column=0, row=6, padx=5, columnspan=7, pady=5)
-        frame_buttons.grid(column=1, row=7, padx=5, pady=5)
+    def create_button_controls(self, frame):
+        """Create buttons for the UI."""
+        btn_process = ttk.Button(frame, text='Process', command=self.process_grid)
+        btn_exit = ttk.Button(frame, text='Exit', command=self.exit_pressed)
+
+        # Create two empty columns to balance the buttons in the center
+        frame.grid_columnconfigure(0, weight=1)  # Left empty column
+        frame.grid_columnconfigure(1, weight=0)  # Buttons column
+        frame.grid_columnconfigure(2, weight=1)  # Right empty column
+
+        # Center the buttons by placing them in column 1
+        btn_process.grid(column=1, row=0, padx=10, pady=0, sticky="ew")  # Center Process button
+        btn_exit.grid(column=1, row=1, padx=10, pady=0, sticky="ew")  # Center Exit button
 
     def change_dir(self):
+        """Change the paint directory through a dialog."""
         paint_directory = filedialog.askdirectory(initialdir=self.paint_directory)
-        if len(paint_directory) != 0:
+        if paint_directory:
             self.paint_directory = paint_directory
             self.lbl_directory.config(text=paint_directory)
 
     def exit_pressed(self):
-        root.destroy()
+        """Handle the exit button click."""
+        self.root.destroy()
 
     def process_grid(self):
+        """Process the grid and save the parameters."""
+        start_time = time.time()
+        self.save_parameters()
+        process_function = self.determine_process_function()
 
-        time_stamp = time.time()
+        if process_function:
+            process_function(
+                self.paint_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
+                self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
+                self.max_square_coverage.get(), self.process_single.get(), self.process_traditional.get()
+            )
+            self.log_processing_time(time.time() - start_time)
+        else:
+            paint_logger.error('Invalid directory selected')
 
+        self.exit_pressed()
+
+    def determine_process_function(self):
+        """Determine the processing function based on the directory contents."""
+        if os.path.isfile(os.path.join(self.paint_directory, 'Batch.csv')):
+            return process_all_images_in_paint_directory
+        elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):
+            return process_all_images_in_root_directory
+        return None
+
+    def save_parameters(self):
+        """Save current settings to disk."""
         save_grid_defaults_to_file(
             self.nr_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
-            self.process_single.get(), self.process_traditional.get())
+            self.process_single.get(), self.process_traditional.get()
+        )
         save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
 
-        # See if this really is a paint directory or maybe a root directory containing paint directories
-
-        if os.path.isfile(os.path.join(self.paint_directory, 'Batch.csv')):
-
-            process_all_images_in_paint_directory(
-                self.paint_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
-                self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
-                self.max_square_coverage.get(), self.process_single.get(), self.process_traditional.get(), verbose=False)
-            run_time = time.time() - time_stamp
-
-        elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):  # Assume it is group directory
-
-            process_all_images_in_root_directory(
-                self.paint_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
-                self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
-                self.max_square_coverage.get(), self.process_single.get(), self.process_traditional.get(), verbose=False)
-            run_time = time.time() - time_stamp
-            paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
-        else:
-            run_time = 0
-            paint_logger.error('Not an paint directory and not a root directory')
-
+    def log_processing_time(self, run_time):
+        """Log the processing time."""
         paint_logger.info(f"Total processing time is {run_time:.1f} seconds")
-
-        # And then exit
-        self.exit_pressed()
 
 
 def process_all_images_in_root_directory(
@@ -230,7 +245,6 @@ def process_all_images_in_root_directory(
             min_density_ratio, max_variability, max_square_coverage, process_single, process_traditional, verbose=False)
 
 
-
 def process_all_images_in_paint_directory(
         paint_directory: str,
         nr_squares_in_row: int,
@@ -242,7 +256,6 @@ def process_all_images_in_paint_directory(
         process_single: bool,
         process_traditional: bool,
         verbose: bool = False):
-
     """
     This function processes all images in a paint directory. It reads the batch file, to find out what
     images need processing
@@ -297,7 +310,8 @@ def process_all_images_in_paint_directory(
         if process or image_needs_processing(ext_image_path, ext_image_name):
 
             if verbose:
-                paint_logger.debug(f"Processing file {current_image_nr} of {nr_files}: seq nr: {index} name: {ext_image_name}")
+                paint_logger.debug(
+                    f"Processing file {current_image_nr} of {nr_files}: seq nr: {index} name: {ext_image_name}")
             else:
                 paint_logger.debug(ext_image_name)
 
@@ -431,8 +445,6 @@ def process_single_image_in_paint_directory(
     df_squares['Density Ratio Visible'] = False
     df_squares.loc[df_squares['Density Ratio'] >= round(min_density_ratio, 1), 'Density Ratio Visible'] = True
 
-    #df_squares, list_of_squares = eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row)
-
     df_squares['Visible'] = (df_squares['Valid Tau'] &
                              df_squares['Density Ratio Visible'] &
                              df_squares['Variability Visible'] &
@@ -457,7 +469,10 @@ def process_single_image_in_paint_directory(
     # those values
     if process_single:
         tau, r_squared, density = calc_single_tau_and_density_for_image(
-            df_squares, df_tracks, min_tracks_for_tau, min_r_squared, image_path, image_name, nr_squares_in_row, concentration)
+            df_squares, df_tracks, min_tracks_for_tau, min_r_squared, image_path, image_name, nr_squares_in_row,
+            concentration)
+    else:
+        tau = r_squared = density = 0
 
     return df_squares, tau, r_squared, density
 
@@ -471,7 +486,6 @@ def calc_single_tau_and_density_for_image(
         image_name: str,
         nr_squares_in_row: int,
         concentration: float) -> tuple:
-
     # Identify the squares that contribute to the Tau calculation
     df_squares_for_single_tau = df_squares[df_squares['Visible']]
     df_tracks_for_tau = df_tracks[df_tracks['Square Nr'].isin(df_squares_for_single_tau['Square Nr'])]
@@ -494,7 +508,8 @@ def calc_single_tau_and_density_for_image(
             tau = -3
 
     area = get_area_of_square(nr_squares_in_row)
-    density = calculate_density(nr_tracks=nr_tracks, area=area, time=100, concentration=concentration, magnification=1000)
+    density = calculate_density(nr_tracks=nr_tracks, area=area, time=100, concentration=concentration,
+                                magnification=1000)
     return tau, r_squared, density
 
 
@@ -514,7 +529,6 @@ def create_df_squares(
         experiment_name: str,
         process_traditional: bool,
         verbose: bool) -> pd.DataFrame:
-
     # Create the tau_matrix (and other matrices if verbose is True)
     tau_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
     if verbose:
@@ -566,7 +580,7 @@ def create_df_squares(
         elif nr_tracks < 10:
             average_long_track = df_tracks_square.iloc[nr_tracks - 1]['TRACK_DURATION']
         else:
-            nr_tracks_to_average = round(0.10 * nr_tracks)       # TODO 0.10 is a magic number
+            nr_tracks_to_average = round(0.10 * nr_tracks)  # TODO 0.10 is a magic number
             average_long_track = df_tracks_square.tail(nr_tracks_to_average)['TRACK_DURATION'].mean()
 
         # ----------------------------------------
@@ -584,7 +598,7 @@ def create_df_squares(
                 duration_data = compile_duration(df_tracks_square)
                 plt_file = os.path.join(image_path, "plt", image_name + "-square-" + str(square_seq_nr) + ".png")
                 tau, r_squared = curve_fit_and_plot(
-                    plot_data=duration_data,  nr_tracks=nr_tracks,  plot_max_x=5, plot_title=" ",
+                    plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
                     file=plt_file, plot_to_screen=False, verbose=False)
                 if tau == -2:  # Tau calculation failed
                     r_squared = 0
@@ -737,7 +751,6 @@ def identify_invalid_squares(
         min_r_squared: float,
         min_tracks_for_tau: int,
         verbose: bool) -> pd.DataFrame:
-
     """
 
     :param df_squares:
@@ -746,7 +759,6 @@ def identify_invalid_squares(
     :param verbose:
     :return:
     """
-
 
     # Eliminate the squares for which no Tau was calculated, because there were insufficient tracks (tau code as -1)
     original_count = len(df_squares)
@@ -770,7 +782,6 @@ def identify_invalid_squares(
                 f"Eliminated {original_count - updated_count} squares for which Tau was calculated but failed: left {updated_count}")
     else:
         updated_count = 0
-
 
     # Then eliminate the squares for which Tau was calculated but the R2 was too low (tau coded as -3)
     original_count = updated_count
@@ -807,7 +818,6 @@ def add_columns_to_batch_file(
         min_r_squared: float,
         min_density_ratio: float,
         max_variability: float):
-
     """
     This function adds columns to the batch file that are needed for the grid processing.
     Only images for which the 'Process' column is set to 'Yes' are processed.
@@ -837,8 +847,10 @@ def add_columns_to_batch_file(
 
     df_batch.loc[mask, 'Nr Total Squares'] = 0  # Equal to the square of the nr of squares per row
     df_batch.loc[mask, 'Nr Defined Squares'] = 0  # The number of squares for which a Tau was successfully calculated
-    df_batch.loc[mask, 'Nr Visible Squares'] = 0  # The number of squares that also meet the density and variability hurdle
-    df_batch.loc[mask, 'Nr Invisible Squares'] = 0 # The number of squares that do not meet the density and variability hurdle
+    df_batch.loc[
+        mask, 'Nr Visible Squares'] = 0  # The number of squares that also meet the density and variability hurdle
+    df_batch.loc[
+        mask, 'Nr Invisible Squares'] = 0  # The number of squares that do not meet the density and variability hurdle
     df_batch.loc[mask, 'Nr Rejected Squares'] = 0  # The difference between Nr Defined and Visible squares
     df_batch.loc[mask, 'Max Squares Ratio'] = 0
     df_batch.loc[mask, 'Squares Ratio'] = 0.0
@@ -871,7 +883,6 @@ def image_needs_processing(
         return True
 
     return False
-
 
 
 if __name__ == "__main__":
