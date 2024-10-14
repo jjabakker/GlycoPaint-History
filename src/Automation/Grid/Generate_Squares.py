@@ -51,7 +51,8 @@ class GridDialog:
         min_r_squared = values['min_r_squared']
         min_density_ratio = values['min_density_ratio']
         max_variability = values['max_variability']
-        max_square_coverage = values['max_square_coverage']
+        # max_square_coverage = values['max_square_coverage'] # Don't expose Max Square Coverage
+        max_square_coverage = 100
         process_single = values['process_single']
         process_traditional = values['process_traditional']
 
@@ -99,14 +100,14 @@ class GridDialog:
         lbl_min_r2.grid(column=0, row=3, padx=5, pady=5)
         lbl_min_density_ratio.grid(column=0, row=4, padx=5, pady=5)
         lbl_max_variability.grid(column=0, row=5, padx=5, pady=5)
-        lbl_max_square_coverage.grid(column=0, row=6, padx=5, pady=5)
+        # lbl_max_square_coverage.grid(column=0, row=6, padx=5, pady=5)     # Don't expose Max Square Coverage
 
         en_nr_squares.grid(column=1, row=1)
         en_min_tracks_for_tau.grid(column=1, row=2)
         en_min_r_squared.grid(column=1, row=3)
         en_min_density_ratio.grid(column=1, row=4)
         en_max_variability.grid(column=1, row=5)
-        en_max_square_coverage.grid(column=1, row=6)
+        # en_max_square_coverage.grid(column=1, row=6)                      # Don't expose Max Square Coverage
 
         # Define the controls for the processing frame
         self.process_single = IntVar(_root, process_single)  # Control variable for the first checkbox
@@ -193,7 +194,7 @@ class GridDialog:
 
 def process_all_images_in_root_directory(
         root_directory: str,
-        nr_of_squares_in_row: int,
+        nr_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
         min_density_ratio: float,
@@ -207,7 +208,7 @@ def process_all_images_in_root_directory(
     'process_all_images_in_paint_directory' for each directory in the root directory.
 
     :param root_directory:
-    :param nr_of_squares_in_row:
+    :param nr_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
     :param min_density_ratio:
@@ -225,14 +226,14 @@ def process_all_images_in_root_directory(
         if 'Output' in image_dir:
             continue
         process_all_images_in_paint_directory(
-            os.path.join(root_directory, image_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
+            os.path.join(root_directory, image_dir), nr_squares_in_row, min_r_squared, min_tracks_for_tau,
             min_density_ratio, max_variability, max_square_coverage, process_single, process_traditional, verbose=False)
 
 
 
 def process_all_images_in_paint_directory(
         paint_directory: str,
-        nr_of_squares_in_row: int,
+        nr_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
         min_density_ratio: float,
@@ -247,7 +248,7 @@ def process_all_images_in_paint_directory(
     images need processing
 
     :param paint_directory:
-    :param nr_of_squares_in_row:
+    :param nr_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
     :param min_density_ratio:
@@ -273,7 +274,7 @@ def process_all_images_in_paint_directory(
         sys.exit(1)
 
     df_batch = add_columns_to_batch_file(
-        df_batch, nr_of_squares_in_row, min_tracks_for_tau, min_r_squared, min_density_ratio, max_variability)
+        df_batch, nr_squares_in_row, min_tracks_for_tau, min_r_squared, min_density_ratio, max_variability)
 
     # Determine how many images need processing from the batch.csv file
     nr_files = len(df_batch)
@@ -300,8 +301,8 @@ def process_all_images_in_paint_directory(
             else:
                 paint_logger.debug(ext_image_name)
 
-            df_squares, tau, r_squared = process_single_image_in_paint_directory(
-                ext_image_path, ext_image_name, nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
+            df_squares, tau, r_squared, density = process_single_image_in_paint_directory(
+                ext_image_path, ext_image_name, nr_squares_in_row, min_r_squared, min_tracks_for_tau,
                 min_density_ratio, max_variability, concentration, row["Nr Spots"], row['Batch Sequence Nr'],
                 row['Experiment Nr'], row['Experiment Seq Nr'], row['Experiment Date'], row['Experiment Name'],
                 process_single, process_traditional, verbose)
@@ -309,12 +310,9 @@ def process_all_images_in_paint_directory(
                 paint_logger.error("Aborted with error")
                 return None
 
-            area = get_area_of_square(nr_of_squares_in_row)
-            density = calculate_density(
-                nr_tracks=sum(df_squares['Nr Tracks']), area=area, time=100,
-                concentration=concentration, magnification=1000)
+            # Now update the grid_batch file with the results
 
-            nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
+            nr_total_squares = int(nr_squares_in_row * nr_squares_in_row)
             nr_visible_squares = len(df_squares[df_squares['Visible']])
             nr_invisible_squares = nr_total_squares - nr_visible_squares
             nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
@@ -337,7 +335,6 @@ def process_all_images_in_paint_directory(
 
             df_batch.loc[index, 'Exclude'] = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
 
-
             current_image_nr += 1
             processed += 1
 
@@ -352,7 +349,7 @@ def process_all_images_in_paint_directory(
 def process_single_image_in_paint_directory(
         image_path: str,
         image_name: str,
-        nr_of_squares_in_row: int,
+        nr_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
         min_density_ratio: float,
@@ -368,11 +365,13 @@ def process_single_image_in_paint_directory(
         process_traditional: bool,
         verbose: bool = False) -> tuple:
     """
-    This function processes a single image in a paint directory. It reads the full-track file from the 'tracks' directory
+    This function processes a single image in a paint directory. It reads the full-track file from the 'tracks'
+    directory and creates a grid of squares. For each square the Tau and Density ratio is calculated. The squares
+    are then filtered on visibility. For each square a squares.csv id written to the 'grid' directory.
 
     :param image_path:
     :param image_name:
-    :param nr_of_squares_in_row:
+    :param nr_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
     :param min_density_ratio:
@@ -400,7 +399,7 @@ def process_single_image_in_paint_directory(
 
     # A df_squares dataframe is generated and for every square the Tau and Density ratio is calculated
     df_squares, tau_matrix = create_df_squares(
-        df_tracks, image_path, image_name, nr_of_squares_in_row, concentration, nr_spots,
+        df_tracks, image_path, image_name, nr_squares_in_row, concentration, nr_spots,
         min_r_squared, min_tracks_for_tau, batch_seq_nr, experiment_nr, experiment_seq_nr,
         experiment_date, experiment_name, process_traditional, verbose)
 
@@ -416,7 +415,7 @@ def process_single_image_in_paint_directory(
         label = row['Label Nr']
         df_with_label.loc[df_with_label['Square Nr'] == square, 'Label Nr'] = label
 
-    # The tracks dataframe has been changed, so write a copy to file
+    # The tracks dataframe has been updated with label info, so write a copy to file
     new_tracks_file_name = tracks_file_name[:tracks_file_name.find('.csv')] + '_label.csv'
     df_with_label.drop(['NUMBER_SPLITS', 'NUMBER_MERGES', 'TRACK_Z_LOCATION', 'NUMBER_COMPLEX'], axis=1,
                        inplace=True)
@@ -432,7 +431,7 @@ def process_single_image_in_paint_directory(
     df_squares['Density Ratio Visible'] = False
     df_squares.loc[df_squares['Density Ratio'] >= round(min_density_ratio, 1), 'Density Ratio Visible'] = True
 
-    #df_squares, list_of_squares = eliminate_isolated_squares_relaxed(df_squares, nr_of_squares_in_row)
+    #df_squares, list_of_squares = eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row)
 
     df_squares['Visible'] = (df_squares['Valid Tau'] &
                              df_squares['Density Ratio Visible'] &
@@ -454,15 +453,14 @@ def process_single_image_in_paint_directory(
         plt_file = os.path.join(image_path, "img", image_name + "-heatmap.png")
         plot_heatmap(tau_matrix, plt_file)
 
-    # Now do the single mode processing: determine a single Tau and Density per image, i.e. for all squares
+    # Now do the single mode processing: determine a single Tau and Density per image, i.e. for all squares and return
+    # those values
     if process_single:
-        tau, r_squared = calc_single_tau_and_density_for_image(
-            df_squares, df_tracks, min_tracks_for_tau, min_r_squared, image_path, image_name)
-    else:
-        tau = 0
-        r_squared = 0
+        tau, r_squared, density = calc_single_tau_and_density_for_image(
+            df_squares, df_tracks, min_tracks_for_tau, min_r_squared, image_path, image_name, nr_squares_in_row, concentration)
 
-    return df_squares, tau, r_squared
+    return df_squares, tau, r_squared, density
+
 
 def calc_single_tau_and_density_for_image(
         df_squares: pd.DataFrame,
@@ -470,7 +468,9 @@ def calc_single_tau_and_density_for_image(
         min_tracks_for_tau: int,
         min_r_squared: float,
         image_path: str,
-        image_name: str) -> tuple:
+        image_name: str,
+        nr_squares_in_row: int,
+        concentration: float) -> tuple:
 
     # Identify the squares that contribute to the Tau calculation
     df_squares_for_single_tau = df_squares[df_squares['Visible']]
@@ -492,7 +492,10 @@ def calc_single_tau_and_density_for_image(
         tau = int(tau)
         if r_squared < min_r_squared:  # Tau was calculated, but not reliable
             tau = -3
-    return tau, r_squared
+
+    area = get_area_of_square(nr_squares_in_row)
+    density = calculate_density(nr_tracks=nr_tracks, area=area, time=100, concentration=concentration, magnification=1000)
+    return tau, r_squared, density
 
 
 def create_df_squares(
@@ -566,6 +569,12 @@ def create_df_squares(
             nr_tracks_to_average = round(0.10 * nr_tracks)       # TODO 0.10 is a magic number
             average_long_track = df_tracks_square.tail(nr_tracks_to_average)['TRACK_DURATION'].mean()
 
+        # ----------------------------------------
+        # Find the maximum track duration
+        # ----------------------------------------
+
+        max_track_duration = df_tracks_square['TRACK_DURATION'].max()
+
         # Calculate the Tau for the square
         if process_traditional:
             if nr_tracks < min_tracks_for_tau:  # Too few points to curve fit
@@ -620,6 +629,7 @@ def create_df_squares(
                'Valid Tau': True,
                'Density': round(density, 1),
                'Average Long Track Duration': round(average_long_track, 1),
+               'Max Track Duration': round(max_track_duration, 1),
                'Total Track Duration': round(total_track_duration, 1),
                'Variability': round(variability, 2),
                'R2': round(r_squared, 2),
@@ -792,7 +802,7 @@ def identify_invalid_squares(
 
 def add_columns_to_batch_file(
         df_batch: pd.DataFrame,
-        nr_of_squares_in_row: int,
+        nr_squares_in_row: int,
         min_tracks_for_tau: int,
         min_r_squared: float,
         min_density_ratio: float,
@@ -803,7 +813,7 @@ def add_columns_to_batch_file(
     Only images for which the 'Process' column is set to 'Yes' are processed.
 
     :param df_batch:
-    :param nr_of_squares_in_row:
+    :param nr_squares_in_row:
     :param min_tracks_for_tau:
     :param min_r_squared:
     :param min_density_ratio:
@@ -818,7 +828,7 @@ def add_columns_to_batch_file(
 
     df_batch.loc[mask, 'Min Tracks for Tau'] = int(min_tracks_for_tau)
     df_batch.loc[mask, 'Min R Squared'] = min_r_squared
-    df_batch.loc[mask, 'Nr Of Squares per Row'] = int(nr_of_squares_in_row)
+    df_batch.loc[mask, 'Nr Of Squares per Row'] = int(nr_squares_in_row)
 
     df_batch.loc[mask, 'Exclude'] = False
     df_batch.loc[mask, 'Neighbour Setting'] = 'Free'
