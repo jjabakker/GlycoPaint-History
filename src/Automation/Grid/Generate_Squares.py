@@ -157,9 +157,6 @@ class GridDialog:
 
         time_stamp = time.time()
 
-        process_single = False            # TODO
-        process_traditional = True
-
         save_grid_defaults_to_file(
             self.nr_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
@@ -181,7 +178,7 @@ class GridDialog:
             process_all_images_in_root_directory(
                 self.paint_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
                 self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
-                self.max_square_coverage.get(), process_single, process_traditional, verbose=False)
+                self.max_square_coverage.get(), self.process_single.get(), self.process_traditional.get(), verbose=False)
             run_time = time.time() - time_stamp
             paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
         else:
@@ -317,22 +314,29 @@ def process_all_images_in_paint_directory(
                 nr_tracks=sum(df_squares['Nr Tracks']), area=area, time=100,
                 concentration=concentration, magnification=1000)
 
-            nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
-            nr_visible_squares = len(df_squares[df_squares['Visible']])
             nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
+            nr_visible_squares = len(df_squares[df_squares['Visible']])
+            nr_invisible_squares = nr_total_squares - nr_visible_squares
+            nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
+
             df_batch.loc[index, 'Nr Total Squares'] = nr_total_squares
+            df_batch.loc[index, 'Nr Visible Squares'] = nr_invisible_squares
+            df_batch.loc[index, 'Nr Invisible Squares'] = nr_invisible_squares
+
             df_batch.loc[index, 'Nr Defined Squares'] = nr_defined_squares
-            df_batch.loc[index, 'Nr Visible Squares'] = nr_visible_squares
-            df_batch.loc[index, 'Nr Invisible Squares'] = nr_defined_squares - nr_visible_squares
+            df_batch.loc[index, 'Nr Rejected Squares'] = nr_total_squares - nr_defined_squares
+
             df_batch.loc[index, 'Squares Ratio'] = round(100 * nr_defined_squares / nr_total_squares)
             df_batch.loc[index, 'Max Squares Ratio'] = max_square_coverage
             df_batch.loc[index, 'Nr Rejected Squares'] = nr_total_squares - nr_defined_squares
-            # df_batch.loc[index, 'Exclude'] = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
-            df_batch.loc[index, 'Exclude'] = False    # TODO
+
             df_batch.loc[index, 'Ext Image Name'] = ext_image_name
             df_batch.loc[index, 'Tau'] = tau
             df_batch.loc[index, 'Density'] = density
             df_batch.loc[index, 'R Squared'] = round(r_squared, 3)
+
+            # df_batch.loc[index, 'Exclude'] = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
+            df_batch.loc[index, 'Exclude'] = False    # TODO
 
             current_image_nr += 1
             processed += 1
@@ -428,7 +432,7 @@ def process_single_image_in_paint_directory(
     df_squares['Density Ratio Visible'] = False
     df_squares.loc[df_squares['Density Ratio'] >= round(min_density_ratio, 1), 'Density Ratio Visible'] = True
 
-    # df_squares, list_of_squares = eliminate_isolated_squares_relaxed(df_squares, nr_of_squares_in_row)
+    #df_squares, list_of_squares = eliminate_isolated_squares_relaxed(df_squares, nr_of_squares_in_row)
 
     df_squares['Visible'] = (df_squares['Valid Tau'] &
                              df_squares['Density Ratio Visible'] &

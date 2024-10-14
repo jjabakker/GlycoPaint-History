@@ -91,7 +91,7 @@ def delete_files_in_directory(directory_path):
             if os.path.isfile(file_path):
                 os.remove(file_path)
     except OSError:
-        print("Error occurred while deleting files.")
+        print("Error occurred while deleting files.")     #TODO Add logging
 
 
 def get_default_image_directory():
