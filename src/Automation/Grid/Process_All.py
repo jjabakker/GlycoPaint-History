@@ -21,14 +21,14 @@ import logging
 paint_logger_change_file_handler_name('Process All.log')
 paint_logger_console_handle_set_level(logging.DEBUG)
 
-PAINT_DEBUG = True
+PAINT_DEBUG = False
 
 if PAINT_DEBUG:
     CONF_FILE = '/Users/hans/Paint Source/paint data generation - integrated.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
     PAINT_DATA = '/Users/Hans/Paint Data Integrated'
     R_DATA_DEST = '/Users/hans/R Data'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
+    # R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
     TIME_STAMP = '2024-10-11 11:11:11'  # '%Y-%m-%d %H:%M:%S
 
 else:
@@ -37,7 +37,6 @@ else:
     PAINT_DATA = '/Users/Hans/Paint Data Integrated'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
-
 
 
 def process_directory(paint_source_dir,
@@ -104,6 +103,8 @@ def process_directory(paint_source_dir,
     # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine)
     output_source = os.path.join(paint_data_dir, 'Output')
     output_destination = os.path.join(r_dest_dir, 'Output')
+    if not os.path.exists(output_destination):
+        os.makedirs(output_destination)
     copy_directory(output_source, output_destination)
     paint_logger.info(f"Copied output to {output_destination}")
 
