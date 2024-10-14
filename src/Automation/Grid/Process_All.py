@@ -6,8 +6,7 @@ import time
 from pandas.io.formats.info import INFO_DOCSTRING
 
 from src.Automation.Grid.Compile_Results_Files import compile_squares_file
-from src.Automation.Grid.Generate_Squares_Single import process_images_in_root_directory_single_mode
-from src.Automation.Grid.Generate_Squares_Traditional import process_images_in_root_directory_traditional_mode
+from src.Automation.Grid.Generate_Squares import process_all_images_in_root_directory
 from src.Automation.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
 from src.Automation.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
 from src.Automation.Support.Support_Functions import copy_directory, format_time_nicely
@@ -25,9 +24,9 @@ paint_logger_console_handle_set_level(logging.DEBUG)
 PAINT_DEBUG = True
 
 if PAINT_DEBUG:
-    CONF_FILE = '/Users/hans/Paint Source/paint data generation - test.json'
+    CONF_FILE = '/Users/hans/Paint Source/paint data generation - integrated.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
-    PAINT_DATA = '/Users/Hans/Paint Data Test'
+    PAINT_DATA = '/Users/Hans/Paint Data Integrated'
     R_DATA_DEST = '/Users/hans/R Data'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data New'
     TIME_STAMP = '2024-10-11 11:11:11'  # '%Y-%m-%d %H:%M:%S
@@ -40,51 +39,21 @@ else:
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
-def run_single(root_dir: str, nr_of_squares: int) -> None:
-    try:
-        process_images_in_root_directory_single_mode(
-            root_dir,
-            nr_of_squares_in_row=nr_of_squares,
-            min_r_squared=0.9,
-            min_tracks_for_tau=20,
-            max_variability=10,
-            max_square_coverage=100,
-            verbose=False
-        )
-    except Exception as e:
-        paint_logger.error(f"Failed to run single mode for {root_dir}. Error: {e}")
-
-
-def run_traditional(root_dir: str,
-                    nr_of_squares: int,
-                    min_density_ratio: float) -> None:
-    try:
-        process_images_in_root_directory_traditional_mode(
-            root_dir,
-            nr_of_squares_in_row=nr_of_squares,
-            min_r_squared=0.9,
-            min_tracks_for_tau=20,
-            min_density_ratio=min_density_ratio,
-            max_variability=10,
-            max_square_coverage=100,
-            verbose=False
-        )
-    except Exception as e:
-        paint_logger.error(f"Failed to run traditional mode for {root_dir}. Error: {e}")
-
 
 def process_directory(paint_source_dir,
                       process_directory: str,
                       paint_data_dir: str,
                       r_dest_dir: str,
-                      mode: str,
                       probe: str,
                       nr_of_squares: int,
                       nr_to_process: int,
                       current_process: int,
-                      min_density_ratio: float = None) -> bool:
+                      min_density_ratio: float,
+                      process_single: bool,
+                      process_traditional: bool) -> bool:
+
     time_stamp = time.time()
-    msg = f"{current_process} of {nr_to_process} --- Processing mode: {mode} - Probe: {probe} - Directory: {process_directory}"
+    msg = f"{current_process} of {nr_to_process} --- Probe: {probe} - Directory: {process_directory}"
     paint_logger.info("")
     paint_logger.info("")
     paint_logger.info("-" * len(msg))
@@ -99,8 +68,8 @@ def process_directory(paint_source_dir,
 
     # Check if the Paint Data directory exists
     if not os.path.exists(paint_data_dir):
-        paint_logger.error(f"Paint Data directory {paint_data_dir} does not exist.")
-        return False
+        paint_logger.error(f"Paint Data directory {paint_data_dir} does not exist, directory created.")
+        os.makedirs(paint_data_dir)
 
     # Copy the data from Paint Source to the appropriate directory in Paint Data
     if not copy_data_from_paint_source_to_paint_data(paint_source_dir, paint_data_dir):
@@ -110,13 +79,17 @@ def process_directory(paint_source_dir,
         os.makedirs(r_dest_dir)
 
     # Do the grid processing
-    if mode == 'Single':
-        run_single(paint_data_dir, nr_of_squares)
-    elif mode == 'Traditional':
-        run_traditional(paint_data_dir, nr_of_squares, min_density_ratio)
-    else:
-        paint_logger.error(f"Invalid mode '{mode}' for {process_directory}.")
-        return False
+    process_all_images_in_root_directory(
+        paint_data_dir,
+        nr_of_squares_in_row=nr_of_squares,
+        min_r_squared=0.9,
+        min_tracks_for_tau=20,
+        min_density_ratio=min_density_ratio,
+        max_variability=10,
+        max_square_coverage=100,
+        process_single=process_single,
+        process_traditional=process_traditional,
+        verbose=False)
 
     # Compile the squares file
     compile_squares_file(paint_data_dir, verbose=True)
@@ -136,12 +109,10 @@ def process_directory(paint_source_dir,
 
     paint_logger.info("")
     paint_logger.info(
-        f"Processed Mode: {mode} - Probe: {probe} - Directory: {process_directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
+        f"Processed Mode: Probe: {probe} - Directory: {process_directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
     return True
 
 def main():
-
-    # paint_logger_change_file_handler_name('Process All.log')
 
     # Load the configuration file
     try:
@@ -178,7 +149,7 @@ def main():
     for entry in config:
         if entry['flag']:
             paint_source_dir = os.path.join(PAINT_SOURCE, entry['probe'])
-            paint_data_dir = os.path.join(PAINT_DATA, entry['probe'], entry['mode'], entry['directory'])
+            paint_data_dir = os.path.join(PAINT_DATA, entry['probe'], entry['directory'])
             r_dest_dir = os.path.join(R_DATA_DEST, entry['directory'])
             current_process_seq_nr += 1
             if not process_directory(
@@ -186,12 +157,13 @@ def main():
                     process_directory=entry['directory'],
                     paint_data_dir=paint_data_dir,
                     r_dest_dir=r_dest_dir,
-                    mode=entry['mode'],
                     probe=entry['probe'],
                     nr_of_squares=entry['nr_of_squares'],
                     nr_to_process=nr_to_process,
                     current_process=current_process_seq_nr,
-                    min_density_ratio=entry.get('min_density_ratio')):
+                    min_density_ratio=entry['min_density_ratio'],
+                    process_single=entry['process_single'],
+                    process_traditional=entry['process_traditional']):
                 error_count += 1
 
     # Report the time it took in hours minutes seconds

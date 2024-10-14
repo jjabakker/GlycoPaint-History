@@ -4,7 +4,7 @@ import shutil
 from src.Common.Support.LoggerConfig import paint_logger
 
 
-def copy_data_from_paint_source_to_paint_data(source_root, dest_root):
+def copy_data_from_paint_source_to_paint_data(source_root, dest_root, include_batch_file=True):
     """
     Copies (Trackmate) data from the Paint Source root to the appropriate Paint Data root
     Only the images directories are copied, not the Output directory or the csv files
@@ -58,11 +58,14 @@ def copy_data_from_paint_source_to_paint_data(source_root, dest_root):
                     shutil.copytree(os.path.join(source_root, exp, src_dir), dest_dir, dirs_exist_ok=True)
                     paint_logger.debug(f"Copied directory from {os.path.join(source_root, exp, src_dir)} to {dest_dir}")
 
+
                 except Exception as e:
                     paint_logger.error(
-                        f"copy_data_from_source: copy_directory: Failed to copy directory from {src} to {dest}. Error: {e}")
+                        f"copy_data_from_source: copy_directory: Failed to copy directory from {src_dir} to {dest_dir}. Error: {e}")
 
-
+            if include_batch_file:
+                # And copy the batch files
+                shutil.copy(os.path.join(source_root, exp, 'batch.csv'), os.path.join(dest_root, exp))
         return True
 
     except Exception as e:
