@@ -14,6 +14,7 @@ def delete_dot_dash_files(directory):
                 non_dot_dash_files.add(file)
 
         # Second pass: delete dot_dash-files if corresponding non-dot_dash file exists
+        i = 0
         for file in files:
             if file.startswith('._'):
                 # The corresponding non dot_dash filename
@@ -26,13 +27,16 @@ def delete_dot_dash_files(directory):
                     try:
                         os.remove(dot_dash_file_path)
                         deleted += 1
-                        # print(f"Deleted: {dot_dash_file_path}")
                         print(".", end="")
+                        i += 1
+                        if i > 40:
+                            print('')
+                            i = 0
                     except OSError as e:
                         print(f"Error deleting {dot_dash_file_path}: {e}")
     print(f"Deleted {deleted}: files.")
 
 # Specify the directory you want to process
-directory_path = '/Volumes/HANS 128GB/Transfer/Paint Data/Regular Probes'
+directory_path = '/Volumes/Extreme Pro/Paint Data'
 # Call the function
 delete_dot_dash_files(directory_path)
