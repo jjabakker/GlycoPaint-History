@@ -3,8 +3,6 @@ import os
 import sys
 import time
 
-from pandas.io.formats.info import INFO_DOCSTRING
-
 from src.Automation.Grid.Compile_Results_Files import compile_squares_file
 from src.Automation.Grid.Generate_Squares import process_all_images_in_root_directory
 from src.Automation.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
@@ -87,7 +85,7 @@ def process_directory(paint_source_dir,
     # Do the grid processing
     process_all_images_in_root_directory(
         paint_data_dir,
-        nr_of_squares_in_row=nr_of_squares,
+        nr_squares_in_row=nr_of_squares,
         min_r_squared=0.9,
         min_tracks_for_tau=20,
         min_density_ratio=min_density_ratio,
