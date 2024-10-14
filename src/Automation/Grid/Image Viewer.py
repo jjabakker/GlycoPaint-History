@@ -7,7 +7,6 @@ import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
-#from pathlib import Path
 
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
@@ -423,7 +422,7 @@ class ImageViewer:
         self.density_ratio = DoubleVar()
         lbl_density_ratio_text = ttk.Label(frame_density_ratio, text='Min Required Density Ratio', width=20)
         self.sc_density_ratio = tk.Scale(frame_density_ratio, from_=2, to=40, variable=self.density_ratio,
-                                         orient='vertical', command=self.density_ratio_changing, resolution=1)
+                                         orient='vertical', command=self.density_ratio_changing, resolution=0.1)
         self.sc_density_ratio.bind("<ButtonRelease-1>", self.density_ratio_changed)
         self.set_density_ratio_slider_state()
 
