@@ -1006,6 +1006,12 @@ class ImageViewer:
         if self.mode_var.get() == 'HEAT':
             return
 
+        # Retrieve the old and new cell id
+        old_cell_id = self.df_squares.at[square_nr, 'Cell Id']
+        new_cell_id = int(self.cell_var.get())
+        if new_cell_id == old_cell_id:
+            new_cell_id = 0
+
         # Delete the current square
         square_tag = f'square-{square_nr}'
         text_tag = f'text-{square_nr}'
@@ -1016,8 +1022,7 @@ class ImageViewer:
         self.draw_single_square(self.df_squares.loc[square_nr])
 
         # Record the new cell id`
-        cell_id = int(self.cell_var.get())
-        self.df_squares.at[square_nr, 'Cell Id'] = int(cell_id)
+        self.df_squares.at[square_nr, 'Cell Id'] = int(new_cell_id)
 
     def provide_information_on_square(self, event, label_nr, square_nr):
 
