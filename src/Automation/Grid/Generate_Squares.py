@@ -52,7 +52,7 @@ class GridDialog:
         min_density_ratio = values['min_density_ratio']
         max_variability = values['max_variability']
         max_square_coverage = values['max_square_coverage']
-        process_simple = values['process_simple']
+        process_single = values['process_single']
         process_traditional = values['process_traditional']
 
         # Get the earlier saved directories from disk, if nothing was saved provide reasonable defaults
@@ -109,17 +109,17 @@ class GridDialog:
         en_max_square_coverage.grid(column=1, row=6)
 
         # Define the controls for the processing frame
-        self.process_simple = IntVar(_root, process_simple)  # Control variable for the first checkbox
+        self.process_single = IntVar(_root, process_single)  # Control variable for the first checkbox
         self.process_traditional = IntVar(_root, process_traditional)  # Control variable for the second checkbox
 
         ck_process_traditional = ttk.Checkbutton(frame_processing, text="Process Traditional", variable=self.process_traditional)
-        ck_process_simple = ttk.Checkbutton(frame_processing, text="Process Simple", variable=self.process_simple)
+        ck_process_single = ttk.Checkbutton(frame_processing, text="Process single", variable=self.process_single)
 
         # Lay out the processing frame
         ck_process_traditional.grid(column=0, row=0, padx=5, pady = 10, sticky=tk.W)
-        ck_process_simple.grid(column=0, row=1, padx=5, pady = 10, sticky=tk.W)
+        ck_process_single.grid(column=0, row=1, padx=5, pady = 10, sticky=tk.W)
         ck_process_traditional.config(padding=(10, 0, 0, 0))
-        ck_process_simple.config(padding=(10, 0, 0, 0))
+        ck_process_single.config(padding=(10, 0, 0, 0))
 
         # Define the controls for the button frame
         btn_process = ttk.Button(frame_buttons, text='Process', command=self.process_grid)
@@ -157,13 +157,13 @@ class GridDialog:
 
         time_stamp = time.time()
 
-        process_simple = False            # TODO
+        process_single = False            # TODO
         process_traditional = True
 
         save_grid_defaults_to_file(
             self.nr_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
-            self.process_simple.get(), self.process_traditional.get())
+            self.process_single.get(), self.process_traditional.get())
         save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
 
         # See if this really is a paint directory or maybe a root directory containing paint directories
@@ -173,7 +173,7 @@ class GridDialog:
             process_all_images_in_paint_directory(
                 self.paint_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
                 self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
-                self.max_square_coverage.get(), self.process_simple.get(), self.process_traditional.get(), verbose=False)
+                self.max_square_coverage.get(), self.process_single.get(), self.process_traditional.get(), verbose=False)
             run_time = time.time() - time_stamp
 
         elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):  # Assume it is group directory
@@ -181,7 +181,7 @@ class GridDialog:
             process_all_images_in_root_directory(
                 self.paint_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
                 self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
-                self.max_square_coverage.get(), process_simple, process_traditional, verbose=False)
+                self.max_square_coverage.get(), process_single, process_traditional, verbose=False)
             run_time = time.time() - time_stamp
             paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
         else:
@@ -202,7 +202,7 @@ def process_all_images_in_root_directory(
         min_density_ratio: float,
         max_variability: float,
         max_square_coverage: float,
-        process_simple: bool,
+        process_single: bool,
         process_traditional: bool,
         verbose: bool):
     """
@@ -229,7 +229,7 @@ def process_all_images_in_root_directory(
             continue
         process_all_images_in_paint_directory(
             os.path.join(root_directory, image_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
-            min_density_ratio, max_variability, max_square_coverage, process_simple, process_traditional, verbose=False)
+            min_density_ratio, max_variability, max_square_coverage, process_single, process_traditional, verbose=False)
 
 
 
@@ -241,7 +241,7 @@ def process_all_images_in_paint_directory(
         min_density_ratio: float,
         max_variability: float,
         max_square_coverage: float,
-        process_simple: bool,
+        process_single: bool,
         process_traditional: bool,
         verbose: bool = False):
 
@@ -307,7 +307,7 @@ def process_all_images_in_paint_directory(
                 ext_image_path, ext_image_name, nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
                 min_density_ratio, max_variability, concentration, row["Nr Spots"], row['Batch Sequence Nr'],
                 row['Experiment Nr'], row['Experiment Seq Nr'], row['Experiment Date'], row['Experiment Name'],
-                process_simple, process_traditional, verbose)
+                process_single, process_traditional, verbose)
             if df_squares is None:
                 paint_logger.error("Aborted with error")
                 return None
@@ -327,7 +327,8 @@ def process_all_images_in_paint_directory(
             df_batch.loc[index, 'Squares Ratio'] = round(100 * nr_defined_squares / nr_total_squares)
             df_batch.loc[index, 'Max Squares Ratio'] = max_square_coverage
             df_batch.loc[index, 'Nr Rejected Squares'] = nr_total_squares - nr_defined_squares
-            df_batch.loc[index, 'Exclude'] = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
+            # df_batch.loc[index, 'Exclude'] = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
+            df_batch.loc[index, 'Exclude'] = False    # TODO
             df_batch.loc[index, 'Ext Image Name'] = ext_image_name
             df_batch.loc[index, 'Tau'] = tau
             df_batch.loc[index, 'Density'] = density
@@ -359,7 +360,7 @@ def process_single_image_in_paint_directory(
         experiment_seq_nr: int,
         experiment_date: str,
         experiment_name: str,
-        process_simple: bool,
+        process_single: bool,
         process_traditional: bool,
         verbose: bool = False) -> tuple:
     """
@@ -450,7 +451,7 @@ def process_single_image_in_paint_directory(
         plot_heatmap(tau_matrix, plt_file)
 
     # Now do the single mode processing: determine a single Tau and Density per image, i.e. for all squares
-    if process_simple:
+    if process_single:
         tau, r_squared = calc_single_tau_and_density_for_image(
             df_squares, df_tracks, min_tracks_for_tau, min_r_squared, image_path, image_name)
     else:
