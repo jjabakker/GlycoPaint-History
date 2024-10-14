@@ -3,7 +3,7 @@ import os
 import sys
 import json
 import pandas as pd
-from  src.Common.Support.LoggerConfig import paint_logger, change_file_handler
+from  src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 
 CONF_FILE = '/Users/hans/Paint Source/paint data generation - production.json'
 PAINT_SOURCE = '/Users/hans/Paint Source'
@@ -11,7 +11,7 @@ PAINT_DATA = '/Users/Hans/Paint Data'
 R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data New'
 TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
-change_file_handler('Inspect All Image File.log')
+paint_logger_change_file_handler_name('Inspect All Image File.log')
 
 
 def inspect_all_images_file(image_file_path: str, short_file_name: str) -> None:
@@ -94,8 +94,6 @@ def inspect_all_images_file(image_file_path: str, short_file_name: str) -> None:
 
 
 def main():
-
-    change_file_handler('Inspect All Images.log')
 
     # Load the configuration file
     try:
