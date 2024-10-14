@@ -323,7 +323,7 @@ def get_grid_defaults_from_file() -> dict:
                       'min_density_ratio': 2,
                       'max_variability': 10,
                       'max_square_coverage': 100,
-                      'process_simple': True,
+                      'process_single': True,
                       'process_traditional': True}
 
     try:
@@ -337,7 +337,7 @@ def get_grid_defaults_from_file() -> dict:
 
             # Ensure required columns are present
             required_columns = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
-                                'max_variability', 'max_square_coverage', 'process_simple', 'process_traditional']
+                                'max_variability', 'max_square_coverage', 'process_single', 'process_traditional']
             for col in required_columns:
                 if col not in reader.fieldnames:
                     # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
@@ -368,7 +368,7 @@ def save_grid_defaults_to_file(
         min_density_ratio: float,
         max_variability: float,
         max_square_coverage: int,
-        process_simple: bool,
+        process_single: bool,
         process_traditional: bool):
 
     configuration_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
@@ -379,7 +379,7 @@ def save_grid_defaults_to_file(
     try:
 
         fieldnames = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
-                      'max_variability',  'max_square_coverage', 'process_simple', 'process_traditional']
+                      'max_variability',  'max_square_coverage', 'process_single', 'process_traditional']
 
         # Open the file in write mode ('w') and overwrite any existing content
         with open(parameter_file_path, mode='w', newline='') as file:
@@ -396,7 +396,7 @@ def save_grid_defaults_to_file(
                 'min_density_ratio': min_density_ratio,
                 'max_variability': max_variability,
                 'max_square_coverage': max_square_coverage,
-                'process_simple': process_simple,
+                'process_single': process_single,
                 'process_traditional': process_traditional})
 
     except Exception as e:
@@ -404,38 +404,6 @@ def save_grid_defaults_to_file(
 
 
 
-def save_grid_defaults_to_file1(nr_squares_in_row,
-                               min_tracks_for_tau,
-                               min_r_squared,
-                               min_density_ratio,
-                               max_variability,
-                               max_square_coverage):
-    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint profile")
-    parameter_file = os.path.join(configuration_dir, "grid_parameters.csv")
-    os.makedirs(configuration_dir, exist_ok=True)
-
-    df = pd.DataFrame.from_dict({'Parameter': ['nr_squares_in_row',
-                                               'min_tracks_for_tau',
-                                               'min_r_squared',
-                                               'min_density_ratio',
-                                               'max_variability',
-                                               'max_square_coverage'
-                                               ],
-                                 'Value': [round(nr_squares_in_row, 0),
-                                           round(min_tracks_for_tau, 0),
-                                           round(min_r_squared, 1),
-                                           round(min_density_ratio, 1),
-                                           round(max_variability, 1),
-                                           round(max_square_coverage, 1)
-                                           ]
-                                 })
-
-    try:
-        df.to_excel(parameter_file, index=False)
-    except IOError:
-        pass
-
-    return
 
 
 def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
