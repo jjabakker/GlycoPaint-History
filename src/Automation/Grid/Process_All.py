@@ -28,14 +28,14 @@ if PAINT_DEBUG:
     PAINT_SOURCE = '/Users/hans/Paint Source'
     PAINT_DATA = '/Users/Hans/Paint Data Integrated'
     R_DATA_DEST = '/Users/hans/R Data'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data New'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
     TIME_STAMP = '2024-10-11 11:11:11'  # '%Y-%m-%d %H:%M:%S
 
 else:
-    CONF_FILE = '/Users/hans/Paint Source/paint data generation - production.json'
+    CONF_FILE = '/Users/hans/Paint Source/paint data generation - integrated.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
-    PAINT_DATA = '/Users/Hans/Paint Data'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data New'
+    PAINT_DATA = '/Users/Hans/Paint Data Integrated'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
@@ -53,12 +53,19 @@ def process_directory(paint_source_dir,
                       process_traditional: bool) -> bool:
 
     time_stamp = time.time()
-    msg = f"{current_process} of {nr_to_process} --- Probe: {probe} - Directory: {process_directory}"
+    msg = f"{current_process} of {nr_to_process} - Processing {process_directory}"
     paint_logger.info("")
     paint_logger.info("")
-    paint_logger.info("-" * len(msg))
+    paint_logger.info("-" * 40)
     paint_logger.info(msg)
-    paint_logger.info("-" * len(msg))
+    paint_logger.info("")
+    paint_logger.info(f"Probe Series      : {probe}")
+    paint_logger.info(f"Traditional mode  : {process_traditional}")
+    paint_logger.info(f"Single            : {process_single}")
+    paint_logger.info(f"Number of squares : {nr_of_squares}")
+    paint_logger.info(f"Min density ratio : {min_density_ratio}")
+    paint_logger.info("")
+    paint_logger.info("-" * 40)
     paint_logger.info("")
 
     # Check if the Paint Source directory exists
@@ -68,7 +75,7 @@ def process_directory(paint_source_dir,
 
     # Check if the Paint Data directory exists
     if not os.path.exists(paint_data_dir):
-        paint_logger.error(f"Paint Data directory {paint_data_dir} does not exist, directory created.")
+        paint_logger.info(f"Paint Data directory {paint_data_dir} does not exist, directory created.")
         os.makedirs(paint_data_dir)
 
     # Copy the data from Paint Source to the appropriate directory in Paint Data
