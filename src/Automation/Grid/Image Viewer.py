@@ -269,7 +269,7 @@ class ImageViewer:
         self.df_batch = read_batch_from_file(self.batchfile_path, FALSE)
         if self.df_batch is None:
             paint_logger.error("No 'grid_batch.csv' file, Did you select an image directory?")
-            return
+            sys.exit()
 
         # Retrieve some info from the batch file
         self.image_name = self.df_batch.iloc[self.img_no]['Ext Image Name']
