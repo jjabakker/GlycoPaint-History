@@ -322,7 +322,9 @@ def get_grid_defaults_from_file() -> dict:
                       'min_r_squared': 0.9,
                       'min_density_ratio': 2,
                       'max_variability': 10,
-                      'max_square_coverage': 100}
+                      'max_square_coverage': 100,
+                      'process_simple': True,
+                      'process_traditional': True}
 
     try:
         # Check if the file exists
@@ -334,7 +336,8 @@ def get_grid_defaults_from_file() -> dict:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
-            required_columns = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio', 'max_variability', 'max_square_coverage']
+            required_columns = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
+                                'max_variability', 'max_square_coverage', 'process_simple', 'process_traditional']
             for col in required_columns:
                 if col not in reader.fieldnames:
                     # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
@@ -358,12 +361,15 @@ def get_grid_defaults_from_file() -> dict:
         print(f"An unexpected error occurred: {e}")
     return def_parameters
 
-def save_grid_defaults_to_file(nr_squares_in_row,
-                               min_tracks_for_tau,
-                               min_r_squared,
-                               min_density_ratio,
-                               max_variability,
-                               max_square_coverage):
+def save_grid_defaults_to_file(
+        nr_squares_in_row: int,
+        min_tracks_for_tau: int,
+        min_r_squared: float,
+        min_density_ratio: float,
+        max_variability: float,
+        max_square_coverage: int,
+        process_simple: bool,
+        process_traditional: bool):
 
     configuration_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
     parameter_file_path = os.path.join(configuration_dir, "grid_parameters.csv")
@@ -372,7 +378,8 @@ def save_grid_defaults_to_file(nr_squares_in_row,
 
     try:
 
-        fieldnames = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio', 'max_variability',  'max_square_coverage']
+        fieldnames = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
+                      'max_variability',  'max_square_coverage', 'process_simple', 'process_traditional']
 
         # Open the file in write mode ('w') and overwrite any existing content
         with open(parameter_file_path, mode='w', newline='') as file:
@@ -388,7 +395,9 @@ def save_grid_defaults_to_file(nr_squares_in_row,
                 'min_r_squared': min_r_squared,
                 'min_density_ratio': min_density_ratio,
                 'max_variability': max_variability,
-                'max_square_coverage': max_square_coverage})
+                'max_square_coverage': max_square_coverage,
+                'process_simple': process_simple,
+                'process_traditional': process_traditional})
 
     except Exception as e:
         print(f"An error occurred while writing to the file: {e}")       # TODO: Replace with logger
