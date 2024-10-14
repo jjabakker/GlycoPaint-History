@@ -326,7 +326,7 @@ def process_all_images_in_paint_directory(
             df_batch.loc[index, 'Nr Defined Squares'] = nr_defined_squares
             df_batch.loc[index, 'Nr Rejected Squares'] = nr_total_squares - nr_defined_squares
 
-            df_batch.loc[index, 'Squares Ratio'] = round(100 * nr_defined_squares / nr_total_squares)
+            df_batch.loc[index, 'Squares Ratio'] = round(100 * nr_visible_squares / nr_total_squares)
             df_batch.loc[index, 'Max Squares Ratio'] = max_square_coverage
             df_batch.loc[index, 'Nr Rejected Squares'] = nr_total_squares - nr_defined_squares
 
@@ -335,8 +335,8 @@ def process_all_images_in_paint_directory(
             df_batch.loc[index, 'Density'] = density
             df_batch.loc[index, 'R Squared'] = round(r_squared, 3)
 
-            # df_batch.loc[index, 'Exclude'] = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
-            df_batch.loc[index, 'Exclude'] = False    # TODO
+            df_batch.loc[index, 'Exclude'] = df_batch.loc[index, 'Squares Ratio'] >= max_square_coverage
+
 
             current_image_nr += 1
             processed += 1
