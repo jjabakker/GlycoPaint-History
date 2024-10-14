@@ -19,11 +19,12 @@ def remove_min_density(root_directory):
                 df_batch.to_csv(os.path.join(root_directory, image_dir, 'batch.csv'), index=False)
                 print(f'Deleted column in batch file: {os.path.join(root_directory, image_dir, 'batch.csv')}')
 
-            df_batch = pd.read_csv(os.path.join(root_directory, image_dir, 'grid_batch.csv'), index_col=False)
-            if {'Min Density Ratio'}.issubset(df_batch.columns):
-                df_batch.drop(['Min Density Ratio'], axis=1, inplace=True)
-                df_batch.to_csv(os.path.join(root_directory, image_dir, 'grid_batch.csv'), index=False)
-                print(f'Deleted column in batch file: {os.path.join(root_directory, image_dir, 'grid_batch.csv')}')
+            if os.path.isfile(os.path.join(root_directory, image_dir, 'grid_batch.csv')):
+                df_batch = pd.read_csv(os.path.join(root_directory, image_dir, 'grid_batch.csv'), index_col=False)
+                if {'Min Density Ratio'}.issubset(df_batch.columns):
+                    df_batch.drop(['Min Density Ratio'], axis=1, inplace=True)
+                    df_batch.to_csv(os.path.join(root_directory, image_dir, 'grid_batch.csv'), index=False)
+                    print(f'Deleted column in batch file: {os.path.join(root_directory, image_dir, 'grid_batch.csv')}')
 
 
 class Dialog:
