@@ -133,10 +133,10 @@ class ImageViewer:
         This frame is part of the content frame and contains the following frames: frame_mode, frame_neighbours, frame_cells, frame_commands
         """
 
-        FRAME_WIDTH = 30
+        frame_width = 30
 
-        self.frame_mode = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5), width=FRAME_WIDTH)
-        self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5), width=FRAME_WIDTH)
+        self.frame_mode = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5), width=frame_width)
+        self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5), width=frame_width)
         self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
 
@@ -155,12 +155,12 @@ class ImageViewer:
         This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
         """
 
-        BUTTON_WIDTH = 12
+        button_width = 12
 
-        self.bn_histogram = ttk.Button(self.frame_commands, text='Histogram', command=lambda: self.histogram(), width=BUTTON_WIDTH)
-        self.bn_excel = ttk.Button(self.frame_commands, text='Excel', command=lambda: self.show_excel(), width=BUTTON_WIDTH)
-        self.bn_output = ttk.Button(self.frame_commands, text='Output', command=lambda: self.run_output(), width=BUTTON_WIDTH)
-        self.bn_reset = ttk.Button(self.frame_commands, text='Reset', command=lambda: self.reset_image(), width=BUTTON_WIDTH)
+        self.bn_histogram = ttk.Button(self.frame_commands, text='Histogram', command=lambda: self.histogram(), width=button_width)
+        self.bn_excel = ttk.Button(self.frame_commands, text='Excel', command=lambda: self.show_excel(), width=button_width)
+        self.bn_output = ttk.Button(self.frame_commands, text='Output', command=lambda: self.run_output(), width=button_width)
+        self.bn_reset = ttk.Button(self.frame_commands, text='Reset', command=lambda: self.reset_image(), width=button_width)
 
         self.bn_output.grid(column=0, row=0, padx=5, pady=5)
         self.bn_reset.grid(column=0, row=1, padx=5, pady=5)
@@ -172,15 +172,15 @@ class ImageViewer:
         This frame is part of frame_controls and contains the following radio buttons: rb_cell0, rb_cell1, rb_cell2, rb_cell3, rb_cell4, rb_cell5, rb_cell6
         """
 
-        WIDTH_RB = 12
+        width_rb = 12
         self.cell_var = StringVar(value=1)
-        self.rb_cell0 = Radiobutton(self.frame_cells, text="Not on cell", width=WIDTH_RB, variable=self.cell_var, value=0)
-        self.rb_cell1 = Radiobutton(self.frame_cells, text="On cell 1", width=WIDTH_RB, bg="red", fg="white", variable=self.cell_var, value=1)
-        self.rb_cell2 = Radiobutton(self.frame_cells, text="On cell 2", width=WIDTH_RB, bg="yellow", fg="black", variable=self.cell_var, value=2)
-        self.rb_cell3 = Radiobutton(self.frame_cells, text="On cell 3", width=WIDTH_RB, bg="green", fg="white", variable=self.cell_var, value=3)
-        self.rb_cell4 = Radiobutton(self.frame_cells, text="On cell 4", width=WIDTH_RB, bg="magenta", fg="black",  variable=self.cell_var, value=4)
-        self.rb_cell5 = Radiobutton(self.frame_cells, text="On cell 5", width=WIDTH_RB, bg="cyan", fg="black", variable=self.cell_var, value=5)
-        self.rb_cell6 = Radiobutton(self.frame_cells, text="On cell 6", width=WIDTH_RB, bg="black", fg="white", variable=self.cell_var, value=7)
+        self.rb_cell0 = Radiobutton(self.frame_cells, text="Not on cell", width=width_rb, variable=self.cell_var, value=0)
+        self.rb_cell1 = Radiobutton(self.frame_cells, text="On cell 1", width=width_rb, bg="red", fg="white", variable=self.cell_var, value=1)
+        self.rb_cell2 = Radiobutton(self.frame_cells, text="On cell 2", width=width_rb, bg="yellow", fg="black", variable=self.cell_var, value=2)
+        self.rb_cell3 = Radiobutton(self.frame_cells, text="On cell 3", width=width_rb, bg="green", fg="white", variable=self.cell_var, value=3)
+        self.rb_cell4 = Radiobutton(self.frame_cells, text="On cell 4", width=width_rb, bg="magenta", fg="black",  variable=self.cell_var, value=4)
+        self.rb_cell5 = Radiobutton(self.frame_cells, text="On cell 5", width=width_rb, bg="cyan", fg="black", variable=self.cell_var, value=5)
+        self.rb_cell6 = Radiobutton(self.frame_cells, text="On cell 6", width=width_rb, bg="black", fg="white", variable=self.cell_var, value=7)
 
         self.rb_cell0.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
         self.rb_cell1.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
@@ -340,7 +340,7 @@ class ImageViewer:
         self.go_forward_backward('Forward')
 
     def setup_exclude_button(self):
-        """Setup the exclude/include button state."""
+        """Set up the exclude/include button state."""
         if 'Exclude' not in self.df_batch:
             self.bn_exclude.config(text='Exclude')
         else:
@@ -540,23 +540,6 @@ class ImageViewer:
         self.text_for_info1.set(cell_info)
         info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
         self.text_for_info2.set(info2)
-
-    def image_selected(self, event):
-        """Handle image selection from combobox."""
-        # Logic for when an image is selected
-        pass
-
-    def go_forward_backward(self, direction):
-        """Navigate through images."""
-        if direction == 'Forward':
-            self.img_no += 1
-        elif direction == 'Backward':
-            self.img_no -= 1
-
-        # Ensure we stay within bounds
-        self.img_no = max(0, min(self.img_no, len(self.list_images) - 1))
-
-        self.update_image_display()
 
     def exinclude(self):
 
@@ -1122,8 +1105,8 @@ class ImageViewer:
         else:
             paint_logger.error('Big trouble!')
 
-        self.list_images = get_images(self, self.mode_var.get())
-        self.img_no = self.img_no - 1
+        self.list_images = self.get_images(self.mode_var.get())
+        self.img_no -= 1
         self.go_forward_backward('Forward')
 
     def select_neighbour_button(self):
