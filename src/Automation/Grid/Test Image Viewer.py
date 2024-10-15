@@ -11,8 +11,6 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 
-
-from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 from src.Automation.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
@@ -23,6 +21,7 @@ from src.Automation.Support.Support_Functions import (
     read_squares_from_file,
     save_batch_to_file,
     save_squares_to_file)
+from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Image Viewer.log')
@@ -101,8 +100,10 @@ class ImageViewer:
         frame_width = 516
         frame_height = 670
 
-        self.frame_picture_left = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width, height=frame_height)
-        self.frame_picture_right = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width, height=frame_height)
+        self.frame_picture_left = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width,
+                                            height=frame_height)
+        self.frame_picture_right = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width,
+                                             height=frame_height)
 
         self.frame_picture_left.grid(column=0, row=0, padx=5, pady=5, sticky=N)
         self.frame_picture_right.grid(column=1, row=0, padx=5, pady=5, sticky=N)
@@ -115,9 +116,11 @@ class ImageViewer:
         This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
         """
 
-        self.bn_forward = ttk.Button(self.frame_buttons, text='Forward', command=lambda: self.go_forward_backward('Forward'))
+        self.bn_forward = ttk.Button(self.frame_buttons, text='Forward',
+                                     command=lambda: self.go_forward_backward('Forward'))
         self.bn_exclude = ttk.Button(self.frame_buttons, text='Reject', command=lambda: self.exinclude())
-        self.bn_backward = ttk.Button(self.frame_buttons, text='Backward', command=lambda: self.go_forward_backward('Backward'))
+        self.bn_backward = ttk.Button(self.frame_buttons, text='Backward',
+                                      command=lambda: self.go_forward_backward('Backward'))
         self.bn_exit = ttk.Button(self.frame_buttons, text='Exit', command=lambda: self.exit_viewer())
 
         # Layout the buttons
@@ -136,8 +139,10 @@ class ImageViewer:
 
         frame_width = 30
 
-        self.frame_mode = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5), width=frame_width)
-        self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5), width=frame_width)
+        self.frame_mode = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5),
+                                    width=frame_width)
+        self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5),
+                                          width=frame_width)
         self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
 
@@ -158,10 +163,14 @@ class ImageViewer:
 
         button_width = 12
 
-        self.bn_histogram = ttk.Button(self.frame_commands, text='Histogram', command=lambda: self.histogram(), width=button_width)
-        self.bn_excel = ttk.Button(self.frame_commands, text='Excel', command=lambda: self.show_excel(), width=button_width)
-        self.bn_output = ttk.Button(self.frame_commands, text='Output', command=lambda: self.run_output(), width=button_width)
-        self.bn_reset = ttk.Button(self.frame_commands, text='Reset', command=lambda: self.reset_image(), width=button_width)
+        self.bn_histogram = ttk.Button(self.frame_commands, text='Histogram', command=lambda: self.histogram(),
+                                       width=button_width)
+        self.bn_excel = ttk.Button(self.frame_commands, text='Excel', command=lambda: self.show_excel(),
+                                   width=button_width)
+        self.bn_output = ttk.Button(self.frame_commands, text='Output', command=lambda: self.run_output(),
+                                    width=button_width)
+        self.bn_reset = ttk.Button(self.frame_commands, text='Reset', command=lambda: self.reset_image(),
+                                   width=button_width)
 
         self.bn_output.grid(column=0, row=0, padx=5, pady=5)
         self.bn_reset.grid(column=0, row=1, padx=5, pady=5)
@@ -175,13 +184,20 @@ class ImageViewer:
 
         width_rb = 12
         self.cell_var = StringVar(value=1)
-        self.rb_cell0 = Radiobutton(self.frame_cells, text="Not on cell", width=width_rb, variable=self.cell_var, value=0)
-        self.rb_cell1 = Radiobutton(self.frame_cells, text="On cell 1", width=width_rb, bg="red", fg="white", variable=self.cell_var, value=1)
-        self.rb_cell2 = Radiobutton(self.frame_cells, text="On cell 2", width=width_rb, bg="yellow", fg="black", variable=self.cell_var, value=2)
-        self.rb_cell3 = Radiobutton(self.frame_cells, text="On cell 3", width=width_rb, bg="green", fg="white", variable=self.cell_var, value=3)
-        self.rb_cell4 = Radiobutton(self.frame_cells, text="On cell 4", width=width_rb, bg="magenta", fg="black",  variable=self.cell_var, value=4)
-        self.rb_cell5 = Radiobutton(self.frame_cells, text="On cell 5", width=width_rb, bg="cyan", fg="black", variable=self.cell_var, value=5)
-        self.rb_cell6 = Radiobutton(self.frame_cells, text="On cell 6", width=width_rb, bg="black", fg="white", variable=self.cell_var, value=7)
+        self.rb_cell0 = Radiobutton(self.frame_cells, text="Not on cell", width=width_rb, variable=self.cell_var,
+                                    value=0)
+        self.rb_cell1 = Radiobutton(self.frame_cells, text="On cell 1", width=width_rb, bg="red", fg="white",
+                                    variable=self.cell_var, value=1)
+        self.rb_cell2 = Radiobutton(self.frame_cells, text="On cell 2", width=width_rb, bg="yellow", fg="black",
+                                    variable=self.cell_var, value=2)
+        self.rb_cell3 = Radiobutton(self.frame_cells, text="On cell 3", width=width_rb, bg="green", fg="white",
+                                    variable=self.cell_var, value=3)
+        self.rb_cell4 = Radiobutton(self.frame_cells, text="On cell 4", width=width_rb, bg="magenta", fg="black",
+                                    variable=self.cell_var, value=4)
+        self.rb_cell5 = Radiobutton(self.frame_cells, text="On cell 5", width=width_rb, bg="cyan", fg="black",
+                                    variable=self.cell_var, value=5)
+        self.rb_cell6 = Radiobutton(self.frame_cells, text="On cell 6", width=width_rb, bg="black", fg="white",
+                                    variable=self.cell_var, value=7)
 
         self.rb_cell0.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
         self.rb_cell1.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
@@ -206,10 +222,14 @@ class ImageViewer:
         """
 
         self.neighbour_var = StringVar(value="")
-        self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12, value="Free", command=self.select_neighbour_button)
-        self.rb_neighbour_strict = Radiobutton(self.frame_neighbours, text="Strict", variable=self.neighbour_var, width=12, value="Strict", command=self.select_neighbour_button)
-        self.rb_neighbour_relaxed = Radiobutton(self.frame_neighbours, text="Relaxed", variable=self.neighbour_var, width=12, value="Relaxed", command=self.select_neighbour_button)
-        self.bn_set_neighbours_all = Button(self.frame_neighbours, text="Set for All", command=lambda: self.set_for_all_neighbour_state())
+        self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12,
+                                             value="Free", command=self.select_neighbour_button)
+        self.rb_neighbour_strict = Radiobutton(self.frame_neighbours, text="Strict", variable=self.neighbour_var,
+                                               width=12, value="Strict", command=self.select_neighbour_button)
+        self.rb_neighbour_relaxed = Radiobutton(self.frame_neighbours, text="Relaxed", variable=self.neighbour_var,
+                                                width=12, value="Relaxed", command=self.select_neighbour_button)
+        self.bn_set_neighbours_all = Button(self.frame_neighbours, text="Set for All",
+                                            command=lambda: self.set_for_all_neighbour_state())
 
         # Place the radio buttons and button in the grid
         self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
@@ -229,8 +249,10 @@ class ImageViewer:
         """
 
         self.mode_var = StringVar(value="ROI")
-        self.rb_mode_roi = Radiobutton(self.frame_mode, text="ROI", variable=self.mode_var, value="ROI", command=self.select_mode_button)
-        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Heatmap", variable=self.mode_var, value="HEAT", command=self.select_mode_button)
+        self.rb_mode_roi = Radiobutton(self.frame_mode, text="ROI", variable=self.mode_var, value="ROI",
+                                       command=self.select_mode_button)
+        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Heatmap", variable=self.mode_var, value="HEAT",
+                                        command=self.select_mode_button)
 
         self.rb_mode_roi.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
         self.rb_mode_heat.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
@@ -249,7 +271,8 @@ class ImageViewer:
 
         self.variability = DoubleVar()
         self.lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
-        self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability, orient='vertical', resolution=0.5, command=self.variability_changing)
+        self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability,
+                                       orient='vertical', resolution=0.5, command=self.variability_changing)
         self.sc_variability.bind("<ButtonRelease-1>", self.variability_changed)
 
         self.lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
@@ -287,7 +310,8 @@ class ImageViewer:
 
         self.list_images = []
         self.list_of_image_names = []
-        self.cb_image_names = ttk.Combobox(self.frame_picture_left, values=self.list_of_image_names, state='readonly', width=30)
+        self.cb_image_names = ttk.Combobox(self.frame_picture_left, values=self.list_of_image_names, state='readonly',
+                                           width=30)
 
         # Label for the right image name
         self.lbl_image_bf_name = StringVar(self.root, "")
@@ -638,7 +662,7 @@ class ImageViewer:
 
     def exit_viewer(self):
 
-        if self.batch_changed: # Todo
+        if self.batch_changed:  # Todo
 
             response = messagebox.askyesnocancel(
                 "Save Changes", "Do you want to save changes before exiting?")
@@ -860,7 +884,8 @@ class ImageViewer:
         df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
         df_visible = df_selection[df_selection['Visible']]
         if len(df_visible) == 0:
-            paint_logger.debug(f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
+            paint_logger.debug(
+                f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
         else:
             tau_values = list(df_visible['Tau'])
             labels = list(df_visible['Label Nr'])
@@ -964,7 +989,7 @@ class ImageViewer:
             if self.show_squares_numbers:
                 text_item = self.cn_left_image.create_text(
                     col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
-                    font=('Arial', -10), fill="white",tags=text_tag)
+                    font=('Arial', -10), fill="white", tags=text_tag)
         else:  # A square is allocated to a cell
             self.cn_left_image.create_rectangle(
                 col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
@@ -980,7 +1005,7 @@ class ImageViewer:
             self.cn_left_image.tag_bind(
                 text_item, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
             self.cn_left_image.tag_bind(
-                text_item, '<Button-2>',lambda e: self.provide_information_on_square(
+                text_item, '<Button-2>', lambda e: self.provide_information_on_square(
                     e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
 
     def square_assigned_to_cell(self, square_nr):
@@ -1241,11 +1266,14 @@ class ImageViewer:
     def write_squares(self):
         # It is necessary to the squares file, because the user may have made changes
         if self.mode == 'Directory':
-            squares_file_name = os.path.join(self.paint_directory, self.image_name, 'grid', self.image_name + '-squares.csv')
-        else:
-            squares_file_name = os.path.join(self.paint_directory, str(self.df_batch.iloc[self.img_no]['Experiment Date']),  self.image_name, 'grid',
+            squares_file_name = os.path.join(self.paint_directory, self.image_name, 'grid',
                                              self.image_name + '-squares.csv')
-        save_squares_to_file(self.df_squares, squares_file_name)   #TOD
+        else:
+            squares_file_name = os.path.join(self.paint_directory,
+                                             str(self.df_batch.iloc[self.img_no]['Experiment Date']), self.image_name,
+                                             'grid',
+                                             self.image_name + '-squares.csv')
+        save_squares_to_file(self.df_squares, squares_file_name)  # TOD
 
     def save_image_state(self):
 
@@ -1261,13 +1289,9 @@ class ImageViewer:
         self.df_batch.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
         save_batch_to_file(self.df_batch, self.batchfile_path)
 
-
         # Save the batch and squares
         # self.select_squares_for_display()
         # self.write_squares()    # TODO: Really?
-
-
-
 
 
 def save_as_png(canvas, file_name):
@@ -1300,8 +1324,6 @@ def save_square_info_to_batch(self):
         self.df_batch.loc[index, 'Squares Ratio'] = squares_ratio
 
 
-
-
 proceed = False
 root_directory = ''
 conf_file = ''
@@ -1310,7 +1332,7 @@ mode = ''
 
 class SelectViewerDialog:
 
-    def __init__(self, _root: tk.Tk)  ->  None:
+    def __init__(self, _root: tk.Tk) -> None:
 
         _root.title('Image Viewer')
 
