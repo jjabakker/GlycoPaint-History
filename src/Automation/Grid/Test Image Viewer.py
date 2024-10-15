@@ -11,15 +11,11 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 
-from src.Automation.Support.Analyse_All_Images import (
-    analyse_all_images,
-    create_summary_graphpad)
 from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 from src.Automation.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
     test_if_square_is_in_rectangle,
-    create_output_directories_for_graphpad,
     get_default_directories,
     save_default_directories,
     read_batch_from_file,
@@ -27,20 +23,12 @@ from src.Automation.Support.Support_Functions import (
     save_batch_to_file,
     save_squares_to_file)
 
-from src.Automation.Grid.Support_ImageViewer import (
-    save_as_png,
-    save_square_info_to_batch,
-    set_for_all_neighbour_state,
-    get_images,
-    get_corresponding_bf)
-
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Image Viewer.log')
 
 
-
 # ----------------------------------------------------------------------------------------
-# Dialog code starts here
+# ImageViewer Class
 # ----------------------------------------------------------------------------------------
 
 class ImageViewer:
@@ -73,11 +61,12 @@ class ImageViewer:
         self.squares_file_name = None
         self.show_squares_numbers = True
         self.show_squares = True
-        self.user_change = False
+        self.square_changed = False
+        self.batch_changed = False
         self.neighbour_mode = ""
         self.select_mode = ""
 
-        root.title('Image Viewer')
+        root.title(f'Test Image Viewer - {self.paint_directory if self.mode == "Directory" else self.conf_file}')
 
     def setup_ui(self):
 
@@ -92,11 +81,10 @@ class ImageViewer:
 
         self.content.grid(column=0, row=0)
 
-        # image_name = self.list_images[self.img_no]['Left Image Name']
-        # self.df_squares = self.read_squares(image_name)
-
-
     def setup_frames(self):
+        """
+        The main level frames are defined
+        """
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
@@ -106,30 +94,6 @@ class ImageViewer:
         self.frame_buttons.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
         self.frame_controls.grid(column=1, row=0, padx=5, pady=5, sticky=N)
         self.frame_filter.grid(column=2, row=0, padx=5, pady=5, sticky=N)
-
-    def setup_frame_filter(self):
-            self.frame_variability = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-            self.frame_density_ratio = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-
-            self.variability = DoubleVar(3.0)
-            self.lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
-            self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability, orient='vertical', resolution=0.5, command=self.variability_changing)
-            self.sc_variability.bind("<ButtonRelease-1>", self.variability_changed)
-
-            # Define the slider for density ratio
-            self.density_ratio = DoubleVar()
-            self.lbl_density_ratio_text = ttk.Label(self.frame_density_ratio, text='Min Required Density Ratio', width=20)
-            self.sc_density_ratio = tk.Scale(self.frame_density_ratio, from_=2, to=40, variable=self.density_ratio, orient='vertical', command=self.density_ratio_changing, resolution=0.1)
-            self.sc_density_ratio.bind("<ButtonRelease-1>", self.density_ratio_changed)
-            self.set_density_ratio_slider_state()
-
-            # Fill the variability frame
-            self.lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
-            self.sc_variability.grid(column=0, row=1, padx=5, pady=5)
-
-            # Fill the density ratio  frame
-            self.lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
-            self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
 
     def setup_frame_images(self):
 
@@ -146,6 +110,9 @@ class ImageViewer:
         self.frame_picture_right.grid_propagate(False)
 
     def setup_frame_buttons(self):
+        """
+        This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
+        """
 
         self.bn_forward = ttk.Button(self.frame_buttons, text='Forward', command=lambda: self.go_forward_backward('Forward'))
         self.bn_exclude = ttk.Button(self.frame_buttons, text='Reject', command=lambda: self.exinclude())
@@ -162,9 +129,14 @@ class ImageViewer:
         self.bn_backward.configure(state=tk.DISABLED)
 
     def setup_frame_controls(self):
+        """
+        This frame is part of the content frame and contains the following frames: frame_mode, frame_neighbours, frame_cells, frame_commands
+        """
 
-        self.frame_mode = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        FRAME_WIDTH = 30
+
+        self.frame_mode = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5), width=FRAME_WIDTH)
+        self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5), width=FRAME_WIDTH)
         self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
 
@@ -179,6 +151,9 @@ class ImageViewer:
         self.setup_frame_commands()
 
     def setup_frame_commands(self):
+        """
+        This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
+        """
 
         BUTTON_WIDTH = 12
 
@@ -193,6 +168,9 @@ class ImageViewer:
         self.bn_histogram.grid(column=0, row=3, padx=5, pady=5)
 
     def setup_frame_cells(self):
+        """
+        This frame is part of frame_controls and contains the following radio buttons: rb_cell0, rb_cell1, rb_cell2, rb_cell3, rb_cell4, rb_cell5, rb_cell6
+        """
 
         WIDTH_RB = 12
         self.cell_var = StringVar(value=1)
@@ -204,6 +182,14 @@ class ImageViewer:
         self.rb_cell5 = Radiobutton(self.frame_cells, text="On cell 5", width=WIDTH_RB, bg="cyan", fg="black", variable=self.cell_var, value=5)
         self.rb_cell6 = Radiobutton(self.frame_cells, text="On cell 6", width=WIDTH_RB, bg="black", fg="white", variable=self.cell_var, value=7)
 
+        self.rb_cell0.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_cell1.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_cell2.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+        self.rb_cell3.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
+        self.rb_cell4.grid(column=0, row=4, padx=5, pady=5, sticky=tk.W)
+        self.rb_cell5.grid(column=0, row=5, padx=5, pady=5, sticky=tk.W)
+        self.rb_cell6.grid(column=0, row=6, padx=5, pady=5, sticky=tk.W)
+
         # Bind the right mouse click
         self.rb_cell1.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 1))
         self.rb_cell2.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 2))
@@ -214,6 +200,9 @@ class ImageViewer:
         self.rb_cell0.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 0))
 
     def setup_frame_neighbours(self):
+        """
+        This frame is part of frame_controls and contains the following radio buttons: rb_neighbour_free, rb_neighbour_strict, rb_neighbour_relaxed, bn_set_neighbours_all
+        """
 
         self.neighbour_var = StringVar(value="")
         self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12, value="Free", command=self.select_neighbour_button)
@@ -234,55 +223,64 @@ class ImageViewer:
         self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_mode(self):
+        """
+        This frame is part of frame_controls and contains the following radio buttons: rb_mode_roi, rb_mode_heat
+        """
 
         self.mode_var = StringVar(value="ROI")
-        self.rb_mode_roi = Radiobutton(self.frame_mode, text="ROI", variable=self.mode_var, value="ROI", command=self.select_mode)
-        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Heatmap", variable=self.mode_var, value="HEAT", command=self.select_mode)
+        self.rb_mode_roi = Radiobutton(self.frame_mode, text="ROI", variable=self.mode_var, value="ROI", command=self.select_mode_button)
+        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Heatmap", variable=self.mode_var, value="HEAT", command=self.select_mode_button)
 
-        self.rb_mode_roi.grid(column=0, row=0, padx=5, pady=5)
-        self.rb_mode_heat.grid(column=0, row=1, padx=5, pady=5)
+        self.rb_mode_roi.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_mode_heat.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_filter(self):
+        """
+        This frame is part of the content frame and contains the following frames: frame_variability, frame_density_ratio
+        """
 
+        # The Max Allowable Variability slider first
         self.frame_variability = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_density_ratio = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
+        self.frame_variability.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
+        self.frame_density_ratio.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
+
         self.variability = DoubleVar()
         self.lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
-        self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability,
-                                       orient='vertical', resolution=0.5, command=self.variability_changing)
+        self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability, orient='vertical', resolution=0.5, command=self.variability_changing)
         self.sc_variability.bind("<ButtonRelease-1>", self.variability_changed)
 
-        # Set initial state for the variability slider
-        self.variability.set(3.0)  # Default value, adjust as needed
-
-        # Place the variability slider and label in the grid
         self.lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_variability.grid(column=0, row=1, padx=5, pady=5)
 
-        # ---------------------------------
-        # Define the slider for density ratio
-        # ---------------------------------
+        # And then the Min Required Density Ratio slider
+
         self.density_ratio = DoubleVar()
         self.lbl_density_ratio_text = ttk.Label(self.frame_density_ratio, text='Min Required Density Ratio', width=20)
         self.sc_density_ratio = tk.Scale(self.frame_density_ratio, from_=2, to=40, variable=self.density_ratio,
                                          orient='vertical', resolution=0.1, command=self.density_ratio_changing)
         self.sc_density_ratio.bind("<ButtonRelease-1>", self.density_ratio_changed)
 
-        # Set initial state for the density ratio slider
-        self.density_ratio.set(10)  # Default value, adjust as needed
+        self.bn_set_for_all_slider = ttk.Button(self.frame_filter, text='Set for All', command=self.set_for_all_slider)
 
         # Place the density ratio slider and label in the grid
         self.lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_set_for_all_slider.grid(column=0, row=2, padx=5, pady=5)
 
     def setup_frame_canvas(self):
+        """
+        This frame is part of the content frame and contains the following canvas: cn_left_image, cn_right_image
+        """
 
         self.cn_left_image = tk.Canvas(self.frame_picture_left, width=512, height=512)
         self.cn_right_image = tk.Canvas(self.frame_picture_right, width=512, height=512)
 
         self.cn_left_image.grid(column=0, row=0, padx=2, pady=2)
         self.cn_right_image.grid(column=0, row=0, padx=2, pady=2)
+
+        self.root.bind('<Key>', self.key_pressed)
 
     def setup_labels_and_combobox(self):
 
@@ -330,7 +328,7 @@ class ImageViewer:
         self.image_name = self.df_batch.iloc[self.img_no]['Ext Image Name']
         self.nr_squares_in_row = int(self.df_batch.iloc[0]['Nr Of Squares per Row'])
 
-        self.list_images = get_images(self, 'ROI')
+        self.list_images = self.get_images('ROI')
         if not self.list_images:
             self.show_error_and_exit(f"No images were found below directory {self.paint_directory}.")
 
@@ -340,61 +338,6 @@ class ImageViewer:
         self.update_image_display()
         self.img_no = -1
         self.go_forward_backward('Forward')
-        # def setup_sliders_and_neighbours(self):
-        # -----------------------------
-        # Define the slider for variability
-        # -----------------------------
-        # self.variability = DoubleVar()
-        # lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
-        # self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability,
-        #                                orient='vertical', resolution=0.5, command=self.variability_changing)
-        # self.sc_variability.bind("<ButtonRelease-1>", self.variability_changed)
-        #
-        # # Set initial state for the variability slider
-        # self.variability.set(3.0)  # Default value, adjust as needed
-        #
-        # # Place the variability slider and label in the grid
-        # lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
-        # self.sc_variability.grid(column=0, row=1, padx=5, pady=5)
-        #
-        # # ---------------------------------
-        # # Define the slider for density ratio
-        # # ---------------------------------
-        # self.density_ratio = DoubleVar()
-        # lbl_density_ratio_text = ttk.Label(self.frame_density_ratio, text='Min Required Density Ratio', width=20)
-        # self.sc_density_ratio = tk.Scale(self.frame_density_ratio, from_=2, to=40, variable=self.density_ratio,
-        #                                  orient='vertical', resolution=0.1, command=self.density_ratio_changing)
-        # self.sc_density_ratio.bind("<ButtonRelease-1>", self.density_ratio_changed)
-        #
-        # # Set initial state for the density ratio slider
-        # self.density_ratio.set(10)  # Default value, adjust as needed
-        #
-        # # Place the density ratio slider and label in the grid
-        # lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
-        # self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
-
-        # -------------------------------
-        # Define the frame for neighbours
-        # -------------------------------
-
-        # Define radio buttons for neighbour control
-        # self.neighbour_var = StringVar(value="")
-        # self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var,
-        #                                      width=12, value="Free", command=self.select_neighbour_button)
-        # self.rb_neighbour_strict = Radiobutton(self.frame_neighbours, text="Strict", variable=self.neighbour_var,
-        #                                        width=12, value="Strict", command=self.select_neighbour_button)
-        # self.rb_neighbour_relaxed = Radiobutton(self.frame_neighbours, text="Relaxed", variable=self.neighbour_var,
-        #                                         width=12, value="Relaxed", command=self.select_neighbour_button)
-        #
-        # # Add the "Set for All" button
-        # self.bn_set_neighbours_all = Button(self.frame_neighbours, text="Set for All",
-        #                                     command=lambda: self.set_for_all_neighbour_state())
-        #
-        # # Place the radio buttons and button in the grid
-        # self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        # self.rb_neighbour_relaxed.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        # self.rb_neighbour_strict.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
-        # self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
 
     def setup_exclude_button(self):
         """Setup the exclude/include button state."""
@@ -408,6 +351,177 @@ class ImageViewer:
             else:
                 self.bn_exclude.config(text='Exclude')
                 self.text_for_info3.set('')
+
+    def set_for_all_neighbour_state(self):
+        self.df_batch['Neighbour Setting'] = self.neighbour_var.get()
+
+    def get_images(self, type_of_image):
+
+        paint_directory = self.paint_directory
+        df_batch = self.df_batch
+        _mode = self.mode
+
+        # Create an empty lst that will hold the images
+        list_images = []
+
+        # Cycle through the batch file
+        count = 0
+        for index in range(len(df_batch)):
+
+            if df_batch.iloc[index]['Process'] == 'No' or df_batch.iloc[index]['Process'] == 'N':
+                continue
+
+            image_name = df_batch.iloc[index]['Ext Image Name']
+
+            if _mode == 'Directory':
+                image_path = os.path.join(paint_directory, image_name)
+            else:
+                image_path = os.path.join(paint_directory, str(df_batch.iloc[index]['Experiment Date']), image_name)
+
+            # if os.path.isfile(image_path):
+            #     continue
+
+            # If there is no img directory below the image directory, skip it
+            img_dir = os.path.join(image_path, "img")
+            if not os.path.isdir(img_dir):
+                continue
+
+            if _mode == 'Directory':
+                bf_dir = os.path.join(paint_directory, "Converted BF Images")
+            else:
+                bf_dir = os.path.join(
+                    paint_directory, str(df_batch.iloc[index]['Experiment Date']), "Converted BF Images")
+
+            # Then get all the files in  the 'img' directory
+            all_images_in_img_dir = os.listdir(img_dir)
+
+            # Ignore any file that may have slipped in, such as '.Dstore'
+            for img in all_images_in_img_dir:
+                if image_name not in img:
+                    all_images_in_img_dir.remove(img)
+            all_images_in_img_dir.sort()
+
+            valid = False
+            square_nrs = []
+
+            for img in all_images_in_img_dir:
+                if img.startswith('.'):
+                    continue
+                if type_of_image == "ROI":  # Look for a file that has 'grid-roi' in the filename
+                    if img.find("grid-roi") == -1 and img.find("heat") == -1:
+
+                        left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
+                        count += 1
+
+                        # Retrieve the square numbers for this image
+                        self.squares_file_name = os.path.join(image_path, 'grid', image_name + '-squares.csv')
+                        df_squares = read_squares_from_file(self.squares_file_name)
+                        if df_squares is not None:
+                            square_nrs = list(df_squares['Square Nr'])
+                        else:
+                            paint_logger.error("No square numbers found (?)")
+                            square_nrs = []
+                        valid = True
+                    else:
+                        pass
+
+                if type_of_image == "HEAT":  # Look for a file that has 'heat' in the filename
+                    if img.find("heat") != -1:
+                        # Found the heatmap
+                        left_img = Image.open(img_dir + os.sep + img)
+                        left_img = left_img.resize((512, 512))
+                        left_img = ImageTk.PhotoImage(left_img)
+                        count += 1
+                        square_nrs = []
+                        valid = True
+                        squares_file = ''
+                    else:
+                        pass
+
+            if not valid:  # Create an empty image with the correct background colour and insert that
+                left_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")
+                left_img = left_img.resize((512, 512))
+                left_img = ImageTk.PhotoImage(left_img)
+                square_nrs = []
+
+            # See if a Tau is defined in the grid_batch file.
+            # If it is record it
+
+            if 'Tau' in df_batch.columns:
+                tau = df_batch.iloc[index]['Tau']
+            else:
+                tau = 0
+
+            # Try to find the corresponding BF
+            right_valid, right_img = self.get_corresponding_bf(bf_dir, image_name)
+
+            record = {
+                "Left Image Name": df_batch.iloc[index]['Ext Image Name'],
+                "Left Image": left_img,
+                "Cell Type": df_batch.iloc[index]['Cell Type'],
+                "Adjuvant": df_batch.iloc[index]['Adjuvant'],
+                "Probe": df_batch.iloc[index]['Probe'],
+                "Probe Type": df_batch.iloc[index]['Probe Type'],
+                "Nr Spots": int(df_batch.iloc[index]['Nr Spots']),
+                "Square Nrs": square_nrs,
+                "Squares File": self.squares_file_name,
+                "Left Valid": valid,
+                "Right Image Name": image_name,
+                "Right Image": right_img,
+                "Right Valid": right_valid,
+                "Threshold": df_batch.iloc[index]['Threshold'],
+                "Tau": tau
+            }
+
+            list_images.append(record)
+
+        print("\n\n")
+
+        if count != len(df_batch):
+            f"There were {len(df_batch) - count} out of {len(df_batch)} images for which no picture was available"
+
+        return list_images
+
+    def get_corresponding_bf(self, bf_dir, image_name):
+        """
+        Get the brightfield images for the right canvas
+        :param bf_dir:
+        :param image_name:
+        :return:
+        """
+
+        if not os.path.exists(bf_dir):
+            paint_logger.error(
+                "Function 'get_corresponding_bf' failed - The directory for jpg versions of BF images does not exist. Run 'Convert BF Images' first")
+            sys.exit()
+
+        # Peel off the threshold and add -BF*.jpg
+        image_name = image_name[:image_name.rfind("-")]
+        image_name = image_name[:image_name.rfind("-")]
+
+        # The BF image may be called BF, BF1 or BF2, any one is ok
+        try_image = image_name + "-BF.jpg"
+        try_image1 = image_name + "-BF1.jpg"
+        try_image2 = image_name + "-BF2.jpg"
+
+        if os.path.isfile(bf_dir + os.sep + try_image):
+            image_name = try_image
+        elif os.path.isfile(bf_dir + os.sep + try_image1):
+            image_name = try_image1
+        elif os.path.isfile(bf_dir + os.sep + try_image2):
+            image_name = try_image2
+        else:
+            image_name = ""
+
+        if len(image_name) != 0:
+            img = ImageTk.PhotoImage(Image.open(bf_dir + os.sep + image_name))
+            valid = True
+        else:
+            no_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")
+            img = ImageTk.PhotoImage(no_img)
+            valid = False
+
+        return valid, img
 
     def show_error_and_exit(self, message):
         """Display an error message and exit."""
@@ -512,7 +626,7 @@ class ImageViewer:
         # Find all the eps files and delete them
         eps_files = os.listdir(squares_dir)
         for item in eps_files:
-            if item.endswith(".eps"):
+            if item.endswith(".ps"):
                 os.remove(os.path.join(squares_dir, item))
 
         # Find all the png files and sort them
@@ -539,12 +653,11 @@ class ImageViewer:
 
     def exit_viewer(self):
 
-        if self.user_change:
-            self.save_image_state()
+        if self.batch_changed: # Todo
+            self.save_image_state() # Save the current image state
         exit()
 
     def image_selected(self, _):
-
         image_name = self.cb_image_names.get()
         paint_logger.debug(image_name)
         index = self.list_of_image_names.index(image_name)
@@ -552,30 +665,24 @@ class ImageViewer:
         self.go_forward_backward('Forward')
 
     def set_variability_slider_state(self):
-
         max_allowed_variability = self.df_batch.loc[self.image_name]['Variability Setting']
         self.sc_variability.set(max_allowed_variability)
 
     def set_density_ratio_slider_state(self):
-
         min_required_density = self.df_batch.loc[self.image_name]['Density Ratio Setting']
         self.sc_density_ratio.set(min_required_density)
 
     def set_neighbour_state(self):
-
         neighbour_state = self.df_batch.loc[self.image_name]['Neighbour Setting']
         self.neighbour_var.set(neighbour_state)
 
     def save_variability_slider_state(self):
-
         self.df_batch.loc[self.image_name, 'Variability Setting'] = round(self.sc_variability.get(), 1)
 
     def save_density_ratio_slider_state(self):
-
         self.df_batch.loc[self.image_name, 'Density Ratio Setting'] = round(self.sc_density_ratio.get(), 1)
 
     def save_neighbour_state(self):
-
         self.df_batch.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_var.get()
 
     def histogram(self):
@@ -643,7 +750,7 @@ class ImageViewer:
         :return:
         """
 
-        self.user_change = True
+        self.batch_changed = True
 
         self.df_squares['Visible'] = True
         self.df_squares['Neighbour Visible'] = True
@@ -667,14 +774,14 @@ class ImageViewer:
         self.save_neighbour_state()
 
         # Generate the graphpad and pdf directories if needed
-        create_output_directories_for_graphpad(self.paint_directory)
+        # create_output_directories_for_graphpad(self.paint_directory)
 
         # Generate the graphpad info for summary statistics
-        df_stats = analyse_all_images(self.paint_directory)
-        create_summary_graphpad(self.paint_directory, df_stats)
+        # df_stats = analyse_all_images(self.paint_directory)
+        # create_summary_graphpad(self.paint_directory, df_stats)
 
     def set_for_all_slider(self):
-        self.user_change = True
+        self.batch_changed = True
 
         self.df_batch['Density Ratio Setting'] = self.sc_density_ratio.get()
         self.df_batch['Variability Setting'] = self.sc_variability.get()
@@ -688,7 +795,7 @@ class ImageViewer:
         pass
 
     def variability_changed(self, _):
-        self.user_change = True
+        self.batch_changed = True
 
         if self.mode_var.get() == 'HEAT':  # Should not happen,as the slider is disabled, but still....
             return
@@ -697,7 +804,7 @@ class ImageViewer:
         self.display_selected_squares()
 
     def density_ratio_changed(self, _):
-        self.user_change = True
+        self.batch_changed = True
 
         if self.mode_var.get() == 'HEAT':
             return
@@ -856,40 +963,30 @@ class ImageViewer:
         if cell_id == -1:  # The square is deleted (for good), stop processing
             return
         elif cell_id == 0:  # Square is removed from a cell
-            self.cn_left_image.create_rectangle(col_nr * width,
-                                                row_nr * width,
-                                                col_nr * width + width,
-                                                row_nr * height + height,
-                                                outline="white",
-                                                # outline="red",
-                                                width=0.5,
-                                                tags=square_tag)
+            self.cn_left_image.create_rectangle(
+                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height, outline="white",
+                width=0.5, tags=square_tag)
             if self.show_squares_numbers:
-                text_item = self.cn_left_image.create_text(col_nr * width + 0.5 * width,
-                                                           row_nr * width + 0.5 * width,
-                                                           text=str(label_nr),
-                                                           font=('Arial', -10),
-                                                           fill="white",
-                                                           tags=text_tag)
+                text_item = self.cn_left_image.create_text(
+                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
+                    font=('Arial', -10), fill="white",tags=text_tag)
         else:  # A square is allocated to a cell
-            self.cn_left_image.create_rectangle(col_nr * width,
-                                                row_nr * width,
-                                                col_nr * width + width,
-                                                row_nr * height + height,
-                                                outline=colour_table[self.df_squares.loc[square_nr]['Cell Id']][0],
-                                                width=3,
-                                                tags=square_tag)
+            self.cn_left_image.create_rectangle(
+                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+                outline=colour_table[self.df_squares.loc[square_nr]['Cell Id']][0], width=3, tags=square_tag)
             if self.show_squares_numbers:
-                text_item = self.cn_left_image.create_text(col_nr * width + 0.5 * width,
-                                                           row_nr * width + 0.5 * width,
-                                                           text=str(self.df_squares.loc[square_nr]['Label Nr']),
-                                                           font=('Arial', -10),
-                                                           fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1],
-                                                           tags=text_tag)
+                text_item = self.cn_left_image.create_text(
+                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
+                    text=str(self.df_squares.loc[square_nr]['Label Nr']), font=('Arial', -10),
+                    fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1], tags=text_tag)
 
         # The new square is made clickable -  for now use the text item
         if self.show_squares_numbers:
-            self.cn_left_image.tag_bind(text_item, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
+            self.cn_left_image.tag_bind(
+                text_item, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
+            self.cn_left_image.tag_bind(
+                text_item, '<Button-2>',lambda e: self.provide_information_on_square(
+                    e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
 
     def square_assigned_to_cell(self, square_nr):
 
@@ -915,16 +1012,91 @@ class ImageViewer:
         self.df_squares.at[square_nr, 'Cell Id'] = int(new_cell_id)
 
     def provide_information_on_square(self, event, label_nr, square_nr):
-       pass
+        if self.mode_var.get() == 'HEAT':
+            return
+
+        # Define the popup
+        pop = Toplevel(root)
+        pop.title("Square Info")
+        pop.geometry("220x180")
+
+        # Position the popup
+        x = root.winfo_x()
+        y = root.winfo_y()
+        pop.geometry("+%d+%d" % (x + event.x + 15, y + event.y + 40))
+
+        # Get the data to display
+        square_nr = self.df_squares.loc[square_nr]['Square Nr']
+        variability = self.df_squares.loc[square_nr]['Variability']
+        density_ratio = self.df_squares.loc[square_nr]['Density Ratio']
+        density = self.df_squares.loc[square_nr]['Density']
+        tau = self.df_squares.loc[square_nr]['Tau']
+        nr_tracks = self.df_squares.loc[square_nr]['Nr Tracks']
+        max_track_duration = self.df_squares.loc[square_nr]['Max Track Duration']
+
+        # Fill the popup
+        padx_value = 10
+        pady_value = 1
+        lbl_width = 15
+
+        ttk.Label(pop, text=f"Label Nr", anchor=W, width=lbl_width).grid(row=1, column=1, padx=padx_value,
+                                                                         pady=pady_value)
+        ttk.Label(pop, text=f"Square", anchor=W, width=lbl_width).grid(row=2, column=1, padx=padx_value,
+                                                                       pady=pady_value)
+        ttk.Label(pop, text=f"Tau", anchor=W, width=lbl_width).grid(row=3, column=1,
+                                                                    padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"Density", anchor=W, width=lbl_width).grid(row=4, column=1,
+                                                                        padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"Number of Tracks", anchor=W, width=lbl_width).grid(row=5, column=1,
+                                                                                 padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"Density Ratio", anchor=W, width=lbl_width).grid(row=6, column=1,
+                                                                              padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"Variability", anchor=W, width=lbl_width).grid(row=7, column=1,
+                                                                            padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"Max Track Duration", anchor=W, width=lbl_width).grid(row=8, column=1,
+                                                                                   padx=padx_value, pady=pady_value)
+
+        ttk.Label(pop, text=f"{label_nr}", anchor=W).grid(row=1, column=2, padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"{square_nr}", anchor=W).grid(row=2, column=2, padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"{tau}", anchor=W).grid(row=3, column=2, padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"{density}", anchor=W).grid(row=4, column=2, padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"{nr_tracks}", anchor=W).grid(row=5, column=2, padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"{density_ratio}", anchor=W).grid(row=6, column=2, padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"{variability}", anchor=W).grid(row=7, column=2, padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"{max_track_duration}", anchor=W).grid(row=8, column=2, padx=padx_value, pady=pady_value)
 
     def start_rectangle(self, event):
-        pass
+        self.square_changed = True
+        self.start_x = event.x
+        self.start_y = event.y
+        self.rect = self.cn_left_image.create_rectangle(self.start_x,
+                                                        self.start_y,
+                                                        self.start_x + 1,
+                                                        self.start_y + 1,
+                                                        fill="", outline='white')
 
     def increase_rectangle_size(self, event):
-        pass
+        cur_x, cur_y = (event.x, event.y)
+
+        # expand rectangle as you drag the mouse
+        self.cn_left_image.coords(self.rect, self.start_x, self.start_y, cur_x, cur_y)
 
     def define_rectangle(self, event):
-        pass
+        cur_x, cur_y = (event.x, event.y)
+
+        # Record the new cell id`
+        cell_id = int(self.cell_var.get())
+
+        for i in range(len(self.df_squares)):
+            square = self.df_squares.iloc[i]
+            # if square_is_visible(self.df_squares, square['Square Nr']):
+            if square['Visible']:
+                if test_if_square_is_in_rectangle(
+                        square['X0'], square['Y0'], square['X1'], square['Y1'], self.start_x, self.start_y,
+                        cur_x, cur_y):
+                    self.df_squares.at[square['Square Nr'], 'Cell Id'] = int(cell_id)
+
+        self.display_selected_squares()
 
     def configure_widgets_state(self, state):
         self.rb_neighbour_free.configure(state=state)
@@ -956,7 +1128,7 @@ class ImageViewer:
 
     def select_neighbour_button(self):
 
-        self.user_change = True
+        self.square_changed = True
 
         self.cn_left_image.delete("all")
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
@@ -974,9 +1146,9 @@ class ImageViewer:
         :return:
         """
 
-        if self.user_change:
-            self.save_image_state()
-            self.user_change = False
+        if self.square_changed:  #TODO
+            self.save_image_state()     # Save the squares before moving to the next image
+            self.square_changed = False
 
         # Determine what the next image is, depending on the direction
         # Be sure not move beyond the boundaries (could happen when the left and right keys are used)
@@ -1044,7 +1216,7 @@ class ImageViewer:
             self.text_for_info3.set("")
 
         # Reset user change
-        self.user_change = False
+        self.square_changed = False
 
     def read_squares(self, image_name):
         self.squares_file_name = os.path.join(self.paint_directory, image_name, 'grid', image_name + '-squares.csv')
@@ -1069,7 +1241,7 @@ class ImageViewer:
         else:
             squares_file_name = os.path.join(self.paint_directory, str(self.df_batch.iloc[self.img_no]['Experiment Date']),  self.image_name, 'grid',
                                              self.image_name + '-squares.csv')
-        save_squares_to_file(self.df_squares, squares_file_name)
+        # save_squares_to_file(self.df_squares, squares_file_name)   #TOD
 
     def write_grid_batch(self):
         save_batch_to_file(self.df_batch, self.batchfile_path)
@@ -1089,8 +1261,42 @@ class ImageViewer:
 
         # Save the batch and squares
         self.select_squares_for_display()
-        self.write_squares()
+        self.write_squares()    # TODO: Really?
         self.write_grid_batch()
+
+
+
+
+def save_as_png(canvas, file_name):
+    # First save as a postscript file
+    canvas.postscript(file=file_name + '.ps', colormode='color')
+
+    # Then let PIL convert to a png file
+    img = Image.open(file_name + '.ps')
+    img.save(f"{file_name}.png", 'png')
+
+
+def save_square_info_to_batch(self):
+    for index, row in self.df_batch.iterrows():
+        self.squares_file_name = self.list_images[self.img_no]['Squares File']
+        df_squares = read_squares_from_file(self.squares_file_name)
+        if df_squares is None:
+            paint_logger.error("Function 'save_square_info_to_batch' failed: - Square file does not exist")
+            sys.exit()
+        if len(df_squares) > 0:
+            nr_visible_squares = len(df_squares[df_squares['Visible']])
+            nr_total_squares = len(df_squares)
+            squares_ratio = round(nr_visible_squares / nr_total_squares, 2)
+        else:
+            nr_visible_squares = 0
+            nr_total_squares = 0
+            squares_ratio = 0.0
+
+        self.df_batch.loc[index, 'Nr Visible Squares'] = nr_visible_squares
+        self.df_batch.loc[index, 'Nr Total Squares'] = nr_total_squares
+        self.df_batch.loc[index, 'Squares Ratio'] = squares_ratio
+
+
 
 
 proceed = False
