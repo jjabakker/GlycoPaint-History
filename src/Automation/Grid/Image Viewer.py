@@ -20,8 +20,8 @@ from src.Automation.Support.Support_Functions import (
     eliminate_isolated_squares_strict,
     test_if_square_is_in_rectangle,
     create_output_directories_for_graphpad,
-    get_default_directories,
-    save_default_directories,
+    get_default_locations,
+    save_default_locations,
     read_batch_from_file,
     read_squares_from_file,
     save_batch_to_file,
@@ -1291,7 +1291,7 @@ class SelectViewerDialog:
 
         _root.title('Image Viewer')
 
-        self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
+        self.root_directory, self.paint_directory, self.images_directory, self_confile = get_default_locations()
         self.conf_file = ''
 
         content = ttk.Frame(_root)
@@ -1338,7 +1338,7 @@ class SelectViewerDialog:
         global mode
 
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
-        save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
+        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
         if len(self.root_directory) != 0:
             self.mode_var.set('Directory')
             self.rb_mode_directory.focus()

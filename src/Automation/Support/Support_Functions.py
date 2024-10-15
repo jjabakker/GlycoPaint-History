@@ -7,7 +7,7 @@ from tkinter.filedialog import askdirectory
 import numpy as np
 import pandas as pd
 
-from src.Common.Support.CommonSupportFunctions import get_default_directories, save_default_directories
+from src.Common.Support.CommonSupportFunctions import get_default_locations, save_default_locations
 from src.Common.Support.LoggerConfig import paint_logger
 
 pd.options.mode.copy_on_write = True
@@ -59,7 +59,7 @@ def ask_user_for_paint_directory(title='Select Folder'):
     """
 
     # Retrieve the default from file
-    root_dir, paint_dir, images_dir = get_default_directories()
+    root_dir, paint_dir, images_dir, conf_file = get_default_locations()
 
     # If that fails, select a reasonable default
     if not os.path.isdir(paint_dir):
@@ -70,7 +70,7 @@ def ask_user_for_paint_directory(title='Select Folder'):
 
     # If the user returned something, save it to file
     if len(image_directory) != 0:
-        save_default_directories(root_dir, paint_dir, images_dir)
+        save_default_locations(root_dir, paint_dir, images_dir, conf_file)
     return image_directory
 
 

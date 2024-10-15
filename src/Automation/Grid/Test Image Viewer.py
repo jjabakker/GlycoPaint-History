@@ -15,8 +15,8 @@ from src.Automation.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
     test_if_square_is_in_rectangle,
-    get_default_directories,
-    save_default_directories,
+    get_default_locations,
+    save_default_locations,
     read_batch_from_file,
     read_squares_from_file,
     save_batch_to_file,
@@ -662,12 +662,18 @@ class ImageViewer:
 
     def exit_viewer(self):
 
-        if self.batch_changed:  # Todo
+        if self.batch_changed or self.square_changed:  # Todo
 
-            response = messagebox.askyesnocancel(
-                "Save Changes", "Do you want to save changes before exiting?")
+            if self.batch_changed and self.mode == 'Conf File"':
+                msg = "Do you want to save changes before exiting? Note the configuration file will be updated"
+            else:
+                msg = "Do you want to save changes before exiting? Note the grid_batch file will be updated"
+            response = messagebox.askyesnocancel("Save Changes", message=msg)
             if response is True:
-                self.save_image_state()
+                if self.batch_changed:
+                    self.update_batch_file()
+                if self.square_changed:
+                    self.update_squares_file()
                 root.quit()
             elif response is False:
                 root.quit()
@@ -731,7 +737,8 @@ class ImageViewer:
             excel_path = 'C:\\Program Files\\Microsoft Office\\root\\OfficeXX\\Excel.exe'
 
         # Write the current df_squares before opening it
-        self.write_squares()
+        if self.square_changed:
+            self.update_squares_file()
 
         # Open Excel
         subprocess.Popen(['open', excel_path, self.squares_file_name])
@@ -1171,7 +1178,7 @@ class ImageViewer:
                 "Save Changes", "Do you want to save the squares info before moving on?")
             if response is True:
                 # self.save_image_state()
-                self.write_squares()
+                self.update_squares_file()
             elif response is False:
                 pass
             else:
@@ -1263,7 +1270,7 @@ class ImageViewer:
             sys.exit()
         return self.df_batch
 
-    def write_squares(self):
+    def update_squares_file(self):
         # It is necessary to the squares file, because the user may have made changes
         if self.mode == 'Directory':
             squares_file_name = os.path.join(self.paint_directory, self.image_name, 'grid',
@@ -1275,7 +1282,7 @@ class ImageViewer:
                                              self.image_name + '-squares.csv')
         save_squares_to_file(self.df_squares, squares_file_name)  # TOD
 
-    def save_image_state(self):
+    def update_batch_file(self):
 
         # Get the slider and neighbour state and save it into df_batch
         self.save_density_ratio_slider_state_into_df_batch()
@@ -1331,77 +1338,77 @@ mode = ''
 
 
 class SelectViewerDialog:
-
     def __init__(self, _root: tk.Tk) -> None:
-
         _root.title('Image Viewer')
 
-        self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
-        self.conf_file = ''
+        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
 
+        # Main content frame
         content = ttk.Frame(_root)
-        frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
-        frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
-
-        #  Do the lay-out
         content.grid(column=0, row=0)
-        frame_directory.grid(column=0, row=1, padx=5, pady=5)
-        frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
-        # Fill the button frame
-        btn_process = ttk.Button(frame_buttons, text='Process', command=self.process)
-        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
-        btn_process.grid(column=0, row=1)
-        btn_exit.grid(column=0, row=2)
+        # Directory and Button frames
+        frame_directory = self.create_frame(content, 0, 1)
+        frame_buttons = self.create_frame(content, 0, 2)
 
-        # Fill the directory frame
-        btn_root_dir = ttk.Button(frame_directory, text='Paint Directory', width=15, command=self.change_root_dir)
-        btn_conf_file = ttk.Button(frame_directory, text='Configuration file', width=15, command=self.change_conf_file)
+        # Fill directory frame
+        self.add_directory_widgets(frame_directory)
 
-        self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=80)
-        self.lbl_conf_file = ttk.Label(frame_directory, text=self.conf_file, width=80)
+        # Fill button frame
+        self.add_buttons(frame_buttons)
+
+    def create_frame(self, parent, col, row, padding=(5, 5)) -> ttk.Frame:
+        """Creates and returns a frame with grid layout."""
+        frame = ttk.Frame(parent, borderwidth=5, relief='ridge')
+        frame.grid(column=col, row=row, padx=padding[0], pady=padding[1])
+        return frame
+
+    def add_directory_widgets(self, frame) -> None:
+        """Adds widgets to the directory frame."""
+        # Directory and Configuration file buttons
+        self.add_button(frame, 'Paint Directory', 0, self.change_root_dir)
+        self.add_button(frame, 'Configuration File', 1, self.change_conf_file)
+
+        # Labels and Radio buttons
+        self.lbl_root_dir = self.add_label(frame, self.root_directory, 0)
+        self.lbl_conf_file = self.add_label(frame, self.conf_file, 1)
 
         self.mode_var = StringVar(value="Directory")
-        self.rb_mode_directory = ttk.Radiobutton(frame_directory, text="", variable=self.mode_var, width=10,
-                                                 value="Directory")
-        self.rb_mode_conf_file = ttk.Radiobutton(frame_directory, text="", variable=self.mode_var, width=10,
-                                                 value="Conf File")
+        self.add_radio_button(frame, "Directory", 0)
+        self.add_radio_button(frame, "Conf File", 1)
 
-        btn_root_dir.grid(column=0, row=0, padx=10, pady=5)
-        btn_conf_file.grid(column=0, row=1, padx=10, pady=5)
+    def add_buttons(self, frame) -> None:
+        """Adds the Process and Exit buttons."""
+        self.add_button(frame, 'Process', 0, self.process)
+        self.add_button(frame, 'Exit', 1, self.exit_dialog)
 
-        self.lbl_root_dir.grid(column=1, row=0, padx=20, pady=5)
-        self.lbl_conf_file.grid(column=1, row=1, padx=20, pady=5)
+    def add_button(self, parent, text, row, command) -> None:
+        """Helper function to add a button to a frame."""
+        ttk.Button(parent, text=text, command=command).grid(column=0, row=row, padx=10, pady=5)
 
-        self.rb_mode_directory.grid(column=2, row=0, padx=10, pady=5)
-        self.rb_mode_conf_file.grid(column=2, row=1, padx=10, pady=5)
+    def add_label(self, parent, text, row) -> ttk.Label:
+        """Helper function to add a label to a frame."""
+        label = ttk.Label(parent, text=text, width=80)
+        label.grid(column=1, row=row, padx=20, pady=5)
+        return label
+
+    def add_radio_button(self, parent, text, row) -> None:
+        """Helper function to add a radio button to a frame."""
+        ttk.Radiobutton(parent, text="", variable=self.mode_var, value=text, width=10).grid(column=2, row=row, padx=10, pady=5)
 
     def change_root_dir(self) -> None:
-
-        global root_directory
-        global conf_file
-        global mode
-
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
-        save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
-        if len(self.root_directory) != 0:
+        if self.root_directory:
             self.mode_var.set('Directory')
-            self.rb_mode_directory.focus()
             self.lbl_root_dir.config(text=self.root_directory)
+            save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
 
     def change_conf_file(self) -> None:
-        global root_directory
-        global conf_file
-        global mode
-
-        self.conf_file = filedialog.askopenfilename(initialdir=self.paint_directory,
-                                                    title='Select a configuration file')
-
-        if len(self.conf_file) != 0:
+        self.conf_file = filedialog.askopenfilename(initialdir=self.paint_directory, title='Select a configuration file')
+        if self.conf_file:
             self.mode_var.set('Conf File')
-            self.rb_mode_conf_file.focus()
             self.lbl_conf_file.config(text=self.conf_file)
-            save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
+            save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
 
     def process(self) -> None:
         global proceed
@@ -1412,29 +1419,26 @@ class SelectViewerDialog:
         error = False
 
         mode = self.mode_var.get()
-        if mode == "Directory":
-            root_directory = self.root_directory
-            if not os.path.isdir(root_directory):
-                paint_logger.error('Whoops')
-                error = True
+        root_directory = self.root_directory
+        conf_file = self.conf_file
+        error = False
 
-        else:
-            conf_file = self.conf_file
-            if not os.path.isfile(conf_file):
-                paint_logger.error('Whoops')
-                error = True
+        if mode == "Directory" and not os.path.isdir(self.root_directory):
+            paint_logger.error('The root directory does not exist!')
+            error = True
+        elif mode == "Conf File" and not os.path.isfile(self.conf_file):
+            paint_logger.error('No configuration file has been selected!')
+            error = True
 
         if not error:
+            global proceed
             proceed = True
             root.destroy()
 
     def exit_dialog(self) -> None:
-
         global proceed
-
         proceed = False
         root.destroy()
-
 
 root = Tk()
 root.eval('tk::PlaceWindow . center')
