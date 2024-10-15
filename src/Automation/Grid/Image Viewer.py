@@ -1046,6 +1046,7 @@ class ImageViewer:
         density = self.df_squares.loc[square_nr]['Density']
         tau = self.df_squares.loc[square_nr]['Tau']
         nr_tracks = self.df_squares.loc[square_nr]['Nr Tracks']
+        max_track_duration = self.df_squares.loc[square_nr]['Max Track Duration']
 
         # Fill the popup
         padx_value = 10
@@ -1066,6 +1067,8 @@ class ImageViewer:
                                                                               padx=padx_value, pady=pady_value)
         ttk.Label(pop, text=f"Variability", anchor=W, width=lbl_width).grid(row=7, column=1,
                                                                             padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"Max Track Duration", anchor=W, width=lbl_width).grid(row=8, column=1,
+                                                                            padx=padx_value, pady=pady_value)
 
         ttk.Label(pop, text=f"{label_nr}", anchor=W).grid(row=1, column=2, padx=padx_value, pady=pady_value)
         ttk.Label(pop, text=f"{square_nr}", anchor=W).grid(row=2, column=2, padx=padx_value, pady=pady_value)
@@ -1074,6 +1077,7 @@ class ImageViewer:
         ttk.Label(pop, text=f"{nr_tracks}", anchor=W).grid(row=5, column=2, padx=padx_value, pady=pady_value)
         ttk.Label(pop, text=f"{density_ratio}", anchor=W).grid(row=6, column=2, padx=padx_value, pady=pady_value)
         ttk.Label(pop, text=f"{variability}", anchor=W).grid(row=7, column=2, padx=padx_value, pady=pady_value)
+        ttk.Label(pop, text=f"{max_track_duration}", anchor=W).grid(row=8, column=2, padx=padx_value, pady=pady_value)
 
     def start_rectangle(self, event):
         self.user_change = True
