@@ -33,9 +33,9 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 
 class ImageViewer:
 
-    def __init__(self, root, directory, conf_file, mode):
+    def __init__(self, root, directory, conf_file, mode_dir_or_conf):
 
-        self.initialize_variables(root, directory, conf_file, mode)
+        self.initialize_variables(root, directory, conf_file, mode_dir_or_conf)
 
         self.setup_ui()
         self.load_images_and_config()
@@ -45,14 +45,14 @@ class ImageViewer:
         root.bind('<Right>', lambda event: self.go_forward_backward('Forward'))
         root.bind('<Left>', lambda event: self.go_forward_backward('Backward'))
 
-    def initialize_variables(self, root, directory, conf_file, mode):
+    def initialize_variables(self, root, directory, conf_file, mode_dir_or_conf):
 
         self.root = root
         self.paint_directory = directory
         self.conf_file = conf_file
-        self.mode = mode
+        self.mode_dir_or_conf = mode_dir_or_conf
         self.img_no = 0
-        self.mode_var = None
+        self.mode_square_or_heatmap = None
 
         # UI state variables
         self.start_x = None
@@ -66,7 +66,7 @@ class ImageViewer:
         self.neighbour_mode = ""
         self.select_mode = ""
 
-        root.title(f'Test Image Viewer - {self.paint_directory if self.mode == "Directory" else self.conf_file}')
+        root.title(f'Test Image Viewer - {self.paint_directory if self.mode_dir_or_conf == "Directory" else self.conf_file}')
 
     def setup_ui(self):
 
@@ -82,9 +82,8 @@ class ImageViewer:
         self.content.grid(column=0, row=0)
 
     def setup_frames(self):
-        """
-        The main level frames are defined
-        """
+        # The main level frames are defined
+
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
@@ -112,9 +111,7 @@ class ImageViewer:
         self.frame_picture_right.grid_propagate(False)
 
     def setup_frame_buttons(self):
-        """
-        This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
-        """
+        # This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
 
         self.bn_forward = ttk.Button(self.frame_buttons, text='Forward',
                                      command=lambda: self.go_forward_backward('Forward'))
@@ -133,9 +130,7 @@ class ImageViewer:
         self.bn_backward.configure(state=tk.DISABLED)
 
     def setup_frame_controls(self):
-        """
-        This frame is part of the content frame and contains the following frames: frame_mode, frame_neighbours, frame_cells, frame_commands
-        """
+        # This frame is part of the content frame and contains the following frames: frame_mode, frame_neighbours, frame_cells, frame_commands
 
         frame_width = 30
 
@@ -157,9 +152,7 @@ class ImageViewer:
         self.setup_frame_commands()
 
     def setup_frame_commands(self):
-        """
-        This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
-        """
+        # This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
 
         button_width = 12
 
@@ -178,9 +171,7 @@ class ImageViewer:
         self.bn_histogram.grid(column=0, row=3, padx=5, pady=5)
 
     def setup_frame_cells(self):
-        """
-        This frame is part of frame_controls and contains the following radio buttons: rb_cell0, rb_cell1, rb_cell2, rb_cell3, rb_cell4, rb_cell5, rb_cell6
-        """
+        # This frame is part of frame_controls and contains the following radio buttons: rb_cell0, rb_cell1, rb_cell2, rb_cell3, rb_cell4, rb_cell5, rb_cell6
 
         width_rb = 12
         self.cell_var = StringVar(value=1)
@@ -217,9 +208,7 @@ class ImageViewer:
         self.rb_cell0.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 0))
 
     def setup_frame_neighbours(self):
-        """
-        This frame is part of frame_controls and contains the following radio buttons: rb_neighbour_free, rb_neighbour_strict, rb_neighbour_relaxed, bn_set_neighbours_all
-        """
+        # This frame is part of frame_controls and contains the following radio buttons: rb_neighbour_free, rb_neighbour_strict, rb_neighbour_relaxed, bn_set_neighbours_all
 
         self.neighbour_var = StringVar(value="")
         self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12,
@@ -244,23 +233,19 @@ class ImageViewer:
         self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_mode(self):
-        """
-        This frame is part of frame_controls and contains the following radio buttons: rb_mode_roi, rb_mode_heat
-        """
+        # This frame is part of frame_controls and contains the following radio buttons: rb_mode_square, rb_mode_heat
 
-        self.mode_var = StringVar(value="ROI")
-        self.rb_mode_roi = Radiobutton(self.frame_mode, text="ROI", variable=self.mode_var, value="ROI",
-                                       command=self.select_mode_button)
-        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Heatmap", variable=self.mode_var, value="HEAT",
+        self.mode_square_or_heatmap = StringVar(value="SQUARE")
+        self.rb_mode_square = Radiobutton(self.frame_mode, text="Square", variable=self.mode_square_or_heatmap, value="SQUARE",
+                                          command=self.select_mode_button)
+        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Heatmap", variable=self.mode_square_or_heatmap, value="HEAT",
                                         command=self.select_mode_button)
 
-        self.rb_mode_roi.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_mode_square.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
         self.rb_mode_heat.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_filter(self):
-        """
-        This frame is part of the content frame and contains the following frames: frame_variability, frame_density_ratio
-        """
+        # This frame is part of the content frame and contains the following frames: frame_variability, frame_density_ratio
 
         # The Max Allowable Variability slider first
         self.frame_variability = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
@@ -294,9 +279,7 @@ class ImageViewer:
         self.bn_set_for_all_slider.grid(column=0, row=2, padx=5, pady=5)
 
     def setup_frame_canvas(self):
-        """
-        This frame is part of the content frame and contains the following canvas: cn_left_image, cn_right_image
-        """
+        # This frame is part of the content frame and contains the following canvas: cn_left_image, cn_right_image
 
         self.cn_left_image = tk.Canvas(self.frame_picture_left, width=512, height=512)
         self.cn_right_image = tk.Canvas(self.frame_picture_right, width=512, height=512)
@@ -338,9 +321,9 @@ class ImageViewer:
         lbl_image_bf_name.grid(column=0, row=1, padx=0, pady=0)
 
     def load_images_and_config(self):
+        # Load images and configurations
 
-        """Load images and configurations."""
-        if self.mode == 'Directory':
+        if self.mode_dir_or_conf == 'DIRECTORY':
             self.batchfile_path = os.path.join(self.paint_directory, 'grid_batch.csv')
         else:
             self.paint_directory = os.path.split(self.conf_file)[0]
@@ -353,7 +336,7 @@ class ImageViewer:
         self.image_name = self.df_batch.iloc[self.img_no]['Ext Image Name']
         self.nr_squares_in_row = int(self.df_batch.iloc[0]['Nr Of Squares per Row'])
 
-        self.list_images = self.get_images('ROI')
+        self.list_images = self.get_images('SQUARE')
         if not self.list_images:
             self.show_error_and_exit(f"No images were found below directory {self.paint_directory}.")
 
@@ -365,7 +348,8 @@ class ImageViewer:
         self.go_forward_backward('Forward')
 
     def setup_exclude_button(self):
-        """Set up the exclude/include button state."""
+        # Set up the exclude/include button state
+
         if 'Exclude' not in self.df_batch:
             self.bn_exclude.config(text='Exclude')
         else:
@@ -385,7 +369,7 @@ class ImageViewer:
 
         paint_directory = self.paint_directory
         df_batch = self.df_batch
-        _mode = self.mode
+        _mode = self.mode_dir_or_conf
 
         # Create an empty lst that will hold the images
         list_images = []
@@ -399,7 +383,7 @@ class ImageViewer:
 
             image_name = df_batch.iloc[index]['Ext Image Name']
 
-            if _mode == 'Directory':
+            if _mode == 'DIRECTORY':
                 image_path = os.path.join(paint_directory, image_name)
             else:
                 image_path = os.path.join(paint_directory, str(df_batch.iloc[index]['Experiment Date']), image_name)
@@ -412,7 +396,7 @@ class ImageViewer:
             if not os.path.isdir(img_dir):
                 continue
 
-            if _mode == 'Directory':
+            if _mode == 'DIRECTORY':
                 bf_dir = os.path.join(paint_directory, "Converted BF Images")
             else:
                 bf_dir = os.path.join(
@@ -433,7 +417,7 @@ class ImageViewer:
             for img in all_images_in_img_dir:
                 if img.startswith('.'):
                     continue
-                if type_of_image == "ROI":  # Look for a file that has 'grid-roi' in the filename
+                if type_of_image == "SQUARE":  # Look for a file that has 'grid-roi' in the filename
                     if img.find("grid-roi") == -1 and img.find("heat") == -1:
 
                         left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
@@ -509,12 +493,7 @@ class ImageViewer:
         return list_images
 
     def get_corresponding_bf(self, bf_dir, image_name):
-        """
-        Get the brightfield images for the right canvas
-        :param bf_dir:
-        :param image_name:
-        :return:
-        """
+        # Get the brightfield images for the right canvas
 
         if not os.path.exists(bf_dir):
             paint_logger.error(
@@ -550,13 +529,14 @@ class ImageViewer:
         return valid, img
 
     def show_error_and_exit(self, message):
-        """Display an error message and exit."""
-        # Assuming paint_logger is defined elsewhere
+        # Display an error message and exit
+
         paint_logger.error(message)
         sys.exit()
 
     def update_image_display(self):
-        """Update the image display based on the current image number."""
+        # Update the image display based on the current image number
+
         self.cn_left_image.create_image(0, 0, anchor=tk.NW, image=self.list_images[self.img_no]['Left Image'])
         self.cn_right_image.create_image(0, 0, anchor=tk.NW, image=self.list_images[self.img_no]['Right Image'])
 
@@ -600,11 +580,7 @@ class ImageViewer:
             self.output_pictures()
 
     def output_pictures(self):
-
-        """
-        Function is triggered bt pressing 'o' and will generate a pdf file containing all the images.
-        :return:
-        """
+        # Function is triggered by pressing 'o' and will generate a pdf file containing all the images.
 
         save_img_no = self.img_no
         self.img_no = -1
@@ -632,7 +608,7 @@ class ImageViewer:
             image_name = image_name + '-squares'
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
-        # Find all the eps files and delete them
+        # Find all the ps files and delete them
         eps_files = os.listdir(squares_dir)
         for item in eps_files:
             if item.endswith(".ps"):
@@ -653,8 +629,7 @@ class ImageViewer:
         pdf_path = os.path.join(squares_dir, 'images.pdf')
 
         # Create a pdf with a first images and all the other images to it
-        png_images[0].save(
-            pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
+        png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
 
         # Go back to the image where we were
         self.img_no = save_img_no - 1
@@ -664,7 +639,7 @@ class ImageViewer:
 
         if self.batch_changed or self.square_changed:  # Todo
 
-            if self.batch_changed and self.mode == 'Conf File"':
+            if self.batch_changed and self.mode_dir_or_conf == 'CONF_FILE':
                 msg = "Do you want to save changes before exiting? Note the configuration file will be updated"
             else:
                 msg = "Do you want to save changes before exiting? Note the grid_batch file will be updated"
@@ -823,7 +798,7 @@ class ImageViewer:
     def variability_changed(self, _):
         self.batch_changed = True
 
-        if self.mode_var.get() == 'HEAT':  # Should not happen,as the slider is disabled, but still....
+        if self.mode_square_or_heatmap.get() == 'HEAT':  # Should not happen,as the slider is disabled, but still....
             return
 
         self.select_squares_for_display()
@@ -832,7 +807,7 @@ class ImageViewer:
     def density_ratio_changed(self, _):
         self.batch_changed = True
 
-        if self.mode_var.get() == 'HEAT':
+        if self.mode_square_or_heatmap.get() == 'HEAT':
             return
 
         self.select_squares_for_display()
@@ -1017,7 +992,7 @@ class ImageViewer:
 
     def square_assigned_to_cell(self, square_nr):
 
-        if self.mode_var.get() == 'HEAT':
+        if self.mode_square_or_heatmap.get() == 'HEAT':
             return
 
         # Retrieve the old and new cell id
@@ -1039,7 +1014,7 @@ class ImageViewer:
         self.df_squares.at[square_nr, 'Cell Id'] = int(new_cell_id)
 
     def provide_information_on_square(self, event, label_nr, square_nr):
-        if self.mode_var.get() == 'HEAT':
+        if self.mode_square_or_heatmap.get() == 'HEAT':
             return
 
         # Define the popup
@@ -1142,14 +1117,14 @@ class ImageViewer:
         self.sc_density_ratio.configure(state=state, takefocus=(state == NORMAL))
 
     def select_mode_button(self):
-        if self.mode_var.get() == "HEAT":
+        if self.mode_square_or_heatmap.get() == "HEAT":
             self.configure_widgets_state(DISABLED)
-        elif self.mode_var.get() == "ROI":
+        elif self.mode_square_or_heatmap.get() == "SQUARE":
             self.configure_widgets_state(NORMAL)
         else:
             paint_logger.error('Big trouble!')
 
-        self.list_images = self.get_images(self.mode_var.get())
+        self.list_images = self.get_images(self.mode_square_or_heatmap.get())
         self.img_no -= 1
         self.go_forward_backward('Forward')
 
@@ -1201,8 +1176,8 @@ class ImageViewer:
         # Place new image in the canvas and draw the squares
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
 
-        # If the mode is 'ROI' draw the squares:
-        if self.mode_var.get() == 'ROI':
+        # If the mode is 'SQUARE' draw the squares:
+        if self.mode_square_or_heatmap.get() == 'SQUARE':
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
             self.set_variability_slider_state()
@@ -1272,7 +1247,7 @@ class ImageViewer:
 
     def update_squares_file(self):
         # It is necessary to the squares file, because the user may have made changes
-        if self.mode == 'Directory':
+        if self.mode_dir_or_conf == 'DIRECTORY':
             squares_file_name = os.path.join(self.paint_directory, self.image_name, 'grid',
                                              self.image_name + '-squares.csv')
         else:
@@ -1334,10 +1309,11 @@ def save_square_info_to_batch(self):
 proceed = False
 root_directory = ''
 conf_file = ''
-mode = ''
+mode_dir_or_conf = ''
 
 
 class SelectViewerDialog:
+
     def __init__(self, _root: tk.Tk) -> None:
         _root.title('Image Viewer')
 
@@ -1373,7 +1349,7 @@ class SelectViewerDialog:
         self.lbl_root_dir = self.add_label(frame, self.root_directory, 0)
         self.lbl_conf_file = self.add_label(frame, self.conf_file, 1)
 
-        self.mode_var = StringVar(value="Directory")
+        self.mode_dir_or_conf = StringVar(value="DIRECTORY")
         self.add_radio_button(frame, "Directory", 0)
         self.add_radio_button(frame, "Conf File", 1)
 
@@ -1394,19 +1370,19 @@ class SelectViewerDialog:
 
     def add_radio_button(self, parent, text, row) -> None:
         """Helper function to add a radio button to a frame."""
-        ttk.Radiobutton(parent, text="", variable=self.mode_var, value=text, width=10).grid(column=2, row=row, padx=10, pady=5)
+        ttk.Radiobutton(parent, text="", variable=self.mode_dir_or_conf, value=text, width=10).grid(column=2, row=row, padx=10, pady=5)
 
     def change_root_dir(self) -> None:
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
         if self.root_directory:
-            self.mode_var.set('Directory')
+            self.mode_dir_or_conf.set('DIRECTORY')
             self.lbl_root_dir.config(text=self.root_directory)
             save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
 
     def change_conf_file(self) -> None:
         self.conf_file = filedialog.askopenfilename(initialdir=self.paint_directory, title='Select a configuration file')
         if self.conf_file:
-            self.mode_var.set('Conf File')
+            self.mode_dir_or_conf.set('Conf File')
             self.lbl_conf_file.config(text=self.conf_file)
             save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
 
@@ -1414,19 +1390,19 @@ class SelectViewerDialog:
         global proceed
         global root_directory
         global conf_file
-        global mode
+        global mode_dir_or_conf
 
         error = False
 
-        mode = self.mode_var.get()
+        mode_dir_or_conf = self.mode_dir_or_conf.get()
         root_directory = self.root_directory
         conf_file = self.conf_file
         error = False
 
-        if mode == "Directory" and not os.path.isdir(self.root_directory):
+        if mode_dir_or_conf == "DIRECTORY" and not os.path.isdir(self.root_directory):
             paint_logger.error('The root directory does not exist!')
             error = True
-        elif mode == "Conf File" and not os.path.isfile(self.conf_file):
+        elif mode_dir_or_conf == "CONF_FILE" and not os.path.isfile(self.conf_file):
             paint_logger.error('No configuration file has been selected!')
             error = True
 
@@ -1448,11 +1424,11 @@ root.mainloop()
 if proceed:
     root = Tk()
     root.eval('tk::PlaceWindow . center')
-    paint_logger.debug(f'Mode: {mode}')
-    if mode == 'Directory':
+    paint_logger.debug(f'Mode: {mode_dir_or_conf}')
+    if mode_dir_or_conf == 'DIRECTORY':
         paint_logger.info(f'Root directory: {root_directory}')
     else:
         paint_logger.debug(f'Configuration file: {conf_file}')
 
-    image_viewer = ImageViewer(root, root_directory, conf_file, mode)
+    image_viewer = ImageViewer(root, root_directory, conf_file, mode_dir_or_conf)
     root.mainloop()
