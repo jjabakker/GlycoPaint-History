@@ -15,6 +15,11 @@ console_handler = logging.StreamHandler()  # Logs to the console (standard outpu
 console_handler.setLevel(logging.DEBUG)  # All logs at DEBUG level or higher go to the console
 console_handler.setFormatter(formatter)
 
+DEBUG = logging.DEBUG
+INFO = logging.INFO
+WARNING = logging.WARNING
+ERROR = logging.ERROR
+CRITICAL  = logging.CRITICAL
 
 # Create file handler
 
