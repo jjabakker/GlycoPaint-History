@@ -5,11 +5,12 @@ import subprocess
 import sys
 import tkinter as tk
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from tkinter import ttk
 
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
+
 
 from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 from src.Automation.Support.Support_Functions import (
@@ -97,11 +98,11 @@ class ImageViewer:
 
     def setup_frame_images(self):
 
-        FRAME_WIDTH = 516
-        FRAME_HEIGHT = 670
+        frame_width = 516
+        frame_height = 670
 
-        self.frame_picture_left = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=FRAME_WIDTH, height=FRAME_HEIGHT)
-        self.frame_picture_right = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=FRAME_WIDTH, height=FRAME_HEIGHT)
+        self.frame_picture_left = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width, height=frame_height)
+        self.frame_picture_right = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width, height=frame_height)
 
         self.frame_picture_left.grid(column=0, row=0, padx=5, pady=5, sticky=N)
         self.frame_picture_right.grid(column=1, row=0, padx=5, pady=5, sticky=N)
@@ -353,6 +354,7 @@ class ImageViewer:
                 self.text_for_info3.set('')
 
     def set_for_all_neighbour_state(self):
+        self.batch_changed = True
         self.df_batch['Neighbour Setting'] = self.neighbour_var.get()
 
     def get_images(self, type_of_image):
@@ -637,8 +639,18 @@ class ImageViewer:
     def exit_viewer(self):
 
         if self.batch_changed: # Todo
-            self.save_image_state() # Save the current image state
-        exit()
+
+            response = messagebox.askyesnocancel(
+                "Save Changes", "Do you want to save changes before exiting?")
+            if response is True:
+                self.save_image_state()
+                root.quit()
+            elif response is False:
+                root.quit()
+            else:
+                pass
+        else:
+            root.quit()
 
     def image_selected(self, _):
         image_name = self.cb_image_names.get()
@@ -659,13 +671,13 @@ class ImageViewer:
         neighbour_state = self.df_batch.loc[self.image_name]['Neighbour Setting']
         self.neighbour_var.set(neighbour_state)
 
-    def save_variability_slider_state(self):
+    def save_variability_slider_state_into_df_batch(self):
         self.df_batch.loc[self.image_name, 'Variability Setting'] = round(self.sc_variability.get(), 1)
 
-    def save_density_ratio_slider_state(self):
+    def save_density_ratio_slider_state_into_df_batch(self):
         self.df_batch.loc[self.image_name, 'Density Ratio Setting'] = round(self.sc_density_ratio.get(), 1)
 
-    def save_neighbour_state(self):
+    def save_neighbour_state_into_df_batch(self):
         self.df_batch.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_var.get()
 
     def histogram(self):
@@ -752,9 +764,9 @@ class ImageViewer:
         """
 
         # Get the slider and neighbour state and save it
-        self.save_density_ratio_slider_state()
-        self.save_variability_slider_state()
-        self.save_neighbour_state()
+        self.save_density_ratio_slider_state_into_df_batch()
+        self.save_variability_slider_state_into_df_batch()
+        self.save_neighbour_state_into_df_batch()
 
         # Generate the graphpad and pdf directories if needed
         # create_output_directories_for_graphpad(self.paint_directory)
@@ -1129,8 +1141,17 @@ class ImageViewer:
         :return:
         """
 
-        if self.square_changed:  #TODO
-            self.save_image_state()     # Save the squares before moving to the next image
+        if self.square_changed:
+            response = messagebox.askyesnocancel(
+                "Save Changes", "Do you want to save the squares info before moving on?")
+            if response is True:
+                # self.save_image_state()
+                self.write_squares()
+            elif response is False:
+                pass
+            else:
+                return
+
             self.square_changed = False
 
         # Determine what the next image is, depending on the direction
@@ -1224,28 +1245,27 @@ class ImageViewer:
         else:
             squares_file_name = os.path.join(self.paint_directory, str(self.df_batch.iloc[self.img_no]['Experiment Date']),  self.image_name, 'grid',
                                              self.image_name + '-squares.csv')
-        # save_squares_to_file(self.df_squares, squares_file_name)   #TOD
-
-    def write_grid_batch(self):
-        save_batch_to_file(self.df_batch, self.batchfile_path)
+        save_squares_to_file(self.df_squares, squares_file_name)   #TOD
 
     def save_image_state(self):
 
         # Get the slider and neighbour state and save it into df_batch
-        self.save_density_ratio_slider_state()
-        self.save_variability_slider_state()
-        self.save_neighbour_state()
+        self.save_density_ratio_slider_state_into_df_batch()
+        self.save_variability_slider_state_into_df_batch()
+        self.save_neighbour_state_into_df_batch()
 
         # Write the Nr Visible Squares visibility information into the batch file
         self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
                                       self.df_squares['Variability Visible'] &
                                       self.df_squares['Variability Visible'])
         self.df_batch.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
+        save_batch_to_file(self.df_batch, self.batchfile_path)
+
 
         # Save the batch and squares
-        self.select_squares_for_display()
-        self.write_squares()    # TODO: Really?
-        self.write_grid_batch()
+        # self.select_squares_for_display()
+        # self.write_squares()    # TODO: Really?
+
 
 
 
@@ -1359,7 +1379,7 @@ class SelectViewerDialog:
             self.mode_var.set('Conf File')
             self.rb_mode_conf_file.focus()
             self.lbl_conf_file.config(text=self.conf_file)
-            # save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
+            save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
 
     def process(self) -> None:
         global proceed
@@ -1386,8 +1406,7 @@ class SelectViewerDialog:
             proceed = True
             root.destroy()
 
-    @staticmethod
-    def exit_dialog() -> None:
+    def exit_dialog(self) -> None:
 
         global proceed
 
