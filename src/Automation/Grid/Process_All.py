@@ -46,6 +46,10 @@ def process_directory(paint_source_dir,
                       nr_to_process: int,
                       current_process: int,
                       min_density_ratio: float,
+                      min_r_squared: float,
+                      min_tracks_for_tau: int,
+                      max_variability: float,
+                      max_square_coverage: float,
                       process_single: bool,
                       process_traditional: bool) -> bool:
 
@@ -86,11 +90,11 @@ def process_directory(paint_source_dir,
     process_all_images_in_root_directory(
         paint_data_dir,
         nr_squares_in_row=nr_of_squares,
-        min_r_squared=0.9,
-        min_tracks_for_tau=20,
+        min_r_squared=min_r_squared,
+        min_tracks_for_tau=min_tracks_for_tau,
         min_density_ratio=min_density_ratio,
-        max_variability=10,
-        max_square_coverage=100,
+        max_variability=max_variability,
+        max_square_coverage=max_square_coverage,
         process_single=process_single,
         process_traditional=process_traditional,
         verbose=False)
@@ -168,6 +172,10 @@ def main():
                     nr_to_process=nr_to_process,
                     current_process=current_process_seq_nr,
                     min_density_ratio=entry['min_density_ratio'],
+                    min_r_squared=entry['min_r_squared'],
+                    min_tracks_for_tau=entry['min_tracks_for_tau'],
+                    max_variability=entry['max_variability'],
+                    max_square_coverage=entry['max_square_coverage'],
                     process_single=entry['process_single'],
                     process_traditional=entry['process_traditional']):
                 error_count += 1
