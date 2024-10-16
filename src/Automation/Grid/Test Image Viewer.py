@@ -1,8 +1,11 @@
 import os
 import platform
+import shutil
 import statistics
 import subprocess
 import sys
+import time
+import tempfile
 import tkinter as tk
 from tkinter import *
 from tkinter import filedialog, messagebox
@@ -706,21 +709,46 @@ class ImageViewer:
                     f"For Cell Id: {cell_id}, the tau mean is {tau_mean}, the tau median is {tau_median} and the tau std is {tau_std}\n")
 
     def show_excel(self):
-
         # Path to the Excel application
         if platform.system() == 'Darwin':
-            excel_path = '/Applications/Microsoft Excel.app'  # Adjust the path if necessary
+            # On macOS, we use the 'open' command to open applications
+            excel_command = 'open'
+            excel_args = ['-a', '/Applications/Microsoft Excel.app']
         else:
-            excel_path = 'C:\\Program Files\\Microsoft Office\\root\\OfficeXX\\Excel.exe'
+            # On Windows, we directly call the Excel executable
+            excel_command = r'C:\Program Files\Microsoft Office\root\OfficeXX\Excel.exe'  # Update Excel path as needed
+            excel_args = [excel_command]
 
-        # Write the current df_squares before opening it
-        if self.square_changed:
-            self.update_squares_file()
+        # Create a temporary directory manually, so we can control when it's deleted
+        temp_dir = tempfile.mkdtemp()
 
-        # Open Excel
-        subprocess.Popen(['open', excel_path, self.squares_file_name])
+        try:
+            # Define the destination path inside the temporary directory
+            temp_file = os.path.join(temp_dir, os.path.basename(self.squares_file_name))
 
-        # And then write some miscellaneous data on the image
+            # Save squares data to the temporary file
+            save_squares_to_file(self.df_squares, temp_file)
+
+            # Make sure the file exists before continuing
+            if not os.path.exists(temp_file):
+                raise FileNotFoundError(f"Temporary file {temp_file} does not exist")
+
+            # Print the file path for debugging purposes
+            print(f"Opening Excel with file: {temp_file}")
+
+            # Open Excel with the temp file
+            if platform.system() == 'Darwin':
+                subprocess.Popen([excel_command] + excel_args + [temp_file])
+            else:
+                subprocess.Popen(excel_args + [temp_file], shell=True)
+
+            # Optionally, wait for Excel to open the file before continuing
+            time.sleep(2)  # Pause to give Excel time to open the file
+
+        finally:
+            # Ensure that the temporary directory is deleted after use
+            print(f"Cleaning up temporary directory: {temp_dir}")
+            shutil.rmtree(temp_dir)
 
         nr_total_squares = len(self.df_squares)
         tau_values = self.df_squares[self.df_squares['Visible']]['Tau'].tolist()
