@@ -1390,8 +1390,6 @@ class SelectViewerDialog:
         self.lbl_conf_file = self.add_label(frame, self.conf_file, 1)
 
         self.mode_dir_or_conf = StringVar(value="DIRECTORY")
-        self.add_radio_button(frame, "Directory", 0)
-        self.add_radio_button(frame, "Conf File", 1)
         self.add_radio_button(frame, "DIRECTORY", 0)
         self.add_radio_button(frame, "CONF_FILE", 1)
 
