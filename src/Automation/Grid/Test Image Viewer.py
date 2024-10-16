@@ -87,9 +87,9 @@ class ImageViewer:
         self.frame_filter = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_duration_mode = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
-        self.frame_images.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
-        self.frame_navigation_buttons.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
-        self.frame_controls.grid(column=1, row=0, padx=5, pady=5, sticky=N)
+        self.frame_images.grid(column=0, row=0, rowspan = 2, padx=5, pady=5, sticky=tk.N)
+        self.frame_navigation_buttons.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
+        self.frame_controls.grid(column=1, row=0, rowspan=2, padx=5, pady=5, sticky=N)
         self.frame_filter.grid(column=2, row=0, padx=5, pady=5, sticky=N)
         self.frame_duration_mode.grid(column=2, row=1, padx=5, pady=5, sticky=N)
 
