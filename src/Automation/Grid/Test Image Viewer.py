@@ -55,7 +55,7 @@ class ImageViewer:
         self.paint_directory = directory
         self.conf_file = conf_file
         self.mode_dir_or_conf = mode_dir_or_conf
-        self.mode_square_or_heatmap = None
+        self.mode_intensity_duration_heatmap = None
         self.mode_duration_or_intensity = 'INTENSITY'
 
 
@@ -240,14 +240,17 @@ class ImageViewer:
     def setup_frame_mode(self):
         # This frame is part of frame_controls and contains the following radio buttons: rb_mode_square, rb_mode_heat
 
-        self.mode_square_or_heatmap = StringVar(value="SQUARE")
-        self.rb_mode_square = Radiobutton(self.frame_mode, text="Square", variable=self.mode_square_or_heatmap, value="SQUARE",
-                                          command=self.select_mode_button)
-        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Heatmap", variable=self.mode_square_or_heatmap, value="HEAT",
-                                        command=self.select_mode_button)
+        self.mode_intensity_duration_heatmap = StringVar(value="SQUARE")
+        self.rb_mode_square = Radiobutton(self.frame_mode, text="Intensity", variable=self.mode_intensity_duration_heatmap,
+                                          value="SQUARE", command=self.select_mode_button)
+        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Tau Heatmap", variable=self.mode_intensity_duration_heatmap,
+                                        value="HEAT", command=self.select_mode_button)
+        self.rb_mode_duration = Radiobutton(self.frame_mode, text="Duration", variable=self.mode_intensity_duration_heatmap,
+                                            value="DURATION", command=self.select_mode_button)
 
         self.rb_mode_square.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_mode_heat.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_mode_duration.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_mode_heat.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_filter(self):
         # This frame is part of the content frame and contains the following frames: frame_variability, frame_density_ratio
@@ -421,7 +424,7 @@ class ImageViewer:
             for img in all_images_in_img_dir:
                 if img.startswith('.'):
                     continue
-                if type_of_image == "SQUARE":  # Look for a file that has 'grid-roi' in the filename
+                if type_of_image == "SQUARE" or type_of_image == "DURATION":
                     if img.find("grid-roi") == -1 and img.find("heat") == -1:
 
                         left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
@@ -1179,10 +1182,17 @@ class ImageViewer:
         self.sc_density_ratio.configure(state=state, takefocus=(state == NORMAL))
 
     def select_mode_button(self):
-        if self.mode_square_or_heatmap.get() == "HEAT":
+
+        mode = self.mode_intensity_duration_heatmap.get()
+        if mode == "HEAT":
+            if self.df_squares['Tau'].nunique() == 1:
+                messagebox.showinfo("Information", "No Tau information available")
+                return
             self.configure_widgets_state(DISABLED)
         elif mode == "SQUARE":
             self.configure_widgets_state(NORMAL)
+        elif  mode  == "DURATION":
+            self.configure_widgets_state(DISABLED)
         else:
             paint_logger.error('Big trouble!')
 
@@ -1238,6 +1248,11 @@ class ImageViewer:
             self.set_density_ratio_slider_state()
             self.set_neighbour_state()
             self.select_squares_for_display()
+            self.display_selected_squares()
+        elif self.mode_intensity_duration_heatmap.get() == 'DURATION':
+            self.squares_file_name = self.list_images[self.img_no]['Squares File']
+            self.df_squares = read_squares_from_file(self.squares_file_name)
+            self.select_squares_for_display_new()
             self.display_selected_squares()
 
         # Place new image_bf
