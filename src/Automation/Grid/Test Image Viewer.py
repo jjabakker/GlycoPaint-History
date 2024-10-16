@@ -76,28 +76,31 @@ class ImageViewer:
     def setup_ui(self):
 
         self.content = ttk.Frame(self.root, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
-        self.setup_frames()
-        self.setup_frame_controls()
-        self.setup_frame_images()
-        self.setup_frame_navigation_buttons()
-        self.setup_frame_canvas()
-        self.setup_frame_filter()
-        self.setup_labels_and_combobox()
-
-        self.content.grid(column=0, row=0)
-
-    def setup_frames(self):
-        # The main level frames are defined
 
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_navigation_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_filter = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_duration_mode = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
         self.frame_images.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
         self.frame_navigation_buttons.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
         self.frame_controls.grid(column=1, row=0, padx=5, pady=5, sticky=N)
         self.frame_filter.grid(column=2, row=0, padx=5, pady=5, sticky=N)
+        self.frame_duration_mode.grid(column=2, row=1, padx=5, pady=5, sticky=N)
+
+        self.setup_frame_images()
+        self.setup_frame_navigation_buttons()
+        self.setup_frame_controls()
+        self.setup_frame_filter()
+        self.setup_frame_duration_mode()
+
+        self.setup_frame_canvas()
+        #self.setup_frame_duration()
+        self.setup_labels_and_combobox()
+
+        self.content.grid(column=0, row=0)
+
 
     def setup_frame_images(self):
 
@@ -251,6 +254,22 @@ class ImageViewer:
         self.rb_mode_square.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
         self.rb_mode_duration.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
         self.rb_mode_heat.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+
+    def setup_frame_duration_mode(self):
+        # This frame is part of the content frame and contains the following frames: frame_duration,
+
+        # The Duration  slider  frame
+        self.frame_duration = ttk.Frame(self.frame_duration_mode, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_duration.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
+
+        self.track_duration = DoubleVar(value=100)
+        self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
+        self.sc_track_duration= tk.Scale(self.frame_duration, from_=1, to=200, variable=self.track_duration,
+                                         orient='vertical', resolution=1, command=self.track_duration_changing)
+        self.sc_track_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
+
+        self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
+        self.sc_track_duration.grid(column=0, row=1, padx=5, pady=5)
 
     def setup_frame_filter(self):
         # This frame is part of the content frame and contains the following frames: frame_variability, frame_density_ratio
@@ -845,9 +864,17 @@ class ImageViewer:
         # Updating the numerical value of the slider is not needed with tk widget
         pass
 
+    def track_duration_changing(self, event):
+        # Updating the numerical value of the slider is not needed with tk widget
+        pass
+
     def density_ratio_changing(self, event):
         # Updating the numerical value of the slider is not needed with tk widget
         pass
+
+    def track_duration_changed(self, _):
+        self.select_squares_for_display()
+        self.display_selected_squares()
 
     def variability_changed(self, _):
         self.batch_changed = True
@@ -946,17 +973,12 @@ class ImageViewer:
             plt.show()
         return
 
-    def select_squares_for_display_new(self):
-        self.df_squares['Visible'] = self.df_squares['Max Track Duration'] >= 30
-
     def select_squares_for_display(self):
 
-        if self.mode_duration_or_intensity == 'DURATION':
-            self.df_squares['Visible'] = self.df_squares['Max Track Duration'] >= 30
+        if self.mode_intensity_duration_heatmap.get() == 'DURATION':
+            self.df_squares['Visible'] = self.df_squares['Max Track Duration'] >= self.track_duration.get()
             return
         else:
-
-
             self.df_squares['Variability Visible'] = False
             self.df_squares.loc[
                 self.df_squares['Variability'] <= round(self.sc_variability.get(), 1), 'Variability Visible'] = True
@@ -1252,7 +1274,7 @@ class ImageViewer:
         elif self.mode_intensity_duration_heatmap.get() == 'DURATION':
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
-            self.select_squares_for_display_new()
+            self.select_squares_for_display()
             self.display_selected_squares()
 
         # Place new image_bf
