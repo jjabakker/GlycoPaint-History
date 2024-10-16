@@ -1392,6 +1392,8 @@ class SelectViewerDialog:
         self.mode_dir_or_conf = StringVar(value="DIRECTORY")
         self.add_radio_button(frame, "Directory", 0)
         self.add_radio_button(frame, "Conf File", 1)
+        self.add_radio_button(frame, "DIRECTORY", 0)
+        self.add_radio_button(frame, "CONF_FILE", 1)
 
     def add_buttons(self, frame) -> None:
         """Adds the Process and Exit buttons."""
@@ -1422,7 +1424,7 @@ class SelectViewerDialog:
     def change_conf_file(self) -> None:
         self.conf_file = filedialog.askopenfilename(initialdir=self.paint_directory, title='Select a configuration file')
         if self.conf_file:
-            self.mode_dir_or_conf.set('Conf File')
+            self.mode_dir_or_conf.set('CONF_FILE')
             self.lbl_conf_file.config(text=self.conf_file)
             save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
 
@@ -1439,14 +1441,15 @@ class SelectViewerDialog:
         conf_file = self.conf_file
         error = False
 
-        if mode_dir_or_conf == "DIRECTORY" and not os.path.isdir(self.root_directory):
+        if self.mode_dir_or_conf == "DIRECTORY" and not os.path.isdir(self.root_directory):
             paint_logger.error('The root directory does not exist!')
             error = True
-        elif mode_dir_or_conf == "CONF_FILE" and not os.path.isfile(self.conf_file):
+        elif self.mode_dir_or_conf == "CONF_FILE" and not os.path.isfile(self.conf_file):
             paint_logger.error('No configuration file has been selected!')
             error = True
 
         if not error:
+            mode_dir_or_conf = self.mode_dir_or_conf.get()
             global proceed
             proceed = True
             root.destroy()
