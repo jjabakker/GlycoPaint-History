@@ -374,7 +374,6 @@ class ImageViewer:
 
         paint_directory = self.paint_directory
         df_batch = self.df_batch
-        _mode = self.mode_dir_or_conf
 
         # Create an empty lst that will hold the images
         list_images = []
@@ -388,7 +387,7 @@ class ImageViewer:
 
             image_name = df_batch.iloc[index]['Ext Image Name']
 
-            if _mode == 'DIRECTORY':
+            if self.mode_dir_or_conf == 'DIRECTORY':
                 image_path = os.path.join(paint_directory, image_name)
             else:
                 image_path = os.path.join(paint_directory, str(df_batch.iloc[index]['Experiment Date']), image_name)
@@ -401,7 +400,7 @@ class ImageViewer:
             if not os.path.isdir(img_dir):
                 continue
 
-            if _mode == 'DIRECTORY':
+            if self.mode_dir_or_conf == 'DIRECTORY':
                 bf_dir = os.path.join(paint_directory, "Converted BF Images")
             else:
                 bf_dir = os.path.join(
@@ -851,7 +850,7 @@ class ImageViewer:
     def variability_changed(self, _):
         self.batch_changed = True
 
-        if self.mode_square_or_heatmap.get() == 'HEAT':  # Should not happen,as the slider is disabled, but still....
+        if self.mode_intensity_duration_heatmap.get() == 'HEAT':  # Should not happen,as the slider is disabled, but still....
             return
 
         self.select_squares_for_display()
@@ -860,7 +859,7 @@ class ImageViewer:
     def density_ratio_changed(self, _):
         self.batch_changed = True
 
-        if self.mode_square_or_heatmap.get() == 'HEAT':
+        if self.mode_intensity_duration_heatmap.get() == 'HEAT':
             return
 
         self.select_squares_for_display()
@@ -1055,7 +1054,7 @@ class ImageViewer:
 
     def square_assigned_to_cell(self, square_nr):
 
-        if self.mode_square_or_heatmap.get() == 'HEAT':
+        if self.mode_intensity_duration_heatmap.get() == 'HEAT':
             return
 
         # Retrieve the old and new cell id
@@ -1077,7 +1076,7 @@ class ImageViewer:
         self.df_squares.at[square_nr, 'Cell Id'] = int(new_cell_id)
 
     def provide_information_on_square(self, event, label_nr, square_nr):
-        if self.mode_square_or_heatmap.get() == 'HEAT':
+        if self.mode_intensity_duration_heatmap.get() == 'HEAT':
             return
 
         # Define the popup
@@ -1182,7 +1181,7 @@ class ImageViewer:
     def select_mode_button(self):
         if self.mode_square_or_heatmap.get() == "HEAT":
             self.configure_widgets_state(DISABLED)
-        elif self.mode_square_or_heatmap.get() == "SQUARE":
+        elif mode == "SQUARE":
             self.configure_widgets_state(NORMAL)
         else:
             paint_logger.error('Big trouble!')
@@ -1231,8 +1230,8 @@ class ImageViewer:
         # Place new image in the canvas and draw the squares
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
 
-        # If the mode is 'SQUARE' draw the squares:
-        if self.mode_square_or_heatmap.get() == 'SQUARE':
+        # If the mode is 'SQUARE' or 'DURATION' draw the squares:
+        if self.mode_intensity_duration_heatmap.get() == 'SQUARE':
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
             self.set_variability_slider_state()
