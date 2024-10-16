@@ -45,8 +45,8 @@ class ImageViewer:
         self.setup_exclude_button()
 
         # Bind keys for navigation
-        root.bind('<Right>', lambda event: self.go_forward_backward('Forward'))
-        root.bind('<Left>', lambda event: self.go_forward_backward('Backward'))
+        root.bind('<Right>', lambda event: self.go_forward_backward('FORWARD'))
+        root.bind('<Left>', lambda event: self.go_forward_backward('BACKWARD'))
 
     def initialize_variables(self, root, directory, conf_file, mode_dir_or_conf):
 
@@ -119,10 +119,10 @@ class ImageViewer:
         # This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
 
         self.bn_forward = ttk.Button(self.frame_buttons, text='Forward',
-                                     command=lambda: self.go_forward_backward('Forward'))
+                                     command=lambda: self.go_forward_backward('FORWARD'))
         self.bn_exclude = ttk.Button(self.frame_buttons, text='Reject', command=lambda: self.exinclude())
         self.bn_backward = ttk.Button(self.frame_buttons, text='Backward',
-                                      command=lambda: self.go_forward_backward('Backward'))
+                                      command=lambda: self.go_forward_backward('BACKWARD'))
         self.bn_exit = ttk.Button(self.frame_buttons, text='Exit', command=lambda: self.exit_viewer())
 
         # Layout the buttons
@@ -350,7 +350,7 @@ class ImageViewer:
 
         self.update_image_display()
         self.img_no = -1
-        self.go_forward_backward('Forward')
+        self.go_forward_backward('FORWARD')
 
     def setup_exclude_button(self):
         # Set up the exclude/include button state
@@ -597,7 +597,7 @@ class ImageViewer:
 
         # Cycle through all images
         for img_no in range(len(self.list_images)):
-            self.go_forward_backward('Forward')
+            self.go_forward_backward('FORWARD')
 
             image_name = self.list_images[self.img_no]['Left Image Name']
             paint_logger.debug(image_name)
@@ -638,7 +638,7 @@ class ImageViewer:
 
         # Go back to the image where we were
         self.img_no = save_img_no - 1
-        self.go_forward_backward('Forward')
+        self.go_forward_backward('FORWARD')
 
     def save_batch_if_requested(self):
 
@@ -689,7 +689,7 @@ class ImageViewer:
         paint_logger.debug(image_name)
         index = self.list_of_image_names.index(image_name)
         self.img_no = index - 1
-        self.go_forward_backward('Forward')
+        self.go_forward_backward('FORWARD')
 
     def set_variability_slider_state(self):
         max_allowed_variability = self.df_batch.loc[self.image_name]['Variability Setting']
@@ -1218,10 +1218,10 @@ class ImageViewer:
 
         # Determine what the next image is, depending on the direction
         # Be sure not move beyond the boundaries (could happen when the left and right keys are used)
-        if direction == 'Forward':
+        if direction == 'FORWARD':
             if self.img_no != len(self.list_images) - 1:
                 self.img_no += 1
-        elif direction == 'Backward':
+        elif direction == 'BACKWARD':
             if self.img_no != 0:
                 self.img_no -= 1
 
