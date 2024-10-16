@@ -3,7 +3,7 @@ import time
 import sys
 
 import tkinter as tk
-from tkinter import ttk, IntVar, DoubleVar, filedialog
+from tkinter import ttk, filedialog
 
 import numpy as np
 import pandas as pd
@@ -30,6 +30,7 @@ from src.Automation.Support.Support_Functions import (
     calc_average_track_count_of_lowest_squares,
     get_area_of_square
 )
+from src.Automation.Support.Paint_Messagebox import paint_messagebox
 from src.Common.Support.CommonSupportFunctions import delete_files_in_directory
 from src.Common.Support.LoggerConfig import (
     paint_logger,
@@ -60,7 +61,7 @@ class GridDialog:
         self.max_square_coverage = tk.DoubleVar(value=GridDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_single = tk.IntVar(value=values.get('process_single', 0))
         self.process_traditional = tk.IntVar(value=values.get('process_traditional', 1))
-        self.root_directory, self.paint_directory, self.images_directory, self_conf_file = get_default_locations()
+        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
 
     def create_ui(self, root):
         """Create and layout the UI components."""
@@ -165,9 +166,8 @@ class GridDialog:
     def process_grid(self):
         """Process the grid and save the parameters."""
         start_time = time.time()
-        self.save_parameters()
-        process_function = self.determine_process_function()
 
+        process_function = self.determine_process_function()
         if process_function:
             process_function(
                 self.paint_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
@@ -175,10 +175,12 @@ class GridDialog:
                 self.max_square_coverage.get(), self.process_single.get(), self.process_traditional.get()
             )
             self.log_processing_time(time.time() - start_time)
+            self.save_parameters()
         else:
             paint_logger.error('Invalid directory selected')
+            paint_messagebox(self.root, 'Error', 'Invalid directory selected')
 
-        self.exit_pressed()
+        # self.exit_pressed()
 
     def determine_process_function(self):
         """Determine the processing function based on the directory contents."""
