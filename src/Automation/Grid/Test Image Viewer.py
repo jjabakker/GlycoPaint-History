@@ -79,7 +79,7 @@ class ImageViewer:
         self.setup_frames()
         self.setup_frame_controls()
         self.setup_frame_images()
-        self.setup_frame_buttons()
+        self.setup_frame_navigation_buttons()
         self.setup_frame_canvas()
         self.setup_frame_filter()
         self.setup_labels_and_combobox()
@@ -90,12 +90,12 @@ class ImageViewer:
         # The main level frames are defined
 
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_navigation_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_filter = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
         self.frame_images.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
-        self.frame_buttons.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
+        self.frame_navigation_buttons.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
         self.frame_controls.grid(column=1, row=0, padx=5, pady=5, sticky=N)
         self.frame_filter.grid(column=2, row=0, padx=5, pady=5, sticky=N)
 
@@ -115,15 +115,15 @@ class ImageViewer:
         self.frame_picture_left.grid_propagate(False)
         self.frame_picture_right.grid_propagate(False)
 
-    def setup_frame_buttons(self):
+    def setup_frame_navigation_buttons(self):
         # This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
 
-        self.bn_forward = ttk.Button(self.frame_buttons, text='Forward',
+        self.bn_forward = ttk.Button(self.frame_navigation_buttons, text='Forward',
                                      command=lambda: self.go_forward_backward('FORWARD'))
-        self.bn_exclude = ttk.Button(self.frame_buttons, text='Reject', command=lambda: self.exinclude())
-        self.bn_backward = ttk.Button(self.frame_buttons, text='Backward',
+        self.bn_exclude = ttk.Button(self.frame_navigation_buttons, text='Reject', command=lambda: self.exinclude())
+        self.bn_backward = ttk.Button(self.frame_navigation_buttons, text='Backward',
                                       command=lambda: self.go_forward_backward('BACKWARD'))
-        self.bn_exit = ttk.Button(self.frame_buttons, text='Exit', command=lambda: self.exit_viewer())
+        self.bn_exit = ttk.Button(self.frame_navigation_buttons, text='Exit', command=lambda: self.exit_viewer())
 
         # Layout the buttons
         self.bn_backward.grid(column=0, row=0, padx=5, pady=5)
@@ -144,30 +144,30 @@ class ImageViewer:
         self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5),
                                           width=frame_width)
         self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_output_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
 
         self.frame_neighbours.grid(column=0, row=1, padx=5, pady=5, sticky=tk.NSEW)
         self.frame_mode.grid(column=0, row=0, padx=5, pady=5, sticky=tk.NSEW)
         self.frame_cells.grid(column=0, row=2, padx=5, pady=5)
-        self.frame_commands.grid(column=0, row=3, padx=5, pady=5)
+        self.frame_output_commands.grid(column=0, row=3, padx=5, pady=5)
 
         self.setup_frame_neighbours()
         self.setup_frame_mode()
         self.setup_frame_cells()
-        self.setup_frame_commands()
+        self.setup_frame_output_commands()
 
-    def setup_frame_commands(self):
+    def setup_frame_output_commands(self):
         # This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
 
         button_width = 12
 
-        self.bn_histogram = ttk.Button(self.frame_commands, text='Histogram', command=lambda: self.histogram(),
+        self.bn_histogram = ttk.Button(self.frame_output_commands, text='Histogram', command=lambda: self.histogram(),
                                        width=button_width)
-        self.bn_excel = ttk.Button(self.frame_commands, text='Excel', command=lambda: self.show_excel(),
+        self.bn_excel = ttk.Button(self.frame_output_commands, text='Excel', command=lambda: self.show_excel(),
                                    width=button_width)
-        self.bn_output = ttk.Button(self.frame_commands, text='Output', command=lambda: self.run_output(),
+        self.bn_output = ttk.Button(self.frame_output_commands, text='Output', command=lambda: self.run_output(),
                                     width=button_width)
-        self.bn_reset = ttk.Button(self.frame_commands, text='Reset', command=lambda: self.reset_image(),
+        self.bn_reset = ttk.Button(self.frame_output_commands, text='Reset', command=lambda: self.reset_image(),
                                    width=button_width)
 
         self.bn_output.grid(column=0, row=0, padx=5, pady=5)
@@ -656,6 +656,8 @@ class ImageViewer:
                                           self.df_squares['Variability Visible'])
             self.df_batch.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
             save_batch_to_file(self.df_batch, self.batchfile_path)
+        if response is not None:
+            self.batch_changed = False
         return response
 
     def save_squares_if_requested(self):
@@ -664,7 +666,7 @@ class ImageViewer:
         file = os.path.split(file)[1]
         msg = f"Do you want to save changes to tracks file: {file}"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
-        if response is True:
+        if response is not None:
             self.update_squares_file()
         return response
 
@@ -1183,6 +1185,8 @@ class ImageViewer:
         if mode == "HEAT":
             if self.df_squares['Tau'].nunique() == 1:
                 messagebox.showinfo("Information", "No individual square Tau information available")
+                root.focus_force()
+                self.mode_intensity_duration_heatmap.set("SQUARE")
                 return
         elif mode == "SQUARE":
             self.configure_widgets_state(NORMAL)
@@ -1213,6 +1217,11 @@ class ImageViewer:
 
         if self.square_changed:
             response = self.save_squares_if_requested()
+            if response is None:
+                return
+
+        if self.batch_changed:
+            response = self.save_batch_if_requested()
             if response is None:
                 return
 
