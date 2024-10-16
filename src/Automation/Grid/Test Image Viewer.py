@@ -53,6 +53,8 @@ class ImageViewer:
         self.mode_dir_or_conf = mode_dir_or_conf
         self.img_no = 0
         self.mode_square_or_heatmap = None
+        self.mode_duration_or_intensity = 'INTENSITY'
+
 
         # UI state variables
         self.start_x = None
@@ -892,7 +894,17 @@ class ImageViewer:
             plt.show()
         return
 
+    def select_squares_for_display_new(self):
+        i = 1
+        # self.df_squares.loc[self.df_squares['Max Track Duration'] >= 60, 'Visible'] = True
+        self.df_squares['Visible'] = self.df_squares['Max Track Duration'] >= 30
+        i = 1
+
     def select_squares_for_display(self):
+
+        if self.mode_duration_or_intensity == 'DURATION':
+            self.select_squares_for_display_new()
+            return
 
         self.df_squares['Variability Visible'] = False
         self.df_squares.loc[
