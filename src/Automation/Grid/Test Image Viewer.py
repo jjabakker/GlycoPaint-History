@@ -146,8 +146,8 @@ class ImageViewer:
         self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
 
-        self.frame_neighbours.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
-        self.frame_mode.grid(column=0, row=0, padx=5, pady=5)
+        self.frame_neighbours.grid(column=0, row=1, padx=5, pady=5, sticky=tk.NSEW)
+        self.frame_mode.grid(column=0, row=0, padx=5, pady=5, sticky=tk.NSEW)
         self.frame_cells.grid(column=0, row=2, padx=5, pady=5)
         self.frame_commands.grid(column=0, row=3, padx=5, pady=5)
 
@@ -217,11 +217,11 @@ class ImageViewer:
 
         self.neighbour_var = StringVar(value="")
         self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12,
-                                             value="Free", command=self.select_neighbour_button)
+                                             value="Free", command=self.select_neighbour_button, anchor=tk.W)
         self.rb_neighbour_strict = Radiobutton(self.frame_neighbours, text="Strict", variable=self.neighbour_var,
-                                               width=12, value="Strict", command=self.select_neighbour_button)
+                                               width=12, value="Strict", command=self.select_neighbour_button, anchor=tk.W)
         self.rb_neighbour_relaxed = Radiobutton(self.frame_neighbours, text="Relaxed", variable=self.neighbour_var,
-                                                width=12, value="Relaxed", command=self.select_neighbour_button)
+                                                width=12, value="Relaxed", command=self.select_neighbour_button, anchor=tk.W)
         self.bn_set_neighbours_all = Button(self.frame_neighbours, text="Set for All",
                                             command=lambda: self.set_for_all_neighbour_state())
 
