@@ -50,11 +50,11 @@ class ImageViewer:
 
     def initialize_variables(self, root, directory, conf_file, mode_dir_or_conf):
 
+        self.img_no = 0
         self.root = root
         self.paint_directory = directory
         self.conf_file = conf_file
         self.mode_dir_or_conf = mode_dir_or_conf
-        self.img_no = 0
         self.mode_square_or_heatmap = None
         self.mode_duration_or_intensity = 'INTENSITY'
 
@@ -71,7 +71,7 @@ class ImageViewer:
         self.neighbour_mode = ""
         self.select_mode = ""
 
-        root.title(f'Test Image Viewer - {self.paint_directory if self.mode_dir_or_conf == "Directory" else self.conf_file}')
+        root.title(f'Test Image Viewer - {self.paint_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
 
     def setup_ui(self):
 
@@ -640,25 +640,47 @@ class ImageViewer:
         self.img_no = save_img_no - 1
         self.go_forward_backward('Forward')
 
+    def save_batch_if_requested(self):
+
+        file = f"{self.paint_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
+        file = os.path.split(file)[1]
+        msg = f"Do you want to save changes to {'batch' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
+        response = messagebox.askyesnocancel("Save Changes", message=msg)
+        if response is True:
+            self.save_density_ratio_slider_state_into_df_batch()
+            self.save_variability_slider_state_into_df_batch()
+            self.save_neighbour_state_into_df_batch()
+
+            # Write the Nr Visible Squares visibility information into the batch file
+            self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
+                                          self.df_squares['Variability Visible'] &
+                                          self.df_squares['Variability Visible'])
+            self.df_batch.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
+            save_batch_to_file(self.df_batch, self.batchfile_path)
+        return response
+
+    def save_squares_if_requested(self):
+
+        file = f"{self.squares_file_name if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
+        file = os.path.split(file)[1]
+        msg = f"Do you want to save changes to tracks file: {file}"
+        response = messagebox.askyesnocancel("Save Changes", message=msg)
+        if response is True:
+            self.update_squares_file()
+        return response
+
     def exit_viewer(self):
 
-        if self.batch_changed or self.square_changed:  # Todo
+        response_square = response_batch = ""
 
-            if self.batch_changed and self.mode_dir_or_conf == 'CONF_FILE':
-                msg = "Do you want to save changes before exiting? Note the configuration file will be updated"
-            else:
-                msg = "Do you want to save changes before exiting? Note the grid_batch file will be updated"
-            response = messagebox.askyesnocancel("Save Changes", message=msg)
-            if response is True:
-                if self.batch_changed:
-                    self.update_batch_file()
-                if self.square_changed:
-                    self.update_squares_file()
-                root.quit()
-            elif response is False:
-                root.quit()
-            else:
-                pass
+        if self.batch_changed:
+            response_batch = self.save_batch_if_requested()
+
+        if self.square_changed:
+            response_square = self.save_squares_if_requested()
+
+        if response_batch is None or response_square is None:
+            return
         else:
             root.quit()
 
@@ -707,6 +729,7 @@ class ImageViewer:
 
                 print(
                     f"For Cell Id: {cell_id}, the tau mean is {tau_mean}, the tau median is {tau_median} and the tau std is {tau_std}\n")
+
 
     def show_excel(self):
         # Path to the Excel application
@@ -1170,7 +1193,7 @@ class ImageViewer:
 
     def select_neighbour_button(self):
 
-        self.square_changed = True
+        self.batch_changed = True
 
         self.cn_left_image.delete("all")
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
@@ -1189,17 +1212,9 @@ class ImageViewer:
         """
 
         if self.square_changed:
-            response = messagebox.askyesnocancel(
-                "Save Changes", "Do you want to save the squares info before moving on?")
-            if response is True:
-                # self.save_image_state()
-                self.update_squares_file()
-            elif response is False:
-                pass
-            else:
+            response = self.save_squares_if_requested()
+            if response is None:
                 return
-
-            self.square_changed = False
 
         # Determine what the next image is, depending on the direction
         # Be sure not move beyond the boundaries (could happen when the left and right keys are used)
@@ -1311,10 +1326,6 @@ class ImageViewer:
         self.df_batch.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
         save_batch_to_file(self.df_batch, self.batchfile_path)
 
-        # Save the batch and squares
-        # self.select_squares_for_display()
-        # self.write_squares()    # TODO: Really?
-
 
 def save_as_png(canvas, file_name):
     # First save as a postscript file
@@ -1325,7 +1336,7 @@ def save_as_png(canvas, file_name):
     img.save(f"{file_name}.png", 'png')
 
 
-def save_square_info_to_batch(self):
+def save_square_info_to_batch(self):     # TODO
     for index, row in self.df_batch.iterrows():
         self.squares_file_name = self.list_images[self.img_no]['Squares File']
         df_squares = read_squares_from_file(self.squares_file_name)
@@ -1404,7 +1415,7 @@ class SelectViewerDialog:
 
     def add_label(self, parent, text, row) -> ttk.Label:
         """Helper function to add a label to a frame."""
-        label = ttk.Label(parent, text=text, width=80)
+        label = ttk.Label(parent, text=text, width=90)
         label.grid(column=1, row=row, padx=20, pady=5)
         return label
 
@@ -1434,7 +1445,6 @@ class SelectViewerDialog:
 
         error = False
 
-        mode_dir_or_conf = self.mode_dir_or_conf.get()
         root_directory = self.root_directory
         conf_file = self.conf_file
         error = False
