@@ -395,9 +395,6 @@ class ImageViewer:
             else:
                 image_path = os.path.join(paint_directory, str(df_batch.iloc[index]['Experiment Date']), image_name)
 
-            # if os.path.isfile(image_path):
-            #     continue
-
             # If there is no img directory below the image directory, skip it
             img_dir = os.path.join(image_path, "img")
             if not os.path.isdir(img_dir):
@@ -948,44 +945,43 @@ class ImageViewer:
         return
 
     def select_squares_for_display_new(self):
-        i = 1
-        # self.df_squares.loc[self.df_squares['Max Track Duration'] >= 60, 'Visible'] = True
         self.df_squares['Visible'] = self.df_squares['Max Track Duration'] >= 30
-        i = 1
 
     def select_squares_for_display(self):
 
         if self.mode_duration_or_intensity == 'DURATION':
-            self.select_squares_for_display_new()
+            self.df_squares['Visible'] = self.df_squares['Max Track Duration'] >= 30
             return
+        else:
 
-        self.df_squares['Variability Visible'] = False
-        self.df_squares.loc[
-            self.df_squares['Variability'] <= round(self.sc_variability.get(), 1), 'Variability Visible'] = True
-        self.df_squares.loc[
-            self.df_squares['Variability'] > round(self.sc_variability.get(), 1), 'Variability Visible'] = False
 
-        self.df_squares['Density Ratio Visible'] = False
-        self.df_squares.loc[
-            self.df_squares['Density Ratio'] >= round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = True
-        self.df_squares.loc[
-            self.df_squares['Density Ratio'] < round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = False
+            self.df_squares['Variability Visible'] = False
+            self.df_squares.loc[
+                self.df_squares['Variability'] <= round(self.sc_variability.get(), 1), 'Variability Visible'] = True
+            self.df_squares.loc[
+                self.df_squares['Variability'] > round(self.sc_variability.get(), 1), 'Variability Visible'] = False
 
-        self.df_squares['Visible'] = self.df_squares['Density Ratio Visible'] & self.df_squares['Variability Visible']
+            self.df_squares['Density Ratio Visible'] = False
+            self.df_squares.loc[
+                self.df_squares['Density Ratio'] >= round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = True
+            self.df_squares.loc[
+                self.df_squares['Density Ratio'] < round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = False
 
-        # Select which isolation mode to be applied
-        neighbour_state = self.neighbour_var.get()
-        if neighbour_state == "Relaxed":
-            eliminate_isolated_squares_relaxed(self.df_squares, self.nr_squares_in_row)
-        elif neighbour_state == "Strict":
-            eliminate_isolated_squares_strict(self.df_squares, self.nr_squares_in_row)
-        elif neighbour_state == "Free":
-            self.df_squares['Neighbour Visible'] = True
+            self.df_squares['Visible'] = self.df_squares['Density Ratio Visible'] & self.df_squares['Variability Visible']
 
-        self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
-                                      self.df_squares['Density Ratio Visible'] &
-                                      self.df_squares['Variability Visible'] &
-                                      self.df_squares['Neighbour Visible'])
+            # Select which isolation mode to be applied
+            neighbour_state = self.neighbour_var.get()
+            if neighbour_state == "Relaxed":
+                eliminate_isolated_squares_relaxed(self.df_squares, self.nr_squares_in_row)
+            elif neighbour_state == "Strict":
+                eliminate_isolated_squares_strict(self.df_squares, self.nr_squares_in_row)
+            elif neighbour_state == "Free":
+                self.df_squares['Neighbour Visible'] = True
+
+            self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
+                                          self.df_squares['Density Ratio Visible'] &
+                                          self.df_squares['Variability Visible'] &
+                                          self.df_squares['Neighbour Visible'])
 
     def display_selected_squares(self):
 
@@ -1186,9 +1182,8 @@ class ImageViewer:
         mode = self.mode_intensity_duration_heatmap.get()
         if mode == "HEAT":
             if self.df_squares['Tau'].nunique() == 1:
-                messagebox.showinfo("Information", "No Tau information available")
+                messagebox.showinfo("Information", "No individual square Tau information available")
                 return
-            self.configure_widgets_state(DISABLED)
         elif mode == "SQUARE":
             self.configure_widgets_state(NORMAL)
         elif  mode  == "DURATION":
@@ -1196,9 +1191,9 @@ class ImageViewer:
         else:
             paint_logger.error('Big trouble!')
 
-        self.list_images = self.get_images(self.mode_square_or_heatmap.get())
+        self.list_images = self.get_images(mode)
         self.img_no -= 1
-        self.go_forward_backward('Forward')
+        self.go_forward_backward('FORWARD')
 
     def select_neighbour_button(self):
 
@@ -1214,11 +1209,7 @@ class ImageViewer:
         self.display_selected_squares()
 
     def go_forward_backward(self, direction):
-        """
-        The function is called when we switch image
-        :param direction:
-        :return:
-        """
+        # The function is called when we switch image
 
         if self.square_changed:
             response = self.save_squares_if_requested()
