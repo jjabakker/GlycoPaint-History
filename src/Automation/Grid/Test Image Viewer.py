@@ -43,6 +43,7 @@ class ImageViewer:
         self.setup_ui()
         self.load_images_and_config()
         self.setup_exclude_button()
+        self.setup_exclude_button()
 
         # Bind keys for navigation
         root.bind('<Right>', lambda event: self.go_forward_backward('FORWARD'))
@@ -57,7 +58,6 @@ class ImageViewer:
         self.mode_dir_or_conf = mode_dir_or_conf
         self.mode_intensity_duration_heatmap = None
         self.mode_duration_or_intensity = 'INTENSITY'
-
 
         # UI state variables
         self.start_x = None
@@ -74,6 +74,10 @@ class ImageViewer:
         root.title(f'Test Image Viewer - {self.paint_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
 
     def setup_ui(self):
+        """
+        Sets up the UI by defining the top level frames
+        For each frame a setup function ios called
+        """
 
         self.content = ttk.Frame(self.root, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
 
@@ -95,12 +99,11 @@ class ImageViewer:
         self.setup_frame_filter()
         self.setup_frame_duration_mode()
 
-        self.setup_frame_canvas()
-        #self.setup_frame_duration()
-        self.setup_labels_and_combobox()
-
         self.content.grid(column=0, row=0)
 
+    # ----------------------------------------------------------------------------------------
+    # Setup functions for the frame_images content
+    # ----------------------------------------------------------------------------------------
 
     def setup_frame_images(self):
 
@@ -117,6 +120,45 @@ class ImageViewer:
 
         self.frame_picture_left.grid_propagate(False)
         self.frame_picture_right.grid_propagate(False)
+
+        # Define the canvas widgets for the images
+        self.cn_left_image = tk.Canvas(self.frame_picture_left, width=512, height=512)
+        self.cn_right_image = tk.Canvas(self.frame_picture_right, width=512, height=512)
+
+        self.cn_left_image.grid(column=0, row=0, padx=2, pady=2)
+        self.cn_right_image.grid(column=0, row=0, padx=2, pady=2)
+
+        self.root.bind('<Key>', self.key_pressed)
+
+        # Define the labels and combobox widgets for the images
+        self.list_images = []
+        self.list_of_image_names = []
+        self.cb_image_names = ttk.Combobox(self.frame_picture_left, values=self.list_of_image_names, state='readonly',
+                                           width=30)
+
+        # Label for the right image name
+        self.lbl_image_bf_name = StringVar(self.root, "")
+        lbl_image_bf_name = ttk.Label(self.frame_picture_right, textvariable=self.lbl_image_bf_name)
+
+        # Labels for image info
+        self.text_for_info1 = StringVar(self.root, "")
+        lbl_info1 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info1)
+
+        self.text_for_info2 = StringVar(self.root, "")
+        lbl_info2 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
+
+        self.text_for_info3 = StringVar(self.root, "")
+        lbl_info3 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info3)
+
+        # Bind combobox selection
+        self.cb_image_names.bind("<<ComboboxSelected>>", self.image_selected)
+
+        # Layout labels and combobox
+        self.cb_image_names.grid(column=0, row=1, padx=5, pady=5)
+        lbl_info1.grid(column=0, row=2, padx=5, pady=5)
+        lbl_info2.grid(column=0, row=3, padx=5, pady=5)
+        lbl_info3.grid(column=0, row=4, padx=5, pady=5)
+        lbl_image_bf_name.grid(column=0, row=1, padx=0, pady=0)
 
     def setup_frame_navigation_buttons(self):
         # This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
@@ -149,34 +191,55 @@ class ImageViewer:
         self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_output_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
 
-        self.frame_neighbours.grid(column=0, row=1, padx=5, pady=5, sticky=tk.NSEW)
         self.frame_mode.grid(column=0, row=0, padx=5, pady=5, sticky=tk.NSEW)
+        self.frame_neighbours.grid(column=0, row=1, padx=5, pady=5, sticky=tk.NSEW)
         self.frame_cells.grid(column=0, row=2, padx=5, pady=5)
         self.frame_output_commands.grid(column=0, row=3, padx=5, pady=5)
 
-        self.setup_frame_neighbours()
         self.setup_frame_mode()
+        self.setup_frame_neighbours()
         self.setup_frame_cells()
         self.setup_frame_output_commands()
 
-    def setup_frame_output_commands(self):
-        # This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
+    def setup_frame_mode(self):
+        # This frame is part of frame_controls and contains the following radio buttons: rb_mode_square, rb_mode_heat
 
-        button_width = 12
+        self.mode_intensity_duration_heatmap = StringVar(value="INTENSITY")
+        self.rb_mode_square = Radiobutton(self.frame_mode, text="Intensity", variable=self.mode_intensity_duration_heatmap,
+                                          value="INTENSITY", command=self.select_mode_button)
+        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Tau Heatmap", variable=self.mode_intensity_duration_heatmap,
+                                        value="HEAT", command=self.select_mode_button)
+        self.rb_mode_duration = Radiobutton(self.frame_mode, text="Duration", variable=self.mode_intensity_duration_heatmap,
+                                            value="DURATION", command=self.select_mode_button)
 
-        self.bn_histogram = ttk.Button(self.frame_output_commands, text='Histogram', command=lambda: self.histogram(),
-                                       width=button_width)
-        self.bn_excel = ttk.Button(self.frame_output_commands, text='Excel', command=lambda: self.show_excel(),
-                                   width=button_width)
-        self.bn_output = ttk.Button(self.frame_output_commands, text='Output', command=lambda: self.run_output(),
-                                    width=button_width)
-        self.bn_reset = ttk.Button(self.frame_output_commands, text='Reset', command=lambda: self.reset_image(),
-                                   width=button_width)
+        self.rb_mode_square.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_mode_duration.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_mode_heat.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
 
-        self.bn_output.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_reset.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_excel.grid(column=0, row=2, padx=5, pady=5)
-        self.bn_histogram.grid(column=0, row=3, padx=5, pady=5)
+    def setup_frame_neighbours(self):
+        # This frame is part of frame_controls and contains the following radio buttons: rb_neighbour_free, rb_neighbour_strict, rb_neighbour_relaxed, bn_set_neighbours_all
+
+        self.neighbour_var = StringVar(value="")
+        self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12,
+                                             value="Free", command=self.select_neighbour_button, anchor=tk.W)
+        self.rb_neighbour_strict = Radiobutton(self.frame_neighbours, text="Strict", variable=self.neighbour_var,
+                                               width=12, value="Strict", command=self.select_neighbour_button, anchor=tk.W)
+        self.rb_neighbour_relaxed = Radiobutton(self.frame_neighbours, text="Relaxed", variable=self.neighbour_var,
+                                                width=12, value="Relaxed", command=self.select_neighbour_button, anchor=tk.W)
+        self.bn_set_neighbours_all = Button(self.frame_neighbours, text="Set for All",
+                                            command=lambda: self.set_for_all_neighbour_state())
+
+        # Place the radio buttons and button in the grid
+        self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_neighbour_relaxed.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_neighbour_strict.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+        self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
+
+        # Place the radio buttons and button in the grid
+        self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_neighbour_relaxed.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_neighbour_strict.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+        self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_cells(self):
         # This frame is part of frame_controls and contains the following radio buttons: rb_cell0, rb_cell1, rb_cell2, rb_cell3, rb_cell4, rb_cell5, rb_cell6
@@ -215,61 +278,24 @@ class ImageViewer:
         self.rb_cell6.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 6))
         self.rb_cell0.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 0))
 
-    def setup_frame_neighbours(self):
-        # This frame is part of frame_controls and contains the following radio buttons: rb_neighbour_free, rb_neighbour_strict, rb_neighbour_relaxed, bn_set_neighbours_all
+    def setup_frame_output_commands(self):
+        # This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
 
-        self.neighbour_var = StringVar(value="")
-        self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12,
-                                             value="Free", command=self.select_neighbour_button, anchor=tk.W)
-        self.rb_neighbour_strict = Radiobutton(self.frame_neighbours, text="Strict", variable=self.neighbour_var,
-                                               width=12, value="Strict", command=self.select_neighbour_button, anchor=tk.W)
-        self.rb_neighbour_relaxed = Radiobutton(self.frame_neighbours, text="Relaxed", variable=self.neighbour_var,
-                                                width=12, value="Relaxed", command=self.select_neighbour_button, anchor=tk.W)
-        self.bn_set_neighbours_all = Button(self.frame_neighbours, text="Set for All",
-                                            command=lambda: self.set_for_all_neighbour_state())
+        button_width = 12
 
-        # Place the radio buttons and button in the grid
-        self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_relaxed.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_strict.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
-        self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
+        self.bn_histogram = ttk.Button(self.frame_output_commands, text='Histogram', command=lambda: self.histogram(),
+                                       width=button_width)
+        self.bn_excel = ttk.Button(self.frame_output_commands, text='Excel', command=lambda: self.show_excel(),
+                                   width=button_width)
+        self.bn_output = ttk.Button(self.frame_output_commands, text='Output', command=lambda: self.run_output(),
+                                    width=button_width)
+        self.bn_reset = ttk.Button(self.frame_output_commands, text='Reset', command=lambda: self.reset_image(),
+                                   width=button_width)
 
-        # Place the radio buttons and button in the grid
-        self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_relaxed.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_strict.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
-        self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
-
-    def setup_frame_mode(self):
-        # This frame is part of frame_controls and contains the following radio buttons: rb_mode_square, rb_mode_heat
-
-        self.mode_intensity_duration_heatmap = StringVar(value="SQUARE")
-        self.rb_mode_square = Radiobutton(self.frame_mode, text="Intensity", variable=self.mode_intensity_duration_heatmap,
-                                          value="SQUARE", command=self.select_mode_button)
-        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Tau Heatmap", variable=self.mode_intensity_duration_heatmap,
-                                        value="HEAT", command=self.select_mode_button)
-        self.rb_mode_duration = Radiobutton(self.frame_mode, text="Duration", variable=self.mode_intensity_duration_heatmap,
-                                            value="DURATION", command=self.select_mode_button)
-
-        self.rb_mode_square.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_mode_duration.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_mode_heat.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
-
-    def setup_frame_duration_mode(self):
-        # This frame is part of the content frame and contains the following frames: frame_duration,
-
-        # The Duration  slider  frame
-        self.frame_duration = ttk.Frame(self.frame_duration_mode, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_duration.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
-
-        self.track_duration = DoubleVar(value=100)
-        self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
-        self.sc_track_duration= tk.Scale(self.frame_duration, from_=1, to=200, variable=self.track_duration,
-                                         orient='vertical', resolution=1, command=self.track_duration_changing)
-        self.sc_track_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
-
-        self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
-        self.sc_track_duration.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_output.grid(column=0, row=0, padx=5, pady=5)
+        self.bn_reset.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_excel.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_histogram.grid(column=0, row=3, padx=5, pady=5)
 
     def setup_frame_filter(self):
         # This frame is part of the content frame and contains the following frames: frame_variability, frame_density_ratio
@@ -305,49 +331,24 @@ class ImageViewer:
         self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
         self.bn_set_for_all_slider.grid(column=0, row=2, padx=5, pady=5)
 
-    def setup_frame_canvas(self):
-        # This frame is part of the content frame and contains the following canvas: cn_left_image, cn_right_image
+    def setup_frame_duration_mode(self):
+        # This frame is part of the content frame and contains the following frames: frame_duration,
 
-        self.cn_left_image = tk.Canvas(self.frame_picture_left, width=512, height=512)
-        self.cn_right_image = tk.Canvas(self.frame_picture_right, width=512, height=512)
+        # The Duration  slider  frame
+        self.frame_duration = ttk.Frame(self.frame_duration_mode, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_duration.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
 
-        self.cn_left_image.grid(column=0, row=0, padx=2, pady=2)
-        self.cn_right_image.grid(column=0, row=0, padx=2, pady=2)
+        self.track_duration = DoubleVar(value=100)
+        self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
+        self.sc_track_duration= tk.Scale(self.frame_duration, from_=1, to=200, variable=self.track_duration,
+                                         orient='vertical', resolution=1, command=self.track_duration_changing)
+        self.sc_track_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
 
-        self.root.bind('<Key>', self.key_pressed)
-
-    def setup_labels_and_combobox(self):
-
-        self.list_images = []
-        self.list_of_image_names = []
-        self.cb_image_names = ttk.Combobox(self.frame_picture_left, values=self.list_of_image_names, state='readonly',
-                                           width=30)
-
-        # Label for the right image name
-        self.lbl_image_bf_name = StringVar(self.root, "")
-        lbl_image_bf_name = ttk.Label(self.frame_picture_right, textvariable=self.lbl_image_bf_name)
-
-        # Labels for image info
-        self.text_for_info1 = StringVar(self.root, "")
-        lbl_info1 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info1)
-
-        self.text_for_info2 = StringVar(self.root, "")
-        lbl_info2 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
-
-        self.text_for_info3 = StringVar(self.root, "")
-        lbl_info3 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info3)
-
-        # Bind combobox selection
-        self.cb_image_names.bind("<<ComboboxSelected>>", self.image_selected)
-
-        # Layout labels and combobox
-        self.cb_image_names.grid(column=0, row=1, padx=5, pady=5)
-        lbl_info1.grid(column=0, row=2, padx=5, pady=5)
-        lbl_info2.grid(column=0, row=3, padx=5, pady=5)
-        lbl_info3.grid(column=0, row=4, padx=5, pady=5)
-        lbl_image_bf_name.grid(column=0, row=1, padx=0, pady=0)
+        self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
+        self.sc_track_duration.grid(column=0, row=1, padx=5, pady=5)
 
     def load_images_and_config(self):
+
         # Load images and configurations
 
         if self.mode_dir_or_conf == 'DIRECTORY':
@@ -363,7 +364,7 @@ class ImageViewer:
         self.image_name = self.df_batch.iloc[self.img_no]['Ext Image Name']
         self.nr_squares_in_row = int(self.df_batch.iloc[0]['Nr Of Squares per Row'])
 
-        self.list_images = self.get_images('SQUARE')
+        self.list_images = self.get_images('INTENSITY')
         if not self.list_images:
             self.show_error_and_exit(f"No images were found below directory {self.paint_directory}.")
 
@@ -440,7 +441,7 @@ class ImageViewer:
             for img in all_images_in_img_dir:
                 if img.startswith('.'):
                     continue
-                if type_of_image == "SQUARE" or type_of_image == "DURATION":
+                if type_of_image == "INTENSITY" or type_of_image == "DURATION":
                     if img.find("grid-roi") == -1 and img.find("heat") == -1:
 
                         left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
@@ -1208,9 +1209,11 @@ class ImageViewer:
             if self.df_squares['Tau'].nunique() == 1:
                 messagebox.showinfo("Information", "No individual square Tau information available")
                 root.focus_force()
-                self.mode_intensity_duration_heatmap.set("SQUARE")
+                self.mode_intensity_duration_heatmap.set("INTENSITY")
+                self.select_squares_for_display()
+                self.display_selected_squares()
                 return
-        elif mode == "SQUARE":
+        elif mode == "INTENSITY":
             self.configure_widgets_state(NORMAL)
         elif  mode  == "DURATION":
             self.configure_widgets_state(DISABLED)
@@ -1262,8 +1265,8 @@ class ImageViewer:
         # Place new image in the canvas and draw the squares
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
 
-        # If the mode is 'SQUARE' or 'DURATION' draw the squares:
-        if self.mode_intensity_duration_heatmap.get() == 'SQUARE':
+        # If the mode is 'INTENSITY' or 'DURATION' draw the squares:
+        if self.mode_intensity_duration_heatmap.get() == 'INTENSITY':
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
             self.set_variability_slider_state()

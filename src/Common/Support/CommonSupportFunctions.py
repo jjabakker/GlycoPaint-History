@@ -1,12 +1,25 @@
 import csv
 import os
 import sys
+from os import makedirs
 
+
+def _get_paint_configuration_directory(sub_dir):
+    conf_dir = os.path.join(os.path.expanduser('~'), 'Paint')
+    makedirs(os.path.join(conf_dir, sub_dir), exist_ok=True)
+    return conf_dir
+
+def get_paint_profile_directory():
+    sub_dir = 'Paint Profile'
+    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
+
+def get_paint_logger_directory():
+    sub_dir = 'Paint Logger'
+    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
 
 def get_default_locations():
 
-    configuration_dir = os.path.expanduser('~') + os.sep + "Paint Profile"
-    parameter_file = os.path.join(configuration_dir, "default_locations.csv")
+    default_locations_file_path = os.path.join(get_paint_profile_directory(), "default_locations.csv")
 
     # Set the default directories so that you can return something in any case
     image_directory = os.path.expanduser('~')
@@ -16,11 +29,11 @@ def get_default_locations():
 
     try:
         # Check if the file exists
-        if not os.path.exists(parameter_file):
-            return root_directory, paint_directory, image_directory
+        if not os.path.exists(default_locations_file_path):
+            return root_directory, paint_directory, image_directory, conf_file
 
         # Open and read the CSV file
-        with open(parameter_file, mode='r', newline='') as file:
+        with open(default_locations_file_path, mode='r', newline='') as file:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
@@ -51,16 +64,14 @@ def get_default_locations():
 
 def save_default_locations(root_directory, paint_directory, images_directory, conf_file):
 
-    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
-    parameter_file_path = os.path.join(configuration_dir, "default_locations.csv")
+    default_locations_file_path = os.path.join(get_paint_profile_directory(), "default_locations.csv")
 
-    os.makedirs(configuration_dir, exist_ok=True)
     try:
 
         fieldnames = ['images_directory', 'paint_directory', 'root_directory', 'conf_file']
 
         # Open the file in write mode ('w') and overwrite any existing content
-        with open(parameter_file_path, mode='w', newline='') as file:
+        with open(default_locations_file_path, mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
             # Write the header

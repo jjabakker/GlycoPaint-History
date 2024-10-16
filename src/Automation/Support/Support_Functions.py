@@ -7,7 +7,10 @@ from tkinter.filedialog import askdirectory
 import numpy as np
 import pandas as pd
 
-from src.Common.Support.CommonSupportFunctions import get_default_locations, save_default_locations
+from src.Common.Support.CommonSupportFunctions import (
+    get_default_locations,
+    save_default_locations,
+    get_paint_profile_directory)
 from src.Common.Support.LoggerConfig import paint_logger
 
 pd.options.mode.copy_on_write = True
@@ -312,10 +315,11 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
     return df_squares, list_of_squares
 
 
+
+
 def get_grid_defaults_from_file() -> dict:
 
-    configuration_dir = os.path.expanduser('~') + os.sep + "Paint Profile"
-    parameter_file_path = os.path.join(configuration_dir, "grid_parameters.csv")
+    parameter_file_path = os.path.join(get_paint_profile_directory(), "grid_parameters.csv")
 
     def_parameters = {'nr_squares_in_row': 20,
                       'min_tracks_for_tau': 30,
@@ -371,10 +375,7 @@ def save_grid_defaults_to_file(
         process_single: bool,
         process_traditional: bool):
 
-    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
-    parameter_file_path = os.path.join(configuration_dir, "grid_parameters.csv")
-
-    os.makedirs(configuration_dir, exist_ok=True)
+    grid_parameter_file_path = os.path.join(get_paint_profile_directory(), 'grid_parameters.csv')
 
     try:
 
@@ -382,7 +383,7 @@ def save_grid_defaults_to_file(
                       'max_variability',  'max_square_coverage', 'process_single', 'process_traditional']
 
         # Open the file in write mode ('w') and overwrite any existing content
-        with open(parameter_file_path, mode='w', newline='') as file:
+        with open(grid_parameter_file_path, mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
             # Write the header
@@ -401,9 +402,6 @@ def save_grid_defaults_to_file(
 
     except Exception as e:
         print(f"An error occurred while writing to the file: {e}")       # TODO: Replace with logger
-
-
-
 
 
 def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
@@ -666,7 +664,6 @@ def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_s
     return average
 
 
-
 def split_probe_valency(row):
     regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
     match = regexp.match(row['Probe'])
@@ -719,7 +716,6 @@ def copy_directory(src, dest):
         paint_logger.error(f"RecursionError: {e}")
     except Exception as e:
         paint_logger.error(f"An unexpected error occurred: {e}")
-
 
 
 def get_area_of_square(nr_of_squares_in_row):
