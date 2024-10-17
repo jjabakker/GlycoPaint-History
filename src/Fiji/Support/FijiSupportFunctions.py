@@ -9,7 +9,7 @@ from javax.swing import JFileChooser
 paint_code__dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_code__dir)
 
-from CommonSupportFunctions import get_default_directories, save_default_directories
+from CommonSupportFunctions import get_default_locations, save_default_locations
 
 
 def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
@@ -20,7 +20,7 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
     :param directory:
     :return:
     """
-    root_dir, paint_dir, images_dir = get_default_directories()
+    root_dir, paint_dir, images_dir, conf_file = get_default_locations()
 
     if directory == 'Paint':
         def_dir = paint_dir
@@ -40,7 +40,7 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
             paint_dir = selected_directory
         else:
             images_dir = selected_directory
-        save_default_directories(root_dir, paint_dir, images_dir)
+        save_default_locations(root_dir, paint_dir, images_dir, conf_file)
         return selected_directory.getAbsolutePath()
     else:
         return ""
