@@ -22,7 +22,7 @@ PAINT_DEBUG = False
 PAINT_FORCE = True
 
 if PAINT_DEBUG:
-    CONF_FILE = '/Users/hans/Paint Source/paint data generation - integrated.json'
+    CONF_FILE = '/Users/hans/Paint Source/Configuration Files/paint data generation - integrated.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
     PAINT_DATA = '/Users/Hans/Paint Data Integrated'
     R_DATA_DEST = '/Users/hans/R Data'
@@ -30,7 +30,7 @@ if PAINT_DEBUG:
     TIME_STAMP = '2024-10-11 11:11:11'  # '%Y-%m-%d %H:%M:%S
 
 else:
-    CONF_FILE = '/Users/hans/Paint Source/paint data generation - integrated.json'
+    CONF_FILE = '/Users/hans/Paint Source/Configuration Files/paint data generation - integrated.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
     PAINT_DATA = '/Users/Hans/Paint Data Integrated'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated - v2'
