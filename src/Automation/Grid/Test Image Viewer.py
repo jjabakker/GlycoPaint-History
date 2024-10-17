@@ -340,8 +340,8 @@ class ImageViewer:
 
         self.track_duration = DoubleVar(value=100)
         self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
-        self.sc_track_duration= tk.Scale(self.frame_duration, from_=1, to=200, variable=self.track_duration,
-                                         orient='vertical', resolution=1, command=self.track_duration_changing)
+        self.sc_track_duration= tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration,
+                                         orient='vertical', resolution=0.1, command=self.track_duration_changing)
         self.sc_track_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
 
         self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
