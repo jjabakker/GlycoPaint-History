@@ -93,6 +93,8 @@ def delete_files_in_directory(directory_path):
     :return:
     """
     try:
+        if not os.path.exists(directory_path):
+            return
         files = os.listdir(directory_path)
         for file in files:
             file_path = os.path.join(directory_path, file)
@@ -119,45 +121,4 @@ def get_default_image_directory():
 
 
 
-TRACKMATE_TRACKS = "Trackmate Tracks"
-TAU_PLOTS = "Tau Plots"
-SQUARES = "Squares"
-TRACKMATE_IMAGES = "Trackmate Images"
 
-def create_directories(image_directory, delete_existing=True):
-    """
-    The function creates a bunch of directories under the specified directory.
-    If there were already files in the specified directory they will be deleted
-    :param image_directory:
-    :param delete_existing:
-    :return:
-    """
-
-    if not os.path.isdir(image_directory):
-        os.makedirs(image_directory)
-    else:
-        if delete_existing:
-            delete_files_in_directory(image_directory)
-
-    tracks_dir = os.path.join(image_directory, TRACKMATE_TRACKS)  # Where all cells track files will be stored
-    plt_dir = os.path.join(image_directory, TAU_PLOTS)  # Where all cells plt files will be stored
-    grid_dir = os.path.join(image_directory, SQUARES)  # Where th squares files will be stored
-    img_dir = os.path.join(image_directory, TRACKMATE_IMAGES)  # Where all cells img files will be stored
-
-    dirs_to_create = [tracks_dir, plt_dir, grid_dir, img_dir]
-
-    for directory in dirs_to_create:
-        if not os.path.isdir(directory):  # Create the roi directory if it does not exist
-            os.makedirs(directory)
-        else:
-            if delete_existing:
-                delete_files_in_directory(directory)
-
-    return tracks_dir, plt_dir, img_dir
-
-
-def get_tracks_file_path(experiment_directory, ext_image_name):
-    return os.path.join(experiment_directory, ext_image_name, TRACKMATE_TRACKS, ext_image_name + "-tracks.csv")
-
-def get_image_file_path(experiment_directory, ext_image_name):
-    return os.path.join(experiment_directory, ext_image_name, TRACKMATE_IMAGES, ext_image_name + ".tiff")

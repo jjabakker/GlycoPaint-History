@@ -22,9 +22,9 @@ from src.Automation.Support.Support_Functions import (
     create_output_directories_for_graphpad,
     get_default_locations,
     save_default_locations,
-    read_batch_from_file,
+    read_experiment_file,
     read_squares_from_file,
-    save_batch_to_file,
+    save_experiment_to_file,
     save_squares_to_file)
 
 # Log to an appropriately named file
@@ -266,7 +266,7 @@ class ImageViewer:
             self.batchfile_path = os.path.join(self.paint_directory, _conf_file)
 
         # Read the batch file. If the file is not there just return (a message will have been printed)
-        self.df_batch = read_batch_from_file(self.batchfile_path, FALSE)
+        self.df_batch = read_experiment_file(self.batchfile_path, FALSE)
         if self.df_batch is None:
             paint_logger.error("No 'grid_batch.csv' file, Did you select an image directory?")
             sys.exit()
@@ -1242,7 +1242,7 @@ class ImageViewer:
 
     def read_batch(self):
         batch_file_path = os.path.join(self.paint_directory, self.image_name, 'grid_batch.csv')
-        self.df_batch = read_batch_from_file(batch_file_path)
+        self.df_batch = read_experiment_file(batch_file_path)
         if self.df_batch is None:
             paint_logger.error(f"Function 'read_batch' failed - Squares file {batch_file_path} was not found.")
             sys.exit()
@@ -1258,7 +1258,7 @@ class ImageViewer:
         save_squares_to_file(self.df_squares, squares_file_name)
 
     def write_grid_batch(self):
-        save_batch_to_file(self.df_batch, self.batchfile_path)
+        save_experiment_to_file(self.df_batch, self.batchfile_path)
 
     def save_image_state(self):
 

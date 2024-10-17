@@ -315,8 +315,6 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
     return df_squares, list_of_squares
 
 
-
-
 def get_grid_defaults_from_file() -> dict:
 
     parameter_file_path = os.path.join(get_paint_profile_directory(), "grid_parameters.csv")
@@ -471,7 +469,7 @@ def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
     # return c1 and c2 and c3 and c4
 
 
-def save_batch_to_file(df_batch, batch_file_path):
+def save_experiment_to_file(df_batch, batch_file_path):
     df_batch.to_csv(batch_file_path, index=False)
 
 
@@ -479,24 +477,28 @@ def save_squares_to_file(df_squares, square_file_path):
     df_squares.to_csv(square_file_path, index=False)
 
 
-def read_batch_from_file(batch_file_path, only_records_to_process=True):
+def read_experiment_file(experiment_file_path: str, only_records_to_process: bool = True) -> pd.DataFrame:
     """
     Create the process table by looking for records that were marked for processing
     :return:
     """
 
     try:
-        df_batch = pd.read_csv(batch_file_path, header=0, skiprows=[])
+        df_experiment = pd.read_csv(experiment_file_path, header=0, skiprows=[])
     except IOError:
         return None
 
-    # Only process the records the user has indicated to be of interest
     if only_records_to_process:
-        df_batch = df_batch[df_batch['Process'].str.lower().isin(['yes', 'y'])]
+        df_experiment = df_experiment[df_experiment['Process'].str.lower().isin(['yes', 'y'])]
 
-    df_batch.set_index('Ext Image Name', inplace=True, drop=False)
+    df_experiment.set_index('Ext Image Name', inplace=True, drop=False)
 
-    return df_batch
+    return df_experiment
+
+
+def read_tm_experiment_file(experiment_file_path, only_records_to_process=True):
+    df_experiment = read_experiment_file(os.path.join(experiment_file_path, 'experiment_tm.csv'), only_records_to_process=only_records_to_process)
+    return df_experiment
 
 
 def check_grid_batch_integrity(df_batch):
@@ -533,7 +535,7 @@ def check_grid_batch_integrity(df_batch):
             'Max Squares Ratio'}.issubset(df_batch.columns)
 
 
-def check_batch_integrity(df_batch):
+def check_experiment_integrity(df_batch):
     """
     Check if the batch file has the expected columns and makes sure that the types are correct
     :param df_batch:

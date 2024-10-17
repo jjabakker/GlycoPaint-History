@@ -20,9 +20,9 @@ from src.Automation.Support.Support_Functions import (
     test_if_square_is_in_rectangle,
     get_default_locations,
     save_default_locations,
-    read_batch_from_file,
+    read_experiment_file,
     read_squares_from_file,
-    save_batch_to_file,
+    save_experiment_to_file,
     save_squares_to_file)
 from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 
@@ -357,7 +357,7 @@ class ImageViewer:
             self.paint_directory = os.path.split(self.conf_file)[0]
             self.batchfile_path = os.path.join(self.paint_directory, self.conf_file)
 
-        self.df_batch = read_batch_from_file(self.batchfile_path, False)
+        self.df_batch = read_experiment_file(self.batchfile_path, False)
         if self.df_batch is None:
             self.show_error_and_exit("No 'grid_batch.csv' file, Did you select an image directory?")
 
@@ -675,7 +675,7 @@ class ImageViewer:
                                           self.df_squares['Variability Visible'] &
                                           self.df_squares['Variability Visible'])
             self.df_batch.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
-            save_batch_to_file(self.df_batch, self.batchfile_path)
+            save_experiment_to_file(self.df_batch, self.batchfile_path)
         if response is not None:
             self.batch_changed = False
         return response
@@ -1333,7 +1333,7 @@ class ImageViewer:
 
     def read_batch(self):
         batch_file_path = os.path.join(self.paint_directory, self.image_name, 'grid_batch.csv')
-        self.df_batch = read_batch_from_file(batch_file_path)
+        self.df_batch = read_experiment_file(batch_file_path)
         if self.df_batch is None:
             paint_logger.error(f"Function 'read_batch' failed - Squares file {batch_file_path} was not found.")
             sys.exit()
@@ -1363,7 +1363,7 @@ class ImageViewer:
                                       self.df_squares['Variability Visible'] &
                                       self.df_squares['Variability Visible'])
         self.df_batch.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
-        save_batch_to_file(self.df_batch, self.batchfile_path)
+        save_experiment_to_file(self.df_batch, self.batchfile_path)
 
 
 def save_as_png(canvas, file_name):

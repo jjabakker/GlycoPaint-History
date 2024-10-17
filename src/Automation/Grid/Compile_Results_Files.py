@@ -12,7 +12,7 @@ import pandas as pd
 from src.Automation.Support.Support_Functions import (
     get_default_locations,
     save_default_locations,
-    read_batch_from_file,
+    read_experiment_file,
     read_squares_from_file,
     format_time_nicely,
     correct_all_images_column_types)
@@ -55,7 +55,7 @@ def compile_squares_file(root_dir: str, verbose: bool):
 
         # Read the batch file in the directory to determine which images there are
         batch_file_name = os.path.join(paint_dir_path, 'grid_batch.csv')
-        df_batch = read_batch_from_file(batch_file_name, only_records_to_process=True)
+        df_batch = read_experiment_file(batch_file_name, only_records_to_process=True)
         if df_batch is None:
             paint_logger.error(f"Function 'compile_squares_file' failed: Batch file {batch_file_name} does not exist")
             exit()

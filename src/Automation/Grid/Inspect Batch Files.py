@@ -8,7 +8,7 @@ import pandas as pd
 from src.Automation.Support.Support_Functions import (
     get_default_locations,
     save_default_locations,
-    read_batch_from_file,
+    read_experiment_file,
 )
 
 # -------------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ def inspect_batch_files(root_dir):
 
         # Read the batch file in the directory
         batch_file_name = os.path.join(paint_dir_path, 'batch.csv')
-        df_batch = read_batch_from_file(batch_file_name, only_records_to_process=False)
+        df_batch = read_experiment_file(batch_file_name, only_records_to_process=False)
 
         if df_batch is None:
             logging.error(f"Batch file '{batch_file_name}' does not exist. Skipping directory.")

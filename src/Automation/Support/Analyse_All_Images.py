@@ -5,7 +5,7 @@ import pandas as pd
 
 from src.Automation.Support.Support_Functions import ask_user_for_paint_directory
 from src.Automation.Support.Support_Functions import get_df_from_file
-from src.Automation.Support.Support_Functions import read_batch_from_file
+from src.Automation.Support.Support_Functions import read_experiment_file
 
 
 def analyse_all_images(paint_directory):
@@ -16,7 +16,7 @@ def analyse_all_images(paint_directory):
     """
 
     # Read the batch  file. If the file is not there just return (a message will have been printed)
-    df_batch = read_batch_from_file(os.path.join(paint_directory, 'grid_batch.csv'), only_records_to_process=True)
+    df_batch = read_experiment_file(os.path.join(paint_directory, 'grid_batch.csv'), only_records_to_process=True)
     if df_batch is None:
         print(f"Function 'analyse_all_images' failed: No batch file: {os.path.join(paint_directory, 'grid_batch.csv')}")
         exit()
