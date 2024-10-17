@@ -336,7 +336,7 @@ def get_grid_defaults_from_file() -> dict:
             return def_parameters
 
         # Open and read the CSV file
-        with open(parameter_file_path, mode='r', newline='') as file:
+        with open(parameter_file_path, mode='r') as file:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
@@ -383,7 +383,7 @@ def save_grid_defaults_to_file(
                       'max_variability',  'max_square_coverage', 'process_single', 'process_traditional']
 
         # Open the file in write mode ('w') and overwrite any existing content
-        with open(grid_parameter_file_path, mode='w', newline='') as file:
+        with open(grid_parameter_file_path, mode='w') as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
             # Write the header

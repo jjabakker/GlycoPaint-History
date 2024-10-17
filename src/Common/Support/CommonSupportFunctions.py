@@ -6,15 +6,12 @@ from os import makedirs
 
 def _get_paint_configuration_directory(sub_dir):
     conf_dir = os.path.join(os.path.expanduser('~'), 'Paint')
-    makedirs(os.path.join(conf_dir, sub_dir), exist_ok=True)
+    if not os.path.exists(conf_dir):
+       makedirs(os.path.join(conf_dir, sub_dir))
     return conf_dir
 
 def get_paint_profile_directory():
     sub_dir = 'Paint Profile'
-    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
-
-def get_paint_logger_directory():
-    sub_dir = 'Paint Logger'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
 
 def get_default_locations():
@@ -25,7 +22,7 @@ def get_default_locations():
     image_directory = os.path.expanduser('~')
     paint_directory = os.path.expanduser('~')
     root_directory = os.path.expanduser('~')
-    conf_file = ""
+    conf_file = os.path.expanduser('~')
 
     try:
         # Check if the file exists
@@ -33,7 +30,7 @@ def get_default_locations():
             return root_directory, paint_directory, image_directory, conf_file
 
         # Open and read the CSV file
-        with open(default_locations_file_path, mode='r', newline='') as file:
+        with open(default_locations_file_path, mode='r') as file:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
@@ -52,15 +49,13 @@ def get_default_locations():
             row = rows[0]
             return row['root_directory'], row['paint_directory'], row['images_directory'], row['conf_file']
 
-    except FileNotFoundError as e:
-        print(e)
     except KeyError as e:
-        print(f"Error: {e}")
+        print("Error: {}".format(e))
     except ValueError as e:
-        print(f"Error: {e}")
+        print("Error: {}".format(e))
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-
+        print("An unexpected error occurred: {}".format(e))
+    return root_directory, paint_directory, image_directory, conf_file
 
 def save_default_locations(root_directory, paint_directory, images_directory, conf_file):
 
@@ -71,7 +66,7 @@ def save_default_locations(root_directory, paint_directory, images_directory, co
         fieldnames = ['images_directory', 'paint_directory', 'root_directory', 'conf_file']
 
         # Open the file in write mode ('w') and overwrite any existing content
-        with open(default_locations_file_path, mode='w', newline='') as file:
+        with open(default_locations_file_path, mode='w') as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
             # Write the header
@@ -86,7 +81,7 @@ def save_default_locations(root_directory, paint_directory, images_directory, co
             })
 
     except Exception as e:
-        print(f"An error occurred while writing to the file: {e}")   #TODO: Add logging
+        print("An error occurred while writing to the file: {}".format(e))   #TODO: Add logging
 
 
 def delete_files_in_directory(directory_path):
@@ -123,6 +118,12 @@ def get_default_image_directory():
         return image_directory
 
 
+
+TRACKMATE_TRACKS = "Trackmate Tracks"
+TAU_PLOTS = "Tau Plots"
+SQUARES = "Squares"
+TRACKMATE_IMAGES = "Trackmate Images"
+
 def create_directories(image_directory, delete_existing=True):
     """
     The function creates a bunch of directories under the specified directory.
@@ -138,10 +139,10 @@ def create_directories(image_directory, delete_existing=True):
         if delete_existing:
             delete_files_in_directory(image_directory)
 
-    tracks_dir = os.path.join(image_directory, "tracks")  # Where all cells track files will be stored
-    plt_dir = os.path.join(image_directory, "plt")  # Where all cells plt files will be stored
-    grid_dir = os.path.join(image_directory, "grid")  # Where all grid files will be stored
-    img_dir = os.path.join(image_directory, "img")  # Where all cells img files will be stored
+    tracks_dir = os.path.join(image_directory, TRACKMATE_TRACKS)  # Where all cells track files will be stored
+    plt_dir = os.path.join(image_directory, TAU_PLOTS)  # Where all cells plt files will be stored
+    grid_dir = os.path.join(image_directory, SQUARES)  # Where th squares files will be stored
+    img_dir = os.path.join(image_directory, TRACKMATE_IMAGES)  # Where all cells img files will be stored
 
     dirs_to_create = [tracks_dir, plt_dir, grid_dir, img_dir]
 
@@ -153,3 +154,10 @@ def create_directories(image_directory, delete_existing=True):
                 delete_files_in_directory(directory)
 
     return tracks_dir, plt_dir, img_dir
+
+
+def get_tracks_file_path(experiment_directory, ext_image_name):
+    return os.path.join(experiment_directory, ext_image_name, TRACKMATE_TRACKS, ext_image_name + "-tracks.csv")
+
+def get_image_file_path(experiment_directory, ext_image_name):
+    return os.path.join(experiment_directory, ext_image_name, TRACKMATE_IMAGES, ext_image_name + ".tiff")
