@@ -14,30 +14,38 @@ sys.path.append(paint_dir)
 # sys.path.append(paint_dir)
 
 from Trackmate import paint_trackmate
-from CommonSupportFunctions import create_directories
+from CommonSupportFunctions import (
+    create_directories,
+    get_tracks_file_path,
+    get_image_file_path)
 from FijiSupportFunctions import (
     fiji_get_file_open_write_attribute,
     fiji_get_file_open_append_attribute,
     ask_user_for_image_directory)
 
-from LoggerConfig import paint_logger, change_file_handler
+from LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 
-change_file_handler('Grid Process Batch.log')
+paint_logger_change_file_handler_name('Grid Process Batch.log')
 
 
-def grid_analysis_batch(paint_directory, image_source_directory):
+EXPERIMENT_INFO = "experiment_info.csv"
+EXPERIMENT_TM = "experiment_tm.csv"
+PREVIOUS_EXPERIMENT_INFO = "previous_experiment_info.csv"
+
+
+def run_trackmate_for_paint(experiment_directory, image_source_directory):
     # Open the batch file to determine the columns (which should be in the paint directory)
 
-    batch_file_name = os.path.join(paint_directory, "batch.csv")
-    old_batch_file_name = os.path.join(paint_directory, "previous_batch.csv")
+    experiment_info_path = os.path.join(experiment_directory, EXPERIMENT_INFO)
+    old_experiment_info_path = os.path.join(experiment_directory, PREVIOUS_EXPERIMENT_INFO)
 
-    if not os.path.exists(batch_file_name):
-        paint_logger.error("Error: The file '{}' does not exist.".format(batch_file_name))
+    if not os.path.exists(experiment_info_path):
+        paint_logger.error("Error: The file '{}' does not exist.".format(experiment_info_path))
         sys.exit()
 
-    with open(batch_file_name, mode='r') as batch_file:
+    with open(experiment_info_path, mode='r') as experiment_info_file:
 
-        csv_reader = csv.DictReader(batch_file)
+        csv_reader = csv.DictReader(experiment_info_file)
         if not {'Batch Sequence Nr','Experiment Date', 'Experiment Name', 'Experiment Nr',	'Experiment Seq Nr', 'Image Name',
                 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant',	'Concentration', 'Threshold', 'Process'} <= set(csv_reader.fieldnames):
             paint_logger.error("Error: Missing expected column headers ")
@@ -58,24 +66,24 @@ def grid_analysis_batch(paint_directory, image_source_directory):
             message = "Processing " + str(nr_to_process) + " images in directory " + image_source_directory
             paint_logger.info(message)
 
-            # Initialise the temp_batch_file with the column headers
-            temp_batch_file_name = initialise_temp_batch(paint_directory, csv_reader.fieldnames)
+            # Initialise the experiment_tm file with the column headers
+            col_names = csv_reader.fieldnames + ['Nr Spots', 'Nr Tracks', 'Run Time', 'Ext Image Name', 'Image Size', 'Time Stamp']
+            experiment_tm_file_path = initialise_experiment_tm_file(experiment_directory, col_names)
 
             # And now cycle through the batch file
-
             nr_images_processed = 0
             nr_images_failed = 0
             nr_images_not_found = 0
 
-            batch_file.seek(0)
-            csv_reader = csv.DictReader(batch_file)
+            experiment_info_file.seek(0)
+            csv_reader = csv.DictReader(experiment_info_file)
 
             file_count = 0
             for row in csv_reader:  # Here we are reading the batch file
                 if 'y' in row['Process'].lower():
                     file_count += 1
-                    paint_logger.info("Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Ext Image Name'])
-                    status, row = process_row(row, image_source_directory, paint_directory)
+                    paint_logger.info("Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Image Name'])
+                    status, row = process_row(row, image_source_directory, experiment_directory)
                     if status == 'OK':
                         nr_images_processed += 1
                     elif status == 'NOT_FOUND':
@@ -83,27 +91,11 @@ def grid_analysis_batch(paint_directory, image_source_directory):
                     elif status == 'FAILED':
                         nr_images_not_found += 1
 
-                write_row_to_temp_batch(row, temp_batch_file_name, csv_reader.fieldnames)
+                write_row_to_temp_file(row, experiment_tm_file_path,col_names)
 
             paint_logger.info("Number of images processed successfully:      " + str(nr_images_processed))
             paint_logger.info("Number of images not found:                   " + str(nr_images_not_found))
             paint_logger.info("Number of images not  successfully processed: " + str(nr_images_failed))
-
-            if os.path.isfile(old_batch_file_name):
-                os.remove(old_batch_file_name)
-            try:
-                os.rename(batch_file_name, old_batch_file_name)
-            except OSError:
-                paint_logger.error("Could not rename batch file: " + old_batch_file_name)
-                return -1
-
-            if os.path.isfile(batch_file_name):
-                os.remove(batch_file_name)
-            try:
-                os.rename(temp_batch_file_name, batch_file_name)
-            except OSError:
-                paint_logger.error("Could not rename results file: " + temp_batch_file_name)
-                return -1
 
             return 0
 
@@ -112,7 +104,7 @@ def grid_analysis_batch(paint_directory, image_source_directory):
             return
 
 
-def process_row(row, image_source_directory, paint_directory):
+def process_row(row, image_source_directory, experiment_directory):
 
     status = 'OK'
     adjuvant = row['Adjuvant']
@@ -136,14 +128,13 @@ def process_row(row, image_source_directory, paint_directory):
         IJ.run("Grays")
         ext_image_name = image_name + "-threshold-" + str(int(threshold))
 
-        create_directories(os.path.join(paint_directory, ext_image_name), True)
+        create_directories(os.path.join(experiment_directory, ext_image_name), True)
 
         time_stamp = time.time()
-        tracks_filename = os.path.join(paint_directory, ext_image_name, "tracks",
-                                       ext_image_name + "-full-tracks.csv")
-        tiff_filename = os.path.join(paint_directory, ext_image_name, "img", ext_image_name + ".tiff")
+        tracks_file_path = get_tracks_file_path(experiment_directory, ext_image_name)
+        image_file_path = get_image_file_path(experiment_directory, ext_image_name)
 
-        nr_spots, total_tracks, long_tracks = paint_trackmate(threshold, tracks_filename, tiff_filename)
+        nr_spots, total_tracks, long_tracks = paint_trackmate(threshold, tracks_file_path, image_file_path)
         if nr_spots == -1:
             paint_logger.error("\n'Process single image' did not manage to run 'paint_trackmate'")
             status = 'FAILED'
@@ -164,25 +155,25 @@ def process_row(row, image_source_directory, paint_directory):
         return status, row
 
 
-def initialise_temp_batch(paint_directory, column_names):
-    temp_batch_file_name = os.path.join(paint_directory, "temp_batch.csv")
+def initialise_experiment_tm_file(paint_directory, column_names):
+    temp_file_path = os.path.join(paint_directory, EXPERIMENT_TM)
     try:
-        temp_batch_file = open(temp_batch_file_name, fiji_get_file_open_write_attribute())
-        temp_batch_writer = csv.DictWriter(temp_batch_file, column_names)
-        temp_batch_writer.writeheader()
-        temp_batch_file.close()
-        return temp_batch_file_name
+        temp_file = open(temp_file_path, fiji_get_file_open_write_attribute())
+        temp_writer = csv.DictWriter(temp_file, column_names)
+        temp_writer.writeheader()
+        temp_file.close()
+        return temp_file_path
     except IOError:
-        paint_logger.error("Could not open results file:" + temp_batch_file_name)
+        paint_logger.error("Could not open results file:" + temp_file_path)
         sys.exit(-1)
 
 
-def write_row_to_temp_batch(row, temp_batch_file_name, column_names):
+def write_row_to_temp_file(row, temp_file_path, column_names):
     try:
-        temp_batch_file = open(temp_batch_file_name, fiji_get_file_open_append_attribute())
-        temp_batch_writer = csv.DictWriter(temp_batch_file, column_names)
+        temp_file = open(temp_file_path, fiji_get_file_open_append_attribute())
+        temp_batch_writer = csv.DictWriter(temp_file, column_names)
         temp_batch_writer.writerow(row)
-        temp_batch_file.close()
+        temp_file.close()
     except IOError:
         exit()
 
@@ -200,7 +191,7 @@ if __name__ == "__main__":
         exit(0)
 
     time_stamp = time.time()
-    grid_analysis_batch(paint_directory, images_directory)
+    run_trackmate_for_paint(paint_directory, images_directory)
     run_time = time.time() - time_stamp
     run_time = round(run_time, 1)
     paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")

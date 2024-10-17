@@ -135,7 +135,7 @@ def install():
     common_support_source = os.path.join(source_root, 'Common', 'Support')
 
     # Define the destination directories
-    fiji_grid_dest = os.path.join(dest_root, 'Paint', 'Grid')
+    fiji_grid_dest = os.path.join(dest_root, 'Paint')
     fiji_single_dest = os.path.join(dest_root, 'Paint', 'Single')
     library_dest = os.path.join(dest_root, 'Paint')
 
@@ -150,7 +150,7 @@ def install():
     # Then do the actual copying
 
     print(f"\n\nCopy from {fiji_grid_source} to {fiji_grid_dest}: ")
-    plugin_files = ["Grid_Process_Batch.py", "Convert_BF_images.py", "Grid_Process_Batch_Batch.py"]
+    plugin_files = ["Run_TrackMate.py", "Convert_BF_images.py", "Run_TrackMate_Batch.py"]
     for file in plugin_files:
         copy_file_from_source_to_dest(fiji_grid_source, fiji_grid_dest, file)
 

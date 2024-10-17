@@ -16,7 +16,7 @@ from FijiSupportFunctions import (
 # This is necessary to import the Grid_Process_Batch module
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint", "Grid")
 sys.path.append(paint_dir)
-from Grid_Process_Batch import grid_analysis_batch
+from Run_TrackMate import run_trackmate_for_paint
 
 # Set an appropriate name for the log file
 change_file_handler('Grid Process Batch Batch.log')
@@ -49,8 +49,8 @@ if __name__ == "__main__":
                     paint_logger.info("-" * len(message))
                     paint_logger.info(message)
                     paint_logger.info("-" * len(message))
-                    grid_analysis_batch(paint_directory=os.path.join(row['Source'], row['Image']),
-                                        image_source_directory=os.path.join(row['Destination'], row['Image']))
+                    run_trackmate_for_paint(experiment_directory=os.path.join(row['Source'], row['Image']),
+                                            image_source_directory=os.path.join(row['Destination'], row['Image']))
                     paint_logger.info("")
                     paint_logger.info("")
             run_time = round(time.time() - time_stamp, 1)
