@@ -311,13 +311,16 @@ class ImageViewer:
     def setup_frame_filter(self):
         # This frame is part of the content frame and contains the following frames: frame_variability, frame_density_ratio
 
-        # The Max Allowable Variability slider first
         self.frame_variability = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_density_ratio = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_duration = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+
 
         self.frame_variability.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
         self.frame_density_ratio.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
+        self.frame_duration.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
 
+        # The Max Allowable Variability slider ....
         self.variability = DoubleVar()
         self.lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
         self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability,
@@ -327,8 +330,7 @@ class ImageViewer:
         self.lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_variability.grid(column=0, row=1, padx=5, pady=5)
 
-        # And then the Min Required Density Ratio slider
-
+        # The Min Required Density Ratio slider ...
         self.density_ratio = DoubleVar()
         self.lbl_density_ratio_text = ttk.Label(self.frame_density_ratio, text='Min Required Density Ratio', width=20)
         self.sc_density_ratio = tk.Scale(self.frame_density_ratio, from_=2, to=40, variable=self.density_ratio,
@@ -337,18 +339,10 @@ class ImageViewer:
 
         self.bn_set_for_all_slider = ttk.Button(self.frame_filter, text='Set for All', command=self.set_for_all_slider)
 
-        # Place the density ratio slider and label in the grid
         self.lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_set_for_all_slider.grid(column=0, row=2, padx=5, pady=5)
 
-    def setup_frame_duration_mode(self):
-        # This frame is part of the content frame and contains the following frames: frame_duration,
-
-        # The Duration  slider  frame
-        self.frame_duration = ttk.Frame(self.frame_duration_mode, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_duration.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
-
+        # The duration slider .....
         self.track_duration = DoubleVar(value=100)
         self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
         self.sc_track_duration = tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration,
@@ -357,6 +351,37 @@ class ImageViewer:
 
         self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_track_duration.grid(column=0, row=1, padx=5, pady=5)
+
+        # The duration slider .....
+        self.track_duration1 = DoubleVar(value=100)
+        self.lbl_track_duration_text1 = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
+        self.sc_track_duration1 = tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration1,
+                                          orient='vertical', resolution=0.1, command=self.track_duration_changing)
+        self.sc_track_duration1.bind("<ButtonRelease-1>", self.track_duration_changed)
+
+        self.lbl_track_duration_text1.grid(column=0, row=0, padx=5, pady=5)
+        self.sc_track_duration1.grid(column=1, row=1, padx=5, pady=5)
+
+        # The set for all button ....
+        self.bn_set_for_all_slider.grid(column=0, row=3, padx=5, pady=5)
+
+    def setup_frame_duration_mode(self):
+        # This frame is part of the content frame and contains the following frames: frame_duration,
+
+        # The Duration  slider  frame
+        # self.frame_duration = ttk.Frame(self.frame_duration_mode, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        # self.frame_duration.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
+        #
+        # self.track_duration = DoubleVar(value=100)
+        # self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
+        # self.sc_track_duration = tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration,
+        #                                   orient='vertical', resolution=0.1, command=self.track_duration_changing)
+        # self.sc_track_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
+        #
+        # self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
+        # self.sc_track_duration.grid(column=0, row=1, padx=5, pady=5)
+
+        pass
 
     def load_images_and_config(self):
 
@@ -840,7 +865,8 @@ class ImageViewer:
         self.df_squares['Visible'] = True
         self.df_squares['Neighbour Visible'] = True
         self.df_squares['Variability Visible'] = True
-        self.df_squares['Density Ration Selected'] = True
+        self.df_squares['Duration Visible'] = True
+        #self.df_squares['Density Ration Selected'] = True
         self.df_squares['Cell Id'] = 0
 
         self.select_squares_for_display()
@@ -1002,8 +1028,17 @@ class ImageViewer:
             self.df_squares.loc[
                 self.df_squares['Density Ratio'] < round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = False
 
-            self.df_squares['Visible'] = self.df_squares['Density Ratio Visible'] & self.df_squares[
-                'Variability Visible']
+            self.df_squares['Duration Visible'] = False
+            mask = (self.df_squares['Max Track Duration'] > self.track_duration.get()) & \
+                   (self.df_squares['Max Track Duration'] < self.track_duration1.get())
+            self.df_squares.loc[mask, 'Duration Visible'] = True
+
+            # self.df_squares.loc[
+            #     self.df_squares['Duration Visible'] < round(self.track_duration1.get(), 1), 'Duration Visible'] = True
+
+            self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
+                                          self.df_squares['Variability Visible'] &
+                                          self.df_squares['Duration Visible'])
 
             # Select which isolation mode to be applied
             neighbour_state = self.neighbour_var.get()
@@ -1017,7 +1052,8 @@ class ImageViewer:
             self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
                                           self.df_squares['Density Ratio Visible'] &
                                           self.df_squares['Variability Visible'] &
-                                          self.df_squares['Neighbour Visible'])
+                                          self.df_squares['Neighbour Visible'] &
+                                          self.df_squares['Duration Visible'])
 
     def display_selected_squares(self):
 
@@ -1282,6 +1318,7 @@ class ImageViewer:
             self.df_squares = read_squares_from_file(self.squares_file_name)
             self.set_variability_slider_state()
             self.set_density_ratio_slider_state()
+            # Duration? TODO
             self.set_neighbour_state()
             self.select_squares_for_display()
             self.display_selected_squares()
