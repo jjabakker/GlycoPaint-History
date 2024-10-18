@@ -40,6 +40,19 @@ if __name__ == "__main__":
         JOptionPane.showMessageDialog(None, msg, "Warning", JOptionPane.WARNING_MESSAGE)
     else:
 
+        message = "Processing Trackmate batchfile: '{}'".format(batch_file_name)
+        paint_logger.info("")
+        paint_logger.info("")
+        paint_logger.info("-" * len(message))
+        paint_logger.info("-" * len(message))
+        paint_logger.info("")
+        paint_logger.info(message)
+        paint_logger.info("")
+        paint_logger.info("-" * len(message))
+        paint_logger.info("-" * len(message))
+        paint_logger.info("")
+        paint_logger.info("")
+
         try:
             # Use `with` to open the file and ensure it is closed after reading
             with open(batch_file_name, mode='r') as file:
@@ -57,7 +70,6 @@ if __name__ == "__main__":
                 error = False
                 for row in csv_reader:
                     if 'y' in row['Process'].lower():
-                        message = "Processing image '{}'".format(row['Image'])
 
                         if not os.path.exists(os.path.join(row['Source'], row['Image'])):
                             paint_logger.error("Error: The source '{}' does not exist.".format(row['Source']))
@@ -68,6 +80,7 @@ if __name__ == "__main__":
                             error = True
                             continue
 
+                        message = "Processing image '{}'".format(row['Image'])
                         paint_logger.info("")
                         paint_logger.info("-" * len(message))
                         paint_logger.info(message)
