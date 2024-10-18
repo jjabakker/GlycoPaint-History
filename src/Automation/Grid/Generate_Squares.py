@@ -28,7 +28,7 @@ from src.Automation.Support.Support_Functions import (
     format_time_nicely,
     calc_average_track_count_of_lowest_squares,
     get_area_of_square,
-    read_tm_experiment_file
+    read_experiment_tm_file
 )
 
 from src.Automation.Support.Paint_Messagebox import paint_messagebox
@@ -68,7 +68,7 @@ class SquaresDialog:
         self.max_square_coverage = tk.DoubleVar(value=SquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_single = tk.IntVar(value=values.get('process_single', 0))
         self.process_traditional = tk.IntVar(value=values.get('process_traditional', 1))
-        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
+        self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
 
     def create_ui(self, root):
         """Create and layout the UI components."""
@@ -140,8 +140,8 @@ class SquaresDialog:
 
     def create_directory_controls(self, frame):
         """Create controls for directory management."""
-        btn_change_dir = ttk.Button(frame, text='Change Experiment Directory', width=20, command=self.change_dir)
-        self.lbl_directory = ttk.Label(frame, text=self.paint_directory, width=80)
+        btn_change_dir = ttk.Button(frame, text='Change Directory', width=15, command=self.change_dir)
+        self.lbl_directory = ttk.Label(frame, text=self.experiment_directory, width=80)
         btn_change_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_directory.grid(column=1, row=0, padx=20, pady=5)
 
@@ -161,9 +161,9 @@ class SquaresDialog:
 
     def change_dir(self):
         """Change the paint directory through a dialog."""
-        paint_directory = filedialog.askdirectory(initialdir=self.paint_directory)
+        paint_directory = filedialog.askdirectory(initialdir=self.experiment_directory)
         if paint_directory:
-            self.paint_directory = paint_directory
+            self.experiment_directory = paint_directory
             self.lbl_directory.config(text=paint_directory)
 
     def exit_pressed(self):
@@ -177,7 +177,7 @@ class SquaresDialog:
         process_function = self.determine_process_function()
         if process_function:
             process_function(
-                self.paint_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
+                self.experiment_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
                 self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
                 self.max_square_coverage.get(), self.process_single.get(), self.process_traditional.get()
             )
@@ -191,9 +191,9 @@ class SquaresDialog:
 
     def determine_process_function(self):
         """Determine the processing function based on the directory contents."""
-        if os.path.isfile(os.path.join(self.paint_directory, 'experiment_tm.csv')):
+        if os.path.isfile(os.path.join(self.experiment_directory, 'experiment_tm.csv')):
             return process_all_images_in_experiment_directory
-        elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):
+        elif os.path.isfile(os.path.join(self.experiment_directory, 'root.txt')):
             return process_all_images_in_root_directory
         return None
 
@@ -204,7 +204,7 @@ class SquaresDialog:
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
             self.process_single.get(), self.process_traditional.get()
         )
-        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
+        save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.conf_file)
 
     def log_processing_time(self, run_time):
         """Log the processing time."""
@@ -221,7 +221,7 @@ def process_all_images_in_root_directory(
         max_square_coverage: float,
         process_single: bool,
         process_traditional: bool,
-        verbose: bool):
+        verbose: bool = False):
     """
     This function processes all images in a root directory. It calls the function
     'process_all_images_in_paint_directory' for each directory in the root directory.
@@ -240,16 +240,16 @@ def process_all_images_in_root_directory(
     :return:
     """
 
-    image_dirs = os.listdir(root_directory)
-    image_dirs.sort()
-    for image_dir in image_dirs:
-        if not os.path.isdir(os.path.join(root_directory, image_dir)):
+    experiment_dirs = os.listdir(root_directory)
+    experiment_dirs.sort()
+    for experiment_dir in experiment_dirs:
+        if not os.path.isdir(os.path.join(root_directory, experiment_dir)):
             continue
-        if 'Output' in image_dir:
+        if 'Output' in experiment_dir:
             continue
         process_all_images_in_experiment_directory(
-            os.path.join(root_directory, image_dir), nr_squares_in_row, min_r_squared, min_tracks_for_tau,
-            min_density_ratio, max_variability, max_square_coverage, process_single, process_traditional, verbose=False)
+            os.path.join(root_directory, experiment_dir), nr_squares_in_row, min_r_squared, min_tracks_for_tau,
+            min_density_ratio, max_variability, max_square_coverage, process_single, process_traditional, verbose)
 
 
 def process_all_images_in_experiment_directory(
@@ -283,10 +283,14 @@ def process_all_images_in_experiment_directory(
     time_stamp = time.time()
 
     # Read the experiment  file
-    df_experiment = read_tm_experiment_file(experiment_path)
+    df_experiment = read_experiment_tm_file(experiment_path)
     if df_experiment is None:
         paint_logger.error(
             f"Function 'process_all_images_in_paint_directory' failed: Likely, {experiment_path} is not a valid directory containing cell image information.")
+        sys.exit(1)
+    if len(df_experiment) is 0:
+        paint_logger.error(
+            f"Function 'process_all_images_in_paint_directory' failed: 'experiment_tm.csv' in {experiment_path} is empty")
         sys.exit(1)
 
     # Confirm the experiment file is in the correct format

@@ -6,12 +6,16 @@ import os
 # ----------------------------------------------------------------------------------------------------------------------
 EXPERIMENT_TM = "experiment_tm.csv"
 EXPERIMENT_INFO = "experiment_info.csv"
+EXPERIMENT_SQUARES = "experiment_squares.csv"
 
 def get_experiment_info_file_path(experiment_directory):
     return os.path.join(experiment_directory, EXPERIMENT_INFO)
 
 def get_experiment_tm_file_path(experiment_directory):
     return os.path.join(experiment_directory, EXPERIMENT_TM)
+
+def get_experiment_squares_file_path(experiment_directory):
+    return os.path.join(experiment_directory,  EXPERIMENT_SQUARES)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # TrackMate Tracks
@@ -37,7 +41,7 @@ def get_image_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, TRACKMATE_IMAGES)
 
 
-def get_image_file_name_path(experiment_directory, image_name):
+def get_image_file_path(experiment_directory, image_name):
     return os.path.join(get_image_dir_path(experiment_directory, image_name), image_name + ".tiff")
 
 
@@ -59,6 +63,10 @@ SQUARES = "Squares"
 
 def get_squares_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, SQUARES)
+
+
+def get_squares_file_path(experiment_directory, image_name):
+    return os.path.join(get_squares_dir_path(experiment_directory, image_name), image_name + "-squares.csv")
 
 
 # ----------------------------------------------------------------------------------------------------------------------

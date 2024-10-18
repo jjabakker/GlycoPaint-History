@@ -496,7 +496,7 @@ def read_experiment_file(experiment_file_path: str, only_records_to_process: boo
     return df_experiment
 
 
-def read_tm_experiment_file(experiment_file_path, only_records_to_process=True):
+def read_experiment_tm_file(experiment_file_path, only_records_to_process=True):
     df_experiment = read_experiment_file(os.path.join(experiment_file_path, 'experiment_tm.csv'), only_records_to_process=only_records_to_process)
     return df_experiment
 
