@@ -209,17 +209,16 @@ class SquaresDialog:
         paint_logger.info(f"Total processing time is {run_time:.1f} seconds")
 
 
-def process_all_images_in_root_directory(
-        root_directory: str,
-        nr_squares_in_row: int,
-        min_r_squared: float,
-        min_tracks_for_tau: int,
-        min_density_ratio: float,
-        max_variability: float,
-        max_square_coverage: float,
-        process_single: bool,
-        process_traditional: bool,
-        verbose: bool = False):
+def process_all_images_in_root_directory(root_directory: str,
+                                         nr_squares_in_row: int,
+                                         min_r_squared: float,
+                                         min_tracks_for_tau: int,
+                                         min_density_ratio: float,
+                                         max_variability: float,
+                                         max_square_coverage: float,
+                                         process_single: bool,
+                                         process_traditional: bool,
+                                         verbose: bool = False):
     """
     This function processes all images in a root directory. It calls the function
     'process_all_images_in_paint_directory' for each directory in the root directory.
