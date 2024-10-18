@@ -17,6 +17,7 @@ from fiji.plugin.trackmate import (
     SelectionModel,
     Settings,
     TrackMate)
+
 from fiji.plugin.trackmate.action import CaptureOverlayAction
 from fiji.plugin.trackmate.detection import LogDetectorFactory
 from fiji.plugin.trackmate.gui.displaysettings import DisplaySettingsIO
@@ -34,7 +35,7 @@ from FijiSupportFunctions import fiji_get_file_open_write_attribute
 from LoggerConfig import paint_logger
 
 
-def paint_trackmate(threshold, tracks_filename, image_filename):
+def excute_trackmate_in_Fiji(threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
 
     # We have to do the following to avoid errors with UTF8 chars generated in

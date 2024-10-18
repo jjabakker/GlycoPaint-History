@@ -7,7 +7,7 @@ from tkinter.filedialog import askdirectory
 import numpy as np
 import pandas as pd
 
-from src.Common.Support.CommonSupportFunctions import (
+from src.Common.Support.DirectoriesAndLocations import (
     get_default_locations,
     save_default_locations,
     get_paint_profile_directory)
@@ -17,7 +17,6 @@ pd.options.mode.copy_on_write = True
 
 
 def write_np_to_excel(matrix: np.ndarray, filename: str) -> None:
-
     df = pd.DataFrame(matrix)
     df.reset_index(inplace=True)
     df.to_excel(filename, index=False, index_label='None', header='False', float_format="%0.2f")
@@ -43,7 +42,6 @@ def calculate_density(nr_tracks: int, area: float, time: float, concentration: f
     :param magnification: use 1000 to getr easier numbers
     :return: the density
     """
-
 
     density = nr_tracks / area
     density /= time
@@ -77,7 +75,8 @@ def ask_user_for_paint_directory(title='Select Folder'):
     return image_directory
 
 
-def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr: int, nr_squares_in_row: int, granularity: int) -> tuple[int, int]:
+def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr: int, nr_squares_in_row: int,
+                granularity: int) -> tuple[int, int]:
     """
     Given coordinates (x1, y1) of the track, calculate the indices of the grid
 
@@ -163,9 +162,12 @@ def calc_variability(tracks_df, square_nr, nr_squares_in_row, granularity):
 def get_df_from_file(file, header=0, skip_rows=[]):
     try:
         df = pd.read_csv(file, header=header, skiprows=skip_rows)
+    except FileNotFoundError:
+        df = None
+        paint_logger.error("File not found: " + file)
     except IOError:
         df = None
-        print("\nFile not found: " + file)
+        paint_logger.error("IoError: " + file)
 
     return df
 
@@ -221,8 +223,8 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
             neighbour_square_nr = int((nb[0] - 1) * nr_of_squares_in_row + (nb[1] - 1))
             if neighbour_square_nr in df_squares.index:
                 if (df_squares.loc[neighbour_square_nr, 'Variability Visible'] and
-                    df_squares.loc[neighbour_square_nr, 'Density Ratio Visible'] and
-                    df_squares.loc[neighbour_square_nr, 'Valid Tau']):
+                        df_squares.loc[neighbour_square_nr, 'Density Ratio Visible'] and
+                        df_squares.loc[neighbour_square_nr, 'Valid Tau']):
                     nr_of_neighbours += 1
 
         # Record the results
@@ -315,10 +317,7 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
     return df_squares, list_of_squares
 
 
-
-
 def get_grid_defaults_from_file() -> dict:
-
     parameter_file_path = os.path.join(get_paint_profile_directory(), "grid_parameters.csv")
 
     def_parameters = {'nr_squares_in_row': 20,
@@ -336,7 +335,7 @@ def get_grid_defaults_from_file() -> dict:
             return def_parameters
 
         # Open and read the CSV file
-        with open(parameter_file_path, mode='r', newline='') as file:
+        with open(parameter_file_path, mode='r') as file:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
@@ -356,14 +355,15 @@ def get_grid_defaults_from_file() -> dict:
             return rows[0]
 
     except FileNotFoundError as e:
-        print(e)
+        paint_logger.error(e)
     except KeyError as e:
-        print(f"Error: {e}")
+        paint_logger.error(f"Error: {e}")
     except ValueError as e:
-        print(f"Error: {e}")
+        paint_logger.error(f"Error: {e}")
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        paint_logger.error(f"An unexpected error occurred: {e}")
     return def_parameters
+
 
 def save_grid_defaults_to_file(
         nr_squares_in_row: int,
@@ -374,16 +374,15 @@ def save_grid_defaults_to_file(
         max_square_coverage: int,
         process_single: bool,
         process_traditional: bool):
-
     grid_parameter_file_path = os.path.join(get_paint_profile_directory(), 'grid_parameters.csv')
 
     try:
 
         fieldnames = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
-                      'max_variability',  'max_square_coverage', 'process_single', 'process_traditional']
+                      'max_variability', 'max_square_coverage', 'process_single', 'process_traditional']
 
         # Open the file in write mode ('w') and overwrite any existing content
-        with open(grid_parameter_file_path, mode='w', newline='') as file:
+        with open(grid_parameter_file_path, mode='w') as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
             # Write the header
@@ -401,7 +400,7 @@ def save_grid_defaults_to_file(
                 'process_traditional': process_traditional})
 
     except Exception as e:
-        print(f"An error occurred while writing to the file: {e}")       # TODO: Replace with logger
+        paint_logger.error(f"An error occurred while writing to the file: {e}")
 
 
 def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
@@ -437,106 +436,44 @@ def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
 
     return False
 
-    # x0 = x0 / 82.0864 * 512
-    # y0 = y0 / 82.0864 * 512
-    # x1 = x1 / 82.0864 * 512
-    # y1 = y1 / 82.0864 * 512
-    #
-    # c1 = c2 = c3 = c4 = False
-    #
-    # if xr0 < xr1 and yr0 < yr1:
-    #     c1 = x0 >= xr0
-    #     c2 = x1 <= xr1
-    #     c3 = y0 >= yr0
-    #     c4 = y1 <= yr1
-    #
-    # if xr0 < xr1 and yr0 > yr1:
-    #     c1 = x0 >= xr0
-    #     c2 = x1 <= xr1
-    #     c3 = y0 >= yr1
-    #     c4 = y1 <= yr0
-    #
-    # if xr0 > xr1 and yr0 > yr1:
-    #     c1 = x0 >= xr1
-    #     c2 = x1 <= xr0
-    #     c3 = y0 >= yr1
-    #     c4 = y1 <= yr0
-    #
-    # if xr0 > xr1 and yr0 < yr1:
-    #     c1 = x0 >= xr1
-    #     c2 = x1 <= xr0
-    #     c3 = y0 >= yr0
-    #     c4 = y1 <= yr1
-    #
-    # return c1 and c2 and c3 and c4
 
-
-def save_batch_to_file(df_batch, batch_file_path):
-    df_batch.to_csv(batch_file_path, index=False)
+def save_experiment_to_file(df_experiment, experiment_file_path):
+    df_experiment.to_csv(experiment_file_path, index=False)
 
 
 def save_squares_to_file(df_squares, square_file_path):
     df_squares.to_csv(square_file_path, index=False)
 
 
-def read_batch_from_file(batch_file_path, only_records_to_process=True):
+def read_experiment_file(experiment_file_path: str, only_records_to_process: bool = True) -> pd.DataFrame:
     """
     Create the process table by looking for records that were marked for processing
     :return:
     """
 
     try:
-        df_batch = pd.read_csv(batch_file_path, header=0, skiprows=[])
+        df_experiment = pd.read_csv(experiment_file_path, header=0, skiprows=[])
     except IOError:
         return None
 
-    # Only process the records the user has indicated to be of interest
     if only_records_to_process:
-        df_batch = df_batch[df_batch['Process'].str.lower().isin(['yes', 'y'])]
+        df_experiment = df_experiment[df_experiment['Process'].str.lower().isin(['yes', 'y'])]
 
-    df_batch.set_index('Ext Image Name', inplace=True, drop=False)
+    df_experiment.set_index('Ext Image Name', inplace=True, drop=False)
 
-    return df_batch
-
-
-def check_grid_batch_integrity(df_batch):
-    return {'Batch Sequence Nr',
-            'Experiment Date',
-            'Experiment Name',
-            'Experiment Nr',
-            'Experiment Seq Nr',
-            'Image Name',
-            'Probe',
-            'Probe Type',
-            'Cell Type',
-            'Adjuvant',
-            'Concentration',
-            'Threshold',
-            'Process',
-            'Ext Image Name',
-            'Nr Spots',
-            'Image Size',
-            'Run Time',
-            'Time Stamp',
-            'Min Tracks for Tau',
-            'Min R Squared',
-            'Nr Of Squares per Row',
-            'Neighbour Setting',
-            'Variability Setting',
-            'Density Ratio Setting',
-            'Nr Visible Squares',
-            'Nr Total Squares',
-            'Squares Ratio',
-            'Exclude',
-            'Nr Defined Squares',
-            'Nr Rejected Squares',
-            'Max Squares Ratio'}.issubset(df_batch.columns)
+    return df_experiment
 
 
-def check_batch_integrity(df_batch):
+def read_experiment_tm_file(experiment_file_path, only_records_to_process=True):
+    df_experiment = read_experiment_file(os.path.join(experiment_file_path, 'experiment_tm.csv'),
+                                         only_records_to_process=only_records_to_process)
+    return df_experiment
+
+
+def check_experiment_integrity(df_experiment):
     """
     Check if the batch file has the expected columns and makes sure that the types are correct
-    :param df_batch:
+    :param df_experiment:
     :return:
     """
     expected_columns = {
@@ -557,37 +494,37 @@ def check_batch_integrity(df_batch):
         'Nr Spots',
         'Image Size',
         'Run Time',
-        'Time Stamp'}.issubset(df_batch.columns)
+        'Time Stamp'}.issubset(df_experiment.columns)
 
     if expected_columns:
         # Make sure that there is a meaningful index           # TODO: Check if this is not causing problems
-        df_batch.set_index('Batch Sequence Nr', inplace=True, drop=False)
+        df_experiment.set_index('Batch Sequence Nr', inplace=True, drop=False)
         return True
     else:
         return False
 
 
-def correct_all_images_column_types(df_batch):
+def correct_all_images_column_types(df_experiment):
     """
     Set the column types for the batch file
-    :param df_batch:
+    :param df_experiment:
     :return:
     """
 
     try:
-        df_batch['Batch Sequence Nr'] = df_batch['Batch Sequence Nr'].astype(int)
-        df_batch['Experiment Seq Nr'] = df_batch['Experiment Seq Nr'].astype(int)
-        df_batch['Experiment Nr'] = df_batch['Experiment Nr'].astype(int)
-        df_batch['Experiment Date'] = df_batch['Experiment Date'].astype(int)
-        df_batch['Threshold'] = df_batch['Threshold'].astype(int)
-        df_batch['Min Tracks for Tau'] = df_batch['Min Tracks for Tau'].astype(int)
-        df_batch['Min R Squared'] = df_batch['Min R Squared'].astype(float)
-        df_batch['Nr Of Squares per Row'] = df_batch['Nr Of Squares per Row'].astype(int)
-        df_batch['Nr Visible Squares'] = df_batch['Nr Visible Squares'].astype(int)
-        df_batch['Nr Invisible Squares'] = df_batch['Nr Invisible Squares'].astype(int)
-        df_batch['Nr Total Squares'] = df_batch['Nr Total Squares'].astype(int)
-        df_batch['Nr Defined Squares'] = df_batch['Nr Defined Squares'].astype(int)
-        df_batch['Nr Rejected Squares'] = df_batch['Nr Rejected Squares'].astype(int)
+        df_experiment['Batch Sequence Nr'] = df_experiment['Batch Sequence Nr'].astype(int)
+        df_experiment['Experiment Seq Nr'] = df_experiment['Experiment Seq Nr'].astype(int)
+        df_experiment['Experiment Nr'] = df_experiment['Experiment Nr'].astype(int)
+        df_experiment['Experiment Date'] = df_experiment['Experiment Date'].astype(int)
+        df_experiment['Threshold'] = df_experiment['Threshold'].astype(int)
+        df_experiment['Min Tracks for Tau'] = df_experiment['Min Tracks for Tau'].astype(int)
+        df_experiment['Min R Squared'] = df_experiment['Min R Squared'].astype(float)
+        df_experiment['Nr Of Squares per Row'] = df_experiment['Nr Of Squares per Row'].astype(int)
+        df_experiment['Nr Visible Squares'] = df_experiment['Nr Visible Squares'].astype(int)
+        df_experiment['Nr Invisible Squares'] = df_experiment['Nr Invisible Squares'].astype(int)
+        df_experiment['Nr Total Squares'] = df_experiment['Nr Total Squares'].astype(int)
+        df_experiment['Nr Defined Squares'] = df_experiment['Nr Defined Squares'].astype(int)
+        df_experiment['Nr Rejected Squares'] = df_experiment['Nr Rejected Squares'].astype(int)
 
     except (ValueError, TypeError):
         return False
@@ -598,23 +535,23 @@ def read_squares_from_file(squares_file_path):
     try:
         df_squares = pd.read_csv(squares_file_path, header=0, skiprows=[])
     except IOError:
-        print(f'Read_squares from_file: file {squares_file_path} could not be opened.')
+        paint_logger.error(f'Read_squares from_file: file {squares_file_path} could not be opened.')
         exit(-1)
 
     df_squares.set_index('Square Nr', inplace=True, drop=False)
     return df_squares
 
 
-def create_output_directories_for_graphpad(paint_directory):
-    directories = [
-        os.path.join(paint_directory, 'Output', 'pdf', 'Tau'),
-        os.path.join(paint_directory, 'Output', 'pdf', 'Density'),
-        os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'),
-        os.path.join(paint_directory, 'Output', 'graphpad', 'Density')
-    ]
-
-    for directory in directories:
-        os.makedirs(directory, exist_ok=True)
+# def create_output_directories_for_graphpad(paint_directory):
+#     directories = [
+#         os.path.join(paint_directory, 'Output', 'pdf', 'Tau'),
+#         os.path.join(paint_directory, 'Output', 'pdf', 'Density'),
+#         os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'),
+#         os.path.join(paint_directory, 'Output', 'graphpad', 'Density')
+#     ]
+#
+#     for directory in directories:
+#         os.makedirs(directory, exist_ok=True)
 
 
 def format_time_nicely(seconds):
@@ -685,7 +622,6 @@ def split_probe_structure(row):
 
 
 def copy_directory(src, dest):
-
     try:
         shutil.rmtree(dest, ignore_errors=True)
         paint_logger.debug(f"Removed {dest}")
@@ -699,7 +635,6 @@ def copy_directory(src, dest):
         paint_logger.error(f"RecursionError: {e}")
     except Exception as e:
         paint_logger.error(f"An unexpected error occurred: {e}")
-        paint_logger.error(f"process_all - copy directories: Failed to rmtree {dest} - {e}")
 
     try:
         shutil.copytree(src, dest)
@@ -719,9 +654,8 @@ def copy_directory(src, dest):
 
 
 def get_area_of_square(nr_of_squares_in_row):
-
-    MICROMETER_PER_PIXEL = 0.1602804      # Referenced from Fiji
-    PIXEL_PER_IMAGE = 512                 # Referenced from Fiji
+    MICROMETER_PER_PIXEL = 0.1602804  # Referenced from Fiji
+    PIXEL_PER_IMAGE = 512  # Referenced from Fiji
 
     MICROMETER_PER_IMAGE = MICROMETER_PER_PIXEL * PIXEL_PER_IMAGE
 

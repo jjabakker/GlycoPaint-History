@@ -5,10 +5,12 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Automation.Support.Support_Functions import (
+from src.Common.Support.DirectoriesAndLocations import (
     get_default_locations,
-    save_default_locations,
-    read_batch_from_file,
+    save_default_locations)
+
+from src.Application.Support.Support_Functions import (
+    read_experiment_file
 )
 
 # -------------------------------------------------------------------------------------
@@ -16,12 +18,6 @@ from src.Automation.Support.Support_Functions import (
 # -------------------------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# -------------------------------------------------------------------------------------
-# Define the default parameters
-# -------------------------------------------------------------------------------------
-MAX_SQUARES_WITH_TAU = 20
-MAX_VARIABILITY = 10
-MIN_DENSITY_RATIO = 2
 
 
 def inspect_batch_files(root_dir):
@@ -38,26 +34,27 @@ def inspect_batch_files(root_dir):
         return
 
     # Get the list of experiment directories
-    paint_dirs = sorted(os.listdir(root_dir))
+    experiment_dir_names = sorted(os.listdir(root_dir))
 
-    for paint_dir in paint_dirs:
-        paint_dir_path = os.path.join(root_dir, paint_dir)
+    for experiment_dir_name in experiment_dir_names:
+        paint_dir_path = os.path.join(root_dir, experiment_dir_name)
 
         if not os.path.isdir(paint_dir_path):  # If it's not a directory, skip it
             continue
-        if 'Output' in paint_dir:  # Skip the output directory
+        if 'Output' in experiment_dir_name:  # Skip the output directory
             continue
-        if paint_dir.startswith('-'):  # Skip directories marked with '-'
+        if experiment_dir_name.startswith('-'):  # Skip directories marked with '-'
             continue
 
         logging.info(f'Inspecting directory: {paint_dir_path}')
 
         # Read the batch file in the directory
-        batch_file_name = os.path.join(paint_dir_path, 'batch.csv')
-        df_batch = read_batch_from_file(batch_file_name, only_records_to_process=False)
+        experiment_file_name = os.path.join(paint_dir_path, 'batch.csv')
+
+        df_batch = read_experiment_file(experiment_file_name, only_records_to_process=False)
 
         if df_batch is None:
-            logging.error(f"Batch file '{batch_file_name}' does not exist. Skipping directory.")
+            logging.error(f"Batch file '{experiment_file_name}' does not exist. Skipping directory.")
             continue
 
         # Concatenate the batch DataFrame with the main DataFrame
@@ -106,7 +103,7 @@ class InspectDialog:
         btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
-        btn_root_dir = ttk.Button(frame_directory, text='Root Directory', width=15, command=self.change_root_dir)
+        btn_root_dir = ttk.Button(frame_directory, text='Project Directory', width=15, command=self.change_root_dir)
         self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=50)
 
         btn_root_dir.grid(column=0, row=0, padx=10, pady=5)

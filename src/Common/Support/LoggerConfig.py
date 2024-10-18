@@ -1,6 +1,6 @@
 import logging
 from os import path
-from src.Common.Support.CommonSupportFunctions import get_paint_logger_directory
+import os
 
 
 # Create a custom logger
@@ -25,6 +25,16 @@ CRITICAL  = logging.CRITICAL
 
 # Create file handler
 
+def _get_paint_configuration_directory(sub_dir):
+    conf_dir = os.path.join(os.path.expanduser('~'), 'Paint')
+    if not os.path.exists(conf_dir):
+        os.makedirs(os.path.join(conf_dir, sub_dir))
+    return conf_dir
+
+def get_paint_logger_directory():
+    sub_dir = 'Paint Logger'
+    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
+
 def create_file_handler(file_name):
     file_handler_dir = get_paint_logger_directory()
 
@@ -39,7 +49,7 @@ def paint_logger_file_handle_set_level(level):
     global file_handler
 
     if level not in (logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL):
-        raise ValueError(f"Invalid level: {level}")
+        raise ValueError("Invalid level: {}".format(level))
     else:
         file_handler.setLevel(level)
 
@@ -47,7 +57,7 @@ def paint_logger_console_handle_set_level(level):
     global console_handler
 
     if level not in (logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL):
-        raise ValueError(f"Invalid level: {level}")
+        raise ValueError("Invalid level: {}.format(level)")
     else:
         console_handler.setLevel(level)
 

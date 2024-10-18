@@ -3,13 +3,17 @@ import sys
 import time
 
 import java.lang
+
+from java.lang import System
+from java.io import PrintStream, ByteArrayOutputStream
+
 from java.lang.System import getProperty
 from javax.swing import JFileChooser
 
 paint_code__dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_code__dir)
 
-from CommonSupportFunctions import get_default_directories, save_default_directories
+from DirectoriesAndLocations import get_default_locations, save_default_locations
 
 
 def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
@@ -20,7 +24,7 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
     :param directory:
     :return:
     """
-    root_dir, paint_dir, images_dir = get_default_directories()
+    root_dir, paint_dir, images_dir, conf_file = get_default_locations()
 
     if directory == 'Paint':
         def_dir = paint_dir
@@ -40,7 +44,7 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
             paint_dir = selected_directory
         else:
             images_dir = selected_directory
-        save_default_directories(root_dir, paint_dir, images_dir)
+        save_default_locations(root_dir, paint_dir, images_dir, conf_file)
         return selected_directory.getAbsolutePath()
     else:
         return ""
@@ -139,3 +143,17 @@ def set_directory_timestamp(dir_path, timestamp=None):
     # Update the directory's access and modification times
     os.utime(dir_path, (timestamp, timestamp))
     print("Updated timestamps for directory '{0}' to {1} successfully.".format(dir_path, time.ctime(timestamp)))
+
+def suppress_fiji_output():
+    # Redirect system output streams
+    sys_out_stream = ByteArrayOutputStream()
+    sys_err_stream = ByteArrayOutputStream()
+
+    # Set dummy output streams
+    System.setOut(PrintStream(sys_out_stream))
+    System.setErr(PrintStream(sys_err_stream))
+
+def restore_fiji_output():
+    # Restore default system output streams
+    System.setOut(System.out)
+    System.setErr(System.err)

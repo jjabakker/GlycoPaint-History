@@ -3,11 +3,11 @@ import os
 import sys
 import time
 
-from src.Automation.Grid.Compile_Results_Files import compile_squares_file
-from src.Automation.Grid.Generate_Squares import process_all_images_in_root_directory
-from src.Automation.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
-from src.Automation.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
-from src.Automation.Support.Support_Functions import copy_directory, format_time_nicely
+from src.Application.Support.Compile_Output import compile_squares_file
+from src.Application.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
+from src.Application.Support.Generate_Squares import process_all_images_in_root_directory
+from src.Application.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
+from src.Application.Support.Support_Functions import copy_directory, format_time_nicely
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -15,23 +15,23 @@ from src.Common.Support.LoggerConfig import (
     DEBUG as PAINT_DEBUG
 )
 
-paint_logger_change_file_handler_name('Process All.log')
+paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
 
-PAINT_DEBUG = False
+PAINT_DEBUG = True
 PAINT_FORCE = True
 
 if PAINT_DEBUG:
-    CONF_FILE = '/Users/hans/Paint Source/paint data generation - integrated.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source'
-    PAINT_DATA = '/Users/Hans/Paint Data Integrated'
+    CONF_FILE = '/Users/hans/Paint Source New/Configuration Files/paint data generation - integrated.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source New'
+    PAINT_DATA = '/Users/Hans/Paint Data Integrated New'
     R_DATA_DEST = '/Users/hans/R Data'
     # R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
     TIME_STAMP = '2024-10-11 11:11:11'  # '%Y-%m-%d %H:%M:%S
 
 else:
-    CONF_FILE = '/Users/hans/Paint Source/paint data generation - integrated.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source'
+    CONF_FILE = '/Users/hans/Paint Source/Configuration Files/paint data generation - integrated.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source New'
     PAINT_DATA = '/Users/Hans/Paint Data Integrated'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated - v2'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
@@ -60,11 +60,17 @@ def process_directory(paint_source_dir,
     paint_logger.info("-" * 40)
     paint_logger.info(msg)
     paint_logger.info("")
-    paint_logger.info(f"Probe Series      : {probe}")
-    paint_logger.info(f"Traditional mode  : {process_traditional}")
-    paint_logger.info(f"Single            : {process_single}")
-    paint_logger.info(f"Number of squares : {nr_of_squares}")
-    paint_logger.info(f"Min density ratio : {min_density_ratio}")
+    paint_logger.info(f"Probe Series        : {probe}")
+    paint_logger.info(f"Traditional mode    : {process_traditional}")
+    paint_logger.info(f"Single              : {process_single}")
+    paint_logger.info(f"Number of squares   : {nr_of_squares}")
+    paint_logger.info(f"Min density ratio   : {min_density_ratio}")
+    paint_logger.info(f"Min R squared       : {min_r_squared}")
+    paint_logger.info(f"Min tracks for tau  : {min_tracks_for_tau}")
+    paint_logger.info(f"Max variability     : {max_variability}")
+    paint_logger.info(f"Max square coverage : {max_square_coverage}")
+    paint_logger.info(f"Paint Force         : {paint_force}")
+
     paint_logger.info("")
     paint_logger.info("-" * 40)
     paint_logger.info("")
@@ -131,7 +137,6 @@ def process_directory(paint_source_dir,
 
 
 def main():
-
     # Load the configuration file
     try:
         with open(CONF_FILE, 'r') as file:

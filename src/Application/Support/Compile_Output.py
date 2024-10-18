@@ -9,21 +9,23 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Automation.Support.Support_Functions import (
+from src.Application.Support.Support_Functions import (
     get_default_locations,
     save_default_locations,
-    read_batch_from_file,
+    read_experiment_file,
     read_squares_from_file,
     format_time_nicely,
     correct_all_images_column_types)
-
+from src.Common.Support.DirectoriesAndLocations import (
+    get_experiment_squares_file_path,
+    get_squares_file_path)
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
 
 if not paint_logger_file_name_assigned:
-    paint_logger_change_file_handler_name('Compile Squares.log')
+    paint_logger_change_file_handler_name('Compile Output.log')
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -32,8 +34,8 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
 
-def compile_squares_file(root_dir: str, verbose: bool):
-    paint_logger.info(f"Compiling output for {root_dir}")
+def compile_squares_file(project_dir: str, verbose: bool):
+    paint_logger.info(f"Compiling output for {project_dir}")
     time_stamp = time.time()
 
     # Create the dataframes to be filled
@@ -41,36 +43,38 @@ def compile_squares_file(root_dir: str, verbose: bool):
     df_all_squares = pd.DataFrame()
     df_image_summary = pd.DataFrame()
 
-    paint_dirs = os.listdir(root_dir)
-    paint_dirs.sort()
-    for paint_dir in paint_dirs:
+    experiment_dirs = os.listdir(project_dir)
+    experiment_dirs.sort()
 
-        paint_dir_path = os.path.join(root_dir, paint_dir)
+    for experiment_names in experiment_dirs:
 
-        if not os.path.isdir(paint_dir_path) or 'Output' in paint_dir or paint_dir.startswith('-'):
+        experiment_dir_path = os.path.join(project_dir, experiment_names)
+        if not os.path.isdir(experiment_dir_path) or 'Output' in experiment_names or experiment_names.startswith('-'):
             continue
 
         if verbose:
-            paint_logger.debug(f'Adding directory: {paint_dir_path}')
+            paint_logger.debug(f'Adding directory: {experiment_dir_path}')
 
-        # Read the batch file in the directory to determine which images there are
-        batch_file_name = os.path.join(paint_dir_path, 'grid_batch.csv')
-        df_batch = read_batch_from_file(batch_file_name, only_records_to_process=True)
-        if df_batch is None:
-            paint_logger.error(f"Function 'compile_squares_file' failed: Batch file {batch_file_name} does not exist")
+        # Read the experiment_squares file to determine which images there are
+        experiment_squares_file_path = get_experiment_squares_file_path(experiment_dir_path)
+        df_experiment_squares = read_experiment_file(experiment_squares_file_path, only_records_to_process=True)
+        if df_experiment_squares is None:
+            paint_logger.error(
+                f"Function 'compile_squares_file' failed: Batch file {experiment_squares_file_path} does not exist")
             exit()
 
-        for index, row in df_batch.iterrows():
+        for index, row in df_experiment_squares.iterrows():
 
-            ext_image_name = row['Ext Image Name']
+            image_name = row['Ext Image Name']
             if row['Exclude']:  # Skip over images that are Excluded
                 continue
 
-            df_squares = read_squares_from_file(os.path.join(root_dir, paint_dir, ext_image_name, 'grid',
-                                                             ext_image_name + '-squares.csv'))
+            squares_file_path = get_squares_file_path(experiment_dir_path, image_name)
+            df_squares = read_squares_from_file(squares_file_path)
+
             if df_squares is None:
                 paint_logger.error(
-                    f'Compile Squares: No squares file found for image {ext_image_name} in the directory {paint_dir}')
+                    f'Compile Squares: No squares file found for image {image_name} in the directory {experiment_names}')
                 continue
             if len(df_squares) == 0:  # Ignore it when it is empty
                 continue
@@ -79,15 +83,15 @@ def compile_squares_file(root_dir: str, verbose: bool):
 
         # Determine how many unique for cell type, probe type, adjuvant, and probe there are in the batch
         row = [
-            paint_dir,
-            df_batch['Cell Type'].nunique(),
-            df_batch['Probe Type'].nunique(),
-            df_batch['Adjuvant'].nunique(),
-            df_batch['Probe'].nunique()]
+            experiment_names,
+            df_experiment_squares['Cell Type'].nunique(),
+            df_experiment_squares['Probe Type'].nunique(),
+            df_experiment_squares['Adjuvant'].nunique(),
+            df_experiment_squares['Probe'].nunique()]
 
         # Add the data to the all_dataframes
         df_image_summary = pd.concat([df_image_summary, pd.DataFrame([row])])
-        df_all_images = pd.concat([df_all_images, df_batch])
+        df_all_images = pd.concat([df_all_images, df_experiment_squares])
 
     # -----------------------------------------------------------------------------
     # At this point we have the df_all_images, df_all_squares and df_image_summary complete.
@@ -101,7 +105,7 @@ def compile_squares_file(root_dir: str, verbose: bool):
     list_of_images = df_all_squares['Ext Image Name'].unique().tolist()
     for image in list_of_images:
 
-        # Get data from df_batch to add to df_all_squares
+        # Get data from df_experiment_squares to add to df_all_squares
         probe = df_all_images.loc[image]['Probe']
         probe_type = df_all_images.loc[image]['Probe Type']
         adjuvant = df_all_images.loc[image]['Adjuvant']
@@ -114,6 +118,7 @@ def compile_squares_file(root_dir: str, verbose: bool):
         neighbour_setting = df_all_images.loc[image]['Neighbour Setting']
 
         # It can happen that image size is not filled in, handle that event
+        # I don't think this can happen anymore, but leave for now
         try:
             image_size = int(image_size)
         except (ValueError, TypeError):
@@ -141,7 +146,7 @@ def compile_squares_file(root_dir: str, verbose: bool):
     # Drop the squares that have no tracks
     df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
 
-    # Change ext_image_name to image_name
+    # Change image_name to image_name
     df_all_squares.rename(columns={'Ext Image Name': 'Image Name'}, inplace=True)
 
     # Set the columns for df_image_summary
@@ -152,29 +157,30 @@ def compile_squares_file(root_dir: str, verbose: bool):
     # -------------------------------------
 
     # Check if Output directory exists, create if necessary
-    os.makedirs(os.path.join(root_dir, "Output"), exist_ok=True)
+    os.makedirs(os.path.join(project_dir, "Output"), exist_ok=True)
 
     # Save the files,
-    df_all_squares.to_csv(os.path.join(root_dir, 'Output', 'All Squares.csv'), index=False)
-    df_all_images.to_csv(os.path.join(root_dir, 'Output', 'All Images.csv'), index=False)
-    df_image_summary.to_csv(os.path.join(root_dir, "Output", "Image Summary.csv"), index=False)
+    df_all_squares.to_csv(os.path.join(project_dir, 'Output', 'All Squares.csv'), index=False)
+    df_all_images.to_csv(os.path.join(project_dir, 'Output', 'All Images.csv'), index=False)
+    df_image_summary.to_csv(os.path.join(project_dir, "Output", "Image Summary.csv"), index=False)
 
     # Save a copy for easy Imager Viewer access
-    df_all_images.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
+    df_all_images.to_csv(os.path.join(project_dir, 'All Images.csv'), index=False)
 
     run_time = time.time() - time_stamp
-    paint_logger.info(f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
-
+    paint_logger.info(f"Compiled  output for {project_dir} in {format_time_nicely(run_time)}")
 
 
 class CompileDialog:
 
     def __init__(self, _root):
-        root.title('Compile Square Data')
+        self.root = _root
 
-        self.root_directory, self.paint_directory, self.images_directory, self_conf_file = get_default_locations()
+        self.root.title('Compile Square Data')
 
-        content = ttk.Frame(root)
+        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
+
+        content = ttk.Frame(self.root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
@@ -190,7 +196,7 @@ class CompileDialog:
         btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
-        btn_root_dir = ttk.Button(frame_directory, text='Root Directory', width=15, command=self.change_root_dir)
+        btn_root_dir = ttk.Button(frame_directory, text='Project Directory', width=15, command=self.change_root_dir)
         self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=80)
 
         btn_root_dir.grid(column=0, row=0, padx=10, pady=5)
@@ -202,12 +208,12 @@ class CompileDialog:
         if len(self.root_directory) != 0:
             self.lbl_root_dir.config(text=self.root_directory)
 
-    def process(self)-> None:
-        compile_squares_file(root_dir=self.root_directory, verbose=True)
-        root.destroy()
+    def process(self) -> None:
+        compile_squares_file(project_dir=self.root_directory, verbose=True)
+        self.root.destroy()
 
-    def exit_dialog(self)-> None:
-        root.destroy()
+    def exit_dialog(self) -> None:
+        self.root.destroy()
 
 
 if __name__ == "__main__":
