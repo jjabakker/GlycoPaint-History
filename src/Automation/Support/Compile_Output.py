@@ -174,11 +174,14 @@ def compile_squares_file(root_dir: str, verbose: bool):
 class CompileDialog:
 
     def __init__(self, _root):
-        root.title('Compile Square Data')
+
+        self.root = _root
+
+        self.root.title('Compile Square Data')
 
         self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
 
-        content = ttk.Frame(root)
+        content = ttk.Frame(self.root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
@@ -208,10 +211,10 @@ class CompileDialog:
 
     def process(self)-> None:
         compile_squares_file(root_dir=self.root_directory, verbose=True)
-        root.destroy()
+        self.root.destroy()
 
     def exit_dialog(self)-> None:
-        root.destroy()
+        self.root.destroy()
 
 
 if __name__ == "__main__":

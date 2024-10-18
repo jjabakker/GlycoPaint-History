@@ -4,7 +4,7 @@ import shutil
 from src.Common.Support.LoggerConfig import paint_logger
 
 
-def copy_data_from_paint_source_to_paint_data(source_root, dest_root, include_batch_file=True):
+def copy_data_from_paint_source_to_paint_data(source_root, dest_root, include_experiment_file=True):
     """
     Copies (Trackmate) data from the Paint Source root to the appropriate Paint Data root
     Only the images directories are copied, not the Output directory or the csv files
@@ -47,6 +47,10 @@ def copy_data_from_paint_source_to_paint_data(source_root, dest_root, include_ba
         exp_dirs.sort()
 
         for exp in exp_dirs:
+
+            if 'Output' in exp:
+                continue
+
             src_dirs = [d for d in os.listdir(os.path.join(source_root, exp)) if
                         os.path.isdir(os.path.join(source_root, exp, d))]
             src_dirs.sort()
@@ -57,15 +61,16 @@ def copy_data_from_paint_source_to_paint_data(source_root, dest_root, include_ba
                 try:
                     shutil.copytree(os.path.join(source_root, exp, src_dir), dest_dir, dirs_exist_ok=True)
                     paint_logger.debug(f"Copied directory from {os.path.join(source_root, exp, src_dir)} to {dest_dir}")
-
-
                 except Exception as e:
                     paint_logger.error(
                         f"copy_data_from_source: copy_directory: Failed to copy directory from {src_dir} to {dest_dir}. Error: {e}")
 
-            if include_batch_file:
-                # And copy the batch files
-                shutil.copy(os.path.join(source_root, exp, 'batch.csv'), os.path.join(dest_root, exp))
+            if include_experiment_file:
+                # And copy the expert files
+                shutil.copy(os.path.join(source_root, exp, 'experiment_squares.csv'), os.path.join(dest_root, exp))
+                shutil.copy(os.path.join(source_root, exp, 'experiment_tm.csv'), os.path.join(dest_root, exp))
+                shutil.copy(os.path.join(source_root, exp, 'experiment_info.csv'), os.path.join(dest_root, exp))
+
         return True
 
     except Exception as e:

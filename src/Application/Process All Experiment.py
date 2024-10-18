@@ -3,8 +3,8 @@ import os
 import sys
 import time
 
-from src.Automation.Grid.Compile_Results_Files import compile_squares_file
-from src.Automation.Grid.Generate_Squares import process_all_images_in_root_directory
+from src.Automation.Support.Compile_Output import compile_squares_file
+from src.Automation.Support.Generate_Squares import process_all_images_in_root_directory
 from src.Automation.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
 from src.Automation.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
 from src.Automation.Support.Support_Functions import copy_directory, format_time_nicely
@@ -15,23 +15,23 @@ from src.Common.Support.LoggerConfig import (
     DEBUG as PAINT_DEBUG
 )
 
-paint_logger_change_file_handler_name('Process All.log')
+paint_logger_change_file_handler_name('Generate Output for All Experiments.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
 
-PAINT_DEBUG = False
+PAINT_DEBUG = True
 PAINT_FORCE = True
 
 if PAINT_DEBUG:
-    CONF_FILE = '/Users/hans/Paint Source/Configuration Files/paint data generation - integrated.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source'
-    PAINT_DATA = '/Users/Hans/Paint Data Integrated'
+    CONF_FILE = '/Users/hans/Paint Source New/Configuration Files/paint data generation - integrated.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source New'
+    PAINT_DATA = '/Users/Hans/Paint Data Integrated New'
     R_DATA_DEST = '/Users/hans/R Data'
     # R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
     TIME_STAMP = '2024-10-11 11:11:11'  # '%Y-%m-%d %H:%M:%S
 
 else:
     CONF_FILE = '/Users/hans/Paint Source/Configuration Files/paint data generation - integrated.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source'
+    PAINT_SOURCE = '/Users/hans/Paint Source New'
     PAINT_DATA = '/Users/Hans/Paint Data Integrated'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated - v2'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
