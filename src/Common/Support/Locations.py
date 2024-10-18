@@ -1,6 +1,5 @@
 import os
 
-from src.Fiji.Grid.Run_TrackMate import EXPERIMENT_TM
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Experiment

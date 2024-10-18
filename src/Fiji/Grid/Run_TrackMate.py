@@ -5,41 +5,46 @@ import time
 
 from ij import IJ
 from java.lang.System import getProperty
-
-from src.Common.Support.Locations import get_experiment_file_path, get_experiment_tm_file_path
+from javax.swing import JOptionPane
 
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
 
-from Locations import get_tracks_file_path
-
-
-from Trackmate import paint_trackmate
-
 from Locations import (
+    get_tracks_file_path,
+    get_experiment_info_file_path,
+    get_experiment_tm_file_path,
     get_tracks_dir_path,
-    get_image_file_name_path)
+    get_image_file_name_path,
+    create_directories)
 
-from Locations import create_directories
+from Trackmate import excute_trackmate_in_Fiji
 
 from FijiSupportFunctions import (
     fiji_get_file_open_write_attribute,
     fiji_get_file_open_append_attribute,
-    ask_user_for_image_directory)
+    ask_user_for_image_directory,
+    suppress_fiji_output,
+    restore_fiji_output)
 
-from LoggerConfig import paint_logger, paint_logger_change_file_handler_name
+from LoggerConfig import (
+    paint_logger,
+    paint_logger_change_file_handler_name)
 
 paint_logger_change_file_handler_name('Grid Process Batch.log')
 
 
-def run_trackmate_for_paint(experiment_directory, image_source_directory):
+def run_trackmate(experiment_directory, image_source_directory):
     # Open the experiment file to determine the columns (which should be in the paint directory)
 
     # experiment_info_path = os.path.join(experiment_directory, EXPERIMENT_INFO)
-    experiment_info_path = get_experiment_file_path(experiment_directory)
+    experiment_info_path = get_experiment_info_file_path(experiment_directory)
 
     if not os.path.exists(experiment_info_path):
-        paint_logger.error("Error: The file '{}' does not exist.".format(experiment_info_path))
+        msg = "Warning: The file '{}' does not exist.".format(experiment_info_path)
+        paint_logger.error(msg)
+        JOptionPane.showMessageDialog(None, msg, "Warning", JOptionPane.WARNING_MESSAGE)
+        suppress_fiji_output
         sys.exit()
 
     with open(experiment_info_path, mode='r') as experiment_info_file:
@@ -49,6 +54,7 @@ def run_trackmate_for_paint(experiment_directory, image_source_directory):
                 'Image Name', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant', 'Concentration', 'Threshold',
                 'Process'} <= set(csv_reader.fieldnames):
             paint_logger.error("Error: Missing expected column headers ")
+            suppress_fiji_output()
             sys.exit()
 
         try:
@@ -104,7 +110,8 @@ def run_trackmate_for_paint(experiment_directory, image_source_directory):
 
         except KeyError as e:
             paint_logger.error("Missing expected column in row: {e}")
-            return
+            suppress_fiji_output()
+            sys.exit(0)
 
 
 def process_row(row, image_source_directory, experiment_directory):
@@ -136,7 +143,9 @@ def process_row(row, image_source_directory, experiment_directory):
         tracks_file_path = get_tracks_file_path(experiment_directory, ext_image_name)
         image_file_path = get_image_file_name_path(experiment_directory, ext_image_name)
 
-        nr_spots, total_tracks, long_tracks = paint_trackmate(threshold, tracks_file_path, image_file_path)
+        # suppress_fiji_output()
+        nr_spots, total_tracks, long_tracks = excute_trackmate_in_Fiji(threshold, tracks_file_path, image_file_path)
+        # restore_fiji_output()
         if nr_spots == -1:
             paint_logger.error("\n'Process single image' did not manage to run 'paint_trackmate'")
             status = 'FAILED'
@@ -167,6 +176,7 @@ def initialise_experiment_tm_file(experiment_directory, column_names):
         return temp_file_path
     except IOError:
         paint_logger.error("Could not open results file:" + temp_file_path)
+        suppress_fiji_output()
         sys.exit(-1)
 
 
@@ -177,7 +187,9 @@ def write_row_to_temp_file(row, temp_file_path, column_names):
         temp_writer.writerow(row)
         temp_file.close()
     except IOError:
-        exit()
+        paint_logger.error("Could not write results file:" + temp_file_path)
+        suppress_fiji_output()
+        sys.exit()
 
 
 if __name__ == "__main__":
@@ -185,16 +197,18 @@ if __name__ == "__main__":
     experiment_directory = ask_user_for_image_directory("Specify the Experiment directory", 'Paint')
     if len(experiment_directory) == 0:
         paint_logger.warning("User aborted the batch processing.")
+        suppress_fiji_output()
         exit(0)
 
     # Get the directory where the images are located
     images_directory = ask_user_for_image_directory("Specify the Image Source directory", 'Images')
     if len(images_directory) == 0:
         paint_logger.warning("User aborted the batch processing.")
+        suppress_fiji_output()
         exit(0)
 
     time_stamp = time.time()
-    run_trackmate_for_paint(experiment_directory, images_directory)
+    run_trackmate(experiment_directory, images_directory)
     run_time = time.time() - time_stamp
     run_time = round(run_time, 1)
     paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")

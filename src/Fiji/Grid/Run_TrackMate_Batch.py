@@ -9,7 +9,11 @@ from javax.swing import JOptionPane
 # This is necessary to import the FijiSupport and LoggerConfig module
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
-from LoggerConfig import paint_logger, paint_logger_change_file_handler_name
+
+from LoggerConfig import (
+    paint_logger,
+    paint_logger_change_file_handler_name)
+
 from FijiSupportFunctions import (
     ask_user_for_file,
     format_time_nicely)
@@ -18,17 +22,17 @@ from FijiSupportFunctions import (
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint", "Grid")
 sys.path.append(paint_dir)
 
-from Run_TrackMate import run_trackmate_for_paint
+from Run_TrackMate import run_trackmate
 
 # Set an appropriate name for the log file
-paint_logger_change_file_handler_name('Grid Process Batch Batch.log')
+paint_logger_change_file_handler_name('Run TrackMate Batch.log')
 
 if __name__ == "__main__":
 
     batch_file_name = ask_user_for_file("Specify the batch file")
     if not batch_file_name:
         paint_logger.info("User aborted the batch processing.")
-        sys.exit(0)
+        sys.exit(1)
 
     if not os.path.exists(batch_file_name):
         msg = "Error: The file '{}' does not exist.".format(batch_file_name)
@@ -57,8 +61,8 @@ if __name__ == "__main__":
                         paint_logger.info("-" * len(message))
                         paint_logger.info(message)
                         paint_logger.info("-" * len(message))
-                        run_trackmate_for_paint(experiment_directory=os.path.join(row['Source'], row['Image']),
-                                                image_source_directory=os.path.join(row['Destination'], row['Image']))
+                        run_trackmate(experiment_directory=os.path.join(row['Source'], row['Image']),
+                                      image_source_directory=os.path.join(row['Destination'], row['Image']))
                         paint_logger.info("")
                         paint_logger.info("")
                 run_time = round(time.time() - time_stamp, 1)
