@@ -6,8 +6,8 @@ from tkinter import ttk, filedialog
 import pandas as pd
 
 from src.Automation.Support.Support_Functions import (
-    get_default_directories,
-    save_default_directories,
+    get_default_locations,
+    save_default_locations,
     read_batch_from_file,
 )
 
@@ -87,7 +87,7 @@ class InspectDialog:
 
     def __init__(self, root):
         root.title('Inspect Batch Files')
-        self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
+        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
 
         # Set up the UI layout
         content = ttk.Frame(root)
@@ -118,7 +118,7 @@ class InspectDialog:
         """
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
         if self.root_directory:
-            save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
+            save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
             self.lbl_root_dir.config(text=self.root_directory)
 
     def process(self):

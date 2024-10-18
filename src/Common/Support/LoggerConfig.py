@@ -1,5 +1,7 @@
 import logging
-from os import mkdir, path
+from os import path
+from src.Common.Support.CommonSupportFunctions import get_paint_logger_directory
+
 
 # Create a custom logger
 paint_logger = logging.getLogger('paint')
@@ -15,19 +17,23 @@ console_handler = logging.StreamHandler()  # Logs to the console (standard outpu
 console_handler.setLevel(logging.DEBUG)  # All logs at DEBUG level or higher go to the console
 console_handler.setFormatter(formatter)
 
+DEBUG = logging.DEBUG
+INFO = logging.INFO
+WARNING = logging.WARNING
+ERROR = logging.ERROR
+CRITICAL  = logging.CRITICAL
 
 # Create file handler
 
 def create_file_handler(file_name):
-    file_handler_dir = path.join(path.expanduser('~'), 'Paint Logger')
-    if not path.exists(file_handler_dir):
-        mkdir(file_handler_dir)
+    file_handler_dir = get_paint_logger_directory()
+
     file_handler = logging.FileHandler(path.join(file_handler_dir, file_name), mode='w')  # Logs to a file
     file_handler.setLevel(logging.INFO)  # Only logs at INFO level or higher go to the file
     file_handler.setFormatter(formatter)
     return file_handler
-file_handler = create_file_handler('paint.log')
 
+file_handler = create_file_handler('paint.log')
 
 def paint_logger_file_handle_set_level(level):
     global file_handler

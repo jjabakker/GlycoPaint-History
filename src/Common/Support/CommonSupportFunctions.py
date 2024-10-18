@@ -1,42 +1,56 @@
 import csv
 import os
 import sys
+from os import makedirs
 
 
-def get_default_directories():
+def _get_paint_configuration_directory(sub_dir):
+    conf_dir = os.path.join(os.path.expanduser('~'), 'Paint')
+    makedirs(os.path.join(conf_dir, sub_dir), exist_ok=True)
+    return conf_dir
 
-    configuration_dir = os.path.expanduser('~') + os.sep + "Paint Profile"
-    parameter_file = os.path.join(configuration_dir, "default_directories.csv")
+def get_paint_profile_directory():
+    sub_dir = 'Paint Profile'
+    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
+
+def get_paint_logger_directory():
+    sub_dir = 'Paint Logger'
+    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
+
+def get_default_locations():
+
+    default_locations_file_path = os.path.join(get_paint_profile_directory(), "default_locations.csv")
 
     # Set the default directories so that you can return something in any case
     image_directory = os.path.expanduser('~')
     paint_directory = os.path.expanduser('~')
     root_directory = os.path.expanduser('~')
+    conf_file = ""
 
     try:
         # Check if the file exists
-        if not os.path.exists(parameter_file):
-            return root_directory, paint_directory, image_directory
+        if not os.path.exists(default_locations_file_path):
+            return root_directory, paint_directory, image_directory, conf_file
 
         # Open and read the CSV file
-        with open(parameter_file, mode='r', newline='') as file:
+        with open(default_locations_file_path, mode='r', newline='') as file:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
-            required_columns = ['images_directory', 'paint_directory', 'root_directory']
+            required_columns = ['images_directory', 'paint_directory', 'root_directory', 'conf_file']
             for col in required_columns:
                 if col not in reader.fieldnames:
                     # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
-                    return root_directory, paint_directory, image_directory
+                    return root_directory, paint_directory, image_directory, conf_file
 
             # Ensure file is not empty
             rows = list(reader)  # Read all rows into a list to check content
             if not rows:
-                return root_directory, paint_directory, image_directory
+                return root_directory, paint_directory, image_directory, conf_file
 
             # Access the first row of data
             row = rows[0]
-            return row['root_directory'], row['paint_directory'], row['images_directory']
+            return row['root_directory'], row['paint_directory'], row['images_directory'], row['conf_file']
 
     except FileNotFoundError as e:
         print(e)
@@ -48,18 +62,16 @@ def get_default_directories():
         print(f"An unexpected error occurred: {e}")
 
 
-def save_default_directories(root_directory, paint_directory, images_directory):
+def save_default_locations(root_directory, paint_directory, images_directory, conf_file):
 
-    configuration_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
-    parameter_file_path = os.path.join(configuration_dir, "default_directories.csv")
+    default_locations_file_path = os.path.join(get_paint_profile_directory(), "default_locations.csv")
 
-    os.makedirs(configuration_dir, exist_ok=True)
     try:
 
-        fieldnames = ['images_directory', 'paint_directory', 'root_directory']
+        fieldnames = ['images_directory', 'paint_directory', 'root_directory', 'conf_file']
 
         # Open the file in write mode ('w') and overwrite any existing content
-        with open(parameter_file_path, mode='w', newline='') as file:
+        with open(default_locations_file_path, mode='w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
             # Write the header
@@ -69,7 +81,8 @@ def save_default_directories(root_directory, paint_directory, images_directory):
             writer.writerow({
                 'images_directory': images_directory,
                 'paint_directory': paint_directory,
-                'root_directory': root_directory
+                'root_directory': root_directory,
+                'conf_file': conf_file
             })
 
     except Exception as e:

@@ -11,15 +11,15 @@ from src.Automation.Support.Support_Functions import copy_directory, format_time
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
-    paint_logger_console_handle_set_level
+    paint_logger_console_handle_set_level,
+    DEBUG as PAINT_DEBUG
 )
 
-import logging
-
 paint_logger_change_file_handler_name('Process All.log')
-paint_logger_console_handle_set_level(logging.DEBUG)
+paint_logger_console_handle_set_level(PAINT_DEBUG)
 
 PAINT_DEBUG = False
+PAINT_FORCE = True
 
 if PAINT_DEBUG:
     CONF_FILE = '/Users/hans/Paint Source/paint data generation - integrated.json'
@@ -33,7 +33,7 @@ else:
     CONF_FILE = '/Users/hans/Paint Source/paint data generation - integrated.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
     PAINT_DATA = '/Users/Hans/Paint Data Integrated'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated - v2'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
@@ -52,8 +52,7 @@ def process_directory(paint_source_dir,
                       max_square_coverage: float,
                       process_single: bool,
                       process_traditional: bool,
-                      paint_force:bool) -> bool:
-
+                      paint_force: bool) -> bool:
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} - Processing {process_directory}"
     paint_logger.info("")
@@ -95,8 +94,6 @@ def process_directory(paint_source_dir,
     if not os.path.exists(r_dest_dir):
         os.makedirs(r_dest_dir)
 
-
-
     process_all_images_in_root_directory(
         paint_data_dir,
         nr_squares_in_row=nr_of_squares,
@@ -132,9 +129,8 @@ def process_directory(paint_source_dir,
         f"Processed Mode: Probe: {probe} - Directory: {process_directory} in {format_time_nicely(time.time() - time_stamp)} seconds")
     return True
 
-def main():
 
-    paint_force = False
+def main():
 
     # Load the configuration file
     try:
@@ -190,7 +186,7 @@ def main():
                     max_square_coverage=entry['max_square_coverage'],
                     process_single=entry['process_single'],
                     process_traditional=entry['process_traditional'],
-                    paint_force=paint_force):
+                    paint_force=PAINT_FORCE):
                 error_count += 1
 
     # Report the time it took in hours minutes seconds
@@ -207,6 +203,7 @@ def main():
         paint_logger.error(f"Errors occurred in {error_count} of {nr_to_process} directories.")
         paint_logger.error('-' * 80)
         paint_logger.error('-' * 80)
+
 
 if __name__ == '__main__':
     main()

@@ -10,8 +10,8 @@ from tkinter import ttk, filedialog
 import pandas as pd
 
 from src.Automation.Support.Support_Functions import (
-    get_default_directories,
-    save_default_directories,
+    get_default_locations,
+    save_default_locations,
     read_batch_from_file,
     read_squares_from_file,
     format_time_nicely,
@@ -172,7 +172,7 @@ class CompileDialog:
     def __init__(self, _root):
         root.title('Compile Square Data')
 
-        self.root_directory, self.paint_directory, self.images_directory = get_default_directories()
+        self.root_directory, self.paint_directory, self.images_directory, self_conf_file = get_default_locations()
 
         content = ttk.Frame(root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
@@ -198,7 +198,7 @@ class CompileDialog:
 
     def change_root_dir(self) -> None:
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
-        save_default_directories(self.root_directory, self.paint_directory, self.images_directory)
+        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
         if len(self.root_directory) != 0:
             self.lbl_root_dir.config(text=self.root_directory)
 
