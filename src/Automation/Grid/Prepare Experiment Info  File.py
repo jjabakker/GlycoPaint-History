@@ -6,8 +6,12 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
+from src.Common.Support.LoggerConfig import (
+    paint_logger,
+    paint_logger_change_file_handler_name)
 
-def prepare_batch_file(image_source_directory, paint_directory):
+
+def prepare_experiment_info_file(image_source_directory, experiment_directory):
     """
     This function creates a batch file in the image directory
     :return:
@@ -36,33 +40,28 @@ def prepare_batch_file(image_source_directory, paint_directory):
             return
 
     # Prepare the df to receive the date
-    batch_df = pd.DataFrame()
+    df_experiment = pd.DataFrame()
 
     # Scan the files
     all_images = os.listdir(image_source_directory)
     all_images.sort()
 
     seq_nr = 1
-    print("\n")
+    paint_logger.info("")
 
     for image_name in all_images:
 
         # Skip files starting with .
-        if image_name.startswith('._'):
+        if image_name.startswith(('._', '.DS')) or not image_name.endswith(".nd2"):
             continue
-
-        if image_name.startswith('.DS'):
-            continue
-
-        # if not image_name.endswith(".nd2"):
-        #     continue
 
         # Check the filename format of both the film and the BF
-        regexp = re.compile(r'(?P<exp_date>\d{6})-Exp-(?P<exp_nr>\d{1,2})-[AB][1234]-(?P<exp_seq_nr>\d{1,2})(-BF)?')
-        match = regexp.match(image_name)
+        regexp = re.compile(
+            r'(?P<exp_date>\d{6})-Exp-(?P<exp_nr>\d{1,2})-[AB][1234]-(?P<exp_seq_nr>\d{1,2})(-BF[1-2])?$')
+        match = regexp.match(os.path.splitext(image_name)[0])
         if match is None:
             format_problem = True
-            print(f"Image name: {image_name} is not in the required format")
+            paint_logger.info(f"Image name: {image_name} is not in the expected format")
             exp_nr = ""
             exp_seq_nr = ""
             exp_date = ""
@@ -77,7 +76,7 @@ def prepare_batch_file(image_source_directory, paint_directory):
         if image_name.find("BF") != -1:
             continue
 
-        print(f'Processing file: {image_name}')
+        paint_logger.info(f'Processing file: {image_name}')
 
         # Get the image size
         image_size = os.path.getsize(os.path.join(image_source_directory, image_name))
@@ -95,35 +94,30 @@ def prepare_batch_file(image_source_directory, paint_directory):
                'Adjuvant': '',
                'Concentration': '',
                'Threshold': '',
-               'Min Density Ratio': '10',
                'Process': 'Yes',
-               'Ext Image Name': '-',
-               'Nr Spots': 0,
-               'Nr Tracks': 0,
-               'Image Size': image_size,
-               'Run Time': 0,
-               'Time Stamp': '-'
                }
-        batch_df = pd.concat([batch_df, pd.DataFrame.from_records([row])])
+        df_experiment = pd.concat([df_experiment, pd.DataFrame.from_records([row])])
         seq_nr += 1
 
     # Now write the file, but only if there is data
-    if len(batch_df) == 0:
-        print('No images were found. You have probably selected an incorrect directory.')
-        print('No batch file was written.')
+    if len(df_experiment) == 0:
+        paint_logger.info('No images were found. You have probably selected an incorrect directory.')
+        paint_logger.info('No batch file was written.')
     else:
-        batch_df.to_csv(os.path.join(paint_directory, "Batch.csv"), index=False)
+        df_experiment.to_csv(os.path.join(experiment_directory, "experiment_info.csv"), index=False)
         if format_problem:
-            print(f"\nThere were filenames not in the expected format (\\d{6})-Exp-\\d{1, 2}-[AB][1234]-(\\d{1, 2})")
-            print(
-                "Please supply values for Batche Sequence Nr, Experiment Date, Experiment Nr, Experiment Seq Nr yourself.")
-        print(f"\nProcess finished normally with {seq_nr - 1} images processed.")
+            paint_logger.info('')
+            paint_logger.info(
+                f"There were filenames not in the expected format (\\d{6})-Exp-\\d{1, 2}-[AB][1234]-(\\d{1, 2})")
+            paint_logger.info(
+                "Please supply values for Batch Sequence Nr, Experiment Date, Experiment Nr, Experiment Seq Nr yourself.")
+        paint_logger.info('')
+        paint_logger.info(f"Process finished normally with {seq_nr - 1} images processed.")
 
-    print("\n\n")
-    print(
-        "Don't forget to edit the batch file to specify correct values for Probe, Probe type, Cell Type, Adjuvant and concentration.")
-    print("Then choose the threshold values and select which images needs processing.")
-    print("\n\n")
+    paint_logger.info('')
+    paint_logger.info(
+        "Don't forget to edit the experiment file to specify correct values for Probe, Probe type, Cell Type, Adjuvant and concentration.")
+    paint_logger.info("Then choose the threshold values and select which images needs processing.")
 
 
 class BatchDialog:
@@ -150,10 +144,12 @@ class BatchDialog:
         btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
-        btn_image_dir = ttk.Button(frame_directory, text='Image Directory', width=15, command=self.change_image_dir)
+        btn_image_dir = ttk.Button(frame_directory, text='Image Source Directory', width=20,
+                                   command=self.change_image_dir)
         self.lbl_image_dir = ttk.Label(frame_directory, text=self.image_directory, width=50)
 
-        btn_paint_dir = ttk.Button(frame_directory, text='Paint Directory', width=15, command=self.change_paint_dir)
+        btn_paint_dir = ttk.Button(frame_directory, text='Experiment Directory', width=20,
+                                   command=self.change_paint_dir)
         self.lbl_paint_dir = ttk.Label(frame_directory, text=self.paint_directory, width=50)
 
         btn_image_dir.grid(column=0, row=0, padx=10, pady=5)
@@ -175,14 +171,17 @@ class BatchDialog:
     def process(self):
         if self.image_directory == "" or self.paint_directory == "":
             message = 'The image directory needs to point to where the images are.\n\n'
-            message += 'The paint directory is where the batch.csv will be placed.'
+            message += 'The experimen directory is where the experiment_info.csv will be placed.'
             messagebox.showwarning(title='Warning', message=message)
         else:
-            prepare_batch_file(self.image_directory, self.paint_directory)
+            prepare_experiment_info_file(self.image_directory, self.paint_directory)
+            self.exit_dialog()
 
     def exit_dialog(self):
         root.destroy()
 
+
+paint_logger_change_file_handler_name('Prepare Experiment Info File.log')
 
 root = Tk()
 root.eval('tk::PlaceWindow . center')
