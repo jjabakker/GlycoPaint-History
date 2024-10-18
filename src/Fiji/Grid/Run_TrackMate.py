@@ -91,7 +91,7 @@ def run_trackmate(experiment_directory, image_source_directory):
                     paint_logger.info(
                         "Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Image Name'])
 
-                    status, row = process_row(row, image_source_directory, experiment_directory)
+                    status, row = process_image(row, image_source_directory, experiment_directory)
 
                     if status == 'OK':
                         nr_images_processed += 1
@@ -106,6 +106,15 @@ def run_trackmate(experiment_directory, image_source_directory):
             paint_logger.info("Number of images not found:                   " + str(nr_images_not_found))
             paint_logger.info("Number of images not  successfully processed: " + str(nr_images_failed))
 
+            if nr_images_processed == 0:
+                msg = "No images processed successfully. Refer to Paint log for details."
+                paint_logger.warning(msg)
+                JOptionPane.showMessageDialog(None, msg, "Warning", JOptionPane.WARNING_MESSAGE)
+            elif nr_images_not_found:
+                msg = "Some images were not found. Refer to Paint log for details."
+                paint_logger.warning(msg)
+                JOptionPane.showMessageDialog(None, msg, "Warning", JOptionPane.WARNING_MESSAGE)
+
             return 0
 
         except KeyError as e:
@@ -114,7 +123,7 @@ def run_trackmate(experiment_directory, image_source_directory):
             sys.exit(0)
 
 
-def process_row(row, image_source_directory, experiment_directory):
+def process_image(row, image_source_directory, experiment_directory):
     status = 'OK'
     adjuvant = row['Adjuvant']
     image_name = row['Image Name']
@@ -126,8 +135,8 @@ def process_row(row, image_source_directory, experiment_directory):
     image_file_name = os.path.join(image_source_directory, image_name + '.nd2')
 
     if not os.path.exists(image_file_name):
-        paint_logger.warning("\nProcessing: Failed to open image: " + image_file_name)
-        row['Image Size'] = '-'
+        paint_logger.warning("Processing: Failed to open image: " + image_file_name)
+        row['Image Size'] = 0
         status = 'NOT_FOUND'
     else:
         row['Image Size'] = os.path.getsize(image_file_name)
@@ -163,7 +172,7 @@ def process_row(row, image_source_directory, experiment_directory):
         row['Ext Image Name'] = ext_image_name
         row['Time Stamp'] = time.asctime(time.localtime(time.time()))
 
-        return status, row
+    return status, row
 
 
 def initialise_experiment_tm_file(experiment_directory, column_names):

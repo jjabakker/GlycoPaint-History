@@ -54,9 +54,20 @@ if __name__ == "__main__":
 
                 # Read and print each row
                 time_stamp = time.time()
+                error = False
                 for row in csv_reader:
                     if 'y' in row['Process'].lower():
                         message = "Processing image '{}'".format(row['Image'])
+
+                        if not os.path.exists(os.path.join(row['Source'], row['Image'])):
+                            paint_logger.error("Error: The source '{}' does not exist.".format(row['Source']))
+                            error = True
+                            continue
+                        if not os.path.exists(os.path.join(row['Destination'], row['Image'])):
+                            paint_logger.error("Error: The destination '{}' does not exist.".format(row['Destination']))
+                            error = True
+                            continue
+
                         paint_logger.info("")
                         paint_logger.info("-" * len(message))
                         paint_logger.info(message)
@@ -66,7 +77,12 @@ if __name__ == "__main__":
                         paint_logger.info("")
                         paint_logger.info("")
                 run_time = round(time.time() - time_stamp, 1)
-                paint_logger.info("Processing completed in {} seconds".format(format_time_nicely(run_time)))
+
+                if error:
+                    msg = "Errors occurred during processing. Refer to the log file for more information."
+                    JOptionPane.showMessageDialog(None, msg, "Warning", JOptionPane.WARNING_MESSAGE)
+                else:
+                    paint_logger.info("Processing completed in {} seconds".format(format_time_nicely(run_time)))
 
         except csv.Error as e:
             paint_logger.error("run_trackmate_batch: Error reading CSV file: {}".format(e))
