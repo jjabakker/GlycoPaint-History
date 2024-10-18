@@ -37,12 +37,12 @@ def get_tracks_file_path(experiment_directory, image_name):
 
 TRACKMATE_IMAGES = "Trackmate Images"
 
-def get_image_dir_path(experiment_directory, image_name):
+def get_trackmate_image_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, TRACKMATE_IMAGES)
 
 
 def get_image_file_path(experiment_directory, image_name):
-    return os.path.join(get_image_dir_path(experiment_directory, image_name), image_name + ".tiff")
+    return os.path.join(get_trackmate_image_dir_path(experiment_directory, image_name), image_name + ".tiff")
 
 
 # ----------------------------------------------------------------------------------------------------------------------

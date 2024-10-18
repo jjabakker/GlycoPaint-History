@@ -42,7 +42,8 @@ from src.Common.Support.Locations import (
     delete_files_in_directory,
     get_tau_plots_dir_path,
     get_tracks_dir_path,
-    get_squares_dir_path)
+    get_squares_dir_path,
+    get_squares_file_path)
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
@@ -476,7 +477,7 @@ def process_single_image_in_experiment_directory(
             label_nr += 1
 
     # Write the filtered squares results
-    squares_file_name = os.path.join(get_squares_dir_path(experiment_path, image_name), image_name + "-squares.csv")
+    squares_file_name = get_squares_file_path(experiment_path, image_name)
     save_squares_to_file(df_squares, squares_file_name)
 
     # Generate the Tau heatmap, but only if there are squares selected

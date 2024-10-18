@@ -24,7 +24,14 @@ from src.Automation.Support.Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,
     save_squares_to_file)
-from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
+
+from src.Common.Support.Locations import (
+    get_trackmate_image_dir_path,
+    get_squares_file_path)
+
+from src.Common.Support.LoggerConfig import (
+    paint_logger,
+    paint_logger_change_file_handler_name)
 
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Image Viewer.log')
@@ -53,7 +60,7 @@ class ImageViewer:
 
         self.img_no = 0
         self.root = root
-        self.paint_directory = directory
+        self.experiment_directory = directory
         self.conf_file = conf_file
         self.mode_dir_or_conf = mode_dir_or_conf
         self.mode_intensity_duration_heatmap = None
@@ -71,7 +78,7 @@ class ImageViewer:
         self.neighbour_mode = ""
         self.select_mode = ""
 
-        root.title(f'Test Image Viewer - {self.paint_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
+        root.title(f'Image Viewer - {self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
 
     def setup_ui(self):
         """
@@ -349,24 +356,22 @@ class ImageViewer:
 
     def load_images_and_config(self):
 
-        # Load images and configurations
-
         if self.mode_dir_or_conf == 'DIRECTORY':
-            self.batchfile_path = os.path.join(self.paint_directory, 'grid_batch.csv')
+            self.experiment_tm_file_path = os.path.join(self.experiment_directory, 'experiment_squares.csv')
         else:
-            self.paint_directory = os.path.split(self.conf_file)[0]
-            self.batchfile_path = os.path.join(self.paint_directory, self.conf_file)
+            self.experiment_directory = os.path.split(self.conf_file)[0]
+            self.experiment_tm_file_path = os.path.join(self.experiment_directory, self.conf_file)
 
-        self.df_batch = read_experiment_file(self.batchfile_path, False)
-        if self.df_batch is None:
-            self.show_error_and_exit("No 'grid_batch.csv' file, Did you select an image directory?")
+        self.df_experiment = read_experiment_file(self.experiment_tm_file_path, False)
+        if self.df_experiment is None:
+            self.show_error_and_exit("No 'experiment_squares.csv.csv' file, Did you select an image directory?")
 
-        self.image_name = self.df_batch.iloc[self.img_no]['Ext Image Name']
-        self.nr_squares_in_row = int(self.df_batch.iloc[0]['Nr Of Squares per Row'])
+        self.image_name = self.df_experiment.iloc[self.img_no]['Ext Image Name']
+        self.nr_squares_in_row = int(self.df_experiment.iloc[0]['Nr Of Squares per Row'])
 
         self.list_images = self.get_images('INTENSITY')
         if not self.list_images:
-            self.show_error_and_exit(f"No images were found below directory {self.paint_directory}.")
+            self.show_error_and_exit(f"No images were found in directory {self.experiment_directory}.")
 
         self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
         self.cb_image_names['values'] = self.list_of_image_names
@@ -378,11 +383,11 @@ class ImageViewer:
     def setup_exclude_button(self):
         # Set up the exclude/include button state
 
-        if 'Exclude' not in self.df_batch:
+        if 'Exclude' not in self.df_experiment:
             self.bn_exclude.config(text='Exclude')
         else:
-            row_index = self.df_batch.index[self.df_batch['Ext Image Name'] == self.image_name].tolist()[0]
-            if self.df_batch.loc[row_index, 'Exclude']:
+            row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
+            if self.df_experiment.loc[row_index, 'Exclude']:
                 self.bn_exclude.config(text='Include')
                 self.text_for_info3.set('Excluded')
             else:
@@ -391,40 +396,39 @@ class ImageViewer:
 
     def set_for_all_neighbour_state(self):
         self.batch_changed = True
-        self.df_batch['Neighbour Setting'] = self.neighbour_var.get()
+        self.df_experiment['Neighbour Setting'] = self.neighbour_var.get()
 
     def get_images(self, type_of_image):
-
-        paint_directory = self.paint_directory
-        df_batch = self.df_batch
 
         # Create an empty lst that will hold the images
         list_images = []
 
         # Cycle through the batch file
         count = 0
-        for index in range(len(df_batch)):
+        for index in range(len(self.df_experiment)):
 
-            if df_batch.iloc[index]['Process'] == 'No' or df_batch.iloc[index]['Process'] == 'N':
+            if self.df_experiment.iloc[index]['Process'] == 'No' or self.df_experiment.iloc[index]['Process'] == 'N':
                 continue
 
-            image_name = df_batch.iloc[index]['Ext Image Name']
+            image_name = self.df_experiment.iloc[index]['Ext Image Name']
 
             if self.mode_dir_or_conf == 'DIRECTORY':
-                image_path = os.path.join(paint_directory, image_name)
+                image_path = os.path.join(self.experiment_directory, image_name)
             else:
-                image_path = os.path.join(paint_directory, str(df_batch.iloc[index]['Experiment Date']), image_name)
+                image_path = os.path.join(self.experiment_directory, str(self.df_experiment.iloc[index]['Experiment Date']), image_name)    #TO DO
 
             # If there is no img directory below the image directory, skip it
-            img_dir = os.path.join(image_path, "img")
+            img_dir = get_trackmate_image_dir_path(self.experiment_directory, image_name)
+            # img_dir = os.path.join(image_path, "img")
+
             if not os.path.isdir(img_dir):
                 continue
 
             if self.mode_dir_or_conf == 'DIRECTORY':
-                bf_dir = os.path.join(paint_directory, "Converted BF Images")
+                bf_dir = os.path.join(self.experiment_directory, "Converted BF Images")
             else:
                 bf_dir = os.path.join(
-                    paint_directory, str(df_batch.iloc[index]['Experiment Date']), "Converted BF Images")
+                    self.experiment_directory, str(self.df_experiment.iloc[index]['Experiment Date']), "Converted BF Images")
 
             # Then get all the files in  the 'img' directory
             all_images_in_img_dir = os.listdir(img_dir)
@@ -442,13 +446,13 @@ class ImageViewer:
                 if img.startswith('.'):
                     continue
                 if type_of_image == "INTENSITY" or type_of_image == "DURATION":
-                    if img.find("grid-roi") == -1 and img.find("heat") == -1:
+                    if img.find("heat") == -1:
 
                         left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
                         count += 1
 
                         # Retrieve the square numbers for this image
-                        self.squares_file_name = os.path.join(image_path, 'grid', image_name + '-squares.csv')
+                        self.squares_file_name = get_squares_file_path(self.experiment_directory, image_name)
                         df_squares = read_squares_from_file(self.squares_file_name)
                         if df_squares is not None:
                             square_nrs = list(df_squares['Square Nr'])
@@ -481,8 +485,8 @@ class ImageViewer:
             # See if a Tau is defined in the grid_batch file.
             # If it is record it
 
-            if 'Tau' in df_batch.columns:
-                tau = df_batch.iloc[index]['Tau']
+            if 'Tau' in self.df_experiment.columns:
+                tau = self.df_experiment.iloc[index]['Tau']
             else:
                 tau = 0
 
@@ -490,20 +494,20 @@ class ImageViewer:
             right_valid, right_img = self.get_corresponding_bf(bf_dir, image_name)
 
             record = {
-                "Left Image Name": df_batch.iloc[index]['Ext Image Name'],
+                "Left Image Name": self.df_experiment.iloc[index]['Ext Image Name'],
                 "Left Image": left_img,
-                "Cell Type": df_batch.iloc[index]['Cell Type'],
-                "Adjuvant": df_batch.iloc[index]['Adjuvant'],
-                "Probe": df_batch.iloc[index]['Probe'],
-                "Probe Type": df_batch.iloc[index]['Probe Type'],
-                "Nr Spots": int(df_batch.iloc[index]['Nr Spots']),
+                "Cell Type": self.df_experiment.iloc[index]['Cell Type'],
+                "Adjuvant":  self.df_experiment.iloc[index]['Adjuvant'],
+                "Probe":  self.df_experiment.iloc[index]['Probe'],
+                "Probe Type":  self.df_experiment.iloc[index]['Probe Type'],
+                "Nr Spots": int( self.df_experiment.iloc[index]['Nr Spots']),
                 "Square Nrs": square_nrs,
                 "Squares File": self.squares_file_name,
                 "Left Valid": valid,
                 "Right Image Name": image_name,
                 "Right Image": right_img,
                 "Right Valid": right_valid,
-                "Threshold": df_batch.iloc[index]['Threshold'],
+                "Threshold":  self.df_experiment.iloc[index]['Threshold'],
                 "Tau": tau
             }
 
@@ -511,8 +515,8 @@ class ImageViewer:
 
         print("\n\n")
 
-        if count != len(df_batch):
-            f"There were {len(df_batch) - count} out of {len(df_batch)} images for which no picture was available"
+        if count != len(self.df_experiment):
+            f"There were {len(self.df_experiment) - count} out of {len( self.df_experiment)} images for which no picture was available"
 
         return list_images
 
@@ -574,18 +578,18 @@ class ImageViewer:
     def exinclude(self):
 
         image_name = self.image_name
-        if 'Exclude' not in self.df_batch.columns.values:
-            self.df_batch['Exclude'] = False
-        row_index = self.df_batch.index[self.df_batch['Ext Image Name'] == image_name].tolist()[0]
-        if not self.df_batch.loc[row_index, 'Exclude']:
-            self.df_batch.loc[row_index, 'Exclude'] = True
+        if 'Exclude' not in self.df_experiment.columns.values:
+            self.df_experiment['Exclude'] = False
+        row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == image_name].tolist()[0]
+        if not self.df_experiment.loc[row_index, 'Exclude']:
+            self.df_experiment.loc[row_index, 'Exclude'] = True
             self.bn_exclude.config(text='Include')
             self.text_for_info3.set('Excluded')
         else:
-            self.df_batch.loc[row_index, 'Exclude'] = False
+            self.df_experiment.loc[row_index, 'Exclude'] = False
             self.bn_exclude.config(text='Exclude')
             self.text_for_info3.set('')
-        self.df_batch.to_csv(self.batchfile_path)
+        self.df_experiment.to_csv(self.experiment_tm_file_path)
 
     def key_pressed(self, event):
         self.cn_left_image.focus_set()
@@ -610,7 +614,7 @@ class ImageViewer:
         self.img_no = -1
 
         # Create the squares directory if it does not exist
-        squares_dir = os.path.join(self.paint_directory, 'Output', 'Squares')
+        squares_dir = os.path.join(self.experiment_directory, 'Output', 'Squares')
         if not os.path.isdir(squares_dir):
             os.makedirs(squares_dir)
 
@@ -661,7 +665,7 @@ class ImageViewer:
 
     def save_batch_if_requested(self):
 
-        file = f"{self.paint_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
+        file = f"{self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
         file = os.path.split(file)[1]
         msg = f"Do you want to save changes to {'batch' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
@@ -674,8 +678,8 @@ class ImageViewer:
             self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
                                           self.df_squares['Variability Visible'] &
                                           self.df_squares['Variability Visible'])
-            self.df_batch.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
-            save_experiment_to_file(self.df_batch, self.batchfile_path)
+            self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
+            save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
         if response is not None:
             self.batch_changed = False
         return response
@@ -713,25 +717,25 @@ class ImageViewer:
         self.go_forward_backward('FORWARD')
 
     def set_variability_slider_state(self):
-        max_allowed_variability = self.df_batch.loc[self.image_name]['Variability Setting']
+        max_allowed_variability = self.df_experiment.loc[self.image_name]['Variability Setting']
         self.sc_variability.set(max_allowed_variability)
 
     def set_density_ratio_slider_state(self):
-        min_required_density = self.df_batch.loc[self.image_name]['Density Ratio Setting']
+        min_required_density = self.df_experiment.loc[self.image_name]['Density Ratio Setting']
         self.sc_density_ratio.set(min_required_density)
 
     def set_neighbour_state(self):
-        neighbour_state = self.df_batch.loc[self.image_name]['Neighbour Setting']
+        neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Setting']
         self.neighbour_var.set(neighbour_state)
 
     def save_variability_slider_state_into_df_batch(self):
-        self.df_batch.loc[self.image_name, 'Variability Setting'] = round(self.sc_variability.get(), 1)
+        self.df_experiment.loc[self.image_name, 'Variability Setting'] = round(self.sc_variability.get(), 1)
 
     def save_density_ratio_slider_state_into_df_batch(self):
-        self.df_batch.loc[self.image_name, 'Density Ratio Setting'] = round(self.sc_density_ratio.get(), 1)
+        self.df_experiment.loc[self.image_name, 'Density Ratio Setting'] = round(self.sc_density_ratio.get(), 1)
 
     def save_neighbour_state_into_df_batch(self):
-        self.df_batch.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_var.get()
+        self.df_experiment.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_var.get()
 
     def histogram(self):
 
@@ -849,17 +853,17 @@ class ImageViewer:
         self.save_neighbour_state_into_df_batch()
 
         # Generate the graphpad and pdf directories if needed
-        # create_output_directories_for_graphpad(self.paint_directory)
+        # create_output_directories_for_graphpad(self.experiment_directory)
 
         # Generate the graphpad info for summary statistics
-        # df_stats = analyse_all_images(self.paint_directory)
-        # create_summary_graphpad(self.paint_directory, df_stats)
+        # df_stats = analyse_all_images(self.experiment_directory)
+        # create_summary_graphpad(self.experiment_directory, df_stats)
 
     def set_for_all_slider(self):
         self.batch_changed = True
 
-        self.df_batch['Density Ratio Setting'] = self.sc_density_ratio.get()
-        self.df_batch['Variability Setting'] = self.sc_variability.get()
+        self.df_experiment['Density Ratio Setting'] = self.sc_density_ratio.get()
+        self.df_experiment['Variability Setting'] = self.sc_variability.get()
 
     def variability_changing(self, event):
         # Updating the numerical value of the slider is not needed with tk widget
@@ -1312,8 +1316,8 @@ class ImageViewer:
         self.cb_image_names.set(image_name)
 
         # Set the correct label for Exclude/Include button
-        row_index = self.df_batch.index[self.df_batch['Ext Image Name'] == self.image_name].tolist()[0]
-        if self.df_batch.loc[row_index, 'Exclude']:
+        row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
+        if self.df_experiment.loc[row_index, 'Exclude']:
             self.bn_exclude.config(text='Include')
             self.text_for_info3.set("Excluded")
         else:
@@ -1324,7 +1328,7 @@ class ImageViewer:
         self.square_changed = False
 
     def read_squares(self, image_name):
-        self.squares_file_name = os.path.join(self.paint_directory, image_name, 'grid', image_name + '-squares.csv')
+        self.squares_file_name = os.path.join(self.experiment_directory, image_name, 'grid', image_name + '-squares.csv')
         self.df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
         if self.df_squares is None:
             paint_logger.error(f"Function 'read_squares' failed - Squares file {self.squares_file_name} was not found.")
@@ -1332,21 +1336,21 @@ class ImageViewer:
         return self.df_squares
 
     def read_batch(self):
-        batch_file_path = os.path.join(self.paint_directory, self.image_name, 'grid_batch.csv')
-        self.df_batch = read_experiment_file(batch_file_path)
-        if self.df_batch is None:
+        batch_file_path = os.path.join(self.experiment_directory, self.image_name, 'grid_batch.csv')
+        self.df_experiment = read_experiment_file(batch_file_path)
+        if self.df_experiment is None:
             paint_logger.error(f"Function 'read_batch' failed - Squares file {batch_file_path} was not found.")
             sys.exit()
-        return self.df_batch
+        return self.df_experiment
 
     def update_squares_file(self):
         # It is necessary to the squares file, because the user may have made changes
         if self.mode_dir_or_conf == 'DIRECTORY':
-            squares_file_name = os.path.join(self.paint_directory, self.image_name, 'grid',
+            squares_file_name = os.path.join(self.experiment_directory, self.image_name, 'grid',
                                              self.image_name + '-squares.csv')
         else:
-            squares_file_name = os.path.join(self.paint_directory,
-                                             str(self.df_batch.iloc[self.img_no]['Experiment Date']), self.image_name,
+            squares_file_name = os.path.join(self.experiment_directory,
+                                             str(self.df_experiment.iloc[self.img_no]['Experiment Date']), self.image_name,
                                              'grid',
                                              self.image_name + '-squares.csv')
         save_squares_to_file(self.df_squares, squares_file_name)  # TOD
@@ -1362,8 +1366,8 @@ class ImageViewer:
         self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
                                       self.df_squares['Variability Visible'] &
                                       self.df_squares['Variability Visible'])
-        self.df_batch.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
-        save_experiment_to_file(self.df_batch, self.batchfile_path)
+        self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
+        save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
 
 
 def save_as_png(canvas, file_name):
@@ -1376,7 +1380,7 @@ def save_as_png(canvas, file_name):
 
 
 def save_square_info_to_batch(self):     # TODO
-    for index, row in self.df_batch.iterrows():
+    for index, row in self.df_experiment.iterrows():
         self.squares_file_name = self.list_images[self.img_no]['Squares File']
         df_squares = read_squares_from_file(self.squares_file_name)
         if df_squares is None:
@@ -1391,9 +1395,9 @@ def save_square_info_to_batch(self):     # TODO
             nr_total_squares = 0
             squares_ratio = 0.0
 
-        self.df_batch.loc[index, 'Nr Visible Squares'] = nr_visible_squares
-        self.df_batch.loc[index, 'Nr Total Squares'] = nr_total_squares
-        self.df_batch.loc[index, 'Squares Ratio'] = squares_ratio
+        self.df_experiment.loc[index, 'Nr Visible Squares'] = nr_visible_squares
+        self.df_experiment.loc[index, 'Nr Total Squares'] = nr_total_squares
+        self.df_experiment.loc[index, 'Squares Ratio'] = squares_ratio
 
 
 proceed = False
@@ -1407,7 +1411,7 @@ class SelectViewerDialog:
     def __init__(self, _root: tk.Tk) -> None:
         _root.title('Image Viewer')
 
-        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
+        self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
 
         # Main content frame
         content = ttk.Frame(_root)
@@ -1467,14 +1471,14 @@ class SelectViewerDialog:
         if self.root_directory:
             self.mode_dir_or_conf.set('DIRECTORY')
             self.lbl_root_dir.config(text=self.root_directory)
-            save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
+            save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.conf_file)
 
     def change_conf_file(self) -> None:
-        self.conf_file = filedialog.askopenfilename(initialdir=self.paint_directory, title='Select a configuration file')
+        self.conf_file = filedialog.askopenfilename(initialdir=self.experiment_directory, title='Select a configuration file')
         if self.conf_file:
             self.mode_dir_or_conf.set('CONF_FILE')
             self.lbl_conf_file.config(text=self.conf_file)
-            save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
+            save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.conf_file)
 
     def process(self) -> None:
         global proceed

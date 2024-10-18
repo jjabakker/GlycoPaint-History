@@ -36,8 +36,8 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
 
-def compile_squares_file(root_dir: str, verbose: bool):
-    paint_logger.info(f"Compiling output for {root_dir}")
+def compile_squares_file(project_dir: str, verbose: bool):
+    paint_logger.info(f"Compiling output for {project_dir}")
     time_stamp = time.time()
 
     # Create the dataframes to be filled
@@ -45,18 +45,19 @@ def compile_squares_file(root_dir: str, verbose: bool):
     df_all_squares = pd.DataFrame()
     df_image_summary = pd.DataFrame()
 
-    experiment_dirs = os.listdir(root_dir)
+    experiment_dirs = os.listdir(project_dir)
     experiment_dirs.sort()
-    for experiment_dir in experiment_dirs:
 
-        experiment_dir_path = os.path.join(root_dir, experiment_dir)
-        if not os.path.isdir(experiment_dir_path) or 'Output' in experiment_dir or experiment_dir.startswith('-'):
+    for experiment_names in experiment_dirs:
+
+        experiment_dir_path = os.path.join(project_dir, experiment_names)
+        if not os.path.isdir(experiment_dir_path) or 'Output' in experiment_names or experiment_names.startswith('-'):
             continue
 
         if verbose:
             paint_logger.debug(f'Adding directory: {experiment_dir_path}')
 
-        # Read the experiment_squares file in the directory to determine which images there are
+        # Read the experiment_squares file to determine which images there are
         experiment_squares_file_path = get_experiment_squares_file_path(experiment_dir_path)
         df_experiment_squares = read_experiment_file(experiment_squares_file_path, only_records_to_process=True)
         if df_experiment_squares is None:
@@ -65,16 +66,16 @@ def compile_squares_file(root_dir: str, verbose: bool):
 
         for index, row in df_experiment_squares.iterrows():
 
-            ext_image_name = row['Ext Image Name']
+            image_name = row['Ext Image Name']
             if row['Exclude']:  # Skip over images that are Excluded
                 continue
 
-            squares_file_path = get_squares_file_path(experiment_dir_path, ext_image_name)
+            squares_file_path = get_squares_file_path(experiment_dir_path, image_name)
             df_squares = read_squares_from_file(squares_file_path)
 
             if df_squares is None:
                 paint_logger.error(
-                    f'Compile Squares: No squares file found for image {ext_image_name} in the directory {experiment_dir}')
+                    f'Compile Squares: No squares file found for image {image_name} in the directory {experiment_names}')
                 continue
             if len(df_squares) == 0:  # Ignore it when it is empty
                 continue
@@ -83,7 +84,7 @@ def compile_squares_file(root_dir: str, verbose: bool):
 
         # Determine how many unique for cell type, probe type, adjuvant, and probe there are in the batch
         row = [
-            experiment_dir,
+            experiment_names,
             df_experiment_squares['Cell Type'].nunique(),
             df_experiment_squares['Probe Type'].nunique(),
             df_experiment_squares['Adjuvant'].nunique(),
@@ -118,6 +119,7 @@ def compile_squares_file(root_dir: str, verbose: bool):
         neighbour_setting = df_all_images.loc[image]['Neighbour Setting']
 
         # It can happen that image size is not filled in, handle that event
+        # I don't think this can happen anymore, but leave for now
         try:
             image_size = int(image_size)
         except (ValueError, TypeError):
@@ -145,7 +147,7 @@ def compile_squares_file(root_dir: str, verbose: bool):
     # Drop the squares that have no tracks
     df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
 
-    # Change ext_image_name to image_name
+    # Change image_name to image_name
     df_all_squares.rename(columns={'Ext Image Name': 'Image Name'}, inplace=True)
 
     # Set the columns for df_image_summary
@@ -156,18 +158,18 @@ def compile_squares_file(root_dir: str, verbose: bool):
     # -------------------------------------
 
     # Check if Output directory exists, create if necessary
-    os.makedirs(os.path.join(root_dir, "Output"), exist_ok=True)
+    os.makedirs(os.path.join(project_dir, "Output"), exist_ok=True)
 
     # Save the files,
-    df_all_squares.to_csv(os.path.join(root_dir, 'Output', 'All Squares.csv'), index=False)
-    df_all_images.to_csv(os.path.join(root_dir, 'Output', 'All Images.csv'), index=False)
-    df_image_summary.to_csv(os.path.join(root_dir, "Output", "Image Summary.csv"), index=False)
+    df_all_squares.to_csv(os.path.join(project_dir, 'Output', 'All Squares.csv'), index=False)
+    df_all_images.to_csv(os.path.join(project_dir, 'Output', 'All Images.csv'), index=False)
+    df_image_summary.to_csv(os.path.join(project_dir, "Output", "Image Summary.csv"), index=False)
 
     # Save a copy for easy Imager Viewer access
-    df_all_images.to_csv(os.path.join(root_dir, 'All Images.csv'), index=False)
+    df_all_images.to_csv(os.path.join(project_dir, 'All Images.csv'), index=False)
 
     run_time = time.time() - time_stamp
-    paint_logger.info(f"Compiled  output for {root_dir} in {format_time_nicely(run_time)}")
+    paint_logger.info(f"Compiled  output for {project_dir} in {format_time_nicely(run_time)}")
 
 
 
@@ -197,7 +199,7 @@ class CompileDialog:
         btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
-        btn_root_dir = ttk.Button(frame_directory, text='Root Directory', width=15, command=self.change_root_dir)
+        btn_root_dir = ttk.Button(frame_directory, text='Project Directory', width=15, command=self.change_root_dir)
         self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=80)
 
         btn_root_dir.grid(column=0, row=0, padx=10, pady=5)
@@ -210,7 +212,7 @@ class CompileDialog:
             self.lbl_root_dir.config(text=self.root_directory)
 
     def process(self)-> None:
-        compile_squares_file(root_dir=self.root_directory, verbose=True)
+        compile_squares_file(project_dir=self.root_directory, verbose=True)
         self.root.destroy()
 
     def exit_dialog(self)-> None:
