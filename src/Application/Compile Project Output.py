@@ -1,6 +1,6 @@
 from tkinter import *
 
-from src.Automation.Support.Compile_Output import CompileDialog
+from src.Application.Support.Compile_Output import CompileDialog
 
 root = Tk()
 root.eval('tk::PlaceWindow . center')

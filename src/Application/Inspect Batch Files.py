@@ -5,7 +5,7 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Automation.Support.Support_Functions import (
+from src.Application.Support.Support_Functions import (
     get_default_locations,
     save_default_locations,
     read_experiment_file,

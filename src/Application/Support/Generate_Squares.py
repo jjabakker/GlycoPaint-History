@@ -8,11 +8,11 @@ from tkinter import ttk, filedialog
 import numpy as np
 import pandas as pd
 
-from src.Automation.Support.Curvefit_and_Plot import (
+from src.Application.Support.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
-from src.Automation.Support.Generate_HeatMap import plot_heatmap
-from src.Automation.Support.Support_Functions import (
+from src.Application.Support.Generate_HeatMap import plot_heatmap
+from src.Application.Support.Support_Functions import (
     calc_variability,
     calculate_density,
     get_default_locations,
@@ -31,7 +31,7 @@ from src.Automation.Support.Support_Functions import (
     read_experiment_tm_file
 )
 
-from src.Automation.Support.Paint_Messagebox import paint_messagebox
+from src.Application.Support.Paint_Messagebox import paint_messagebox
 
 from src.Common.Support.LoggerConfig import (
     paint_logger,

@@ -3,9 +3,9 @@ import statistics
 
 import pandas as pd
 
-from src.Automation.Support.Support_Functions import ask_user_for_paint_directory
-from src.Automation.Support.Support_Functions import get_df_from_file
-from src.Automation.Support.Support_Functions import read_experiment_file
+from src.Application.Support.Support_Functions import ask_user_for_paint_directory
+from src.Application.Support.Support_Functions import get_df_from_file
+from src.Application.Support.Support_Functions import read_experiment_file
 
 
 def analyse_all_images(paint_directory):

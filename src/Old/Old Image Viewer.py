@@ -11,11 +11,11 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 
-from src.Automation.Support.Analyse_All_Images import (
+from src.Application.Support.Analyse_All_Images import (
     analyse_all_images,
     create_summary_graphpad)
 from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
-from src.Automation.Support.Support_Functions import (
+from src.Application.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
     test_if_square_is_in_rectangle,

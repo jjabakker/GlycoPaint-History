@@ -14,7 +14,7 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 
-from src.Automation.Support.Support_Functions import (
+from src.Application.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
     test_if_square_is_in_rectangle,

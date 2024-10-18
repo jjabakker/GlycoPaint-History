@@ -3,11 +3,11 @@ import os
 import sys
 import time
 
-from src.Automation.Support.Compile_Output import compile_squares_file
-from src.Automation.Support.Generate_Squares import process_all_images_in_root_directory
-from src.Automation.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
-from src.Automation.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
-from src.Automation.Support.Support_Functions import copy_directory, format_time_nicely
+from src.Application.Support.Compile_Output import compile_squares_file
+from src.Application.Support.Generate_Squares import process_all_images_in_root_directory
+from src.Application.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
+from src.Application.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
+from src.Application.Support.Support_Functions import copy_directory, format_time_nicely
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
