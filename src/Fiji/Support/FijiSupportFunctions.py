@@ -13,7 +13,7 @@ from javax.swing import JFileChooser
 paint_code__dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_code__dir)
 
-from CommonSupportFunctions import get_default_locations, save_default_locations
+from DirectoriesAndLocations import get_default_locations, save_default_locations
 
 
 def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):

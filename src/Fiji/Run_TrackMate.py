@@ -10,12 +10,12 @@ from javax.swing import JOptionPane
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
 
-from Directory_And_Locations import (
+from DirectoriesAndLocations import (
     get_tracks_file_path,
     get_experiment_info_file_path,
     get_experiment_tm_file_path,
     get_tracks_dir_path,
-    get_image_file_name_path,
+    get_image_file_path,
     create_directories)
 
 from Trackmate import excute_trackmate_in_Fiji
@@ -150,7 +150,7 @@ def process_image(row, image_source_directory, experiment_directory):
 
         time_stamp = time.time()
         tracks_file_path = get_tracks_file_path(experiment_directory, ext_image_name)
-        image_file_path = get_image_file_name_path(experiment_directory, ext_image_name)
+        image_file_path = get_image_file_path(experiment_directory, ext_image_name)
 
         # suppress_fiji_output()
         nr_spots, total_tracks, long_tracks = excute_trackmate_in_Fiji(threshold, tracks_file_path, image_file_path)

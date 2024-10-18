@@ -30,12 +30,13 @@ from src.Application.Support.Support_Functions import (
     get_area_of_square,
     read_experiment_tm_file
 )
-from src.Common.Support.Directories_And_Locations import (
+from src.Common.Support.DirectoriesAndLocations import (
     delete_files_in_directory,
     get_tau_plots_dir_path,
     get_tracks_dir_path,
     get_squares_dir_path,
-    get_squares_file_path)
+    get_squares_file_path,
+    get_tracks_file_path)
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -285,7 +286,7 @@ def process_all_images_in_experiment_directory(
         paint_logger.error(
             f"Function 'process_all_images_in_paint_directory' failed: Likely, {experiment_path} is not a valid directory containing cell image information.")
         sys.exit(1)
-    if len(df_experiment) is 0:
+    if len(df_experiment) == 0:
         paint_logger.error(
             f"Function 'process_all_images_in_paint_directory' failed: 'experiment_tm.csv' in {experiment_path} is empty")
         sys.exit(1)
@@ -422,10 +423,10 @@ def process_single_image_in_experiment_directory(
     delete_files_in_directory(get_tau_plots_dir_path(experiment_path, image_name))
 
     # Read the full-track file from the 'tracks' directory
-    tracks_file_name = os.path.join(get_tracks_dir_path(experiment_path, image_name), image_name + "-tracks.csv")
-    df_tracks = get_df_from_file(tracks_file_name, header=0, skip_rows=[1, 2, 3])
+    tracks_file_path = get_tracks_file_path(experiment_path, image_name)
+    df_tracks = get_df_from_file(tracks_file_path, header=0, skip_rows=[1, 2, 3])
     if df_tracks is None:
-        paint_logger.error(f"Process Single Image in Paint directory - Tracks file {tracks_file_name} cannot be opened")
+        paint_logger.error(f"Process Single Image in Paint directory - Tracks file {tracks_file_path} cannot be opened")
         return None, tau, r_squared, density
 
     # A df_squares dataframe is generated and for every square the Tau and Density ratio is calculated
@@ -447,7 +448,7 @@ def process_single_image_in_experiment_directory(
         df_with_label.loc[df_with_label['Square Nr'] == square, 'Label Nr'] = label
 
     # The tracks dataframe has been updated with label info, so write a copy to file
-    new_tracks_file_name = tracks_file_name[:tracks_file_name.find('.csv')] + '-label.csv'
+    new_tracks_file_name = tracks_file_path[:tracks_file_path.find('.csv')] + '-label.csv'
     df_with_label.drop(['NUMBER_SPLITS', 'NUMBER_MERGES', 'TRACK_Z_LOCATION', 'NUMBER_COMPLEX'], axis=1, inplace=True)
     df_with_label.to_csv(new_tracks_file_name, index=False)
 

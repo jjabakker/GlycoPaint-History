@@ -5,7 +5,7 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Common.Support.Directories_And_Locations import (
+from src.Common.Support.DirectoriesAndLocations import (
     get_default_locations,
     save_default_locations)
 

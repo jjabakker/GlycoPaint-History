@@ -24,7 +24,7 @@ from src.Application.Support.Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,
     save_squares_to_file)
-from src.Common.Support.Directories_And_Locations import (
+from src.Common.Support.DirectoriesAndLocations import (
     get_trackmate_image_dir_path,
     get_squares_file_path)
 from src.Common.Support.LoggerConfig import (

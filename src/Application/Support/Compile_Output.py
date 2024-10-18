@@ -16,7 +16,7 @@ from src.Application.Support.Support_Functions import (
     read_squares_from_file,
     format_time_nicely,
     correct_all_images_column_types)
-from src.Common.Support.Directories_And_Locations import (
+from src.Common.Support.DirectoriesAndLocations import (
     get_experiment_squares_file_path,
     get_squares_file_path)
 from src.Common.Support.LoggerConfig import (

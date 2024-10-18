@@ -7,7 +7,7 @@ from tkinter.filedialog import askdirectory
 import numpy as np
 import pandas as pd
 
-from src.Common.Support.Directories_And_Locations import (
+from src.Common.Support.DirectoriesAndLocations import (
     get_default_locations,
     save_default_locations,
     get_paint_profile_directory)
@@ -162,9 +162,12 @@ def calc_variability(tracks_df, square_nr, nr_squares_in_row, granularity):
 def get_df_from_file(file, header=0, skip_rows=[]):
     try:
         df = pd.read_csv(file, header=header, skiprows=skip_rows)
+    except FileNotFoundError:
+        df = None
+        paint_logger.error("File not found: " + file)
     except IOError:
         df = None
-        print("\nFile not found: " + file)
+        paint_logger.error("IoError: " + file)
 
     return df
 
@@ -352,13 +355,13 @@ def get_grid_defaults_from_file() -> dict:
             return rows[0]
 
     except FileNotFoundError as e:
-        print(e)
+        paint_logger.error(e)
     except KeyError as e:
-        print(f"Error: {e}")
+        paint_logger.error(f"Error: {e}")
     except ValueError as e:
-        print(f"Error: {e}")
+        paint_logger.error(f"Error: {e}")
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        paint_logger.error(f"An unexpected error occurred: {e}")
     return def_parameters
 
 
@@ -397,7 +400,7 @@ def save_grid_defaults_to_file(
                 'process_traditional': process_traditional})
 
     except Exception as e:
-        print(f"An error occurred while writing to the file: {e}")  # TODO: Replace with logger
+        paint_logger.error(f"An error occurred while writing to the file: {e}")
 
 
 def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
@@ -532,7 +535,7 @@ def read_squares_from_file(squares_file_path):
     try:
         df_squares = pd.read_csv(squares_file_path, header=0, skiprows=[])
     except IOError:
-        print(f'Read_squares from_file: file {squares_file_path} could not be opened.')
+        paint_logger.error(f'Read_squares from_file: file {squares_file_path} could not be opened.')
         exit(-1)
 
     df_squares.set_index('Square Nr', inplace=True, drop=False)
@@ -632,7 +635,6 @@ def copy_directory(src, dest):
         paint_logger.error(f"RecursionError: {e}")
     except Exception as e:
         paint_logger.error(f"An unexpected error occurred: {e}")
-        paint_logger.error(f"process_all - copy directories: Failed to rmtree {dest} - {e}")
 
     try:
         shutil.copytree(src, dest)

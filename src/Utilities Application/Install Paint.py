@@ -4,7 +4,7 @@ import shutil
 import subprocess
 
 # import winreg
-from src.Common.Support.Directories_And_Locations import delete_files_in_directory
+from src.Common.Support.DirectoriesAndLocations import delete_files_in_directory
 
 
 # def find_app_path_windows():
@@ -125,10 +125,11 @@ def install():
 
     # Determine the source_root from the current path
     head_tail = os.path.split(os.getcwd())
-    source_root = os.path.split(head_tail[0])[0]
+    #source_root = os.path.split(head_tail[0])[0]
+    source_root = head_tail[0]
 
     # Define the source directories
-    fiji_grid_source = os.path.join(source_root, 'Fiji', 'Grid')
+    fiji_grid_source = os.path.join(source_root, 'Fiji')
     fiji_single_source = os.path.join(source_root, 'Fiji', 'Single')
     fiji_support_source = os.path.join(source_root, 'Fiji', 'Support')
 
@@ -150,14 +151,14 @@ def install():
     # Then do the actual copying
 
     print(f"\n\nCopy from {fiji_grid_source} to {fiji_grid_dest}: ")
-    plugin_files = ["Run_TrackMate.py", "Run_TrackMate_Batch.py"]
+    plugin_files = ["Run_TrackMate.py", "Run_TrackMate_Batch.py", "Single_Analysis.py"]
     for file in plugin_files:
         copy_file_from_source_to_dest(fiji_grid_source, fiji_grid_dest, file)
 
-    print(f"\n\nCopy from {fiji_single_source} to {fiji_single_dest}: ")
-    plugin_files = ["Single_Analysis.py"]
-    for file in plugin_files:
-        copy_file_from_source_to_dest(fiji_single_source, fiji_single_dest, file)
+    # print(f"\n\nCopy from {fiji_single_source} to {fiji_single_dest}: ")
+    # plugin_files = ["Single_Analysis.py"]
+    # for file in plugin_files:
+    #     copy_file_from_source_to_dest(fiji_single_source, fiji_single_dest, file)
 
     print(f"\n\nCopy from {fiji_support_source} to {library_dest}: ")
     fiji_files = ["FijiSupportFunctions.py", "Trackmate.py"]
@@ -165,15 +166,16 @@ def install():
         copy_file_from_source_to_dest(fiji_support_source, library_dest, file)
 
     print(f"\n\nCopy from {common_support_source} to {library_dest}: ")
-    fiji_files = ["CommonSupportFunctions.py", "LoggerConfig.py", "Directories_And_Locations.py"]
+    fiji_files = ["LoggerConfig.py", "DirectoriesAndLocations.py"]
     for file in fiji_files:
         copy_file_from_source_to_dest(common_support_source, library_dest, file)
 
     # Create the Trackmate Data and Paint profile directories
-    profile_dir = os.path.join(os.path.expanduser('~'), "Paint Profile")
-    trackmate_dir = os.path.join(os.path.expanduser('~'), "Trackmate Data")
+    profile_dir = os.path.join(os.path.expanduser('~'), "Paint", "Paint Profile")
+    logging_dir = os.path.join(os.path.expanduser('~'), "Paint", "Paint Logger")
+    # trackmate_dir = os.path.join(os.path.expanduser('~'), "Trackmate Data")
 
-    dirs_to_create = [profile_dir, trackmate_dir]
+    dirs_to_create = [profile_dir, logging_dir]
     for directory in dirs_to_create:
         if not os.path.isdir(directory):
             print("\nCreated directory {dir}")
