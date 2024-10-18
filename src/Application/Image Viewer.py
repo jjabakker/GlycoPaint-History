@@ -4,8 +4,8 @@ import shutil
 import statistics
 import subprocess
 import sys
-import time
 import tempfile
+import time
 import tkinter as tk
 from tkinter import *
 from tkinter import filedialog, messagebox
@@ -24,11 +24,9 @@ from src.Application.Support.Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,
     save_squares_to_file)
-
 from src.Common.Support.Locations import (
     get_trackmate_image_dir_path,
     get_squares_file_path)
-
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
@@ -94,7 +92,7 @@ class ImageViewer:
         self.frame_filter = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_duration_mode = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
-        self.frame_images.grid(column=0, row=0, rowspan = 2, padx=5, pady=5, sticky=tk.N)
+        self.frame_images.grid(column=0, row=0, rowspan=2, padx=5, pady=5, sticky=tk.N)
         self.frame_navigation_buttons.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
         self.frame_controls.grid(column=1, row=0, rowspan=2, padx=5, pady=5, sticky=N)
         self.frame_filter.grid(column=2, row=0, padx=5, pady=5, sticky=N)
@@ -196,7 +194,8 @@ class ImageViewer:
         self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5),
                                           width=frame_width)
         self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_output_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_output_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove',
+                                               padding=(5, 5, 5, 5))
 
         self.frame_mode.grid(column=0, row=0, padx=5, pady=5, sticky=tk.NSEW)
         self.frame_neighbours.grid(column=0, row=1, padx=5, pady=5, sticky=tk.NSEW)
@@ -212,11 +211,14 @@ class ImageViewer:
         # This frame is part of frame_controls and contains the following radio buttons: rb_mode_square, rb_mode_heat
 
         self.mode_intensity_duration_heatmap = StringVar(value="INTENSITY")
-        self.rb_mode_square = Radiobutton(self.frame_mode, text="Intensity", variable=self.mode_intensity_duration_heatmap,
+        self.rb_mode_square = Radiobutton(self.frame_mode, text="Intensity",
+                                          variable=self.mode_intensity_duration_heatmap,
                                           value="INTENSITY", command=self.select_mode_button)
-        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Tau Heatmap", variable=self.mode_intensity_duration_heatmap,
+        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Tau Heatmap",
+                                        variable=self.mode_intensity_duration_heatmap,
                                         value="HEAT", command=self.select_mode_button)
-        self.rb_mode_duration = Radiobutton(self.frame_mode, text="Duration", variable=self.mode_intensity_duration_heatmap,
+        self.rb_mode_duration = Radiobutton(self.frame_mode, text="Duration",
+                                            variable=self.mode_intensity_duration_heatmap,
                                             value="DURATION", command=self.select_mode_button)
 
         self.rb_mode_square.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
@@ -230,9 +232,11 @@ class ImageViewer:
         self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12,
                                              value="Free", command=self.select_neighbour_button, anchor=tk.W)
         self.rb_neighbour_strict = Radiobutton(self.frame_neighbours, text="Strict", variable=self.neighbour_var,
-                                               width=12, value="Strict", command=self.select_neighbour_button, anchor=tk.W)
+                                               width=12, value="Strict", command=self.select_neighbour_button,
+                                               anchor=tk.W)
         self.rb_neighbour_relaxed = Radiobutton(self.frame_neighbours, text="Relaxed", variable=self.neighbour_var,
-                                                width=12, value="Relaxed", command=self.select_neighbour_button, anchor=tk.W)
+                                                width=12, value="Relaxed", command=self.select_neighbour_button,
+                                                anchor=tk.W)
         self.bn_set_neighbours_all = Button(self.frame_neighbours, text="Set for All",
                                             command=lambda: self.set_for_all_neighbour_state())
 
@@ -347,8 +351,8 @@ class ImageViewer:
 
         self.track_duration = DoubleVar(value=100)
         self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
-        self.sc_track_duration= tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration,
-                                         orient='vertical', resolution=0.1, command=self.track_duration_changing)
+        self.sc_track_duration = tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration,
+                                          orient='vertical', resolution=0.1, command=self.track_duration_changing)
         self.sc_track_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
 
         self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
@@ -415,7 +419,8 @@ class ImageViewer:
             if self.mode_dir_or_conf == 'DIRECTORY':
                 image_path = os.path.join(self.experiment_directory, image_name)
             else:
-                image_path = os.path.join(self.experiment_directory, str(self.df_experiment.iloc[index]['Experiment Date']), image_name)    #TO DO
+                image_path = os.path.join(self.experiment_directory,
+                                          str(self.df_experiment.iloc[index]['Experiment Date']), image_name)  # TO DO
 
             # If there is no img directory below the image directory, skip it
             img_dir = get_trackmate_image_dir_path(self.experiment_directory, image_name)
@@ -428,7 +433,8 @@ class ImageViewer:
                 bf_dir = os.path.join(self.experiment_directory, "Converted BF Images")
             else:
                 bf_dir = os.path.join(
-                    self.experiment_directory, str(self.df_experiment.iloc[index]['Experiment Date']), "Converted BF Images")
+                    self.experiment_directory, str(self.df_experiment.iloc[index]['Experiment Date']),
+                    "Converted BF Images")
 
             # Then get all the files in  the 'img' directory
             all_images_in_img_dir = os.listdir(img_dir)
@@ -497,17 +503,17 @@ class ImageViewer:
                 "Left Image Name": self.df_experiment.iloc[index]['Ext Image Name'],
                 "Left Image": left_img,
                 "Cell Type": self.df_experiment.iloc[index]['Cell Type'],
-                "Adjuvant":  self.df_experiment.iloc[index]['Adjuvant'],
-                "Probe":  self.df_experiment.iloc[index]['Probe'],
-                "Probe Type":  self.df_experiment.iloc[index]['Probe Type'],
-                "Nr Spots": int( self.df_experiment.iloc[index]['Nr Spots']),
+                "Adjuvant": self.df_experiment.iloc[index]['Adjuvant'],
+                "Probe": self.df_experiment.iloc[index]['Probe'],
+                "Probe Type": self.df_experiment.iloc[index]['Probe Type'],
+                "Nr Spots": int(self.df_experiment.iloc[index]['Nr Spots']),
                 "Square Nrs": square_nrs,
                 "Squares File": self.squares_file_name,
                 "Left Valid": valid,
                 "Right Image Name": image_name,
                 "Right Image": right_img,
                 "Right Valid": right_valid,
-                "Threshold":  self.df_experiment.iloc[index]['Threshold'],
+                "Threshold": self.df_experiment.iloc[index]['Threshold'],
                 "Tau": tau
             }
 
@@ -516,7 +522,7 @@ class ImageViewer:
         print("\n\n")
 
         if count != len(self.df_experiment):
-            f"There were {len(self.df_experiment) - count} out of {len( self.df_experiment)} images for which no picture was available"
+            f"There were {len(self.df_experiment) - count} out of {len(self.df_experiment)} images for which no picture was available"
 
         return list_images
 
@@ -678,7 +684,8 @@ class ImageViewer:
             self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
                                           self.df_squares['Variability Visible'] &
                                           self.df_squares['Variability Visible'])
-            self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
+            self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(
+                self.df_squares[self.df_squares['Visible']])
             save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
         if response is not None:
             self.batch_changed = False
@@ -754,7 +761,6 @@ class ImageViewer:
 
                 print(
                     f"For Cell Id: {cell_id}, the tau mean is {tau_mean}, the tau median is {tau_median} and the tau std is {tau_std}\n")
-
 
     def show_excel(self):
         # Path to the Excel application
@@ -996,7 +1002,8 @@ class ImageViewer:
             self.df_squares.loc[
                 self.df_squares['Density Ratio'] < round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = False
 
-            self.df_squares['Visible'] = self.df_squares['Density Ratio Visible'] & self.df_squares['Variability Visible']
+            self.df_squares['Visible'] = self.df_squares['Density Ratio Visible'] & self.df_squares[
+                'Variability Visible']
 
             # Select which isolation mode to be applied
             neighbour_state = self.neighbour_var.get()
@@ -1219,7 +1226,7 @@ class ImageViewer:
                 return
         elif mode == "INTENSITY":
             self.configure_widgets_state(NORMAL)
-        elif  mode  == "DURATION":
+        elif mode == "DURATION":
             self.configure_widgets_state(DISABLED)
         else:
             paint_logger.error('Big trouble!')
@@ -1328,7 +1335,8 @@ class ImageViewer:
         self.square_changed = False
 
     def read_squares(self, image_name):
-        self.squares_file_name = os.path.join(self.experiment_directory, image_name, 'grid', image_name + '-squares.csv')
+        self.squares_file_name = os.path.join(self.experiment_directory, image_name, 'grid',
+                                              image_name + '-squares.csv')
         self.df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
         if self.df_squares is None:
             paint_logger.error(f"Function 'read_squares' failed - Squares file {self.squares_file_name} was not found.")
@@ -1350,7 +1358,8 @@ class ImageViewer:
                                              self.image_name + '-squares.csv')
         else:
             squares_file_name = os.path.join(self.experiment_directory,
-                                             str(self.df_experiment.iloc[self.img_no]['Experiment Date']), self.image_name,
+                                             str(self.df_experiment.iloc[self.img_no]['Experiment Date']),
+                                             self.image_name,
                                              'grid',
                                              self.image_name + '-squares.csv')
         save_squares_to_file(self.df_squares, squares_file_name)  # TOD
@@ -1379,7 +1388,7 @@ def save_as_png(canvas, file_name):
     img.save(f"{file_name}.png", 'png')
 
 
-def save_square_info_to_batch(self):     # TODO
+def save_square_info_to_batch(self):  # TODO
     for index, row in self.df_experiment.iterrows():
         self.squares_file_name = self.list_images[self.img_no]['Squares File']
         df_squares = read_squares_from_file(self.squares_file_name)
@@ -1464,21 +1473,25 @@ class SelectViewerDialog:
 
     def add_radio_button(self, parent, text, row) -> None:
         """Helper function to add a radio button to a frame."""
-        ttk.Radiobutton(parent, text="", variable=self.mode_dir_or_conf, value=text, width=10).grid(column=2, row=row, padx=10, pady=5)
+        ttk.Radiobutton(parent, text="", variable=self.mode_dir_or_conf, value=text, width=10).grid(column=2, row=row,
+                                                                                                    padx=10, pady=5)
 
     def change_root_dir(self) -> None:
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
         if self.root_directory:
             self.mode_dir_or_conf.set('DIRECTORY')
             self.lbl_root_dir.config(text=self.root_directory)
-            save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.conf_file)
+            save_default_locations(self.root_directory, self.experiment_directory, self.images_directory,
+                                   self.conf_file)
 
     def change_conf_file(self) -> None:
-        self.conf_file = filedialog.askopenfilename(initialdir=self.experiment_directory, title='Select a configuration file')
+        self.conf_file = filedialog.askopenfilename(initialdir=self.experiment_directory,
+                                                    title='Select a configuration file')
         if self.conf_file:
             self.mode_dir_or_conf.set('CONF_FILE')
             self.lbl_conf_file.config(text=self.conf_file)
-            save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.conf_file)
+            save_default_locations(self.root_directory, self.experiment_directory, self.images_directory,
+                                   self.conf_file)
 
     def process(self) -> None:
         global proceed
@@ -1509,6 +1522,7 @@ class SelectViewerDialog:
         global proceed
         proceed = False
         root.destroy()
+
 
 root = Tk()
 root.eval('tk::PlaceWindow . center')

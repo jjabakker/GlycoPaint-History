@@ -28,10 +28,10 @@ def set_directory_tree_timestamp(dir_to_change, timestamp=None):
             os.utime(dir_to_change, (timestamp, timestamp))
             for dirname in dirnames:
                 filepath = os.path.join(dirpath, dirname)
-                os.utime (filepath, (timestamp,timestamp))
+                os.utime(filepath, (timestamp, timestamp))
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
-                os.utime (filepath, (timestamp,timestamp))
+                os.utime(filepath, (timestamp, timestamp))
         paint_logger.debug(f"Updated timestamps for directory '{dir_to_change}' successfully.")
 
     except (PermissionError, OSError, FileNotFoundError):

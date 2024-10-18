@@ -1,7 +1,6 @@
 import os
-import time
 import sys
-
+import time
 import tkinter as tk
 from tkinter import ttk, filedialog
 
@@ -12,6 +11,7 @@ from src.Application.Support.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
 from src.Application.Support.Generate_HeatMap import plot_heatmap
+from src.Application.Support.Paint_Messagebox import paint_messagebox
 from src.Application.Support.Support_Functions import (
     calc_variability,
     calculate_density,
@@ -30,20 +30,16 @@ from src.Application.Support.Support_Functions import (
     get_area_of_square,
     read_experiment_tm_file
 )
-
-from src.Application.Support.Paint_Messagebox import paint_messagebox
-
-from src.Common.Support.LoggerConfig import (
-    paint_logger,
-    paint_logger_change_file_handler_name,
-    paint_logger_file_name_assigned)
-
 from src.Common.Support.Locations import (
     delete_files_in_directory,
     get_tau_plots_dir_path,
     get_tracks_dir_path,
     get_squares_dir_path,
     get_squares_file_path)
+from src.Common.Support.LoggerConfig import (
+    paint_logger,
+    paint_logger_change_file_handler_name,
+    paint_logger_file_name_assigned)
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
@@ -535,21 +531,21 @@ def calc_single_tau_and_density_for_image(
 
 
 def create_df_squares(experiment_directory: str,
-        df_tracks: pd.DataFrame,
-        image_path: str,
-        image_name: str,
-        nr_squares_in_row: int,
-        concentration: float,
-        nr_spots: int,
-        min_r_squared: float,
-        min_tracks_for_tau: int,
-        seq_nr: int,
-        experiment_nr: int,
-        experiment_seq_nr: int,
-        experiment_date: str,
-        experiment_name: str,
-        process_traditional: bool,
-        verbose: bool) -> pd.DataFrame:
+                      df_tracks: pd.DataFrame,
+                      image_path: str,
+                      image_name: str,
+                      nr_squares_in_row: int,
+                      concentration: float,
+                      nr_spots: int,
+                      min_r_squared: float,
+                      min_tracks_for_tau: int,
+                      seq_nr: int,
+                      experiment_nr: int,
+                      experiment_seq_nr: int,
+                      experiment_date: str,
+                      experiment_name: str,
+                      process_traditional: bool,
+                      verbose: bool) -> pd.DataFrame:
     # Create the tau_matrix (and other matrices if verbose is True)
     tau_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
     if verbose:
@@ -617,7 +613,8 @@ def create_df_squares(experiment_directory: str,
                 r_squared = 0
             else:
                 duration_data = compile_duration(df_tracks_square)
-                plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, image_name), image_name + "-square-" + str(square_seq_nr) + ".png")
+                plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, image_name),
+                                        image_name + "-square-" + str(square_seq_nr) + ".png")
                 tau, r_squared = curve_fit_and_plot(
                     plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
                     file=plt_file, plot_to_screen=False, verbose=False)

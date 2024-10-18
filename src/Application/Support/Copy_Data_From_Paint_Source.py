@@ -77,6 +77,7 @@ def copy_data_from_paint_source_to_paint_data(source_root, dest_root, include_ex
         paint_logger.error(f"copy_data_from_source: Failed to process directories in {dest_root}. Error: {e}")
         return False
 
+
 if __name__ == '__main__':
     # Example usage
 

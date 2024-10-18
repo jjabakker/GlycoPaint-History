@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
+
 from PIL import Image, ImageTk  # Importing from Pillow
+
 
 def _paint_messagebox(root, title, message, icon_path):
     # Create a new window for the messagebox
@@ -56,8 +58,11 @@ def _paint_messagebox(root, title, message, icon_path):
     # Run the messagebox win"/Users/hans/Downloads/Paint.jpg"dow
     msg_box.mainloop()
 
+
 def paint_messagebox(root, title, message):
-    _paint_messagebox(root, title, message, "/Users/hans/Downloads/Paint.jpg")    # TODO: Change the path to the actual icon
+    _paint_messagebox(root, title, message,
+                      "/Users/hans/Downloads/Paint.jpg")  # TODO: Change the path to the actual icon
+
 
 if __name__ == "__main__":
     # Create the main window

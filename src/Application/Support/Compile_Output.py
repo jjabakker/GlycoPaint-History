@@ -16,18 +16,16 @@ from src.Application.Support.Support_Functions import (
     read_squares_from_file,
     format_time_nicely,
     correct_all_images_column_types)
-
 from src.Common.Support.Locations import (
     get_experiment_squares_file_path,
     get_squares_file_path)
-
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
 
 if not paint_logger_file_name_assigned:
-    paint_logger_change_file_handler_name('Compile Squares.log')
+    paint_logger_change_file_handler_name('Compile Output.log')
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -61,7 +59,8 @@ def compile_squares_file(project_dir: str, verbose: bool):
         experiment_squares_file_path = get_experiment_squares_file_path(experiment_dir_path)
         df_experiment_squares = read_experiment_file(experiment_squares_file_path, only_records_to_process=True)
         if df_experiment_squares is None:
-            paint_logger.error(f"Function 'compile_squares_file' failed: Batch file {experiment_squares_file_path} does not exist")
+            paint_logger.error(
+                f"Function 'compile_squares_file' failed: Batch file {experiment_squares_file_path} does not exist")
             exit()
 
         for index, row in df_experiment_squares.iterrows():
@@ -172,11 +171,9 @@ def compile_squares_file(project_dir: str, verbose: bool):
     paint_logger.info(f"Compiled  output for {project_dir} in {format_time_nicely(run_time)}")
 
 
-
 class CompileDialog:
 
     def __init__(self, _root):
-
         self.root = _root
 
         self.root.title('Compile Square Data')
@@ -211,11 +208,11 @@ class CompileDialog:
         if len(self.root_directory) != 0:
             self.lbl_root_dir.config(text=self.root_directory)
 
-    def process(self)-> None:
+    def process(self) -> None:
         compile_squares_file(project_dir=self.root_directory, verbose=True)
         self.root.destroy()
 
-    def exit_dialog(self)-> None:
+    def exit_dialog(self) -> None:
         self.root.destroy()
 
 

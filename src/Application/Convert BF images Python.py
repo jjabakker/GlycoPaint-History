@@ -1,13 +1,14 @@
-from nd2reader import ND2Reader
-from PIL import Image
-import numpy as np
 import os
 import shutil
 
+import numpy as np
+from PIL import Image
+from nd2reader import ND2Reader
+
 from src.Common.Support.LoggerConfig import paint_logger
 
-def convert_nd2_to_jpg(nd2_file_path, output_file):
 
+def convert_nd2_to_jpg(nd2_file_path, output_file):
     # Open the .nd2 file
     with ND2Reader(nd2_file_path) as images:
 
@@ -29,7 +30,6 @@ def convert_nd2_to_jpg(nd2_file_path, output_file):
 
         # Save the image as .jpg
         img.save(output_file, 'JPEG')
-
 
 
 def convert_bf_images(image_source_directory, paint_directory, force=False):
@@ -82,7 +82,8 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
                     paint_logger.info("Image %s does not require updating.", display_name)
 
     # Log the conversion summary
-    paint_logger.info("\nConverted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found, count)
+    paint_logger.info("\nConverted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found,
+                      count)
 
     # Copy the entire 'Converted BF Images' directory to the paint directory
     dest_dir = os.path.join(paint_directory, "Converted BF Images")
@@ -113,4 +114,3 @@ if __name__ == "__main__":
     # # Run the conversion with user-specified directories
     # convert_bf_images(images_source_directory, paint_directory, force=False)
     convert_bf_images('/Volumes/Extreme Pro/Omero/221101', '/Users/hans/Downloads/Test', force=True)
-

@@ -1,5 +1,7 @@
-import xattr
 import plistlib
+
+import xattr
+
 
 def set_finder_tags(path, tags):
     try:
@@ -28,15 +30,15 @@ def get_finder_tags(path):
 
 def test_tag(file):
     tags = get_finder_tags(file)
-    print (tags)
+    print(tags)
 
     set_finder_tags(file, [])
     tags = get_finder_tags(file)
-    print (tags)
+    print(tags)
 
     set_finder_tags(file, ['Important'])
     tags = get_finder_tags(file)
-    print (tags)
+    print(tags)
 
 
 if __name__ == '__main__':

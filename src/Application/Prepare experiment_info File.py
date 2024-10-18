@@ -181,7 +181,7 @@ class BatchDialog:
         root.destroy()
 
 
-paint_logger_change_file_handler_name('Prepare Experiment Info File.log')
+paint_logger_change_file_handler_name('Prepare Experiment_Info File.log')
 
 root = Tk()
 root.eval('tk::PlaceWindow . center')

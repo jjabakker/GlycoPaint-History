@@ -17,7 +17,6 @@ pd.options.mode.copy_on_write = True
 
 
 def write_np_to_excel(matrix: np.ndarray, filename: str) -> None:
-
     df = pd.DataFrame(matrix)
     df.reset_index(inplace=True)
     df.to_excel(filename, index=False, index_label='None', header='False', float_format="%0.2f")
@@ -43,7 +42,6 @@ def calculate_density(nr_tracks: int, area: float, time: float, concentration: f
     :param magnification: use 1000 to getr easier numbers
     :return: the density
     """
-
 
     density = nr_tracks / area
     density /= time
@@ -77,7 +75,8 @@ def ask_user_for_paint_directory(title='Select Folder'):
     return image_directory
 
 
-def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr: int, nr_squares_in_row: int, granularity: int) -> tuple[int, int]:
+def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr: int, nr_squares_in_row: int,
+                granularity: int) -> tuple[int, int]:
     """
     Given coordinates (x1, y1) of the track, calculate the indices of the grid
 
@@ -221,8 +220,8 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
             neighbour_square_nr = int((nb[0] - 1) * nr_of_squares_in_row + (nb[1] - 1))
             if neighbour_square_nr in df_squares.index:
                 if (df_squares.loc[neighbour_square_nr, 'Variability Visible'] and
-                    df_squares.loc[neighbour_square_nr, 'Density Ratio Visible'] and
-                    df_squares.loc[neighbour_square_nr, 'Valid Tau']):
+                        df_squares.loc[neighbour_square_nr, 'Density Ratio Visible'] and
+                        df_squares.loc[neighbour_square_nr, 'Valid Tau']):
                     nr_of_neighbours += 1
 
         # Record the results
@@ -316,7 +315,6 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
 
 
 def get_grid_defaults_from_file() -> dict:
-
     parameter_file_path = os.path.join(get_paint_profile_directory(), "grid_parameters.csv")
 
     def_parameters = {'nr_squares_in_row': 20,
@@ -363,6 +361,7 @@ def get_grid_defaults_from_file() -> dict:
         print(f"An unexpected error occurred: {e}")
     return def_parameters
 
+
 def save_grid_defaults_to_file(
         nr_squares_in_row: int,
         min_tracks_for_tau: int,
@@ -372,13 +371,12 @@ def save_grid_defaults_to_file(
         max_square_coverage: int,
         process_single: bool,
         process_traditional: bool):
-
     grid_parameter_file_path = os.path.join(get_paint_profile_directory(), 'grid_parameters.csv')
 
     try:
 
         fieldnames = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
-                      'max_variability',  'max_square_coverage', 'process_single', 'process_traditional']
+                      'max_variability', 'max_square_coverage', 'process_single', 'process_traditional']
 
         # Open the file in write mode ('w') and overwrite any existing content
         with open(grid_parameter_file_path, mode='w') as file:
@@ -399,7 +397,7 @@ def save_grid_defaults_to_file(
                 'process_traditional': process_traditional})
 
     except Exception as e:
-        print(f"An error occurred while writing to the file: {e}")       # TODO: Replace with logger
+        print(f"An error occurred while writing to the file: {e}")  # TODO: Replace with logger
 
 
 def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
@@ -497,7 +495,8 @@ def read_experiment_file(experiment_file_path: str, only_records_to_process: boo
 
 
 def read_experiment_tm_file(experiment_file_path, only_records_to_process=True):
-    df_experiment = read_experiment_file(os.path.join(experiment_file_path, 'experiment_tm.csv'), only_records_to_process=only_records_to_process)
+    df_experiment = read_experiment_file(os.path.join(experiment_file_path, 'experiment_tm.csv'),
+                                         only_records_to_process=only_records_to_process)
     return df_experiment
 
 
@@ -687,7 +686,6 @@ def split_probe_structure(row):
 
 
 def copy_directory(src, dest):
-
     try:
         shutil.rmtree(dest, ignore_errors=True)
         paint_logger.debug(f"Removed {dest}")
@@ -721,9 +719,8 @@ def copy_directory(src, dest):
 
 
 def get_area_of_square(nr_of_squares_in_row):
-
-    MICROMETER_PER_PIXEL = 0.1602804      # Referenced from Fiji
-    PIXEL_PER_IMAGE = 512                 # Referenced from Fiji
+    MICROMETER_PER_PIXEL = 0.1602804  # Referenced from Fiji
+    PIXEL_PER_IMAGE = 512  # Referenced from Fiji
 
     MICROMETER_PER_IMAGE = MICROMETER_PER_PIXEL * PIXEL_PER_IMAGE
 

@@ -1,9 +1,10 @@
 import os
-import xattr
 import plistlib
 
+import xattr
 
 from src.Common.Support.LoggerConfig import paint_logger
+
 
 def set_finder_tags(path, tags):
     try:
@@ -23,8 +24,8 @@ def get_finder_tags(path):
 
     return tags
 
-def set_directory_tree_tag(dir_to_change, tags=None):
 
+def set_directory_tree_tag(dir_to_change, tags=None):
     # Check if the provided path is a valid directory
     if not os.path.isdir(dir_to_change):
         paint_logger.error(f"Error: '{dir_to_change}' is not a valid directory.")
@@ -53,11 +54,7 @@ def set_directory_tree_tag(dir_to_change, tags=None):
         paint_logger.error(f"An unexpected error occurred: {e}")
 
 
-
 if __name__ == '__main__':
-
-
     directory = '/Users/hans/Downloads/Code'
 
     set_directory_tree_tag(directory, ['new'])
-
