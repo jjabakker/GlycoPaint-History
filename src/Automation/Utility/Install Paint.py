@@ -150,7 +150,7 @@ def install():
     # Then do the actual copying
 
     print(f"\n\nCopy from {fiji_grid_source} to {fiji_grid_dest}: ")
-    plugin_files = ["Run_TrackMate.py", "Convert_BF_images.py", "Run_TrackMate_Batch.py"]
+    plugin_files = ["Run_TrackMate.py", "Run_TrackMate_Batch.py"]
     for file in plugin_files:
         copy_file_from_source_to_dest(fiji_grid_source, fiji_grid_dest, file)
 
