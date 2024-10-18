@@ -4,7 +4,7 @@ import shutil
 import subprocess
 
 # import winreg
-from src.Common.Support.CommonSupportFunctions import delete_files_in_directory
+from src.Common.Support.Directories_And_Locations import delete_files_in_directory
 
 
 # def find_app_path_windows():
@@ -165,7 +165,7 @@ def install():
         copy_file_from_source_to_dest(fiji_support_source, library_dest, file)
 
     print(f"\n\nCopy from {common_support_source} to {library_dest}: ")
-    fiji_files = ["CommonSupportFunctions.py", "LoggerConfig.py", "Locations.py"]
+    fiji_files = ["CommonSupportFunctions.py", "LoggerConfig.py", "Directories_And_Locations.py"]
     for file in fiji_files:
         copy_file_from_source_to_dest(common_support_source, library_dest, file)
 

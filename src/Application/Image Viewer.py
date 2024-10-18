@@ -24,7 +24,7 @@ from src.Application.Support.Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,
     save_squares_to_file)
-from src.Common.Support.Locations import (
+from src.Common.Support.Directories_And_Locations import (
     get_trackmate_image_dir_path,
     get_squares_file_path)
 from src.Common.Support.LoggerConfig import (
@@ -669,16 +669,16 @@ class ImageViewer:
         self.img_no = save_img_no - 1
         self.go_forward_backward('FORWARD')
 
-    def save_batch_if_requested(self):
+    def save_experiment_file_if_requested(self):
 
         file = f"{self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
         file = os.path.split(file)[1]
         msg = f"Do you want to save changes to {'batch' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
         if response is True:
-            self.save_density_ratio_slider_state_into_df_batch()
-            self.save_variability_slider_state_into_df_batch()
-            self.save_neighbour_state_into_df_batch()
+            self.save_density_ratio_slider_state_into_df_experiment()
+            self.save_variability_slider_state_into_df_experiment()
+            self.save_neighbour_state_into_df_experiment()
 
             # Write the Nr Visible Squares visibility information into the batch file
             self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
@@ -691,7 +691,7 @@ class ImageViewer:
             self.batch_changed = False
         return response
 
-    def save_squares_if_requested(self):
+    def save_squares_file_if_requested(self):
 
         file = f"{self.squares_file_name if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
         file = os.path.split(file)[1]
@@ -706,10 +706,10 @@ class ImageViewer:
         response_square = response_batch = ""
 
         if self.batch_changed:
-            response_batch = self.save_batch_if_requested()
+            response_batch = self.save_experiment_file_if_requested()
 
         if self.square_changed:
-            response_square = self.save_squares_if_requested()
+            response_square = self.save_squares_file_if_requested()
 
         if response_batch is None or response_square is None:
             return
@@ -735,13 +735,13 @@ class ImageViewer:
         neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Setting']
         self.neighbour_var.set(neighbour_state)
 
-    def save_variability_slider_state_into_df_batch(self):
+    def save_variability_slider_state_into_df_experiment(self):
         self.df_experiment.loc[self.image_name, 'Variability Setting'] = round(self.sc_variability.get(), 1)
 
-    def save_density_ratio_slider_state_into_df_batch(self):
+    def save_density_ratio_slider_state_into_df_experiment(self):
         self.df_experiment.loc[self.image_name, 'Density Ratio Setting'] = round(self.sc_density_ratio.get(), 1)
 
-    def save_neighbour_state_into_df_batch(self):
+    def save_neighbour_state_into_df_experiment(self):
         self.df_experiment.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_var.get()
 
     def histogram(self):
@@ -854,9 +854,9 @@ class ImageViewer:
         """
 
         # Get the slider and neighbour state and save it
-        self.save_density_ratio_slider_state_into_df_batch()
-        self.save_variability_slider_state_into_df_batch()
-        self.save_neighbour_state_into_df_batch()
+        self.save_density_ratio_slider_state_into_df_experiment()
+        self.save_variability_slider_state_into_df_experiment()
+        self.save_neighbour_state_into_df_experiment()
 
         # Generate the graphpad and pdf directories if needed
         # create_output_directories_for_graphpad(self.experiment_directory)
@@ -1252,12 +1252,12 @@ class ImageViewer:
         # The function is called when we switch image
 
         if self.square_changed:
-            response = self.save_squares_if_requested()
+            response = self.save_squares_file_if_requested()
             if response is None:
                 return
 
         if self.batch_changed:
-            response = self.save_batch_if_requested()
+            response = self.save_experiment_file_if_requested()
             if response is None:
                 return
 
@@ -1366,10 +1366,10 @@ class ImageViewer:
 
     def update_batch_file(self):
 
-        # Get the slider and neighbour state and save it into df_batch
-        self.save_density_ratio_slider_state_into_df_batch()
-        self.save_variability_slider_state_into_df_batch()
-        self.save_neighbour_state_into_df_batch()
+        # Get the slider and neighbour state and save it into df_experiment
+        self.save_density_ratio_slider_state_into_df_experiment()
+        self.save_variability_slider_state_into_df_experiment()
+        self.save_neighbour_state_into_df_experiment()
 
         # Write the Nr Visible Squares visibility information into the batch file
         self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &

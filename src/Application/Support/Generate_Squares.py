@@ -30,7 +30,7 @@ from src.Application.Support.Support_Functions import (
     get_area_of_square,
     read_experiment_tm_file
 )
-from src.Common.Support.Locations import (
+from src.Common.Support.Directories_And_Locations import (
     delete_files_in_directory,
     get_tau_plots_dir_path,
     get_tracks_dir_path,
@@ -107,7 +107,7 @@ class SquaresDialog:
     def create_parameter_controls(self, frame):
         """Create parameter controls for the UI."""
         params = [
-            ("Nr of Squares in row/col", self.nr_squares_in_row, 1),
+            ("Nr of Squares in row", self.nr_squares_in_row, 1),
             ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2),
             ("Min allowable R-squared", self.min_r_squared, 3),
             ("Min density ratio", self.min_density_ratio, 4),
@@ -564,7 +564,7 @@ def create_df_squares(experiment_directory: str,
 
     for square_seq_nr in range(nr_total_squares):
 
-        # Calculate the row and column number from the sequence number (all are 0-based)
+        # Calculate the squares_row and column number from the sequence number (all are 0-based)
         col_nr = square_seq_nr % nr_squares_in_row
         row_nr = square_seq_nr // nr_squares_in_row
 
@@ -641,41 +641,41 @@ def create_df_squares(experiment_directory: str,
             count_matrix[row_nr, col_nr] = nr_tracks
 
         # Create the new squares record to add all the data for this square
-        row = {'Experiment Date': experiment_date,
-               'Ext Image Name': image_name,
-               'Experiment Name': experiment_name,
-               'Experiment Nr': experiment_nr,
-               'Experiment Seq Nr': experiment_seq_nr,
-               'Batch Sequence Nr': int(seq_nr),
-               'Label Nr': 0,
-               'Square Nr': int(square_seq_nr),
-               'Row Nr': int(row_nr + 1),
-               'Col Nr': int(col_nr + 1),
-               'X0': round(x0, 2),
-               'X1': round(x1, 2),
-               'Y0': round(y0, 2),
-               'Y1': round(y1, 2),
-               'Nr Spots': int(nr_spots),
-               'Nr Tracks': int(nr_tracks),
-               'Tau': round(tau, 0),
-               'Valid Tau': True,
-               'Density': round(density, 1),
-               'Average Long Track Duration': round(average_long_track, 1),
-               'Max Track Duration': round(max_track_duration, 1),
-               'Total Track Duration': round(total_track_duration, 1),
-               'Variability': round(variability, 2),
-               'R2': round(r_squared, 2),
-               'Density Ratio': 0.0,
-               'Cell Id': 0,
-               'Visible': True,
-               'Neighbour Visible': True,
-               'Variability Visible': True,
-               'Density Ratio Visible': True,
-               'Duration Visible': True
-               }
+        squares_row = {'Experiment Date': experiment_date,
+                       'Ext Image Name': image_name,
+                       'Experiment Name': experiment_name,
+                       'Experiment Nr': experiment_nr,
+                       'Experiment Seq Nr': experiment_seq_nr,
+                       'Batch Sequence Nr': int(seq_nr),
+                       'Label Nr': 0,
+                       'Square Nr': int(square_seq_nr),
+                       'Row Nr': int(row_nr + 1),
+                       'Col Nr': int(col_nr + 1),
+                       'X0': round(x0, 2),
+                       'X1': round(x1, 2),
+                       'Y0': round(y0, 2),
+                       'Y1': round(y1, 2),
+                       'Nr Spots': int(nr_spots),
+                       'Nr Tracks': int(nr_tracks),
+                       'Tau': round(tau, 0),
+                       'Valid Tau': True,
+                       'Density': round(density, 1),
+                       'Average Long Track Duration': round(average_long_track, 1),
+                       'Max Track Duration': round(max_track_duration, 1),
+                       'Total Track Duration': round(total_track_duration, 1),
+                       'Variability': round(variability, 2),
+                       'R2': round(r_squared, 2),
+                       'Density Ratio': 0.0,
+                       'Cell Id': 0,
+                       'Visible': True,
+                       'Neighbour Visible': True,
+                       'Variability Visible': True,
+                       'Density Ratio Visible': True,
+                       'Duration Visible': True
+                       }
 
         # And add it to the squares dataframe
-        df_squares = pd.concat([df_squares, pd.DataFrame.from_records([row])])
+        df_squares = pd.concat([df_squares, pd.DataFrame.from_records([squares_row])])
 
     background_tracks = calc_average_track_count_of_lowest_squares(
         df_squares, int(0.1 * nr_squares_in_row * nr_squares_in_row))
@@ -687,13 +687,6 @@ def create_df_squares(experiment_directory: str,
         # The density RATIO can be calculated simply by dividing the tracks in the square by the average tracks
         # because everything else stays the same (no need to calculate the background density itself)
         df_squares['Density Ratio'] = round(df_squares['Nr Tracks'] / background_tracks, 1)
-
-    # # Number the labels that are visible
-    # label_nr = 1
-    # for idx, row in df_squares.iterrows():
-    #     if row['Valid Tau']:
-    #         df_squares.at[idx, 'Label Nr'] = label_nr
-    #         label_nr += 1
 
     # Polish up the table and sort
     df_squares = df_squares.sort_values(by=['Nr Tracks'], ascending=False)

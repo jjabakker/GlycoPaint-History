@@ -10,7 +10,7 @@ from javax.swing import JOptionPane
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
 
-from Locations import (
+from Directory_And_Locations import (
     get_tracks_file_path,
     get_experiment_info_file_path,
     get_experiment_tm_file_path,

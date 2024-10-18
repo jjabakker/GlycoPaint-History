@@ -7,7 +7,7 @@ from tkinter.filedialog import askdirectory
 import numpy as np
 import pandas as pd
 
-from src.Common.Support.CommonSupportFunctions import (
+from src.Common.Support.Directories_And_Locations import (
     get_default_locations,
     save_default_locations,
     get_paint_profile_directory)
@@ -433,42 +433,9 @@ def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
 
     return False
 
-    # x0 = x0 / 82.0864 * 512
-    # y0 = y0 / 82.0864 * 512
-    # x1 = x1 / 82.0864 * 512
-    # y1 = y1 / 82.0864 * 512
-    #
-    # c1 = c2 = c3 = c4 = False
-    #
-    # if xr0 < xr1 and yr0 < yr1:
-    #     c1 = x0 >= xr0
-    #     c2 = x1 <= xr1
-    #     c3 = y0 >= yr0
-    #     c4 = y1 <= yr1
-    #
-    # if xr0 < xr1 and yr0 > yr1:
-    #     c1 = x0 >= xr0
-    #     c2 = x1 <= xr1
-    #     c3 = y0 >= yr1
-    #     c4 = y1 <= yr0
-    #
-    # if xr0 > xr1 and yr0 > yr1:
-    #     c1 = x0 >= xr1
-    #     c2 = x1 <= xr0
-    #     c3 = y0 >= yr1
-    #     c4 = y1 <= yr0
-    #
-    # if xr0 > xr1 and yr0 < yr1:
-    #     c1 = x0 >= xr1
-    #     c2 = x1 <= xr0
-    #     c3 = y0 >= yr0
-    #     c4 = y1 <= yr1
-    #
-    # return c1 and c2 and c3 and c4
 
-
-def save_experiment_to_file(df_batch, batch_file_path):
-    df_batch.to_csv(batch_file_path, index=False)
+def save_experiment_to_file(df_experiment, experiment_file_path):
+    df_experiment.to_csv(experiment_file_path, index=False)
 
 
 def save_squares_to_file(df_squares, square_file_path):
@@ -500,44 +467,10 @@ def read_experiment_tm_file(experiment_file_path, only_records_to_process=True):
     return df_experiment
 
 
-def check_grid_batch_integrity(df_batch):
-    return {'Batch Sequence Nr',
-            'Experiment Date',
-            'Experiment Name',
-            'Experiment Nr',
-            'Experiment Seq Nr',
-            'Image Name',
-            'Probe',
-            'Probe Type',
-            'Cell Type',
-            'Adjuvant',
-            'Concentration',
-            'Threshold',
-            'Process',
-            'Ext Image Name',
-            'Nr Spots',
-            'Image Size',
-            'Run Time',
-            'Time Stamp',
-            'Min Tracks for Tau',
-            'Min R Squared',
-            'Nr Of Squares per Row',
-            'Neighbour Setting',
-            'Variability Setting',
-            'Density Ratio Setting',
-            'Nr Visible Squares',
-            'Nr Total Squares',
-            'Squares Ratio',
-            'Exclude',
-            'Nr Defined Squares',
-            'Nr Rejected Squares',
-            'Max Squares Ratio'}.issubset(df_batch.columns)
-
-
-def check_experiment_integrity(df_batch):
+def check_experiment_integrity(df_experiment):
     """
     Check if the batch file has the expected columns and makes sure that the types are correct
-    :param df_batch:
+    :param df_experiment:
     :return:
     """
     expected_columns = {
@@ -558,37 +491,37 @@ def check_experiment_integrity(df_batch):
         'Nr Spots',
         'Image Size',
         'Run Time',
-        'Time Stamp'}.issubset(df_batch.columns)
+        'Time Stamp'}.issubset(df_experiment.columns)
 
     if expected_columns:
         # Make sure that there is a meaningful index           # TODO: Check if this is not causing problems
-        df_batch.set_index('Batch Sequence Nr', inplace=True, drop=False)
+        df_experiment.set_index('Batch Sequence Nr', inplace=True, drop=False)
         return True
     else:
         return False
 
 
-def correct_all_images_column_types(df_batch):
+def correct_all_images_column_types(df_experiment):
     """
     Set the column types for the batch file
-    :param df_batch:
+    :param df_experiment:
     :return:
     """
 
     try:
-        df_batch['Batch Sequence Nr'] = df_batch['Batch Sequence Nr'].astype(int)
-        df_batch['Experiment Seq Nr'] = df_batch['Experiment Seq Nr'].astype(int)
-        df_batch['Experiment Nr'] = df_batch['Experiment Nr'].astype(int)
-        df_batch['Experiment Date'] = df_batch['Experiment Date'].astype(int)
-        df_batch['Threshold'] = df_batch['Threshold'].astype(int)
-        df_batch['Min Tracks for Tau'] = df_batch['Min Tracks for Tau'].astype(int)
-        df_batch['Min R Squared'] = df_batch['Min R Squared'].astype(float)
-        df_batch['Nr Of Squares per Row'] = df_batch['Nr Of Squares per Row'].astype(int)
-        df_batch['Nr Visible Squares'] = df_batch['Nr Visible Squares'].astype(int)
-        df_batch['Nr Invisible Squares'] = df_batch['Nr Invisible Squares'].astype(int)
-        df_batch['Nr Total Squares'] = df_batch['Nr Total Squares'].astype(int)
-        df_batch['Nr Defined Squares'] = df_batch['Nr Defined Squares'].astype(int)
-        df_batch['Nr Rejected Squares'] = df_batch['Nr Rejected Squares'].astype(int)
+        df_experiment['Batch Sequence Nr'] = df_experiment['Batch Sequence Nr'].astype(int)
+        df_experiment['Experiment Seq Nr'] = df_experiment['Experiment Seq Nr'].astype(int)
+        df_experiment['Experiment Nr'] = df_experiment['Experiment Nr'].astype(int)
+        df_experiment['Experiment Date'] = df_experiment['Experiment Date'].astype(int)
+        df_experiment['Threshold'] = df_experiment['Threshold'].astype(int)
+        df_experiment['Min Tracks for Tau'] = df_experiment['Min Tracks for Tau'].astype(int)
+        df_experiment['Min R Squared'] = df_experiment['Min R Squared'].astype(float)
+        df_experiment['Nr Of Squares per Row'] = df_experiment['Nr Of Squares per Row'].astype(int)
+        df_experiment['Nr Visible Squares'] = df_experiment['Nr Visible Squares'].astype(int)
+        df_experiment['Nr Invisible Squares'] = df_experiment['Nr Invisible Squares'].astype(int)
+        df_experiment['Nr Total Squares'] = df_experiment['Nr Total Squares'].astype(int)
+        df_experiment['Nr Defined Squares'] = df_experiment['Nr Defined Squares'].astype(int)
+        df_experiment['Nr Rejected Squares'] = df_experiment['Nr Rejected Squares'].astype(int)
 
     except (ValueError, TypeError):
         return False
@@ -606,16 +539,16 @@ def read_squares_from_file(squares_file_path):
     return df_squares
 
 
-def create_output_directories_for_graphpad(paint_directory):
-    directories = [
-        os.path.join(paint_directory, 'Output', 'pdf', 'Tau'),
-        os.path.join(paint_directory, 'Output', 'pdf', 'Density'),
-        os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'),
-        os.path.join(paint_directory, 'Output', 'graphpad', 'Density')
-    ]
-
-    for directory in directories:
-        os.makedirs(directory, exist_ok=True)
+# def create_output_directories_for_graphpad(paint_directory):
+#     directories = [
+#         os.path.join(paint_directory, 'Output', 'pdf', 'Tau'),
+#         os.path.join(paint_directory, 'Output', 'pdf', 'Density'),
+#         os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'),
+#         os.path.join(paint_directory, 'Output', 'graphpad', 'Density')
+#     ]
+#
+#     for directory in directories:
+#         os.makedirs(directory, exist_ok=True)
 
 
 def format_time_nicely(seconds):
