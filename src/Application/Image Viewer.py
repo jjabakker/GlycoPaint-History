@@ -46,7 +46,6 @@ class ImageViewer:
 
         self.top = tk.Toplevel(parent)
         self.parent = parent
-        self.top.title("dhlidsldsfl")
         self.initialize_variables(parent, directory, conf_file, mode_dir_or_conf)
 
         self.setup_ui()
@@ -1497,7 +1496,8 @@ class SelectViewerDialog:
     def __init__(self, parent: tk.Tk) -> None:
 
         self.top = tk.Toplevel(parent)
-        self.top.title('Select Viewer')
+        self.parent = parent
+        self.parent.title('Select Viewer')
 
         self.proceed = False
         self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
@@ -1597,13 +1597,15 @@ class SelectViewerDialog:
 
 
 if __name__ == '__main__':
-    root = Tk()
+    root = tk.Tk()
+    root.withdraw()
     root.eval('tk::PlaceWindow . center')
     dialog_result = SelectViewerDialog(root)
     proceed, root_directory, conf_file, mode_dir_or_conf = dialog_result.get_result()
 
     if proceed:
-        root = Tk()
+        root = tk.Tk()
+        root.withdraw()
         root.eval('tk::PlaceWindow . center')
         paint_logger.debug(f'Mode: {mode_dir_or_conf}')
         if mode_dir_or_conf == 'DIRECTORY':
