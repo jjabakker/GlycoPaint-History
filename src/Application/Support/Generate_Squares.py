@@ -58,7 +58,7 @@ class SquaresDialog:
     def load_saved_parameters(self):
         """Load parameters from disk or use default values if unavailable."""
         values = get_grid_defaults_from_file()
-        self.nr_squares_in_row = tk.IntVar(value=values.get('nr_squares_in_row', 10))
+        self.nr_of_squares_in_row = tk.IntVar(value=values.get('nr_of_squares_in_row', 10))
         self.min_tracks_for_tau = tk.IntVar(value=values.get('min_tracks_for_tau', 10))
         self.min_r_squared = tk.DoubleVar(value=values.get('min_r_squared', 0.5))
         self.min_density_ratio = tk.DoubleVar(value=values.get('min_density_ratio', 0.5))
@@ -108,7 +108,7 @@ class SquaresDialog:
     def create_parameter_controls(self, frame):
         """Create parameter controls for the UI."""
         params = [
-            ("Nr of Squares in row", self.nr_squares_in_row, 1),
+            ("Nr of Squares in Row", self.nr_of_squares_in_row, 1),
             ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2),
             ("Min allowable R-squared", self.min_r_squared, 3),
             ("Min density ratio", self.min_density_ratio, 4),
@@ -175,7 +175,7 @@ class SquaresDialog:
         process_function = self.determine_process_function()
         if process_function:
             process_function(
-                self.experiment_directory, self.nr_squares_in_row.get(), self.min_r_squared.get(),
+                self.experiment_directory, self.nr_of_squares_in_row.get(), self.min_r_squared.get(),
                 self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
                 self.max_square_coverage.get(), self.process_single.get(), self.process_traditional.get()
             )
@@ -198,7 +198,7 @@ class SquaresDialog:
     def save_parameters(self):
         """Save current settings to disk."""
         save_grid_defaults_to_file(
-            self.nr_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
+            self.nr_of_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
             self.process_single.get(), self.process_traditional.get()
         )
@@ -210,7 +210,7 @@ class SquaresDialog:
 
 
 def process_all_images_in_root_directory(root_directory: str,
-                                         nr_squares_in_row: int,
+                                         nr_of_squares_in_row: int,
                                          min_r_squared: float,
                                          min_tracks_for_tau: int,
                                          min_density_ratio: float,
@@ -225,7 +225,7 @@ def process_all_images_in_root_directory(root_directory: str,
 
 
     :param root_directory:
-    :param nr_squares_in_row:
+    :param nr_of_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
     :param min_density_ratio:
@@ -245,13 +245,13 @@ def process_all_images_in_root_directory(root_directory: str,
         if 'Output' in experiment_dir:
             continue
         process_all_images_in_experiment_directory(
-            os.path.join(root_directory, experiment_dir), nr_squares_in_row, min_r_squared, min_tracks_for_tau,
+            os.path.join(root_directory, experiment_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
             min_density_ratio, max_variability, max_square_coverage, process_single, process_traditional, verbose)
 
 
 def process_all_images_in_experiment_directory(
         experiment_path: str,
-        nr_squares_in_row: int,
+        nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
         min_density_ratio: float,
@@ -265,7 +265,7 @@ def process_all_images_in_experiment_directory(
     images need processing
 
     :param experiment_path:
-    :param nr_squares_in_row:
+    :param nr_of_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
     :param min_density_ratio:
@@ -297,7 +297,7 @@ def process_all_images_in_experiment_directory(
         sys.exit(1)
 
     df_experiment = add_columns_to_experiment_file(
-        df_experiment, nr_squares_in_row, min_tracks_for_tau, min_r_squared, min_density_ratio, max_variability)
+        df_experiment, nr_of_squares_in_row, min_tracks_for_tau, min_r_squared, min_density_ratio, max_variability)
 
     # Determine how many images need processing from the experiment file
     nr_files = len(df_experiment)
@@ -327,7 +327,7 @@ def process_all_images_in_experiment_directory(
 
             df_squares, tau, r_squared, density = process_single_image_in_experiment_directory(
                 experiment_path,
-                ext_image_path, ext_image_name, nr_squares_in_row, min_r_squared, min_tracks_for_tau,
+                ext_image_path, ext_image_name, nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
                 min_density_ratio, max_variability, concentration, row["Nr Spots"], row['Batch Sequence Nr'],
                 row['Experiment Nr'], row['Experiment Seq Nr'], row['Experiment Date'], row['Experiment Name'],
                 process_single, process_traditional, verbose)
@@ -337,7 +337,7 @@ def process_all_images_in_experiment_directory(
 
             # Now update the experiment_squares file with the results
 
-            nr_total_squares = int(nr_squares_in_row * nr_squares_in_row)
+            nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
             nr_visible_squares = len(df_squares[df_squares['Visible']])
             nr_invisible_squares = nr_total_squares - nr_visible_squares
             nr_defined_squares = len(df_squares[df_squares['Valid Tau']])
@@ -375,7 +375,7 @@ def process_single_image_in_experiment_directory(
         experiment_path: str,
         image_path: str,
         image_name: str,
-        nr_squares_in_row: int,
+        nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
         min_density_ratio: float,
@@ -398,7 +398,7 @@ def process_single_image_in_experiment_directory(
     :param experiment_path:
     :param image_path:
     :param image_name:
-    :param nr_squares_in_row:
+    :param nr_of_squares_in_row:
     :param min_r_squared:
     :param min_tracks_for_tau:
     :param min_density_ratio:
@@ -430,7 +430,7 @@ def process_single_image_in_experiment_directory(
 
     # A df_squares dataframe is generated and for every square the Tau and Density ratio is calculated
     df_squares, tau_matrix = create_df_squares(
-        experiment_path, df_tracks, image_path, image_name, nr_squares_in_row, concentration, nr_spots,
+        experiment_path, df_tracks, image_path, image_name, nr_of_squares_in_row, concentration, nr_spots,
         min_r_squared, min_tracks_for_tau, batch_seq_nr, experiment_nr, experiment_seq_nr, experiment_date,
         experiment_name, process_traditional, verbose)
 
@@ -486,7 +486,7 @@ def process_single_image_in_experiment_directory(
     if process_single:
         tau, r_squared, density = calc_single_tau_and_density_for_image(
             experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, image_path, image_name,
-            nr_squares_in_row, concentration)
+            nr_of_squares_in_row, concentration)
     else:
         tau = r_squared = density = 0
 
@@ -501,7 +501,7 @@ def calc_single_tau_and_density_for_image(
         min_r_squared: float,
         image_path: str,
         image_name: str,
-        nr_squares_in_row: int,
+        nr_of_squares_in_row: int,
         concentration: float) -> tuple:
     # Identify the squares that contribute to the Tau calculation
     df_squares_for_single_tau = df_squares[df_squares['Visible']]
@@ -524,7 +524,7 @@ def calc_single_tau_and_density_for_image(
         if r_squared < min_r_squared:  # Tau was calculated, but not reliable
             tau = -3
 
-    area = get_area_of_square(nr_squares_in_row)
+    area = get_area_of_square(nr_of_squares_in_row)
     density = calculate_density(nr_tracks=nr_tracks, area=area, time=100, concentration=concentration,
                                 magnification=1000)
     return tau, r_squared, density
@@ -534,7 +534,7 @@ def create_df_squares(experiment_directory: str,
                       df_tracks: pd.DataFrame,
                       image_path: str,
                       image_name: str,
-                      nr_squares_in_row: int,
+                      nr_of_squares_in_row: int,
                       concentration: float,
                       nr_spots: int,
                       min_r_squared: float,
@@ -547,11 +547,11 @@ def create_df_squares(experiment_directory: str,
                       process_traditional: bool,
                       verbose: bool) -> pd.DataFrame:
     # Create the tau_matrix (and other matrices if verbose is True)
-    tau_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
+    tau_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
     if verbose:
-        count_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
-        density_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
-        variability_matrix = np.zeros((nr_squares_in_row, nr_squares_in_row), dtype=int)
+        count_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
+        density_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
+        variability_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
 
     # Add a label and square column to the tracks dataframe, if it does not already exist, else reset it
     df_tracks['Square Nr'] = 0
@@ -560,17 +560,17 @@ def create_df_squares(experiment_directory: str,
     # Create an empty squares dataframe, that will contain the data for each square
     df_squares = pd.DataFrame()
 
-    nr_total_squares = int(nr_squares_in_row * nr_squares_in_row)
+    nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
 
     for square_seq_nr in range(nr_total_squares):
 
         # Calculate the squares_row and column number from the sequence number (all are 0-based)
-        col_nr = square_seq_nr % nr_squares_in_row
-        row_nr = square_seq_nr // nr_squares_in_row
+        col_nr = square_seq_nr % nr_of_squares_in_row
+        row_nr = square_seq_nr // nr_of_squares_in_row
 
         # Find the tracks that are within the square defined by boundaries x0, y0, x1, y1
         # Create a new dataframe df_tracks_square that contains just those tracks
-        x0, y0, x1, y1 = get_square_coordinates(nr_squares_in_row, square_seq_nr)
+        x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_seq_nr)
         mask = ((df_tracks['TRACK_X_LOCATION'] >= x0) &
                 (df_tracks['TRACK_X_LOCATION'] < x1) &
                 (df_tracks['TRACK_Y_LOCATION'] >= y0) &
@@ -627,11 +627,11 @@ def create_df_squares(experiment_directory: str,
             tau = 0
             r_squared = 0
 
-        area = get_area_of_square(nr_squares_in_row)
+        area = get_area_of_square(nr_of_squares_in_row)
         density = calculate_density(
             nr_tracks=nr_tracks, area=area, time=100, concentration=concentration, magnification=1000)
 
-        variability = calc_variability(df_tracks_square, square_seq_nr, nr_squares_in_row, 10)
+        variability = calc_variability(df_tracks_square, square_seq_nr, nr_of_squares_in_row, 10)
 
         # Enter the calculated values in the tau, density, and variability matrices
         tau_matrix[row_nr, col_nr] = int(tau)
@@ -678,7 +678,7 @@ def create_df_squares(experiment_directory: str,
         df_squares = pd.concat([df_squares, pd.DataFrame.from_records([squares_row])])
 
     background_tracks = calc_average_track_count_of_lowest_squares(
-        df_squares, int(0.1 * nr_squares_in_row * nr_squares_in_row))
+        df_squares, int(0.1 * nr_of_squares_in_row * nr_of_squares_in_row))
 
     # Write the Density Ratio
     if background_tracks == 0:
@@ -825,7 +825,7 @@ def identify_invalid_squares(
 
 def add_columns_to_experiment_file(
         df_experiment: pd.DataFrame,
-        nr_squares_in_row: int,
+        nr_of_squares_in_row: int,
         min_tracks_for_tau: int,
         min_r_squared: float,
         min_density_ratio: float,
@@ -835,7 +835,7 @@ def add_columns_to_experiment_file(
     Only images for which the 'Process' column is set to 'Yes' are processed.
 
     :param df_experiment:
-    :param nr_squares_in_row:
+    :param nr_of_squares_in_row:
     :param min_tracks_for_tau:
     :param min_r_squared:
     :param min_density_ratio:
@@ -850,14 +850,14 @@ def add_columns_to_experiment_file(
 
     df_experiment.loc[mask, 'Min Tracks for Tau'] = int(min_tracks_for_tau)
     df_experiment.loc[mask, 'Min R Squared'] = min_r_squared
-    df_experiment.loc[mask, 'Nr Of Squares per Row'] = int(nr_squares_in_row)
+    df_experiment.loc[mask, 'Nr of Squares in Row'] = int(nr_of_squares_in_row)
 
     df_experiment.loc[mask, 'Exclude'] = False
     df_experiment.loc[mask, 'Neighbour Setting'] = 'Free'
     df_experiment.loc[mask, 'Variability Setting'] = max_variability
     df_experiment.loc[mask, 'Density Ratio Setting'] = min_density_ratio
 
-    df_experiment.loc[mask, 'Nr Total Squares'] = 0  # Equal to the square of the nr of squares per row
+    df_experiment.loc[mask, 'Nr Total Squares'] = 0  # Equal to the square of the nr of squares in row
     df_experiment.loc[mask, 'Nr Defined Squares'] = 0  # The number of squares for which a Tau was successfully calculated
     df_experiment.loc[mask, 'Nr Visible Squares'] = 0  # The number of squares that also meet the density and variability hurdle
     df_experiment.loc[mask, 'Nr Invisible Squares'] = 0  # The number of squares that do not meet the density and variability hurdle

@@ -273,7 +273,7 @@ class ImageViewer:
 
         # Retrieve some info from the batch file
         self.image_name = self.df_batch.iloc[self.img_no]['Ext Image Name']
-        self.nr_of_squares_in_row = int(self.df_batch.iloc[0]['Nr Of Squares per Row'])
+        self.nr_of_squares_in_row = int(self.df_batch.iloc[0]['Nr of Squares in Row'])
 
         # ---------------------------------
         # Fill the list with images to view

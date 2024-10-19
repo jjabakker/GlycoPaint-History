@@ -102,7 +102,7 @@ def process_directory(paint_source_dir,
 
     process_all_images_in_root_directory(
         paint_data_dir,
-        nr_squares_in_row=nr_of_squares,
+        nr_of_squares_in_row=nr_of_squares,
         min_r_squared=min_r_squared,
         min_tracks_for_tau=min_tracks_for_tau,
         min_density_ratio=min_density_ratio,

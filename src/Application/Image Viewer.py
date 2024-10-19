@@ -396,7 +396,7 @@ class ImageViewer:
             self.show_error_and_exit("No 'experiment_squares.csv.csv' file, Did you select an image directory?")
 
         self.image_name = self.df_experiment.iloc[self.img_no]['Ext Image Name']
-        self.nr_squares_in_row = int(self.df_experiment.iloc[0]['Nr Of Squares per Row'])
+        self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
         self.list_images = self.get_images('INTENSITY')
         if not self.list_images:
@@ -1043,9 +1043,9 @@ class ImageViewer:
             # Select which isolation mode to be applied
             neighbour_state = self.neighbour_var.get()
             if neighbour_state == "Relaxed":
-                eliminate_isolated_squares_relaxed(self.df_squares, self.nr_squares_in_row)
+                eliminate_isolated_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
             elif neighbour_state == "Strict":
-                eliminate_isolated_squares_strict(self.df_squares, self.nr_squares_in_row)
+                eliminate_isolated_squares_strict(self.df_squares, self.nr_of_squares_in_row)
             elif neighbour_state == "Free":
                 self.df_squares['Neighbour Visible'] = True
 
@@ -1087,10 +1087,10 @@ class ImageViewer:
         cell_id = squares_row['Cell Id']
         label_nr = squares_row['Label Nr']
 
-        col_nr = square_nr % self.nr_squares_in_row
-        row_nr = square_nr // self.nr_squares_in_row
-        width = 512 / self.nr_squares_in_row
-        height = 512 / self.nr_squares_in_row
+        col_nr = square_nr % self.nr_of_squares_in_row
+        row_nr = square_nr // self.nr_of_squares_in_row
+        width = 512 / self.nr_of_squares_in_row
+        height = 512 / self.nr_of_squares_in_row
 
         square_tag = f'square-{square_nr}'
         text_tag = f'text-{square_nr}'
