@@ -42,9 +42,11 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 
 class ImageViewer:
 
-    def __init__(self, root, directory, conf_file, mode_dir_or_conf):
+    def __init__(self, parent, directory, conf_file, mode_dir_or_conf):
 
-        self.initialize_variables(root, directory, conf_file, mode_dir_or_conf)
+        self.top = tk.Toplevel(parent)
+        self.top.title("dhlidsldsfl")
+        self.initialize_variables(parent, directory, conf_file, mode_dir_or_conf)
 
         self.setup_ui()
         self.load_images_and_config()
@@ -52,8 +54,8 @@ class ImageViewer:
         self.setup_exclude_button()
 
         # Bind keys for navigation
-        root.bind('<Right>', lambda event: self.go_forward_backward('FORWARD'))
-        root.bind('<Left>', lambda event: self.go_forward_backward('BACKWARD'))
+        parent.bind('<Right>', lambda event: self.go_forward_backward('FORWARD'))
+        parent.bind('<Left>', lambda event: self.go_forward_backward('BACKWARD'))
 
     def initialize_variables(self, root, directory, conf_file, mode_dir_or_conf):
 
@@ -77,7 +79,7 @@ class ImageViewer:
         self.neighbour_mode = ""
         self.select_mode = ""
 
-        root.title(f'Image Viewer - {self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
+        #self.top.title(f'Image Viewer - {self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
 
     def setup_ui(self):
         """
