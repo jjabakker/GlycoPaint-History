@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import filedialog, messagebox
 from tkinter import ttk
+from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index
 
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
@@ -41,9 +42,11 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 
 class ImageViewer:
 
-    def __init__(self, root, directory, conf_file, mode_dir_or_conf):
+    def __init__(self, parent, directory, conf_file, mode_dir_or_conf):
 
-        self.initialize_variables(root, directory, conf_file, mode_dir_or_conf)
+        self.top = tk.Toplevel(parent)
+        self.parent = parent
+        self.initialize_variables(parent, directory, conf_file, mode_dir_or_conf)
 
         self.setup_ui()
         self.load_images_and_config()
@@ -51,8 +54,18 @@ class ImageViewer:
         self.setup_exclude_button()
 
         # Bind keys for navigation
-        root.bind('<Right>', lambda event: self.go_forward_backward('FORWARD'))
-        root.bind('<Left>', lambda event: self.go_forward_backward('BACKWARD'))
+        parent.bind('<Right>', lambda event: self.go_forward_backward('FORWARD'))
+        parent.bind('<Left>', lambda event: self.go_forward_backward('BACKWARD'))
+
+        self.setup_heatmap()
+
+    def setup_heatmap(self):
+        self.slider_value = tk.DoubleVar()
+        self.rb_heatmap_parameter_value = tk.IntVar()
+        self.rb_heatmap_parameter_value.set(1)  # Default selection is the first option
+        self.checkbox_value = tk.BooleanVar()
+        self.checkbox_value.set(False)  # Default is unchecked
+        self.rb_heatmap_parameter_value.trace_add("write", self.update_heatmap_rb_value)
 
     def initialize_variables(self, root, directory, conf_file, mode_dir_or_conf):
 
@@ -61,8 +74,8 @@ class ImageViewer:
         self.experiment_directory = directory
         self.conf_file = conf_file
         self.mode_dir_or_conf = mode_dir_or_conf
-        self.mode_intensity_duration_heatmap = None
-        self.mode_duration_or_intensity = 'INTENSITY'
+
+        self.heatmap_enabled = False
 
         # UI state variables
         self.start_x = None
@@ -72,11 +85,11 @@ class ImageViewer:
         self.show_squares_numbers = True
         self.show_squares = True
         self.square_changed = False
-        self.batch_changed = False
+        self.experiments_squares_changed = False
         self.neighbour_mode = ""
         self.select_mode = ""
 
-        root.title(f'Image Viewer - {self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
+        self.parent.title(f'Image Viewer - {self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
 
     def setup_ui(self):
         """
@@ -102,7 +115,7 @@ class ImageViewer:
         self.setup_frame_navigation_buttons()
         self.setup_frame_controls()
         self.setup_frame_filter()
-        self.setup_frame_duration_mode()
+        # self.setup_frame_duration_mode()
 
         self.content.grid(column=0, row=0)
 
@@ -185,45 +198,23 @@ class ImageViewer:
         self.bn_backward.configure(state=tk.DISABLED)
 
     def setup_frame_controls(self):
-        # This frame is part of the content frame and contains the following frames: frame_mode, frame_neighbours, frame_cells, frame_commands
+        # This frame is part of the content frame and contains the following frames: frame_neighbours, frame_cells, frame_commands
 
         frame_width = 30
 
-        self.frame_mode = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5),
-                                    width=frame_width)
         self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5),
                                           width=frame_width)
         self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_output_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove',
                                                padding=(5, 5, 5, 5))
 
-        self.frame_mode.grid(column=0, row=0, padx=5, pady=5, sticky=tk.NSEW)
         self.frame_neighbours.grid(column=0, row=1, padx=5, pady=5, sticky=tk.NSEW)
         self.frame_cells.grid(column=0, row=2, padx=5, pady=5)
         self.frame_output_commands.grid(column=0, row=3, padx=5, pady=5)
 
-        self.setup_frame_mode()
         self.setup_frame_neighbours()
         self.setup_frame_cells()
         self.setup_frame_output_commands()
-
-    def setup_frame_mode(self):
-        # This frame is part of frame_controls and contains the following radio buttons: rb_mode_square, rb_mode_heat
-
-        self.mode_intensity_duration_heatmap = StringVar(value="INTENSITY")
-        self.rb_mode_square = Radiobutton(self.frame_mode, text="Intensity",
-                                          variable=self.mode_intensity_duration_heatmap,
-                                          value="INTENSITY", command=self.select_mode_button)
-        self.rb_mode_heat = Radiobutton(self.frame_mode, text="Tau Heatmap",
-                                        variable=self.mode_intensity_duration_heatmap,
-                                        value="HEAT", command=self.select_mode_button)
-        self.rb_mode_duration = Radiobutton(self.frame_mode, text="Duration",
-                                            variable=self.mode_intensity_duration_heatmap,
-                                            value="DURATION", command=self.select_mode_button)
-
-        self.rb_mode_square.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_mode_duration.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_mode_heat.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_neighbours(self):
         # This frame is part of frame_controls and contains the following radio buttons: rb_neighbour_free, rb_neighbour_strict, rb_neighbour_relaxed, bn_set_neighbours_all
@@ -315,72 +306,78 @@ class ImageViewer:
         self.frame_density_ratio = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_duration = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
+        self.setup_frame_variability()
+        self.setup_frame_density_ratio()
+        self.setup_frame_duration()
 
         self.frame_variability.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
         self.frame_density_ratio.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
         self.frame_duration.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
 
+        # The set for all button ....
+        self.bn_set_for_all_slider = ttk.Button(self.frame_filter, text='Set for All', command=self.set_for_all_slider)
+        self.bn_set_for_all_slider.grid(column=0, row=3, padx=5, pady=5)
+
+    def setup_frame_variability(self):
         # The Max Allowable Variability slider ....
+
         self.variability = DoubleVar()
         self.lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
         self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability,
                                        orient='vertical', resolution=0.5, command=self.variability_changing)
         self.sc_variability.bind("<ButtonRelease-1>", self.variability_changed)
-
         self.lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_variability.grid(column=0, row=1, padx=5, pady=5)
 
+    def setup_frame_density_ratio(self):
         # The Min Required Density Ratio slider ...
+
         self.density_ratio = DoubleVar()
         self.lbl_density_ratio_text = ttk.Label(self.frame_density_ratio, text='Min Required Density Ratio', width=20)
         self.sc_density_ratio = tk.Scale(self.frame_density_ratio, from_=2, to=40, variable=self.density_ratio,
                                          orient='vertical', resolution=0.1, command=self.density_ratio_changing)
         self.sc_density_ratio.bind("<ButtonRelease-1>", self.density_ratio_changed)
-
-        self.bn_set_for_all_slider = ttk.Button(self.frame_filter, text='Set for All', command=self.set_for_all_slider)
-
         self.lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
 
-        # The duration slider .....
-        self.track_duration = DoubleVar(value=100)
-        self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
-        self.sc_track_duration = tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration,
-                                          orient='vertical', resolution=0.1, command=self.track_duration_changing)
-        self.sc_track_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
+    def setup_frame_duration(self):
 
-        self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
-        self.sc_track_duration.grid(column=0, row=1, padx=5, pady=5)
+        self.frame_max_duration = ttk.Frame(self.frame_duration, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_min_duration = ttk.Frame(self.frame_duration, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
-        # The duration slider .....
-        self.track_duration1 = DoubleVar(value=100)
-        self.lbl_track_duration_text1 = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
-        self.sc_track_duration1 = tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration1,
-                                          orient='vertical', resolution=0.1, command=self.track_duration_changing)
-        self.sc_track_duration1.bind("<ButtonRelease-1>", self.track_duration_changed)
+        self.setup_max_duration()
+        self.setup_min_duration()
 
-        self.lbl_track_duration_text1.grid(column=0, row=0, padx=5, pady=5)
-        self.sc_track_duration1.grid(column=1, row=1, padx=5, pady=5)
+        self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Track Duration', width=10)
 
-        # The set for all button ....
-        self.bn_set_for_all_slider.grid(column=0, row=3, padx=5, pady=5)
+        self.frame_duration.columnconfigure(0, weight=1)  # First column
+        self.frame_duration.columnconfigure(1, weight=1)  # Second column
+        self.lbl_track_duration_text.grid(row=0, column=0, padx=5, pady=5, columnspan=2, sticky=tk.N)
+        self.frame_max_duration.grid(row=1, column=1, padx=5, pady=5, sticky=tk.N)
+        self.frame_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
+
+    def setup_max_duration(self):
+        # The max duration slider .....
+        self.track_max_duration = DoubleVar(value=200)
+        self.lbl_track_max_duration_text = ttk.Label(self.frame_max_duration, text='Max', width=10)
+        self.sc_track_max_duration = tk.Scale(self.frame_max_duration, from_=0, to=200, variable=self.track_max_duration,
+                                              orient='vertical', resolution=0.1, command=self.track_duration_changing)
+        self.sc_track_max_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
+
+        self.lbl_track_max_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+        self.sc_track_max_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+
+    def setup_min_duration(self):
+        # The min duration slider .....
+        self.track_min_duration = DoubleVar(value=0)
+        self.lbl_track_min_duration_text = ttk.Label(self.frame_min_duration, text='Min', width=10)
+        self.sc_track_min_duration = tk.Scale(self.frame_min_duration, from_=0, to=200, variable=self.track_min_duration,
+                                              orient='vertical', resolution=0.1, command=self.track_duration_changing)
+        self.sc_track_min_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
+        self.lbl_track_min_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+        self.sc_track_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
 
     def setup_frame_duration_mode(self):
-        # This frame is part of the content frame and contains the following frames: frame_duration,
-
-        # The Duration  slider  frame
-        # self.frame_duration = ttk.Frame(self.frame_duration_mode, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        # self.frame_duration.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
-        #
-        # self.track_duration = DoubleVar(value=100)
-        # self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
-        # self.sc_track_duration = tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration,
-        #                                   orient='vertical', resolution=0.1, command=self.track_duration_changing)
-        # self.sc_track_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
-        #
-        # self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
-        # self.sc_track_duration.grid(column=0, row=1, padx=5, pady=5)
-
         pass
 
     def load_images_and_config(self):
@@ -396,7 +393,7 @@ class ImageViewer:
             self.show_error_and_exit("No 'experiment_squares.csv.csv' file, Did you select an image directory?")
 
         self.image_name = self.df_experiment.iloc[self.img_no]['Ext Image Name']
-        self.nr_squares_in_row = int(self.df_experiment.iloc[0]['Nr Of Squares per Row'])
+        self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
         self.list_images = self.get_images('INTENSITY')
         if not self.list_images:
@@ -424,7 +421,7 @@ class ImageViewer:
                 self.text_for_info3.set('')
 
     def set_for_all_neighbour_state(self):
-        self.batch_changed = True
+        self.experiments_squares_changed = True
         self.df_experiment['Neighbour Setting'] = self.neighbour_var.get()
 
     def get_images(self, type_of_image):
@@ -432,7 +429,7 @@ class ImageViewer:
         # Create an empty lst that will hold the images
         list_images = []
 
-        # Cycle through the batch file
+        # Cycle through the experiments file
         count = 0
         for index in range(len(self.df_experiment)):
 
@@ -476,36 +473,19 @@ class ImageViewer:
             for img in all_images_in_img_dir:
                 if img.startswith('.'):
                     continue
-                if type_of_image == "INTENSITY" or type_of_image == "DURATION":
-                    if img.find("heat") == -1:
 
-                        left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
-                        count += 1
+                left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
+                count += 1
 
-                        # Retrieve the square numbers for this image
-                        self.squares_file_name = get_squares_file_path(self.experiment_directory, image_name)
-                        df_squares = read_squares_from_file(self.squares_file_name)
-                        if df_squares is not None:
-                            square_nrs = list(df_squares['Square Nr'])
-                        else:
-                            paint_logger.error("No square numbers found (?)")
-                            square_nrs = []
-                        valid = True
-                    else:
-                        pass
-
-                if type_of_image == "HEAT":  # Look for a file that has 'heat' in the filename
-                    if img.find("heat") != -1:
-                        # Found the heatmap
-                        left_img = Image.open(img_dir + os.sep + img)
-                        left_img = left_img.resize((512, 512))
-                        left_img = ImageTk.PhotoImage(left_img)
-                        count += 1
-                        square_nrs = []
-                        valid = True
-                        squares_file = ''
-                    else:
-                        pass
+                # Retrieve the square numbers for this image
+                self.squares_file_name = get_squares_file_path(self.experiment_directory, image_name)
+                df_squares = read_squares_from_file(self.squares_file_name)
+                if df_squares is not None:
+                    square_nrs = list(df_squares['Square Nr'])
+                else:
+                    paint_logger.error("No square numbers found (?)")
+                    square_nrs = []
+                valid = True
 
             if not valid:  # Create an empty image with the correct background colour and insert that
                 left_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")
@@ -513,7 +493,7 @@ class ImageViewer:
                 left_img = ImageTk.PhotoImage(left_img)
                 square_nrs = []
 
-            # See if a Tau is defined in the grid_batch file.
+            # See if a Tau is defined in the experiments_squares file.
             # If it is record it
 
             if 'Tau' in self.df_experiment.columns:
@@ -691,29 +671,29 @@ class ImageViewer:
         png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
 
         # Go back to the image where we were
-        self.img_no = save_img_no - 1
+        self.img_no -= 1
         self.go_forward_backward('FORWARD')
 
     def save_experiment_file_if_requested(self):
 
         file = f"{self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
         file = os.path.split(file)[1]
-        msg = f"Do you want to save changes to {'batch' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
+        msg = f"Do you want to save changes to {'experiments' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
         if response is True:
             self.save_density_ratio_slider_state_into_df_experiment()
             self.save_variability_slider_state_into_df_experiment()
             self.save_neighbour_state_into_df_experiment()
 
-            # Write the Nr Visible Squares visibility information into the batch file
+            # Write the Visible Squares visibility information into the squares file
             self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
                                           self.df_squares['Variability Visible'] &
-                                          self.df_squares['Variability Visible'])
+                                          self.df_squares['Duration Visible'])
             self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(
                 self.df_squares[self.df_squares['Visible']])
             save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
         if response is not None:
-            self.batch_changed = False
+            self.experiments_squares_changed = False
         return response
 
     def save_squares_file_if_requested(self):
@@ -728,15 +708,15 @@ class ImageViewer:
 
     def exit_viewer(self):
 
-        response_square = response_batch = ""
+        response_square = response_experiment = ""
 
-        if self.batch_changed:
-            response_batch = self.save_experiment_file_if_requested()
+        if self.experiments_squares_changed:
+            response_experiment = self.save_experiment_file_if_requested()
 
         if self.square_changed:
             response_square = self.save_squares_file_if_requested()
 
-        if response_batch is None or response_square is None:
+        if response_experiment is None or response_square is None:
             return
         else:
             root.quit()
@@ -860,7 +840,7 @@ class ImageViewer:
         :return:
         """
 
-        self.batch_changed = True
+        self.experiments_squares_changed = True
 
         self.df_squares['Visible'] = True
         self.df_squares['Neighbour Visible'] = True
@@ -879,6 +859,12 @@ class ImageViewer:
         :return:
         """
 
+        self.heatmap_enabled = True
+        HeatMapControlWindow(self)
+        self.img_no -= 1
+        self.go_forward_backward('FORWARD')
+        return
+
         # Get the slider and neighbour state and save it
         self.save_density_ratio_slider_state_into_df_experiment()
         self.save_variability_slider_state_into_df_experiment()
@@ -892,7 +878,7 @@ class ImageViewer:
         # create_summary_graphpad(self.experiment_directory, df_stats)
 
     def set_for_all_slider(self):
-        self.batch_changed = True
+        self.experiments_squares_changed = True
 
         self.df_experiment['Density Ratio Setting'] = self.sc_density_ratio.get()
         self.df_experiment['Variability Setting'] = self.sc_variability.get()
@@ -914,20 +900,12 @@ class ImageViewer:
         self.display_selected_squares()
 
     def variability_changed(self, _):
-        self.batch_changed = True
-
-        if self.mode_intensity_duration_heatmap.get() == 'HEAT':  # Should not happen,as the slider is disabled, but still....
-            return
-
+        self.experiments_squares_changed = True
         self.select_squares_for_display()
         self.display_selected_squares()
 
     def density_ratio_changed(self, _):
-        self.batch_changed = True
-
-        if self.mode_intensity_duration_heatmap.get() == 'HEAT':
-            return
-
+        self.experiments_squares_changed = True
         self.select_squares_for_display()
         self.display_selected_squares()
 
@@ -1011,49 +989,44 @@ class ImageViewer:
         return
 
     def select_squares_for_display(self):
+        self.df_squares['Variability Visible'] = False
+        self.df_squares.loc[
+            self.df_squares['Variability'] <= round(self.sc_variability.get(), 1), 'Variability Visible'] = True
+        self.df_squares.loc[
+            self.df_squares['Variability'] > round(self.sc_variability.get(), 1), 'Variability Visible'] = False
 
-        if self.mode_intensity_duration_heatmap.get() == 'DURATION':
-            self.df_squares['Visible'] = self.df_squares['Max Track Duration'] >= self.track_duration.get()
-            return
-        else:
-            self.df_squares['Variability Visible'] = False
-            self.df_squares.loc[
-                self.df_squares['Variability'] <= round(self.sc_variability.get(), 1), 'Variability Visible'] = True
-            self.df_squares.loc[
-                self.df_squares['Variability'] > round(self.sc_variability.get(), 1), 'Variability Visible'] = False
+        self.df_squares['Density Ratio Visible'] = False
+        self.df_squares.loc[
+            self.df_squares['Density Ratio'] >= round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = True
+        self.df_squares.loc[
+            self.df_squares['Density Ratio'] < round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = False
 
-            self.df_squares['Density Ratio Visible'] = False
-            self.df_squares.loc[
-                self.df_squares['Density Ratio'] >= round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = True
-            self.df_squares.loc[
-                self.df_squares['Density Ratio'] < round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = False
+        self.df_squares['Duration Visible'] = False
+        mask = (self.df_squares['Max Track Duration'] > self.track_min_duration.get()) & \
+               (self.df_squares['Max Track Duration'] < self.track_max_duration.get())
+        self.df_squares.loc[mask, 'Duration Visible'] = True
 
-            self.df_squares['Duration Visible'] = False
-            mask = (self.df_squares['Max Track Duration'] > self.track_duration.get()) & \
-                   (self.df_squares['Max Track Duration'] < self.track_duration1.get())
-            self.df_squares.loc[mask, 'Duration Visible'] = True
+        # self.df_squares.loc[
+        #     self.df_squares['Duration Visible'] < round(self.track_duration1.get(), 1), 'Duration Visible'] = True
 
-            # self.df_squares.loc[
-            #     self.df_squares['Duration Visible'] < round(self.track_duration1.get(), 1), 'Duration Visible'] = True
+        self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
+                                      self.df_squares['Variability Visible'] &
+                                      self.df_squares['Duration Visible'])
 
-            self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
-                                          self.df_squares['Variability Visible'] &
-                                          self.df_squares['Duration Visible'])
+        # Select which isolation mode to be applied
+        neighbour_state = self.neighbour_var.get()
+        if neighbour_state == "Relaxed":
+            eliminate_isolated_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
+        elif neighbour_state == "Strict":
+            eliminate_isolated_squares_strict(self.df_squares, self.nr_of_squares_in_row)
+        elif neighbour_state == "Free":
+            self.df_squares['Neighbour Visible'] = True
 
-            # Select which isolation mode to be applied
-            neighbour_state = self.neighbour_var.get()
-            if neighbour_state == "Relaxed":
-                eliminate_isolated_squares_relaxed(self.df_squares, self.nr_squares_in_row)
-            elif neighbour_state == "Strict":
-                eliminate_isolated_squares_strict(self.df_squares, self.nr_squares_in_row)
-            elif neighbour_state == "Free":
-                self.df_squares['Neighbour Visible'] = True
-
-            self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
-                                          self.df_squares['Density Ratio Visible'] &
-                                          self.df_squares['Variability Visible'] &
-                                          self.df_squares['Neighbour Visible'] &
-                                          self.df_squares['Duration Visible'])
+        self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
+                                      self.df_squares['Density Ratio Visible'] &
+                                      self.df_squares['Variability Visible'] &
+                                      self.df_squares['Neighbour Visible'] &
+                                      self.df_squares['Duration Visible'])
 
     def display_selected_squares(self):
 
@@ -1069,10 +1042,12 @@ class ImageViewer:
         if self.show_squares:
             # If there are no squares you can stop here
             if len(self.df_squares) > 0:
-                for index, row in self.df_squares.iterrows():
-                    if row['Visible']:
-                        self.draw_single_square(row)
+                for index, squares_row in self.df_squares.iterrows():
+                    if squares_row['Visible']:
+                        self.draw_single_square(squares_row)
         return self.df_squares
+
+
 
     def draw_single_square(self, squares_row):
 
@@ -1087,10 +1062,10 @@ class ImageViewer:
         cell_id = squares_row['Cell Id']
         label_nr = squares_row['Label Nr']
 
-        col_nr = square_nr % self.nr_squares_in_row
-        row_nr = square_nr // self.nr_squares_in_row
-        width = 512 / self.nr_squares_in_row
-        height = 512 / self.nr_squares_in_row
+        col_nr = square_nr % self.nr_of_squares_in_row
+        row_nr = square_nr // self.nr_of_squares_in_row
+        width = 512 / self.nr_of_squares_in_row
+        height = 512 / self.nr_of_squares_in_row
 
         square_tag = f'square-{square_nr}'
         text_tag = f'text-{square_nr}'
@@ -1125,9 +1100,6 @@ class ImageViewer:
 
     def square_assigned_to_cell(self, square_nr):
 
-        if self.mode_intensity_duration_heatmap.get() == 'HEAT':
-            return
-
         # Retrieve the old and new cell id
         old_cell_id = self.df_squares.at[square_nr, 'Cell Id']
         new_cell_id = int(self.cell_var.get())
@@ -1147,8 +1119,6 @@ class ImageViewer:
         self.df_squares.at[square_nr, 'Cell Id'] = int(new_cell_id)
 
     def provide_information_on_square(self, event, label_nr, square_nr):
-        if self.mode_intensity_duration_heatmap.get() == 'HEAT':
-            return
 
         # Define the popup
         pop = Toplevel(root)
@@ -1249,31 +1219,9 @@ class ImageViewer:
         self.sc_variability.configure(state=state, takefocus=(state == NORMAL))
         self.sc_density_ratio.configure(state=state, takefocus=(state == NORMAL))
 
-    def select_mode_button(self):
-
-        mode = self.mode_intensity_duration_heatmap.get()
-        if mode == "HEAT":
-            if self.df_squares['Tau'].nunique() == 1:
-                messagebox.showinfo("Information", "No individual square Tau information available")
-                root.focus_force()
-                self.mode_intensity_duration_heatmap.set("INTENSITY")
-                self.select_squares_for_display()
-                self.display_selected_squares()
-                return
-        elif mode == "INTENSITY":
-            self.configure_widgets_state(NORMAL)
-        elif mode == "DURATION":
-            self.configure_widgets_state(DISABLED)
-        else:
-            paint_logger.error('Big trouble!')
-
-        self.list_images = self.get_images(mode)
-        self.img_no -= 1
-        self.go_forward_backward('FORWARD')
-
     def select_neighbour_button(self):
 
-        self.batch_changed = True
+        self.experiments_squares_changed = True
 
         self.cn_left_image.delete("all")
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
@@ -1292,7 +1240,7 @@ class ImageViewer:
             if response is None:
                 return
 
-        if self.batch_changed:
+        if self.experiments_squares_changed:
             response = self.save_experiment_file_if_requested()
             if response is None:
                 return
@@ -1309,22 +1257,20 @@ class ImageViewer:
         # Set the name of the image
         self.image_name = self.list_images[self.img_no]['Left Image Name']
 
-        # Place new image in the canvas and draw the squares
-        self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+        if self.heatmap_enabled:
+            self.squares_file_name = self.list_images[self.img_no]['Squares File']
+            self.df_squares = read_squares_from_file(self.squares_file_name)
+            self.display_heatmap()
+        else:
+            # Place new image in the canvas and draw the squares
+            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
 
-        # If the mode is 'INTENSITY' or 'DURATION' draw the squares:
-        if self.mode_intensity_duration_heatmap.get() == 'INTENSITY':
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
             self.set_variability_slider_state()
             self.set_density_ratio_slider_state()
             # Duration? TODO
             self.set_neighbour_state()
-            self.select_squares_for_display()
-            self.display_selected_squares()
-        elif self.mode_intensity_duration_heatmap.get() == 'DURATION':
-            self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            self.df_squares = read_squares_from_file(self.squares_file_name)
             self.select_squares_for_display()
             self.display_selected_squares()
 
@@ -1380,14 +1326,6 @@ class ImageViewer:
             sys.exit()
         return self.df_squares
 
-    def read_batch(self):
-        batch_file_path = os.path.join(self.experiment_directory, self.image_name, 'grid_batch.csv')
-        self.df_experiment = read_experiment_file(batch_file_path)
-        if self.df_experiment is None:
-            paint_logger.error(f"Function 'read_batch' failed - Squares file {batch_file_path} was not found.")
-            sys.exit()
-        return self.df_experiment
-
     def update_squares_file(self):
         # It is necessary to the squares file, because the user may have made changes
         if self.mode_dir_or_conf == 'DIRECTORY':
@@ -1399,21 +1337,58 @@ class ImageViewer:
                                              self.image_name,
                                              'grid',
                                              self.image_name + '-squares.csv')
-        save_squares_to_file(self.df_squares, squares_file_name)  # TOD
+        save_squares_to_file(self.df_squares, squares_file_name)  # TODO
 
-    def update_batch_file(self):
 
-        # Get the slider and neighbour state and save it into df_experiment
-        self.save_density_ratio_slider_state_into_df_experiment()
-        self.save_variability_slider_state_into_df_experiment()
-        self.save_neighbour_state_into_df_experiment()
+    # ---------------------------------------------
+    # ------------------ Heatmap ------------------
+    # ---------------------------------------------
 
-        # Write the Nr Visible Squares visibility information into the batch file
-        self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
-                                      self.df_squares['Variability Visible'] &
-                                      self.df_squares['Variability Visible'])
-        self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
-        save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
+    def update_heatmap_rb_value(self, *args):
+
+        selected_idx = self.rb_heatmap_parameter_value.get()
+        if selected_idx == -1:
+            self.heatmap_enabled = False
+            self.select_squares_for_display()
+            self.display_selected_squares()
+        else:
+            self.heatmap_enabled = True
+            self.img_no -= 1
+            self.go_forward_backward('FORWARD')
+
+        # selected_name = self.option_names[selected_idx - 1]  # Subtract 1 to match the list index
+        # self.lbl_radio_value.config(text=f"Selected Option: {selected_name}")
+
+    def display_heatmap(self):
+
+        # Clear the screen and reshow the picture
+        self.cn_left_image.delete("all")
+
+        colors = get_colormap_colors('Blues', 20)
+        heatmap_mode = self.rb_heatmap_parameter_value.get()
+
+        for index, squares_row in self.df_squares.iterrows():
+            self.draw_heatmap_square(squares_row, colors, heatmap_mode)
+        # return self.df_squares
+
+    def draw_heatmap_square(self, squares_row, colors, mode='Tau'):
+        square_nr = squares_row['Square Nr']
+        col_nr = square_nr % self.nr_of_squares_in_row
+        row_nr = square_nr // self.nr_of_squares_in_row
+        width = 512 / self.nr_of_squares_in_row
+        height = 512 / self.nr_of_squares_in_row
+
+        min_tau = self.df_squares['Tau'].min()
+        if min_tau < 0:
+            min_tau = 0
+        max_tau = self.df_squares['Tau'].max()
+        tau = squares_row['Tau']
+        color_index = get_color_index(tau, max_tau, min_tau, 20)
+        color = colors[color_index]
+
+        self.cn_left_image.create_rectangle(
+            col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+            fil=color)
 
 
 def save_as_png(canvas, file_name):
@@ -1446,21 +1421,19 @@ def save_square_info_to_batch(self):  # TODO
         self.df_experiment.loc[index, 'Squares Ratio'] = squares_ratio
 
 
-proceed = False
-root_directory = ''
-conf_file = ''
-mode_dir_or_conf = ''
-
-
 class SelectViewerDialog:
 
-    def __init__(self, _root: tk.Tk) -> None:
-        _root.title('Image Viewer')
+    def __init__(self, parent: tk.Tk) -> None:
 
+        self.top = tk.Toplevel(parent)
+        self.parent = parent
+        self.parent.title('Select Viewer')
+
+        self.proceed = False
         self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
 
         # Main content frame
-        content = ttk.Frame(_root)
+        content = ttk.Frame(parent)
         content.grid(column=0, row=0)
 
         # Directory and Button frames
@@ -1531,15 +1504,6 @@ class SelectViewerDialog:
                                    self.conf_file)
 
     def process(self) -> None:
-        global proceed
-        global root_directory
-        global conf_file
-        global mode_dir_or_conf
-
-        error = False
-
-        root_directory = self.root_directory
-        conf_file = self.conf_file
         error = False
 
         if self.mode_dir_or_conf == "DIRECTORY" and not os.path.isdir(self.root_directory):
@@ -1550,30 +1514,79 @@ class SelectViewerDialog:
             error = True
 
         if not error:
-            mode_dir_or_conf = self.mode_dir_or_conf.get()
-            global proceed
-            proceed = True
+            self.proceed = True
             root.destroy()
 
     def exit_dialog(self) -> None:
-        global proceed
-        proceed = False
+        self.proceed = False
         root.destroy()
 
+    def get_result(self):
+        self.top.wait_window()
+        return self.proceed, self.root_directory, self.conf_file, self.mode_dir_or_conf.get()
 
-root = Tk()
-root.eval('tk::PlaceWindow . center')
-SelectViewerDialog(root)
-root.mainloop()
 
-if proceed:
-    root = Tk()
+class HeatMapControlWindow:
+    def __init__(self, image_viewer):
+        # Create a new top-level window for the controls
+        self.control_window = tk.Toplevel(image_viewer.root)
+        self.control_window.title("Heatmap Control Window")
+        self.control_window.geometry("300x350")
+        self.option_names = ["Tau", "Density", "Track Count", "Track Duration", "Cum Track Duration"]  # Customize option names
+
+        # Bind the closing event to a custom function
+        self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # Configure the grid to center controls
+        self.control_window.columnconfigure(0, weight=1)
+
+        # Add some controls to the control window
+        lbl_control = tk.Label(self.control_window, text="Control Window", font=("Arial", 16))
+        lbl_control.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+
+        # Add a slider that updates the value in the main window
+        slider = ttk.Scale(self.control_window, from_=0, to=100, orient='horizontal', variable=image_viewer.slider_value)
+        slider.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+
+        # Add a label for radio button group
+        lbl_radio = tk.Label(self.control_window, text="Select an Option:", font=("Arial", 12))
+        lbl_radio.grid(row=2, column=0, padx=5, pady=5)
+
+        # Add radio buttons for the provided option names
+        for idx, name in enumerate(self.option_names, start=1):
+            radio_btn = tk.Radiobutton(self.control_window, text=name, variable=image_viewer.rb_heatmap_parameter_value, value=idx)
+            radio_btn.grid(row=2 + idx, column=0, padx=5, pady=2, sticky=tk.W)
+        image_viewer.rb_heatmap_parameter_value.set(1)
+
+        # Add a checkbox for an additional setting
+        checkbox = tk.Checkbutton(self.control_window, text="Enable Feature", variable=image_viewer.checkbox_value)
+        checkbox.grid(row=8, column=0, padx=5, pady=10, sticky=tk.W)
+
+        # Add a button to close the control window
+        button = tk.Button(self.control_window, text="Close", command=self.on_close)
+        button.grid(row=9, column=0, padx=5, pady=10)
+
+    def on_close(self):
+        image_viewer.rb_heatmap_parameter_value.set(-1)
+        self.control_window.destroy()  # Actually close the control window
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    root.withdraw()
     root.eval('tk::PlaceWindow . center')
-    paint_logger.debug(f'Mode: {mode_dir_or_conf}')
-    if mode_dir_or_conf == 'DIRECTORY':
-        paint_logger.info(f'Root directory: {root_directory}')
-    else:
-        paint_logger.debug(f'Configuration file: {conf_file}')
+    dialog_result = SelectViewerDialog(root)
+    proceed, root_directory, conf_file, mode_dir_or_conf = dialog_result.get_result()
 
-    image_viewer = ImageViewer(root, root_directory, conf_file, mode_dir_or_conf)
+    if proceed:
+        root = tk.Tk()
+        root.withdraw()
+        root.eval('tk::PlaceWindow . center')
+        paint_logger.debug(f'Mode: {mode_dir_or_conf}')
+        if mode_dir_or_conf == 'DIRECTORY':
+            paint_logger.info(f'Root directory: {root_directory}')
+        else:
+            paint_logger.debug(f'Configuration file: {conf_file}')
+
+        image_viewer = ImageViewer(root, root_directory, conf_file, mode_dir_or_conf)
+
     root.mainloop()

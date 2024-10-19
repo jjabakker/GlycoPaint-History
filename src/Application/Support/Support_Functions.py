@@ -75,7 +75,7 @@ def ask_user_for_paint_directory(title='Select Folder'):
     return image_directory
 
 
-def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr: int, nr_squares_in_row: int,
+def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr: int, nr_of_squares_in_row: int,
                 granularity: int) -> tuple[int, int]:
     """
     Given coordinates (x1, y1) of the track, calculate the indices of the grid
@@ -85,14 +85,14 @@ def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr
     :param width: The width of a grid in the square
     :param height: The height of a grid in the square
     :param square_seq_nr: The number of the square for which the variability is calculated
-    :param nr_squares_in_row: The numbers of rows and columns in the full image
+    :param nr_of_squares_in_row: The numbers of rows and columns in the full image
     :param granularity: Specifies how fine the grid is that is overlaid on the square
     :return: The indices (xi, yi) of the grid
     """
 
     # Calculate the top-left corner (x0, y0) of the square
-    x0 = (square_seq_nr % nr_squares_in_row) * width
-    y0 = (square_seq_nr // nr_squares_in_row) * height
+    x0 = (square_seq_nr % nr_of_squares_in_row) * width
+    y0 = (square_seq_nr // nr_of_squares_in_row) * height
 
     # Calculate the grid indices (xi, yi) for the track
     xi = int(((x1 - x0) / width) * granularity)
@@ -121,13 +121,13 @@ def get_square_coordinates(nr_of_squares_in_row, sequence_number):
     return x0, y0, x1, y1
 
 
-def calc_variability(tracks_df, square_nr, nr_squares_in_row, granularity):
+def calc_variability(tracks_df, square_nr, nr_of_squares_in_row, granularity):
     """
     The variability is calculated by creating a grid of granularity x granularity in the square for
     which tracks_fd specifies the tracks
     :param tracks_df: A dataframe that contains the tracks of the square for which the variability is calculated
     :param square_nr: The sequence number of the square for which the variability is calculated
-    :param nr_squares_in_row: The number of rows and columns in the image
+    :param nr_of_squares_in_row: The number of rows and columns in the image
     :param granularity: Specifies how fine the grid is that is created
     :return:
     """
@@ -142,11 +142,11 @@ def calc_variability(tracks_df, square_nr, nr_squares_in_row, granularity):
         y = float(tracks_df.at[i, "TRACK_Y_LOCATION"])
 
         # The width of the image is 82.0864 micrometer. The width and height of a square can be calculated
-        width = 82.0864 / nr_squares_in_row
+        width = 82.0864 / nr_of_squares_in_row
         height = width
 
         # Get the grid indices for this track and update the matrix
-        xi, yi = get_indices(x, y, width, height, square_nr, nr_squares_in_row, 10)
+        xi, yi = get_indices(x, y, width, height, square_nr, nr_of_squares_in_row, 10)
         matrix[yi, xi] += 1
 
     # Calculate the variability by dividing the standard deviation by the average
@@ -242,7 +242,7 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
     return list_of_squares
 
 
-def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
+def eliminate_isolated_squares_relaxed(df_squares, nr_of_squares_in_row):
     list_of_squares = []
     neighbours = []
 
@@ -261,33 +261,33 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
         square_nr = square['Square Nr']
 
         left = (row_nr, max(col_nr - 1, 1))
-        right = (row_nr, min(col_nr + 1, nr_squares_in_row))
+        right = (row_nr, min(col_nr + 1, nr_of_squares_in_row))
         above = (max(row_nr - 1, 1), col_nr)
-        below = (min(row_nr + 1, nr_squares_in_row), col_nr)
+        below = (min(row_nr + 1, nr_of_squares_in_row), col_nr)
 
-        below_left = (min(row_nr + 1, nr_squares_in_row), max(col_nr - 1, 1))
-        below_right = (min(row_nr + 1, nr_squares_in_row), min(col_nr + 1, nr_squares_in_row))
+        below_left = (min(row_nr + 1, nr_of_squares_in_row), max(col_nr - 1, 1))
+        below_right = (min(row_nr + 1, nr_of_squares_in_row), min(col_nr + 1, nr_of_squares_in_row))
         above_left = (max(row_nr - 1, 1), max(col_nr - 1, 1))
-        above_right = (max(row_nr - 1, 1), min(col_nr + 1, nr_squares_in_row))
+        above_right = (max(row_nr - 1, 1), min(col_nr + 1, nr_of_squares_in_row))
 
         if row_nr == 1:
             if col_nr == 1:
                 neighbours = [right, below, below_right, ]
-            elif col_nr == nr_squares_in_row:
+            elif col_nr == nr_of_squares_in_row:
                 neighbours = [left, below, below_left]
             else:
                 neighbours = [left, right, below, below_left, below_right]
-        elif row_nr == nr_squares_in_row:
+        elif row_nr == nr_of_squares_in_row:
             if col_nr == 1:
                 neighbours = [right, above, above_right]
-            elif col_nr == nr_squares_in_row:
+            elif col_nr == nr_of_squares_in_row:
                 neighbours = [left, above, above_left]
             else:
                 neighbours = [left, right, above, above_left, above_right]
-        elif 1 < row_nr < nr_squares_in_row:
+        elif 1 < row_nr < nr_of_squares_in_row:
             if col_nr == 1:
                 neighbours = [right, below, above, above_right, below_right]
-            elif col_nr == nr_squares_in_row:
+            elif col_nr == nr_of_squares_in_row:
                 neighbours = [left, below, above, below_right, below_left]
             else:
                 neighbours = [left, right, below, above, above_right, below_right, above_left, below_left]
@@ -295,7 +295,7 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
         # Do the inspection of neighbours
         nr_of_neighbours = 0
         for nb in neighbours:
-            neighbour_seqnr = int((nb[0] - 1) * nr_squares_in_row + (nb[1] - 1))
+            neighbour_seqnr = int((nb[0] - 1) * nr_of_squares_in_row + (nb[1] - 1))
             if neighbour_seqnr in df_squares.index:
                 if (df_squares.loc[neighbour_seqnr, 'Variability Visible'] and
                         df_squares.loc[neighbour_seqnr, 'Density Ratio Visible'] and
@@ -320,7 +320,7 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_squares_in_row):
 def get_grid_defaults_from_file() -> dict:
     parameter_file_path = os.path.join(get_paint_profile_directory(), "grid_parameters.csv")
 
-    def_parameters = {'nr_squares_in_row': 20,
+    def_parameters = {'nr_of_squares_in_row': 20,
                       'min_tracks_for_tau': 30,
                       'min_r_squared': 0.9,
                       'min_density_ratio': 2,
@@ -339,7 +339,7 @@ def get_grid_defaults_from_file() -> dict:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
-            required_columns = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
+            required_columns = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
                                 'max_variability', 'max_square_coverage', 'process_single', 'process_traditional']
             for col in required_columns:
                 if col not in reader.fieldnames:
@@ -366,7 +366,7 @@ def get_grid_defaults_from_file() -> dict:
 
 
 def save_grid_defaults_to_file(
-        nr_squares_in_row: int,
+        nr_of_squares_in_row: int,
         min_tracks_for_tau: int,
         min_r_squared: float,
         min_density_ratio: float,
@@ -378,7 +378,7 @@ def save_grid_defaults_to_file(
 
     try:
 
-        fieldnames = ['nr_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
+        fieldnames = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
                       'max_variability', 'max_square_coverage', 'process_single', 'process_traditional']
 
         # Open the file in write mode ('w') and overwrite any existing content
@@ -390,7 +390,7 @@ def save_grid_defaults_to_file(
 
             # Write the data as a row
             writer.writerow({
-                'nr_squares_in_row': nr_squares_in_row,
+                'nr_of_squares_in_row': nr_of_squares_in_row,
                 'min_tracks_for_tau': min_tracks_for_tau,
                 'min_r_squared': min_r_squared,
                 'min_density_ratio': min_density_ratio,
@@ -472,7 +472,7 @@ def read_experiment_tm_file(experiment_file_path, only_records_to_process=True):
 
 def check_experiment_integrity(df_experiment):
     """
-    Check if the batch file has the expected columns and makes sure that the types are correct
+    Check if the experiment file has the expected columns and makes sure that the types are correct
     :param df_experiment:
     :return:
     """
@@ -506,7 +506,7 @@ def check_experiment_integrity(df_experiment):
 
 def correct_all_images_column_types(df_experiment):
     """
-    Set the column types for the batch file
+    Set the column types for the experiment file
     :param df_experiment:
     :return:
     """
@@ -519,7 +519,7 @@ def correct_all_images_column_types(df_experiment):
         df_experiment['Threshold'] = df_experiment['Threshold'].astype(int)
         df_experiment['Min Tracks for Tau'] = df_experiment['Min Tracks for Tau'].astype(int)
         df_experiment['Min R Squared'] = df_experiment['Min R Squared'].astype(float)
-        df_experiment['Nr Of Squares per Row'] = df_experiment['Nr Of Squares per Row'].astype(int)
+        df_experiment['Nr of Squares in Row'] = df_experiment['Nr of Squares in Row'].astype(int)
         df_experiment['Nr Visible Squares'] = df_experiment['Nr Visible Squares'].astype(int)
         df_experiment['Nr Invisible Squares'] = df_experiment['Nr Invisible Squares'].astype(int)
         df_experiment['Nr Total Squares'] = df_experiment['Nr Total Squares'].astype(int)

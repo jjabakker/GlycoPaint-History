@@ -99,7 +99,7 @@ The procedure to run 'Process All Images':
 - Run ‘src/Automation/Grid/Process All Images’
 - Specify as Paint directory: ~/ PaintExample/Paint/240402
 - Select parameters. Reasonable defaults are
-  - Nr of Squares per row/col: 20
+  - Nr of Squares in row/col: 20
   - Minimum tracks to calculate Tau: 30
   - Min allowable R-squared: 0.9
   - Min density ratio: 2

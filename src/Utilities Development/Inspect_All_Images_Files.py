@@ -33,7 +33,7 @@ def inspect_all_images_file(image_file_path: str, short_file_name: str) -> None:
         'Experiment Seq Nr', 'Image Name', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant',
         'Concentration', 'Threshold', 'Density Ratio Setting', 'Process', 'Ext Image Name',
         'Nr Spots', 'Nr Tracks', 'Image Size', 'Run Time','Time Stamp', 'Min Tracks for Tau',
-        'Min R Squared', 'Nr Of Squares per Row', 'Exclude', 'Neighbour Setting', 'Variability Setting',
+        'Min R Squared', 'Nr of Squares in Row', 'Exclude', 'Neighbour Setting', 'Variability Setting',
         'Nr Total Squares', 'Nr Defined Squares', 'Nr Visible Squares',
         'Nr Invisible Squares', 'Nr Rejected Squares', 'Max Squares Ratio', 'Squares Ratio',
     }
