@@ -10,7 +10,6 @@ import pandas as pd
 from src.Application.Support.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
-from src.Application.Support.Generate_HeatMap import plot_heatmap
 from src.Application.Support.Paint_Messagebox import paint_messagebox
 from src.Application.Support.Support_Functions import (
     calc_variability,
@@ -475,11 +474,6 @@ def process_single_image_in_experiment_directory(
     # Write the filtered squares results
     squares_file_name = get_squares_file_path(experiment_path, image_name)
     save_squares_to_file(df_squares, squares_file_name)
-
-    # Generate the Tau heatmap, but only if there are squares selected
-    if len(df_squares) > 0:
-        plt_file = os.path.join(get_tau_plots_dir_path(experiment_path, image_name), image_name + "-heatmap.png")
-        plot_heatmap(tau_matrix, plt_file)
 
     # Now do the single mode processing: determine a single Tau and Density per image, i.e. for all squares and return
     # those values

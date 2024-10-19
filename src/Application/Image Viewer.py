@@ -1337,7 +1337,7 @@ class ImageViewer:
                                              self.image_name,
                                              'grid',
                                              self.image_name + '-squares.csv')
-        save_squares_to_file(self.df_squares, squares_file_name)  # TOD
+        save_squares_to_file(self.df_squares, squares_file_name)  # TODO
 
 
     # ---------------------------------------------
