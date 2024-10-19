@@ -1497,12 +1497,6 @@ def save_square_info_to_batch(self):  # TODO
         self.df_experiment.loc[index, 'Squares Ratio'] = squares_ratio
 
 
-proceed = False
-root_directory = ''
-conf_file = ''
-mode_dir_or_conf = ''
-
-
 class SelectViewerDialog:
 
     def __init__(self, _root: tk.Tk) -> None:
@@ -1585,15 +1579,6 @@ class SelectViewerDialog:
                                    self.conf_file)
 
     def process(self) -> None:
-        global proceed
-        global root_directory
-        global conf_file
-        global mode_dir_or_conf
-
-        error = False
-
-        root_directory = self.root_directory
-        conf_file = self.conf_file
         error = False
 
         if self.mode_dir_or_conf == "DIRECTORY" and not os.path.isdir(self.root_directory):
@@ -1604,16 +1589,11 @@ class SelectViewerDialog:
             error = True
 
         if not error:
-            mode_dir_or_conf = self.mode_dir_or_conf.get()
-            global proceed
             self.proceed = True
-            proceed = True
             root.destroy()
 
     def exit_dialog(self) -> None:
-        global proceed
         self.proceed = False
-        proceed = False
         root.destroy()
 
     def get_result(self):
