@@ -1445,14 +1445,6 @@ class ImageViewer:
             sys.exit()
         return self.df_squares
 
-    # def read_batch(self):
-    #     batch_file_path = os.path.join(self.experiment_directory, self.image_name, 'grid_batch.csv')
-    #     self.df_experiment = read_experiment_file(batch_file_path)
-    #     if self.df_experiment is None:
-    #         paint_logger.error(f"Function 'read_batch' failed - Squares file {batch_file_path} was not found.")
-    #         sys.exit()
-    #     return self.df_experiment
-
     def update_squares_file(self):
         # It is necessary to the squares file, because the user may have made changes
         if self.mode_dir_or_conf == 'DIRECTORY':
@@ -1601,20 +1593,21 @@ class SelectViewerDialog:
         return self.proceed, self.root_directory, self.conf_file, self.mode_dir_or_conf.get()
 
 
-root = Tk()
-root.eval('tk::PlaceWindow . center')
-dialog_result = SelectViewerDialog(root)
-proceed, root_directory, conf_file, mode_dir_or_conf = dialog_result.get_result()
-root.mainloop()
-
-if proceed:
+if __name__ == '__main__':
     root = Tk()
     root.eval('tk::PlaceWindow . center')
-    paint_logger.debug(f'Mode: {mode_dir_or_conf}')
-    if mode_dir_or_conf == 'DIRECTORY':
-        paint_logger.info(f'Root directory: {root_directory}')
-    else:
-        paint_logger.debug(f'Configuration file: {conf_file}')
+    dialog_result = SelectViewerDialog(root)
+    proceed, root_directory, conf_file, mode_dir_or_conf = dialog_result.get_result()
 
-    image_viewer = ImageViewer(root, root_directory, conf_file, mode_dir_or_conf)
+    if proceed:
+        root = Tk()
+        root.eval('tk::PlaceWindow . center')
+        paint_logger.debug(f'Mode: {mode_dir_or_conf}')
+        if mode_dir_or_conf == 'DIRECTORY':
+            paint_logger.info(f'Root directory: {root_directory}')
+        else:
+            paint_logger.debug(f'Configuration file: {conf_file}')
+
+        image_viewer = ImageViewer(root, root_directory, conf_file, mode_dir_or_conf)
+
     root.mainloop()
