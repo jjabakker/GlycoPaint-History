@@ -1491,16 +1491,16 @@ def save_square_info_to_batch(self):  # TODO
 
 class SelectViewerDialog:
 
-    def __init__(self, _root: tk.Tk) -> None:
-        _root.title('Image Viewer')
-        self.top = tk.Toplevel(_root)
+    def __init__(self, parent: tk.Tk) -> None:
+
+        self.top = tk.Toplevel(parent)
         self.top.title('Select Viewer')
 
         self.proceed = False
         self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
 
         # Main content frame
-        content = ttk.Frame(_root)
+        content = ttk.Frame(parent)
         content.grid(column=0, row=0)
 
         # Directory and Button frames
