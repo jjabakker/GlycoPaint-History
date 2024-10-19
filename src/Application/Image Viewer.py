@@ -72,7 +72,7 @@ class ImageViewer:
         self.show_squares_numbers = True
         self.show_squares = True
         self.square_changed = False
-        self.batch_changed = False
+        self.experiments_squares_changed = False
         self.neighbour_mode = ""
         self.select_mode = ""
 
@@ -424,7 +424,7 @@ class ImageViewer:
                 self.text_for_info3.set('')
 
     def set_for_all_neighbour_state(self):
-        self.batch_changed = True
+        self.experiments_squares_changed = True
         self.df_experiment['Neighbour Setting'] = self.neighbour_var.get()
 
     def get_images(self, type_of_image):
@@ -432,7 +432,7 @@ class ImageViewer:
         # Create an empty lst that will hold the images
         list_images = []
 
-        # Cycle through the batch file
+        # Cycle through the experiments file
         count = 0
         for index in range(len(self.df_experiment)):
 
@@ -513,7 +513,7 @@ class ImageViewer:
                 left_img = ImageTk.PhotoImage(left_img)
                 square_nrs = []
 
-            # See if a Tau is defined in the grid_batch file.
+            # See if a Tau is defined in the experiments_squares file.
             # If it is record it
 
             if 'Tau' in self.df_experiment.columns:
@@ -698,22 +698,22 @@ class ImageViewer:
 
         file = f"{self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
         file = os.path.split(file)[1]
-        msg = f"Do you want to save changes to {'batch' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
+        msg = f"Do you want to save changes to {'experiments' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
         if response is True:
             self.save_density_ratio_slider_state_into_df_experiment()
             self.save_variability_slider_state_into_df_experiment()
             self.save_neighbour_state_into_df_experiment()
 
-            # Write the Nr Visible Squares visibility information into the batch file
+            # Write the Visible Squares visibility information into the squares file
             self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
                                           self.df_squares['Variability Visible'] &
-                                          self.df_squares['Variability Visible'])
+                                          self.df_squares['Duration Visible'])
             self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(
                 self.df_squares[self.df_squares['Visible']])
             save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
         if response is not None:
-            self.batch_changed = False
+            self.experiments_squares_changed = False
         return response
 
     def save_squares_file_if_requested(self):
@@ -728,15 +728,15 @@ class ImageViewer:
 
     def exit_viewer(self):
 
-        response_square = response_batch = ""
+        response_square = response_experiment = ""
 
-        if self.batch_changed:
-            response_batch = self.save_experiment_file_if_requested()
+        if self.experiments_squares_changed:
+            response_experiment = self.save_experiment_file_if_requested()
 
         if self.square_changed:
             response_square = self.save_squares_file_if_requested()
 
-        if response_batch is None or response_square is None:
+        if response_experiment is None or response_square is None:
             return
         else:
             root.quit()
@@ -860,7 +860,7 @@ class ImageViewer:
         :return:
         """
 
-        self.batch_changed = True
+        self.experiments_squares_changed = True
 
         self.df_squares['Visible'] = True
         self.df_squares['Neighbour Visible'] = True
@@ -892,7 +892,7 @@ class ImageViewer:
         # create_summary_graphpad(self.experiment_directory, df_stats)
 
     def set_for_all_slider(self):
-        self.batch_changed = True
+        self.experiments_squares_changed = True
 
         self.df_experiment['Density Ratio Setting'] = self.sc_density_ratio.get()
         self.df_experiment['Variability Setting'] = self.sc_variability.get()
@@ -914,7 +914,7 @@ class ImageViewer:
         self.display_selected_squares()
 
     def variability_changed(self, _):
-        self.batch_changed = True
+        self.experiments_squares_changed = True
 
         if self.mode_intensity_duration_heatmap.get() == 'HEAT':  # Should not happen,as the slider is disabled, but still....
             return
@@ -923,7 +923,7 @@ class ImageViewer:
         self.display_selected_squares()
 
     def density_ratio_changed(self, _):
-        self.batch_changed = True
+        self.experiments_squares_changed = True
 
         if self.mode_intensity_duration_heatmap.get() == 'HEAT':
             return
@@ -1273,7 +1273,7 @@ class ImageViewer:
 
     def select_neighbour_button(self):
 
-        self.batch_changed = True
+        self.experiments_squares_changed = True
 
         self.cn_left_image.delete("all")
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
@@ -1292,7 +1292,7 @@ class ImageViewer:
             if response is None:
                 return
 
-        if self.batch_changed:
+        if self.experiments_squares_changed:
             response = self.save_experiment_file_if_requested()
             if response is None:
                 return
@@ -1380,13 +1380,13 @@ class ImageViewer:
             sys.exit()
         return self.df_squares
 
-    def read_batch(self):
-        batch_file_path = os.path.join(self.experiment_directory, self.image_name, 'grid_batch.csv')
-        self.df_experiment = read_experiment_file(batch_file_path)
-        if self.df_experiment is None:
-            paint_logger.error(f"Function 'read_batch' failed - Squares file {batch_file_path} was not found.")
-            sys.exit()
-        return self.df_experiment
+    # def read_batch(self):
+    #     batch_file_path = os.path.join(self.experiment_directory, self.image_name, 'grid_batch.csv')
+    #     self.df_experiment = read_experiment_file(batch_file_path)
+    #     if self.df_experiment is None:
+    #         paint_logger.error(f"Function 'read_batch' failed - Squares file {batch_file_path} was not found.")
+    #         sys.exit()
+    #     return self.df_experiment
 
     def update_squares_file(self):
         # It is necessary to the squares file, because the user may have made changes
@@ -1402,18 +1402,20 @@ class ImageViewer:
         save_squares_to_file(self.df_squares, squares_file_name)  # TOD
 
     def update_batch_file(self):
-
-        # Get the slider and neighbour state and save it into df_experiment
-        self.save_density_ratio_slider_state_into_df_experiment()
-        self.save_variability_slider_state_into_df_experiment()
-        self.save_neighbour_state_into_df_experiment()
-
-        # Write the Nr Visible Squares visibility information into the batch file
-        self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
-                                      self.df_squares['Variability Visible'] &
-                                      self.df_squares['Variability Visible'])
-        self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
-        save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
+        print ('Is somebody calling me?')
+        sys.exit()
+    #
+    #     # Get the slider and neighbour state and save it into df_experiment
+    #     self.save_density_ratio_slider_state_into_df_experiment()
+    #     self.save_variability_slider_state_into_df_experiment()
+    #     self.save_neighbour_state_into_df_experiment()
+    #
+    #     # Write the Nr Visible Squares visibility information into the batch file
+    #     self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
+    #                                   self.df_squares['Variability Visible'] &
+    #                                   self.df_squares['Variability Visible'])
+    #     self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
+    #     save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
 
 
 def save_as_png(canvas, file_name):

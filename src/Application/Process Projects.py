@@ -3,7 +3,7 @@ import os
 import sys
 import time
 
-from src.Application.Support.Compile_Output import compile_squares_file
+from src.Application.Support.Compile_Project_Output import compile_squares_file
 from src.Application.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
 from src.Application.Support.Generate_Squares import process_all_images_in_root_directory
 from src.Application.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string

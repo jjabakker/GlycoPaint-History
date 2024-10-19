@@ -472,7 +472,7 @@ def read_experiment_tm_file(experiment_file_path, only_records_to_process=True):
 
 def check_experiment_integrity(df_experiment):
     """
-    Check if the batch file has the expected columns and makes sure that the types are correct
+    Check if the experiment file has the expected columns and makes sure that the types are correct
     :param df_experiment:
     :return:
     """
@@ -506,7 +506,7 @@ def check_experiment_integrity(df_experiment):
 
 def correct_all_images_column_types(df_experiment):
     """
-    Set the column types for the batch file
+    Set the column types for the experiment file
     :param df_experiment:
     :return:
     """
