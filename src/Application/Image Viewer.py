@@ -45,6 +45,7 @@ class ImageViewer:
     def __init__(self, parent, directory, conf_file, mode_dir_or_conf):
 
         self.top = tk.Toplevel(parent)
+        self.parent = parent
         self.top.title("dhlidsldsfl")
         self.initialize_variables(parent, directory, conf_file, mode_dir_or_conf)
 
@@ -79,7 +80,7 @@ class ImageViewer:
         self.neighbour_mode = ""
         self.select_mode = ""
 
-        #self.top.title(f'Image Viewer - {self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
+        self.parent.title(f'Image Viewer - {self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
 
     def setup_ui(self):
         """
