@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import filedialog, messagebox
 from tkinter import ttk
+from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index
 
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
@@ -1079,22 +1080,64 @@ class ImageViewer:
 
     def display_selected_squares(self):
 
+        if True:
+            self.display_heatmap()
+        else:
+            # Clear the screen and reshow the picture
+            self.cn_left_image.delete("all")
+            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+
+            # Bind left buttons for canvas
+            self.cn_left_image.bind('<Button-1>', lambda e: self.start_rectangle(e))
+            self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.define_rectangle(e))
+            self.cn_left_image.bind('<B1-Motion>', lambda e: self.increase_rectangle_size(e))
+
+            if self.show_squares:
+                # If there are no squares you can stop here
+                if len(self.df_squares) > 0:
+                    for index, squares_row in self.df_squares.iterrows():
+                        if squares_row['Visible']:
+                            self.draw_single_square(squares_row)
+        return self.df_squares
+
+    def display_heatmap(self):
+
         # Clear the screen and reshow the picture
         self.cn_left_image.delete("all")
-        self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+
+        colors = get_colormap_colors('Blues', 20)
 
         # Bind left buttons for canvas
-        self.cn_left_image.bind('<Button-1>', lambda e: self.start_rectangle(e))
-        self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.define_rectangle(e))
-        self.cn_left_image.bind('<B1-Motion>', lambda e: self.increase_rectangle_size(e))
+        # self.cn_left_image.bind('<Button-1>', lambda e: self.start_rectangle(e))
+        # self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.define_rectangle(e))
+        # self.cn_left_image.bind('<B1-Motion>', lambda e: self.increase_rectangle_size(e))
 
         if self.show_squares:
             # If there are no squares you can stop here
             if len(self.df_squares) > 0:
-                for index, row in self.df_squares.iterrows():
-                    if row['Visible']:
-                        self.draw_single_square(row)
+                for index, squares_row in self.df_squares.iterrows():
+                    self.draw_heatmap_square(squares_row, colors)
         return self.df_squares
+
+    def draw_heatmap_square(self, squares_row, colors):
+
+        square_nr = squares_row['Square Nr']
+        col_nr = square_nr % self.nr_of_squares_in_row
+        row_nr = square_nr // self.nr_of_squares_in_row
+        width = 512 / self.nr_of_squares_in_row
+        height = 512 / self.nr_of_squares_in_row
+
+        min_tau = self.df_squares['Tau'].min()
+        if min_tau < 0:
+            min_tau = 0
+        max_tau = self.df_squares['Tau'].max()
+        tau = squares_row['Tau']
+        color_index = get_color_index(tau, max_tau, min_tau, 20)
+        color = colors[color_index]
+
+        self.cn_left_image.create_rectangle(
+            col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+            fil=color)
 
     def draw_single_square(self, squares_row):
 
