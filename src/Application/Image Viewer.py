@@ -1507,7 +1507,10 @@ class SelectViewerDialog:
 
     def __init__(self, _root: tk.Tk) -> None:
         _root.title('Image Viewer')
+        self.top = tk.Toplevel(_root)
+        self.top.title('Select Viewer')
 
+        self.proceed = False
         self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
 
         # Main content frame
@@ -1603,18 +1606,25 @@ class SelectViewerDialog:
         if not error:
             mode_dir_or_conf = self.mode_dir_or_conf.get()
             global proceed
+            self.proceed = True
             proceed = True
             root.destroy()
 
     def exit_dialog(self) -> None:
         global proceed
+        self.proceed = False
         proceed = False
         root.destroy()
+
+    def get_result(self):
+        self.top.wait_window()
+        return self.proceed, self.root_directory, self.conf_file, self.mode_dir_or_conf.get()
 
 
 root = Tk()
 root.eval('tk::PlaceWindow . center')
-SelectViewerDialog(root)
+dialog_result = SelectViewerDialog(root)
+proceed, root_directory, conf_file, mode_dir_or_conf = dialog_result.get_result()
 root.mainloop()
 
 if proceed:
