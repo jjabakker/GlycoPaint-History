@@ -18,22 +18,21 @@ from src.Common.Support.LoggerConfig import (
 paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
 
-PAINT_DEBUG = True
+PAINT_DEBUG = False
 PAINT_FORCE = True
 
 if PAINT_DEBUG:
-    CONF_FILE = '/Users/hans/Paint Source New/Configuration Files/paint data generation - integrated.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source New'
-    PAINT_DATA = '/Users/Hans/Paint Data Integrated New'
-    R_DATA_DEST = '/Users/hans/R Data'
-    # R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
-    TIME_STAMP = '2024-10-11 11:11:11'  # '%Y-%m-%d %H:%M:%S
+    CONF_FILE = '/Users/hans/Paint Source - v2/Configuration Files/paint data generation - v2.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source - v2'
+    PAINT_DATA = '/Users/Hans/Paint Data - v2'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v2'
+    TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 else:
-    CONF_FILE = '/Users/hans/Paint Source/Configuration Files/paint data generation - integrated.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source New'
-    PAINT_DATA = '/Users/Hans/Paint Data Integrated'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated - v2'
+    CONF_FILE = '/Users/hans/Paint Source - v2/Configuration Files/paint data generation - v2.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source - v2'
+    PAINT_DATA = '/Users/Hans/Paint Data - v2'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v2'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
