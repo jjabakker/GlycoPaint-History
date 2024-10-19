@@ -102,7 +102,7 @@ class ImageViewer:
         self.setup_frame_navigation_buttons()
         self.setup_frame_controls()
         self.setup_frame_filter()
-        self.setup_frame_duration_mode()
+        # self.setup_frame_duration_mode()
 
         self.content.grid(column=0, row=0)
 
@@ -217,12 +217,12 @@ class ImageViewer:
         self.rb_mode_heat = Radiobutton(self.frame_mode, text="Tau Heatmap",
                                         variable=self.mode_intensity_duration_heatmap,
                                         value="HEAT", command=self.select_mode_button)
-        self.rb_mode_duration = Radiobutton(self.frame_mode, text="Duration",
-                                            variable=self.mode_intensity_duration_heatmap,
-                                            value="DURATION", command=self.select_mode_button)
+        # self.rb_mode_duration = Radiobutton(self.frame_mode, text="Duration",
+        #                                     variable=self.mode_intensity_duration_heatmap,
+        #                                     value="DURATION", command=self.select_mode_button)
 
         self.rb_mode_square.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_mode_duration.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        # self.rb_mode_duration.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
         self.rb_mode_heat.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_neighbours(self):
@@ -315,55 +315,77 @@ class ImageViewer:
         self.frame_density_ratio = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_duration = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
+        self.setup_frame_variability()
+        self.setup_frame_density_ratio()
+        self.setup_frame_duration()
 
         self.frame_variability.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
         self.frame_density_ratio.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
         self.frame_duration.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
 
+        # The set for all button ....
+        self.bn_set_for_all_slider = ttk.Button(self.frame_filter, text='Set for All', command=self.set_for_all_slider)
+        self.bn_set_for_all_slider.grid(column=0, row=3, padx=5, pady=5)
+
+    def setup_frame_variability(self):
         # The Max Allowable Variability slider ....
+
         self.variability = DoubleVar()
         self.lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
         self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability,
                                        orient='vertical', resolution=0.5, command=self.variability_changing)
         self.sc_variability.bind("<ButtonRelease-1>", self.variability_changed)
-
         self.lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_variability.grid(column=0, row=1, padx=5, pady=5)
 
+    def setup_frame_density_ratio(self):
         # The Min Required Density Ratio slider ...
+
         self.density_ratio = DoubleVar()
         self.lbl_density_ratio_text = ttk.Label(self.frame_density_ratio, text='Min Required Density Ratio', width=20)
         self.sc_density_ratio = tk.Scale(self.frame_density_ratio, from_=2, to=40, variable=self.density_ratio,
                                          orient='vertical', resolution=0.1, command=self.density_ratio_changing)
         self.sc_density_ratio.bind("<ButtonRelease-1>", self.density_ratio_changed)
-
-        self.bn_set_for_all_slider = ttk.Button(self.frame_filter, text='Set for All', command=self.set_for_all_slider)
-
         self.lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
 
-        # The duration slider .....
-        self.track_duration = DoubleVar(value=100)
-        self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
-        self.sc_track_duration = tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration,
-                                          orient='vertical', resolution=0.1, command=self.track_duration_changing)
-        self.sc_track_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
+    def setup_frame_duration(self):
 
-        self.lbl_track_duration_text.grid(column=0, row=0, padx=5, pady=5)
-        self.sc_track_duration.grid(column=0, row=1, padx=5, pady=5)
+        self.frame_max_duration = ttk.Frame(self.frame_duration, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_min_duration = ttk.Frame(self.frame_duration, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
-        # The duration slider .....
-        self.track_duration1 = DoubleVar(value=100)
-        self.lbl_track_duration_text1 = ttk.Label(self.frame_duration, text='Minimum Track Duration', width=20)
-        self.sc_track_duration1 = tk.Scale(self.frame_duration, from_=0, to=200, variable=self.track_duration1,
-                                          orient='vertical', resolution=0.1, command=self.track_duration_changing)
-        self.sc_track_duration1.bind("<ButtonRelease-1>", self.track_duration_changed)
+        self.setup_max_duration()
+        self.setup_min_duration()
 
-        self.lbl_track_duration_text1.grid(column=0, row=0, padx=5, pady=5)
-        self.sc_track_duration1.grid(column=1, row=1, padx=5, pady=5)
+        self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Track Duration', width=10)
 
-        # The set for all button ....
-        self.bn_set_for_all_slider.grid(column=0, row=3, padx=5, pady=5)
+        self.frame_duration.columnconfigure(0, weight=1)  # First column
+        self.frame_duration.columnconfigure(1, weight=1)  # Second column
+        self.lbl_track_duration_text.grid(row=0, column=0, padx=5, pady=5, columnspan=2, sticky=tk.N)
+        self.frame_max_duration.grid(row=1, column=1, padx=5, pady=5, sticky=tk.N)
+        self.frame_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
+
+    def setup_max_duration(self):
+        # The max duration slider .....
+        self.track_max_duration = DoubleVar(value=200)
+        self.lbl_track_max_duration_text = ttk.Label(self.frame_max_duration, text='Max', width=10)
+        self.sc_track_max_duration = tk.Scale(self.frame_max_duration, from_=0, to=200, variable=self.track_max_duration,
+                                              orient='vertical', resolution=0.1, command=self.track_duration_changing)
+        self.sc_track_max_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
+
+        self.lbl_track_max_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+        self.sc_track_max_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+
+    def setup_min_duration(self):
+        # The min duration slider .....
+        self.track_min_duration = DoubleVar(value=0)
+        self.lbl_track_min_duration_text = ttk.Label(self.frame_min_duration, text='Min', width=10)
+        self.sc_track_min_duration = tk.Scale(self.frame_min_duration, from_=0, to=200, variable=self.track_min_duration,
+                                              orient='vertical', resolution=0.1, command=self.track_duration_changing)
+        self.sc_track_min_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
+        self.lbl_track_min_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+        self.sc_track_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+
 
     def setup_frame_duration_mode(self):
         # This frame is part of the content frame and contains the following frames: frame_duration,
@@ -1013,7 +1035,7 @@ class ImageViewer:
     def select_squares_for_display(self):
 
         if self.mode_intensity_duration_heatmap.get() == 'DURATION':
-            self.df_squares['Visible'] = self.df_squares['Max Track Duration'] >= self.track_duration.get()
+            self.df_squares['Visible'] = self.df_squares['Max Track Duration'] >= self.track_min_duration.get()
             return
         else:
             self.df_squares['Variability Visible'] = False
@@ -1029,8 +1051,8 @@ class ImageViewer:
                 self.df_squares['Density Ratio'] < round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = False
 
             self.df_squares['Duration Visible'] = False
-            mask = (self.df_squares['Max Track Duration'] > self.track_duration.get()) & \
-                   (self.df_squares['Max Track Duration'] < self.track_duration1.get())
+            mask = (self.df_squares['Max Track Duration'] > self.track_min_duration.get()) & \
+                   (self.df_squares['Max Track Duration'] < self.track_max_duration.get())
             self.df_squares.loc[mask, 'Duration Visible'] = True
 
             # self.df_squares.loc[
@@ -1400,22 +1422,6 @@ class ImageViewer:
                                              'grid',
                                              self.image_name + '-squares.csv')
         save_squares_to_file(self.df_squares, squares_file_name)  # TOD
-
-    def update_batch_file(self):
-        print ('Is somebody calling me?')
-        sys.exit()
-    #
-    #     # Get the slider and neighbour state and save it into df_experiment
-    #     self.save_density_ratio_slider_state_into_df_experiment()
-    #     self.save_variability_slider_state_into_df_experiment()
-    #     self.save_neighbour_state_into_df_experiment()
-    #
-    #     # Write the Nr Visible Squares visibility information into the batch file
-    #     self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
-    #                                   self.df_squares['Variability Visible'] &
-    #                                   self.df_squares['Variability Visible'])
-    #     self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
-    #     save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
 
 
 def save_as_png(canvas, file_name):
