@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox, ttk
 from src.Application.Support.Convert_BF_from_nd2_to_jpg import convert_bf_images
 
 if __name__ == "__main__":
-    class BatchDialog:
+    class ConvertDialog:
 
         def __init__(self, root):
             self.root = root

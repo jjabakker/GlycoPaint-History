@@ -1,6 +1,6 @@
 """
 This function takes as input the directory under which the various experiments are held.
-It will create an Output directory with three files: all squares, all batches, and batches summary.
+It will create an Output directory with three files: All Squares, All Images, and Images Summary.
 """
 import os
 import time
@@ -60,7 +60,7 @@ def compile_squares_file(project_dir: str, verbose: bool):
         df_experiment_squares = read_experiment_file(experiment_squares_file_path, only_records_to_process=True)
         if df_experiment_squares is None:
             paint_logger.error(
-                f"Function 'compile_squares_file' failed: Batch file {experiment_squares_file_path} does not exist")
+                f"Function 'compile_squares_file' failed: File {experiment_squares_file_path} does not exist")
             exit()
 
         for index, row in df_experiment_squares.iterrows():

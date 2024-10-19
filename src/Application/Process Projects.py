@@ -3,7 +3,7 @@ import os
 import sys
 import time
 
-from src.Application.Support.Compile_Output import compile_squares_file
+from src.Application.Support.Compile_Project_Output import compile_squares_file
 from src.Application.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
 from src.Application.Support.Generate_Squares import process_all_images_in_root_directory
 from src.Application.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
@@ -18,22 +18,21 @@ from src.Common.Support.LoggerConfig import (
 paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
 
-PAINT_DEBUG = True
+PAINT_DEBUG = False
 PAINT_FORCE = True
 
 if PAINT_DEBUG:
-    CONF_FILE = '/Users/hans/Paint Source New/Configuration Files/paint data generation - integrated.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source New'
-    PAINT_DATA = '/Users/Hans/Paint Data Integrated New'
-    R_DATA_DEST = '/Users/hans/R Data'
-    # R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated'
-    TIME_STAMP = '2024-10-11 11:11:11'  # '%Y-%m-%d %H:%M:%S
+    CONF_FILE = '/Users/hans/Paint Source - v2/Configuration Files/paint data generation - v2.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source - v2'
+    PAINT_DATA = '/Users/Hans/Paint Data - v2'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v2'
+    TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 else:
-    CONF_FILE = '/Users/hans/Paint Source/Configuration Files/paint data generation - integrated.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source New'
-    PAINT_DATA = '/Users/Hans/Paint Data Integrated'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data Integrated - v2'
+    CONF_FILE = '/Users/hans/Paint Source - v2/Configuration Files/paint data generation - v2.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source - v2'
+    PAINT_DATA = '/Users/Hans/Paint Data - v2'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v2'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
@@ -102,7 +101,7 @@ def process_directory(paint_source_dir,
 
     process_all_images_in_root_directory(
         paint_data_dir,
-        nr_squares_in_row=nr_of_squares,
+        nr_of_squares_in_row=nr_of_squares,
         min_r_squared=min_r_squared,
         min_tracks_for_tau=min_tracks_for_tau,
         min_density_ratio=min_density_ratio,

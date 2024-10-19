@@ -20,9 +20,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 
 
-def inspect_batch_files(root_dir):
+def inspect_experiment_squares_files(root_dir):
     """
-    Inspects batch files in the given root directory and generates an output summary.
+    Inspects experiments files in the given root directory and generates an output summary.
 
     :param root_dir: Directory containing experiment subdirectories
     """
@@ -48,17 +48,17 @@ def inspect_batch_files(root_dir):
 
         logging.info(f'Inspecting directory: {paint_dir_path}')
 
-        # Read the batch file in the directory
-        experiment_file_name = os.path.join(paint_dir_path, 'batch.csv')
+        # Read the experiments file in the directory
+        experiment_file_name = os.path.join(paint_dir_path, 'experiment_squares.csv')
 
-        df_batch = read_experiment_file(experiment_file_name, only_records_to_process=False)
+        df_experiment = read_experiment_file(experiment_file_name, only_records_to_process=False)
 
-        if df_batch is None:
-            logging.error(f"Batch file '{experiment_file_name}' does not exist. Skipping directory.")
+        if df_experiment is None:
+            logging.error(f"Experiment file '{experiment_file_name}' does not exist. Skipping directory.")
             continue
 
-        # Concatenate the batch DataFrame with the main DataFrame
-        df_all_images = pd.concat([df_all_images, df_batch])
+        # Concatenate the experiments DataFrame with the main DataFrame
+        df_all_images = pd.concat([df_all_images, df_experiment])
 
     # ------------------------------------
     # Save the output file
@@ -69,9 +69,9 @@ def inspect_batch_files(root_dir):
     os.makedirs(output_dir, exist_ok=True)
 
     # Save the concatenated DataFrame to Excel
-    output_file = os.path.join(output_dir, 'Images to Process.xlsx')
+    output_file = os.path.join(output_dir, 'Images to Process.csv')
     try:
-        df_all_images.to_excel(output_file, index=False)
+        df_all_images.to_csv(output_file, index=False)
         logging.info(f"Output file saved at: {output_file}")
     except Exception as e:
         logging.error(f"Failed to save output file '{output_file}': {e}")
@@ -79,11 +79,11 @@ def inspect_batch_files(root_dir):
 
 class InspectDialog:
     """
-    A class for handling the user interface to inspect batch files.
+    A class for handling the user interface to inspect experiment files.
     """
 
     def __init__(self, root):
-        root.title('Inspect Batch Files')
+        root.title('Inspect Experiments Files')
         self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
 
         # Set up the UI layout
@@ -120,10 +120,10 @@ class InspectDialog:
 
     def process(self):
         """
-        Starts the batch file inspection process.
+        Starts the Experiments file inspection process.
         """
         if self.root_directory:
-            inspect_batch_files(root_dir=self.root_directory)
+            inspect_experiment_squares_files(root_dir=self.root_directory)
         else:
             logging.error("No root directory selected.")
         root.destroy()
