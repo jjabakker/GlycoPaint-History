@@ -14,9 +14,8 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 
-from src.Application.Support.Class_SelectViewerDialog import (
-    SelectViewerDialog
-)
+from src.Application.Support.Class_HeatmapControlDialog import HeatMapControlDialiog
+from src.Application.Support.Class_SelectViewerDialog import SelectViewerDialog
 from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index
 from src.Application.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
@@ -861,7 +860,7 @@ class ImageViewer:
         """
 
         self.heatmap_enabled = True
-        HeatMapControlWindow(self)
+        HeatMapControlDialiog(self)
         self.img_no -= 1
         self.go_forward_backward('FORWARD')
         return
@@ -1047,55 +1046,6 @@ class ImageViewer:
                     if squares_row['Visible']:
                         self.draw_single_square(squares_row)
         return self.df_squares
-
-    # def draw_single_square(self, squares_row):
-    #
-    #     colour_table = {1: ('red', 'white'),
-    #                     2: ('yellow', 'white'),
-    #                     3: ('green', 'white'),
-    #                     4: ('magenta', 'white'),
-    #                     5: ('cyan', 'white'),
-    #                     6: ('black', 'white')}
-    #
-    #     square_nr = squares_row['Square Nr']
-    #     cell_id = squares_row['Cell Id']
-    #     label_nr = squares_row['Label Nr']
-    #
-    #     col_nr = square_nr % self.nr_of_squares_in_row
-    #     row_nr = square_nr // self.nr_of_squares_in_row
-    #     width = 512 / self.nr_of_squares_in_row
-    #     height = 512 / self.nr_of_squares_in_row
-    #
-    #     square_tag = f'square-{square_nr}'
-    #     text_tag = f'text-{square_nr}'
-    #
-    #     if cell_id == -1:  # The square is deleted (for good), stop processing
-    #         return
-    #     elif cell_id == 0:  # Square is removed from a cell
-    #         self.cn_left_image.create_rectangle(
-    #             col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height, outline="white",
-    #             width=0.5, tags=square_tag)
-    #         if self.show_squares_numbers:
-    #             text_item = self.cn_left_image.create_text(
-    #                 col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
-    #                 font=('Arial', -10), fill="white", tags=text_tag)
-    #     else:  # A square is allocated to a cell
-    #         self.cn_left_image.create_rectangle(
-    #             col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-    #             outline=colour_table[self.df_squares.loc[square_nr]['Cell Id']][0], width=3, tags=square_tag)
-    #         if self.show_squares_numbers:
-    #             text_item = self.cn_left_image.create_text(
-    #                 col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
-    #                 text=str(self.df_squares.loc[square_nr]['Label Nr']), font=('Arial', -10),
-    #                 fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1], tags=text_tag)
-    #
-    #     # The new square is made clickable -  for now use the text item
-    #     if self.show_squares_numbers:
-    #         self.cn_left_image.tag_bind(
-    #             text_item, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
-    #         self.cn_left_image.tag_bind(
-    #             text_item, '<Button-2>', lambda e: self.provide_information_on_square(
-    #                 e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
 
     def draw_single_square(self, squares_row):
 
@@ -1497,159 +1447,6 @@ def save_square_info_to_batch(self):  # TODO
         self.df_experiment.loc[index, 'Nr Visible Squares'] = nr_visible_squares
         self.df_experiment.loc[index, 'Nr Total Squares'] = nr_total_squares
         self.df_experiment.loc[index, 'Squares Ratio'] = squares_ratio
-
-
-# class SelectViewerDialog:
-#
-#     def __init__(self, parent: tk.Tk) -> None:
-#
-#         self.top = tk.Toplevel(parent)
-#         self.parent = parent
-#         self.parent.title('Select Viewer')
-#
-#         self.proceed = False
-#         self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
-#
-#         # Main content frame
-#         content = ttk.Frame(parent)
-#         content.grid(column=0, row=0)
-#
-#         # Directory and Button frames
-#         frame_directory = self.create_frame(content, 0, 1)
-#         frame_buttons = self.create_frame(content, 0, 2)
-#
-#         # Fill directory frame
-#         self.add_directory_widgets(frame_directory)
-#
-#         # Fill button frame
-#         self.add_buttons(frame_buttons)
-#
-#     def create_frame(self, parent, col, row, padding=(5, 5)) -> ttk.Frame:
-#         """Creates and returns a frame with grid layout."""
-#         frame = ttk.Frame(parent, borderwidth=5, relief='ridge')
-#         frame.grid(column=col, row=row, padx=padding[0], pady=padding[1])
-#         return frame
-#
-#     def add_directory_widgets(self, frame) -> None:
-#         """Adds widgets to the directory frame."""
-#         # Directory and Configuration file buttons
-#         self.add_button(frame, 'Experiment Directory', 0, self.change_root_dir)
-#         self.add_button(frame, 'Configuration File', 1, self.change_conf_file)
-#
-#         # Labels and Radio buttons
-#         self.lbl_root_dir = self.add_label(frame, self.root_directory, 0)
-#         self.lbl_conf_file = self.add_label(frame, self.conf_file, 1)
-#
-#         self.mode_dir_or_conf = StringVar(value="DIRECTORY")
-#         self.add_radio_button(frame, "DIRECTORY", 0)
-#         self.add_radio_button(frame, "CONF_FILE", 1)
-#
-#     def add_buttons(self, frame) -> None:
-#         """Adds the Process and Exit buttons."""
-#         self.add_button(frame, 'Process', 0, self.process)
-#         self.add_button(frame, 'Exit', 1, self.exit_dialog)
-#
-#     def add_button(self, parent, text, row, command) -> None:
-#         """Helper function to add a button to a frame."""
-#         ttk.Button(parent, text=text, command=command).grid(column=0, row=row, padx=10, pady=5)
-#
-#     def add_label(self, parent, text, row) -> ttk.Label:
-#         """Helper function to add a label to a frame."""
-#         label = ttk.Label(parent, text=text, width=90)
-#         label.grid(column=1, row=row, padx=20, pady=5)
-#         return label
-#
-#     def add_radio_button(self, parent, text, row) -> None:
-#         """Helper function to add a radio button to a frame."""
-#         ttk.Radiobutton(parent, text="", variable=self.mode_dir_or_conf, value=text, width=10).grid(column=2, row=row,
-#                                                                                                     padx=10, pady=5)
-#
-#     def change_root_dir(self) -> None:
-#         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
-#         if self.root_directory:
-#             self.mode_dir_or_conf.set('DIRECTORY')
-#             self.lbl_root_dir.config(text=self.root_directory)
-#             save_default_locations(self.root_directory, self.experiment_directory, self.images_directory,
-#                                    self.conf_file)
-#
-#     def change_conf_file(self) -> None:
-#         self.conf_file = filedialog.askopenfilename(initialdir=self.experiment_directory,
-#                                                     title='Select a configuration file')
-#         if self.conf_file:
-#             self.mode_dir_or_conf.set('CONF_FILE')
-#             self.lbl_conf_file.config(text=self.conf_file)
-#             save_default_locations(self.root_directory, self.experiment_directory, self.images_directory,
-#                                    self.conf_file)
-#
-#     def process(self) -> None:
-#         error = False
-#
-#         if self.mode_dir_or_conf == "DIRECTORY" and not os.path.isdir(self.root_directory):
-#             paint_logger.error('The root directory does not exist!')
-#             error = True
-#         elif self.mode_dir_or_conf == "CONF_FILE" and not os.path.isfile(self.conf_file):
-#             paint_logger.error('No configuration file has been selected!')
-#             error = True
-#
-#         if not error:
-#             self.proceed = True
-#             root.destroy()
-#
-#     def exit_dialog(self) -> None:
-#         self.proceed = False
-#         root.destroy()
-#
-#     def get_result(self):
-#         self.top.wait_window()
-#         return self.proceed, self.root_directory, self.conf_file, self.mode_dir_or_conf.get()
-
-
-class HeatMapControlWindow:
-    def __init__(self, image_viewer):
-        # Create a new top-level window for the controls
-        self.control_window = tk.Toplevel(image_viewer.root)
-        self.control_window.title("Heatmap Control Window")
-        self.control_window.geometry("300x350")
-        self.option_names = ["Tau", "Density", "Track Count", "Track Duration",
-                             "Cum Track Duration"]  # Customize option names
-
-        # Bind the closing event to a custom function
-        self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
-
-        # Configure the grid to center controls
-        self.control_window.columnconfigure(0, weight=1)
-
-        # Add some controls to the control window
-        lbl_control = tk.Label(self.control_window, text="Control Window", font=("Arial", 16))
-        lbl_control.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
-
-        # Add a slider that updates the value in the main window
-        slider = ttk.Scale(self.control_window, from_=0, to=100, orient='horizontal',
-                           variable=image_viewer.slider_value)
-        slider.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
-
-        # Add a label for radio button group
-        lbl_radio = tk.Label(self.control_window, text="Select an Option:", font=("Arial", 12))
-        lbl_radio.grid(row=2, column=0, padx=5, pady=5)
-
-        # Add radio buttons for the provided option names
-        for idx, name in enumerate(self.option_names, start=1):
-            radio_btn = tk.Radiobutton(self.control_window, text=name, variable=image_viewer.rb_heatmap_parameter_value,
-                                       value=idx)
-            radio_btn.grid(row=2 + idx, column=0, padx=5, pady=2, sticky=tk.W)
-        image_viewer.rb_heatmap_parameter_value.set(1)
-
-        # Add a checkbox for an additional setting
-        checkbox = tk.Checkbutton(self.control_window, text="Enable Feature", variable=image_viewer.checkbox_value)
-        checkbox.grid(row=8, column=0, padx=5, pady=10, sticky=tk.W)
-
-        # Add a button to close the control window
-        button = tk.Button(self.control_window, text="Close", command=self.on_close)
-        button.grid(row=9, column=0, padx=5, pady=10)
-
-    def on_close(self):
-        image_viewer.rb_heatmap_parameter_value.set(-1)
-        self.control_window.destroy()  # Actually close the control window
 
 
 if __name__ == '__main__':
