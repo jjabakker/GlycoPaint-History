@@ -1,14 +1,7 @@
 import os
 
 import tkinter as tk
-from tkinter import *
-from tkinter import filedialog, messagebox
 from tkinter import ttk
-
-from src.Application.Support.Support_Functions import (
-    get_default_locations,
-    save_default_locations)
-from src.Common.Support.LoggerConfig import paint_logger
 
 
 class HeatMapControlDialiog:
@@ -47,7 +40,7 @@ class HeatMapControlDialiog:
             radio_btn = tk.Radiobutton(self.control_window, text=name, variable=image_viewer.rb_heatmap_parameter_value,
                                        value=idx)
             radio_btn.grid(row=2 + idx, column=0, padx=5, pady=2, sticky=tk.W)
-        image_viewer.rb_heatmap_parameter_value.set(1)
+        self.image_viewer.rb_heatmap_parameter_value.set(1)
 
         # Add a checkbox for an additional setting
         checkbox = tk.Checkbutton(self.control_window, text="Enable Feature", variable=self.image_viewer.checkbox_value)

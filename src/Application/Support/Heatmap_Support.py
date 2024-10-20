@@ -1,8 +1,8 @@
-import tkinter as tk
+import sys
 import matplotlib.pyplot as plt
 import math
-from matplotlib.pyplot import minorticks_off
-from pyparsing import make_xml_tags
+
+from src.Common.Support.LoggerConfig import paint_logger
 
 
 # Function to convert RGB to HEX format
@@ -24,19 +24,36 @@ def get_color_index(var, var_max, var_min, nr_levels):
     return index
 
 
+def get_heatmap_data(df_squares, df_all_squares, heatmap_mode):
 
-if __name__ == "__main__":
-
-    # Tkinter setup
-    root = tk.Tk()
-    canvas = tk.Canvas(root, width=400, height=600)
-    canvas.pack()
-
-    # Generate 10 shades of a color using a colormap (e.g., 'Blues')
     colors = get_colormap_colors('Blues', 20)
+    if df_all_squares.empty or df_squares.empty is None:
+        paint_logger.error("Function 'display_heatmap' failed - No data available")
+        sys.exit()
 
-    # Draw rectangles with different shades of blue
-    for i, color in enumerate(colors):
-        canvas.create_rectangle(50, 50 + i*20, 350, 80 + i*20, fill=color, outline='black')
+    heatmap_modes = {
+        1: 'Tau',
+        2: 'Density',
+        3: 'Nr Tracks',
+        4: 'Max Track Duration',
+        5: 'Total Track Duration'
+    }
 
-    root.mainloop()
+    if heatmap_mode in heatmap_modes:
+        column_name = heatmap_modes[heatmap_mode]
+        heatmapdata = df_squares[column_name]
+        min_val = df_all_squares[column_name].min()
+        max_val = df_all_squares[column_name].max()
+
+        # There can be Nan values in the data, so we need to replace them
+        heatmapdata = heatmapdata.fillna(0)
+
+        # Sort on square number
+        heatmapdata = heatmapdata.sort_index()
+
+    else:
+        paint_logger.error("Function 'display_heatmap' failed - Unknown heatmap mode")
+        sys.exit()
+
+    return heatmapdata, min_val, max_val
+

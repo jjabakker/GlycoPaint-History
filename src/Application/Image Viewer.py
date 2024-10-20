@@ -1,6 +1,7 @@
 import os
 import platform
 import shutil
+import pandas as pd
 import statistics
 import subprocess
 import sys
@@ -16,7 +17,7 @@ from PIL import Image, ImageTk
 
 from src.Application.Support.Class_HeatmapControlDialog import HeatMapControlDialiog
 from src.Application.Support.Class_SelectViewerDialog import SelectViewerDialog
-from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index
+from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index, get_heatmap_data
 from src.Application.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
@@ -80,7 +81,7 @@ class ImageViewer:
 
         self.conf_file = conf_file
         self.mode_dir_or_conf = mode_dir_or_conf
-
+        self.df_all_squares = None
         self.heatmap_enabled = False
 
         # UI state variables
@@ -444,6 +445,8 @@ class ImageViewer:
 
         # Create an empty lst that will hold the images
         list_images = []
+        square_nrs = []
+        self.df_all_squares = pd.DataFrame()
 
         # Cycle through the experiments file (it can be at experiment level or at project level)
         error_count = 0
@@ -482,7 +485,6 @@ class ImageViewer:
             all_images_in_img_dir.sort()
 
             valid = False
-            square_nrs = []
 
             for img in all_images_in_img_dir:
 
@@ -493,6 +495,13 @@ class ImageViewer:
                     # Try Retrieve the square numbers for this image
                     df_squares = read_squares_from_file(squares_file_path)
                     square_nrs = list(df_squares['Square Nr'])
+                    self.df_experiment.loc[index, 'Nr Spots'] = len(square_nrs)
+
+                    # Check if self.df_all_squares is empty
+                    if not self.df_all_squares.empty:  # Correct way to check for an empty DataFrame
+                        self.df_all_squares = pd.concat([self.df_all_squares, df_squares], ignore_index=True)
+                    else:
+                        self.df_all_squares = df_squares
 
                 except:
                     left_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")
@@ -1380,29 +1389,10 @@ class ImageViewer:
         colors = get_colormap_colors('Blues', 20)
         heatmap_mode = self.rb_heatmap_parameter_value.get()
 
-        if heatmap_mode == 1:  # Tau
-            heatmapdata = self.df_squares['Tau']
-        elif heatmap_mode == 2:  # Density
-            heatmapdata = self.df_squares['Density']
-        elif heatmap_mode == 3:  # Nr Traxcks
-            heatmapdata = self.df_squares['Nr Tracks']
-        elif heatmap_mode == 4:  # Max Track Duration
-            heatmapdata = self.df_squares['Max Track Duration']
-        elif heatmap_mode == 5:  # Cumulative Track Duration
-            heatmapdata = self.df_squares['Total Track Duration']
-        else:
-            paint_logger.error("Function 'display_heatmap' failed - Unknown heatmap mode")
-            sys.exit()
-
-        # There can be Nan values in the data, so we need to replace them
-        heatmapdata = heatmapdata.fillna(0)
-
-        heatmapdata = heatmapdata.sort_index()
-        min_value = max(heatmapdata.min(), 0)
-        max_value = heatmapdata.max()
+        heatmapdata, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode)
 
         for square_number, value in enumerate(heatmapdata):
-            self.draw_heatmap_square(square_number, value, min_value, max_value, colors)
+            self.draw_heatmap_square(square_number, value, min_val, max_val, colors)
 
     def draw_heatmap_square(self, square_nr, value, min_value, max_value, colors):
 
