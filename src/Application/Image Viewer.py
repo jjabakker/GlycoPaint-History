@@ -395,7 +395,7 @@ class ImageViewer:
         self.image_name = self.df_experiment.iloc[self.img_no]['Ext Image Name']
         self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
-        self.list_images = self.get_images('INTENSITY')
+        self.list_images = self.get_images()
         if not self.list_images:
             self.show_error_and_exit(f"No images were found in directory {self.experiment_directory}.")
 
@@ -424,101 +424,91 @@ class ImageViewer:
         self.experiments_squares_changed = True
         self.df_experiment['Neighbour Setting'] = self.neighbour_var.get()
 
-    def get_images(self, type_of_image):
+    def get_images(self):
 
         # Create an empty lst that will hold the images
         list_images = []
 
         # Cycle through the experiments file
-        count = 0
+        error_count = 0
+
         for index in range(len(self.df_experiment)):
 
-            if self.df_experiment.iloc[index]['Process'] == 'No' or self.df_experiment.iloc[index]['Process'] == 'N':
+            # Skip images that do not require processing
+            if self.df_experiment.iloc[index]['Process'] in ['No', 'N']:
                 continue
 
             image_name = self.df_experiment.iloc[index]['Ext Image Name']
 
-            if self.mode_dir_or_conf == 'DIRECTORY':
-                image_path = os.path.join(self.experiment_directory, image_name)
-            else:
-                image_path = os.path.join(self.experiment_directory,
-                                          str(self.df_experiment.iloc[index]['Experiment Date']), image_name)  # TO DO
-
-            # If there is no img directory below the image directory, skip it
-            img_dir = get_trackmate_image_dir_path(self.experiment_directory, image_name)
-            # img_dir = os.path.join(image_path, "img")
-
-            if not os.path.isdir(img_dir):
-                continue
-
-            if self.mode_dir_or_conf == 'DIRECTORY':
+            if self.mode_dir_or_conf == 'DIRECTORY':     # TODO This should be taken outside the loop
+                # image_path = os.path.join(self.experiment_directory, image_name)
                 bf_dir = os.path.join(self.experiment_directory, "Converted BF Images")
             else:
+                # image_path = os.path.join(self.experiment_directory,
+                #                           str(self.df_experiment.iloc[index]['Experiment Date']), image_name)  # TO DO
                 bf_dir = os.path.join(
                     self.experiment_directory, str(self.df_experiment.iloc[index]['Experiment Date']),
                     "Converted BF Images")
 
-            # Then get all the files in  the 'img' directory
-            all_images_in_img_dir = os.listdir(img_dir)
+            # If there is no 'Trackmate Images'' directory below the image directory, skip it
+            trackmate_images_dir = get_trackmate_image_dir_path(self.experiment_directory, image_name)
+            if not os.path.isdir(trackmate_images_dir):
+                continue
 
-            # Ignore any file that may have slipped in, such as '.Dstore'
-            for img in all_images_in_img_dir:
-                if image_name not in img:
-                    all_images_in_img_dir.remove(img)
+            # Then get all the files in  the 'img' directory
+            all_images_in_img_dir = os.listdir(trackmate_images_dir)
+
+            # Only consider images that contain the image_name
+            # TODO Can there ever be different files and can there be more than one file?
+            all_images_in_img_dir = [img for img in all_images_in_img_dir if image_name in img]
             all_images_in_img_dir.sort()
 
             valid = False
             square_nrs = []
 
             for img in all_images_in_img_dir:
-                if img.startswith('.'):
-                    continue
 
-                left_img = ImageTk.PhotoImage(Image.open(img_dir + os.sep + img))
-                count += 1
+                try:
+                    # Try reading the file
+                    left_img = ImageTk.PhotoImage(Image.open(os.path.join(trackmate_images_dir, img)))
 
-                # Retrieve the square numbers for this image
-                self.squares_file_name = get_squares_file_path(self.experiment_directory, image_name)
-                df_squares = read_squares_from_file(self.squares_file_name)
-                if df_squares is not None:
+                    # Try Retrieve the square numbers for this image
+                    self.squares_file_name = get_squares_file_path(self.experiment_directory, image_name)
+                    df_squares = read_squares_from_file(self.squares_file_name)
                     square_nrs = list(df_squares['Square Nr'])
-                else:
-                    paint_logger.error("No square numbers found (?)")
+
+                except:
+                    left_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")
+                    left_img = ImageTk.PhotoImage(left_img)
                     square_nrs = []
-                valid = True
+                    error_count += 1
 
-            if not valid:  # Create an empty image with the correct background colour and insert that
-                left_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")
-                left_img = left_img.resize((512, 512))
-                left_img = ImageTk.PhotoImage(left_img)
-                square_nrs = []
+            # Retrieve Tau from the experiments_squares file, if problem return 0
+            tau = self.df_experiment['Tau'].iloc[index] if 'Tau' in self.df_experiment.columns else 0
 
-            # See if a Tau is defined in the experiments_squares file.
-            # If it is record it
-
-            if 'Tau' in self.df_experiment.columns:
-                tau = self.df_experiment.iloc[index]['Tau']
-            else:
-                tau = 0
-
-            # Try to find the corresponding BF
+            # Find the corresponding BF
             right_valid, right_img = self.get_corresponding_bf(bf_dir, image_name)
 
             record = {
                 "Left Image Name": self.df_experiment.iloc[index]['Ext Image Name'],
                 "Left Image": left_img,
+                "Left Valid": valid,
+
+                "Right Image Name": image_name,
+                "Right Image": right_img,
+                "Right Valid": right_valid,
+
                 "Cell Type": self.df_experiment.iloc[index]['Cell Type'],
                 "Adjuvant": self.df_experiment.iloc[index]['Adjuvant'],
                 "Probe": self.df_experiment.iloc[index]['Probe'],
                 "Probe Type": self.df_experiment.iloc[index]['Probe Type'],
+
+                "Threshold": self.df_experiment.iloc[index]['Threshold'],
                 "Nr Spots": int(self.df_experiment.iloc[index]['Nr Spots']),
+
                 "Square Nrs": square_nrs,
                 "Squares File": self.squares_file_name,
-                "Left Valid": valid,
-                "Right Image Name": image_name,
-                "Right Image": right_img,
-                "Right Valid": right_valid,
-                "Threshold": self.df_experiment.iloc[index]['Threshold'],
+
                 "Tau": tau
             }
 
@@ -526,8 +516,8 @@ class ImageViewer:
 
         print("\n\n")
 
-        if count != len(self.df_experiment):
-            f"There were {len(self.df_experiment) - count} out of {len(self.df_experiment)} images for which no picture was available"
+        if error_count > 0:
+            f"There were {error_count} out of {len(self.df_experiment)} images for which no picture was available"
 
         return list_images
 
@@ -539,30 +529,24 @@ class ImageViewer:
                 "Function 'get_corresponding_bf' failed - The directory for jpg versions of BF images does not exist. Run 'Convert BF Images' first")
             sys.exit()
 
-        # Peel off the threshold and add -BF*.jpg
-        image_name = image_name[:image_name.rfind("-")]
-        image_name = image_name[:image_name.rfind("-")]
+        # Peel off the 'threshold' and add -BF*.jpg
+        image_name = "-".join(image_name.split("-")[:-2])
 
-        # The BF image may be called BF, BF1 or BF2, any one is ok
-        try_image = image_name + "-BF.jpg"
-        try_image1 = image_name + "-BF1.jpg"
-        try_image2 = image_name + "-BF2.jpg"
+        # List of possible BF image names
+        bf_images = [f"{image_name}-BF.jpg", f"{image_name}-BF1.jpg", f"{image_name}-BF2.jpg"]
 
-        if os.path.isfile(bf_dir + os.sep + try_image):
-            image_name = try_image
-        elif os.path.isfile(bf_dir + os.sep + try_image1):
-            image_name = try_image1
-        elif os.path.isfile(bf_dir + os.sep + try_image2):
-            image_name = try_image2
-        else:
-            image_name = ""
+        # Iterate through the list and check if the file exists
+        image_name = None
+        for img in bf_images:
+            if os.path.isfile(os.path.join(bf_dir, img)):
+                image_name = img
+                break
 
-        if len(image_name) != 0:
-            img = ImageTk.PhotoImage(Image.open(bf_dir + os.sep + image_name))
+        if image_name:
+            img = ImageTk.PhotoImage(Image.open(os.path.join(bf_dir, image_name)))
             valid = True
         else:
-            no_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")
-            img = ImageTk.PhotoImage(no_img)
+            img = ImageTk.PhotoImage(Image.new('RGB', (512, 512), (235, 235, 235)))
             valid = False
 
         return valid, img
