@@ -8,13 +8,16 @@ import tempfile
 import time
 import tkinter as tk
 from tkinter import *
-from tkinter import filedialog, messagebox
+from tkinter import messagebox
 from tkinter import ttk
-from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index
 
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 
+from src.Application.Support.Class_SelectViewerDialog import (
+    SelectViewerDialog
+)
+from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index
 from src.Application.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
@@ -29,9 +32,6 @@ from src.Common.Support.DirectoriesAndLocations import (
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
-from src.Application.Support.Class_SelectViewerDialog import (
-    SelectViewerDialog
-)
 
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Image Viewer.log')
@@ -43,11 +43,16 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 
 class ImageViewer:
 
-    def __init__(self, parent, directory, conf_file, mode_dir_or_conf):
+    def __init__(self, parent, user_specified_directory, user_specified_conf_file, user_specified_mode):
 
         self.top = tk.Toplevel(parent)
+
+        self.user_specified_conf_file = user_specified_conf_file
+        self.user_specified_directory = user_specified_directory
+        self.user_specified_mode = user_specified_mode
+
         self.parent = parent
-        self.initialize_variables(parent, directory, conf_file, mode_dir_or_conf)
+        self.initialize_variables()
 
         self.setup_ui()
         self.load_images_and_config()
@@ -68,11 +73,12 @@ class ImageViewer:
         self.checkbox_value.set(False)  # Default is unchecked
         self.rb_heatmap_parameter_value.trace_add("write", self.update_heatmap_rb_value)
 
-    def initialize_variables(self, root, directory, conf_file, mode_dir_or_conf):
+    def initialize_variables(self):
 
         self.img_no = 0
         self.root = root
-        self.experiment_directory = directory
+        self.image_directory = None
+
         self.conf_file = conf_file
         self.mode_dir_or_conf = mode_dir_or_conf
 
@@ -90,7 +96,8 @@ class ImageViewer:
         self.neighbour_mode = ""
         self.select_mode = ""
 
-        self.parent.title(f'Image Viewer - {self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}')
+        self.parent.title(
+            f'Image Viewer - {self.user_specified_directory if self.mode_dir_or_conf == "DIRECTORY" else self.user_specified_conf_file}')
 
     def setup_ui(self):
         """
@@ -361,44 +368,53 @@ class ImageViewer:
         # The max duration slider .....
         self.track_max_duration = DoubleVar(value=200)
         self.lbl_track_max_duration_text = ttk.Label(self.frame_max_duration, text='Max', width=10)
-        self.sc_track_max_duration = tk.Scale(self.frame_max_duration, from_=0, to=200, variable=self.track_max_duration,
+        self.sc_track_max_duration = tk.Scale(self.frame_max_duration, from_=0, to=200,
+                                              variable=self.track_max_duration,
                                               orient='vertical', resolution=0.1, command=self.track_duration_changing)
         self.sc_track_max_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
 
-        self.lbl_track_max_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
-        self.sc_track_max_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+        self.lbl_track_max_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
+        self.sc_track_max_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
 
     def setup_min_duration(self):
         # The min duration slider .....
         self.track_min_duration = DoubleVar(value=0)
         self.lbl_track_min_duration_text = ttk.Label(self.frame_min_duration, text='Min', width=10)
-        self.sc_track_min_duration = tk.Scale(self.frame_min_duration, from_=0, to=200, variable=self.track_min_duration,
+        self.sc_track_min_duration = tk.Scale(self.frame_min_duration, from_=0, to=200,
+                                              variable=self.track_min_duration,
                                               orient='vertical', resolution=0.1, command=self.track_duration_changing)
         self.sc_track_min_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
-        self.lbl_track_min_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
-        self.sc_track_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+        self.lbl_track_min_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
+        self.sc_track_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
 
     def setup_frame_duration_mode(self):
         pass
 
+    def get_experiment_directory_from_conf_file(self, index=0):
+        experiment = str(self.df_experiment.iloc[index]['Experiment Date'])
+        return os.path.join(self.project_directory, experiment)
+
     def load_images_and_config(self):
 
-        if self.mode_dir_or_conf == 'DIRECTORY':
-            self.experiment_tm_file_path = os.path.join(self.experiment_directory, 'experiment_squares.csv')
+        if self.user_specified_mode == "DIRECTORY":
+            self.experiment_directory_path = self.user_specified_directory
+            self.experiment_bf_directory = os.path.join(self.experiment_directory_path, 'Converted BF Images')
+            experiment_tm_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
         else:
-            self.experiment_directory = os.path.split(self.conf_file)[0]
-            self.experiment_tm_file_path = os.path.join(self.experiment_directory, self.conf_file)
+            self.project_directory = os.path.split(self.user_specified_conf_file)[0]
+            # self.experiment_directory_path  = self.get_experiment_directory_from_conf_file(0)
+            # self.experiment_bf_directory = os.path.join(self.experiment_directory_path, 'Converted BF Images')
+            experiment_tm_file_path = self.user_specified_conf_file
 
-        self.df_experiment = read_experiment_file(self.experiment_tm_file_path, False)
+        self.df_experiment = read_experiment_file(experiment_tm_file_path, True)
         if self.df_experiment is None:
             self.show_error_and_exit("No 'experiment_squares.csv.csv' file, Did you select an image directory?")
 
-        self.image_name = self.df_experiment.iloc[self.img_no]['Ext Image Name']
         self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
         self.list_images = self.get_images()
         if not self.list_images:
-            self.show_error_and_exit(f"No images were found in directory {self.experiment_directory}.")
+            self.show_error_and_exit(f"No images were found in directory {self.experiment_directory_path}.")
 
         self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
         self.cb_image_names['values'] = self.list_of_image_names
@@ -430,7 +446,7 @@ class ImageViewer:
         # Create an empty lst that will hold the images
         list_images = []
 
-        # Cycle through the experiments file
+        # Cycle through the experiments file (it can be at experiment level or at project level)
         error_count = 0
 
         for index in range(len(self.df_experiment)):
@@ -440,20 +456,22 @@ class ImageViewer:
                 continue
 
             image_name = self.df_experiment.iloc[index]['Ext Image Name']
-
-            if self.mode_dir_or_conf == 'DIRECTORY':     # TODO This should be taken outside the loop
-                # image_path = os.path.join(self.experiment_directory, image_name)
-                bf_dir = os.path.join(self.experiment_directory, "Converted BF Images")
+            if self.user_specified_mode == "CONF_FILE":
+                exp_dir = self.get_experiment_directory_from_conf_file(index)
+                bf_dir = os.path.join(exp_dir, 'Converted BF Images')
+                squares_file_path = get_squares_file_path(exp_dir, image_name)
+                trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
             else:
-                # image_path = os.path.join(self.experiment_directory,
-                #                           str(self.df_experiment.iloc[index]['Experiment Date']), image_name)  # TO DO
-                bf_dir = os.path.join(
-                    self.experiment_directory, str(self.df_experiment.iloc[index]['Experiment Date']),
-                    "Converted BF Images")
+                exp_dir = self.experiment_directory_path
+                bf_dir = self.experiment_bf_directory
+                squares_file_path = get_squares_file_path(exp_dir, image_name)
+                trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
+            self.squares_file_name = squares_file_path
 
             # If there is no 'Trackmate Images'' directory below the image directory, skip it
-            trackmate_images_dir = get_trackmate_image_dir_path(self.experiment_directory, image_name)
             if not os.path.isdir(trackmate_images_dir):
+                paint_logger.error(
+                    f"Function 'get_images' failed - The directory for trackmate images does not exist: {trackmate_images_dir}")
                 continue
 
             # Then get all the files in  the 'img' directory
@@ -474,8 +492,7 @@ class ImageViewer:
                     left_img = ImageTk.PhotoImage(Image.open(os.path.join(trackmate_images_dir, img)))
 
                     # Try Retrieve the square numbers for this image
-                    self.squares_file_name = get_squares_file_path(self.experiment_directory, image_name)
-                    df_squares = read_squares_from_file(self.squares_file_name)
+                    df_squares = read_squares_from_file(squares_file_path)
                     square_nrs = list(df_squares['Square Nr'])
 
                 except:
@@ -518,12 +535,12 @@ class ImageViewer:
         print("\n\n")
 
         if error_count > 0:
-            f"There were {error_count} out of {len(self.df_experiment)} images for which no picture was available"
+            paint_logger.error(
+                f"There were {error_count} out of {len(self.df_experiment)} images for which no picture was available")
 
         return list_images
 
     def get_corresponding_bf(self, bf_dir, image_name):
-        # Get the brightfield images for the right canvas
 
         if not os.path.exists(bf_dir):
             paint_logger.error(
@@ -553,8 +570,6 @@ class ImageViewer:
         return valid, img
 
     def show_error_and_exit(self, message):
-        # Display an error message and exit
-
         paint_logger.error(message)
         sys.exit()
 
@@ -610,7 +625,7 @@ class ImageViewer:
         self.img_no = -1
 
         # Create the squares directory if it does not exist
-        squares_dir = os.path.join(self.experiment_directory, 'Output', 'Squares')
+        squares_dir = os.path.join(self.experiment_directory_path, 'Output', 'Squares')
         if not os.path.isdir(squares_dir):
             os.makedirs(squares_dir)
 
@@ -661,7 +676,7 @@ class ImageViewer:
 
     def save_experiment_file_if_requested(self):
 
-        file = f"{self.experiment_directory if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
+        file = f"{self.experiment_directory_path if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
         file = os.path.split(file)[1]
         msg = f"Do you want to save changes to {'experiments' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
@@ -832,7 +847,7 @@ class ImageViewer:
         self.df_squares['Neighbour Visible'] = True
         self.df_squares['Variability Visible'] = True
         self.df_squares['Duration Visible'] = True
-        #self.df_squares['Density Ration Selected'] = True
+        # self.df_squares['Density Ration Selected'] = True
         self.df_squares['Cell Id'] = 0
 
         self.select_squares_for_display()
@@ -1032,8 +1047,6 @@ class ImageViewer:
                     if squares_row['Visible']:
                         self.draw_single_square(squares_row)
         return self.df_squares
-
-
 
     # def draw_single_square(self, squares_row):
     #
@@ -1368,7 +1381,7 @@ class ImageViewer:
         self.square_changed = False
 
     def read_squares(self, image_name):
-        self.squares_file_name = os.path.join(self.experiment_directory, image_name, 'grid',
+        self.squares_file_name = os.path.join(self.experiment_directory_path, image_name, 'grid',
                                               image_name + '-squares.csv')
         self.df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
         if self.df_squares is None:
@@ -1379,17 +1392,16 @@ class ImageViewer:
     def update_squares_file(self):
         # It is necessary to the squares file, because the user may have made changes
         if self.mode_dir_or_conf == 'DIRECTORY':
-            squares_file_path =  get_squares_file_path(self.experiment_directory, self.image_name)
-            squares_file_name = os.path.join(self.experiment_directory, self.image_name, 'grid',
+            squares_file_path = get_squares_file_path(self.experiment_directory_path, self.image_name)
+            squares_file_name = os.path.join(self.experiment_directory_path, self.image_name, 'grid',
                                              self.image_name + '-squares.csv')
         else:
-            squares_file_path = os.path.join(self.experiment_directory,
+            squares_file_path = os.path.join(self.experiment_directory_path,
                                              str(self.df_experiment.iloc[self.img_no]['Experiment Date']),
                                              self.image_name,
                                              'grid',
                                              self.image_name + '-squares.csv')
         save_squares_to_file(self.df_squares, squares_file_path)  # TODO
-
 
     # ---------------------------------------------
     # ------------------ Heatmap ------------------
@@ -1418,15 +1430,15 @@ class ImageViewer:
         colors = get_colormap_colors('Blues', 20)
         heatmap_mode = self.rb_heatmap_parameter_value.get()
 
-        if heatmap_mode == 1:    # Tau
+        if heatmap_mode == 1:  # Tau
             heatmapdata = self.df_squares['Tau']
-        elif heatmap_mode == 2: # Density
+        elif heatmap_mode == 2:  # Density
             heatmapdata = self.df_squares['Density']
-        elif heatmap_mode == 3: # Nr Traxcks
+        elif heatmap_mode == 3:  # Nr Traxcks
             heatmapdata = self.df_squares['Nr Tracks']
-        elif heatmap_mode == 4: # Max Track Duration
+        elif heatmap_mode == 4:  # Max Track Duration
             heatmapdata = self.df_squares['Max Track Duration']
-        elif heatmap_mode == 5: # Cumulative Track Duration
+        elif heatmap_mode == 5:  # Cumulative Track Duration
             heatmapdata = self.df_squares['Total Track Duration']
         else:
             paint_logger.error("Function 'display_heatmap' failed - Unknown heatmap mode")
@@ -1439,10 +1451,8 @@ class ImageViewer:
         min_value = max(heatmapdata.min(), 0)
         max_value = heatmapdata.max()
 
-
         for square_number, value in enumerate(heatmapdata):
             self.draw_heatmap_square(square_number, value, min_value, max_value, colors)
-
 
     def draw_heatmap_square(self, square_nr, value, min_value, max_value, colors):
 
@@ -1600,7 +1610,8 @@ class HeatMapControlWindow:
         self.control_window = tk.Toplevel(image_viewer.root)
         self.control_window.title("Heatmap Control Window")
         self.control_window.geometry("300x350")
-        self.option_names = ["Tau", "Density", "Track Count", "Track Duration", "Cum Track Duration"]  # Customize option names
+        self.option_names = ["Tau", "Density", "Track Count", "Track Duration",
+                             "Cum Track Duration"]  # Customize option names
 
         # Bind the closing event to a custom function
         self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -1610,11 +1621,12 @@ class HeatMapControlWindow:
 
         # Add some controls to the control window
         lbl_control = tk.Label(self.control_window, text="Control Window", font=("Arial", 16))
-        lbl_control.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+        lbl_control.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
 
         # Add a slider that updates the value in the main window
-        slider = ttk.Scale(self.control_window, from_=0, to=100, orient='horizontal', variable=image_viewer.slider_value)
-        slider.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W+tk.E)
+        slider = ttk.Scale(self.control_window, from_=0, to=100, orient='horizontal',
+                           variable=image_viewer.slider_value)
+        slider.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
 
         # Add a label for radio button group
         lbl_radio = tk.Label(self.control_window, text="Select an Option:", font=("Arial", 12))
@@ -1622,7 +1634,8 @@ class HeatMapControlWindow:
 
         # Add radio buttons for the provided option names
         for idx, name in enumerate(self.option_names, start=1):
-            radio_btn = tk.Radiobutton(self.control_window, text=name, variable=image_viewer.rb_heatmap_parameter_value, value=idx)
+            radio_btn = tk.Radiobutton(self.control_window, text=name, variable=image_viewer.rb_heatmap_parameter_value,
+                                       value=idx)
             radio_btn.grid(row=2 + idx, column=0, padx=5, pady=2, sticky=tk.W)
         image_viewer.rb_heatmap_parameter_value.set(1)
 
@@ -1637,6 +1650,7 @@ class HeatMapControlWindow:
     def on_close(self):
         image_viewer.rb_heatmap_parameter_value.set(-1)
         self.control_window.destroy()  # Actually close the control window
+
 
 if __name__ == '__main__':
     root = tk.Tk()
