@@ -460,6 +460,7 @@ def read_experiment_file(experiment_file_path: str, only_records_to_process: boo
         df_experiment = df_experiment[df_experiment['Process'].str.lower().isin(['yes', 'y'])]
 
     df_experiment.set_index('Ext Image Name', inplace=True, drop=False)
+    correct_all_images_column_types(df_experiment)
 
     return df_experiment
 
@@ -515,7 +516,7 @@ def correct_all_images_column_types(df_experiment):
         df_experiment['Batch Sequence Nr'] = df_experiment['Batch Sequence Nr'].astype(int)
         df_experiment['Experiment Seq Nr'] = df_experiment['Experiment Seq Nr'].astype(int)
         df_experiment['Experiment Nr'] = df_experiment['Experiment Nr'].astype(int)
-        df_experiment['Experiment Date'] = df_experiment['Experiment Date'].astype(int)
+        df_experiment['Experiment Date'] = df_experiment['Experiment Date'].astype(str)
         df_experiment['Threshold'] = df_experiment['Threshold'].astype(int)
         df_experiment['Min Tracks for Tau'] = df_experiment['Min Tracks for Tau'].astype(int)
         df_experiment['Min R Squared'] = df_experiment['Min R Squared'].astype(float)
@@ -538,20 +539,10 @@ def read_squares_from_file(squares_file_path):
         paint_logger.error(f'Read_squares from_file: file {squares_file_path} could not be opened.')
         exit(-1)
 
+    df_squares['Experiment Date'] = df_squares['Experiment Date'].astype(str)
+
     df_squares.set_index('Square Nr', inplace=True, drop=False)
     return df_squares
-
-
-# def create_output_directories_for_graphpad(paint_directory):
-#     directories = [
-#         os.path.join(paint_directory, 'Output', 'pdf', 'Tau'),
-#         os.path.join(paint_directory, 'Output', 'pdf', 'Density'),
-#         os.path.join(paint_directory, 'Output', 'graphpad', 'Tau'),
-#         os.path.join(paint_directory, 'Output', 'graphpad', 'Density')
-#     ]
-#
-#     for directory in directories:
-#         os.makedirs(directory, exist_ok=True)
 
 
 def format_time_nicely(seconds):

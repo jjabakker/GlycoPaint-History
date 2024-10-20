@@ -470,7 +470,7 @@ class ImageViewer:
                 trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
             self.squares_file_name = squares_file_path
 
-            # If there is no 'Trackmate Images'' directory below the image directory, skip it
+            # If there is no 'Trackmate Images' directory below the image directory, skip it
             if not os.path.isdir(trackmate_images_dir):
                 paint_logger.error(
                     f"Function 'get_images' failed - The directory for trackmate images does not exist: {trackmate_images_dir}")
@@ -1454,7 +1454,7 @@ if __name__ == '__main__':
         if mode_dir_or_conf == 'DIRECTORY':
             paint_logger.info(f'Root directory: {root_directory}')
         else:
-            paint_logger.debug(f'Configuration file: {conf_file}')
+            paint_logger.debug(f'Project file: {conf_file}')
 
         image_viewer = ImageViewer(root, root_directory, conf_file, mode_dir_or_conf)
 
