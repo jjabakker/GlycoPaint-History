@@ -27,7 +27,8 @@ from src.Application.Support.Support_Functions import (
     save_squares_to_file)
 from src.Common.Support.DirectoriesAndLocations import (
     get_trackmate_image_dir_path,
-    get_squares_file_path)
+    get_squares_file_path,
+    get_tracks_file_path)
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
@@ -686,8 +687,9 @@ class ImageViewer:
         file = os.path.split(file)[1]
         msg = f"Do you want to save changes to tracks file: {file}"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
-        if response is not None:
+        if response is True:
             self.update_squares_file()
+            self.square_changed = False
         return response
 
     def exit_viewer(self):
@@ -1033,6 +1035,55 @@ class ImageViewer:
 
 
 
+    # def draw_single_square(self, squares_row):
+    #
+    #     colour_table = {1: ('red', 'white'),
+    #                     2: ('yellow', 'white'),
+    #                     3: ('green', 'white'),
+    #                     4: ('magenta', 'white'),
+    #                     5: ('cyan', 'white'),
+    #                     6: ('black', 'white')}
+    #
+    #     square_nr = squares_row['Square Nr']
+    #     cell_id = squares_row['Cell Id']
+    #     label_nr = squares_row['Label Nr']
+    #
+    #     col_nr = square_nr % self.nr_of_squares_in_row
+    #     row_nr = square_nr // self.nr_of_squares_in_row
+    #     width = 512 / self.nr_of_squares_in_row
+    #     height = 512 / self.nr_of_squares_in_row
+    #
+    #     square_tag = f'square-{square_nr}'
+    #     text_tag = f'text-{square_nr}'
+    #
+    #     if cell_id == -1:  # The square is deleted (for good), stop processing
+    #         return
+    #     elif cell_id == 0:  # Square is removed from a cell
+    #         self.cn_left_image.create_rectangle(
+    #             col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height, outline="white",
+    #             width=0.5, tags=square_tag)
+    #         if self.show_squares_numbers:
+    #             text_item = self.cn_left_image.create_text(
+    #                 col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
+    #                 font=('Arial', -10), fill="white", tags=text_tag)
+    #     else:  # A square is allocated to a cell
+    #         self.cn_left_image.create_rectangle(
+    #             col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+    #             outline=colour_table[self.df_squares.loc[square_nr]['Cell Id']][0], width=3, tags=square_tag)
+    #         if self.show_squares_numbers:
+    #             text_item = self.cn_left_image.create_text(
+    #                 col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
+    #                 text=str(self.df_squares.loc[square_nr]['Label Nr']), font=('Arial', -10),
+    #                 fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1], tags=text_tag)
+    #
+    #     # The new square is made clickable -  for now use the text item
+    #     if self.show_squares_numbers:
+    #         self.cn_left_image.tag_bind(
+    #             text_item, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
+    #         self.cn_left_image.tag_bind(
+    #             text_item, '<Button-2>', lambda e: self.provide_information_on_square(
+    #                 e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
+
     def draw_single_square(self, squares_row):
 
         colour_table = {1: ('red', 'white'),
@@ -1057,24 +1108,39 @@ class ImageViewer:
         if cell_id == -1:  # The square is deleted (for good), stop processing
             return
         elif cell_id == 0:  # Square is removed from a cell
-            self.cn_left_image.create_rectangle(
-                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height, outline="white",
-                width=0.5, tags=square_tag)
+            # Draw the outline without filling the rectangle
+            rect_item = self.cn_left_image.create_rectangle(
+                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+                outline="white", fill="", width=0.5, tags=square_tag)
+
             if self.show_squares_numbers:
                 text_item = self.cn_left_image.create_text(
                     col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
                     font=('Arial', -10), fill="white", tags=text_tag)
         else:  # A square is allocated to a cell
-            self.cn_left_image.create_rectangle(
+            # Draw the outline without filling the rectangle
+            rect_item = self.cn_left_image.create_rectangle(
                 col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-                outline=colour_table[self.df_squares.loc[square_nr]['Cell Id']][0], width=3, tags=square_tag)
+                outline=colour_table[self.df_squares.loc[square_nr]['Cell Id']][0], fill="", width=3, tags=square_tag)
+
             if self.show_squares_numbers:
                 text_item = self.cn_left_image.create_text(
                     col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
                     text=str(self.df_squares.loc[square_nr]['Label Nr']), font=('Arial', -10),
                     fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1], tags=text_tag)
 
-        # The new square is made clickable -  for now use the text item
+        # Create a transparent rectangle (clickable area)
+        invisible_rect = self.cn_left_image.create_rectangle(
+            col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+            outline="", fill="", tags=f"invisible-{square_nr}")
+
+        # Bind events to the invisible rectangle (transparent clickable area)
+        self.cn_left_image.tag_bind(
+            invisible_rect, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
+        self.cn_left_image.tag_bind(
+            invisible_rect, '<Button-2>', lambda e: self.provide_information_on_square(
+                e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
+
         if self.show_squares_numbers:
             self.cn_left_image.tag_bind(
                 text_item, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
@@ -1313,15 +1379,16 @@ class ImageViewer:
     def update_squares_file(self):
         # It is necessary to the squares file, because the user may have made changes
         if self.mode_dir_or_conf == 'DIRECTORY':
+            squares_file_path =  get_squares_file_path(self.experiment_directory, self.image_name)
             squares_file_name = os.path.join(self.experiment_directory, self.image_name, 'grid',
                                              self.image_name + '-squares.csv')
         else:
-            squares_file_name = os.path.join(self.experiment_directory,
+            squares_file_path = os.path.join(self.experiment_directory,
                                              str(self.df_experiment.iloc[self.img_no]['Experiment Date']),
                                              self.image_name,
                                              'grid',
                                              self.image_name + '-squares.csv')
-        save_squares_to_file(self.df_squares, squares_file_name)  # TODO
+        save_squares_to_file(self.df_squares, squares_file_path)  # TODO
 
 
     # ---------------------------------------------
@@ -1351,23 +1418,40 @@ class ImageViewer:
         colors = get_colormap_colors('Blues', 20)
         heatmap_mode = self.rb_heatmap_parameter_value.get()
 
-        for index, squares_row in self.df_squares.iterrows():
-            self.draw_heatmap_square(squares_row, colors, heatmap_mode)
-        # return self.df_squares
+        if heatmap_mode == 1:    # Tau
+            heatmapdata = self.df_squares['Tau']
+        elif heatmap_mode == 2: # Density
+            heatmapdata = self.df_squares['Density']
+        elif heatmap_mode == 3: # Nr Traxcks
+            heatmapdata = self.df_squares['Nr Tracks']
+        elif heatmap_mode == 4: # Max Track Duration
+            heatmapdata = self.df_squares['Max Track Duration']
+        elif heatmap_mode == 5: # Cumulative Track Duration
+            heatmapdata = self.df_squares['Total Track Duration']
+        else:
+            paint_logger.error("Function 'display_heatmap' failed - Unknown heatmap mode")
+            sys.exit()
 
-    def draw_heatmap_square(self, squares_row, colors, mode='Tau'):
-        square_nr = squares_row['Square Nr']
+        # There can be Nan values in the data, so we need to replace them
+        heatmapdata = heatmapdata.fillna(0)
+
+        heatmapdata = heatmapdata.sort_index()
+        min_value = max(heatmapdata.min(), 0)
+        max_value = heatmapdata.max()
+
+
+        for square_number, value in enumerate(heatmapdata):
+            self.draw_heatmap_square(square_number, value, min_value, max_value, colors)
+
+
+    def draw_heatmap_square(self, square_nr, value, min_value, max_value, colors):
+
         col_nr = square_nr % self.nr_of_squares_in_row
         row_nr = square_nr // self.nr_of_squares_in_row
         width = 512 / self.nr_of_squares_in_row
         height = 512 / self.nr_of_squares_in_row
 
-        min_tau = self.df_squares['Tau'].min()
-        if min_tau < 0:
-            min_tau = 0
-        max_tau = self.df_squares['Tau'].max()
-        tau = squares_row['Tau']
-        color_index = get_color_index(tau, max_tau, min_tau, 20)
+        color_index = get_color_index(value, max_value, min_value, 20)
         color = colors[color_index]
 
         self.cn_left_image.create_rectangle(
@@ -1439,7 +1523,7 @@ class SelectViewerDialog:
     def add_directory_widgets(self, frame) -> None:
         """Adds widgets to the directory frame."""
         # Directory and Configuration file buttons
-        self.add_button(frame, 'Paint Directory', 0, self.change_root_dir)
+        self.add_button(frame, 'Experiment Directory', 0, self.change_root_dir)
         self.add_button(frame, 'Configuration File', 1, self.change_conf_file)
 
         # Labels and Radio buttons
