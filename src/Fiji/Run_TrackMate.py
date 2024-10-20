@@ -144,6 +144,11 @@ def process_image(row, image_source_directory, experiment_directory):
         imp.show()
         IJ.run("Enhance Contrast", "saturated=0.35")
         IJ.run("Grays")
+
+        # Set the scale
+        # IJ.run("Set Scale...", "distance=6.2373 known=1 unit=micron")
+        # IJ.run("Scale Bar...", "width=10 height=5 thickness=3 bold overlay")
+
         ext_image_name = image_name + "-threshold-" + str(int(threshold))
 
         create_directories(os.path.join(experiment_directory, ext_image_name), True)
@@ -155,6 +160,10 @@ def process_image(row, image_source_directory, experiment_directory):
         # suppress_fiji_output()
         nr_spots, total_tracks, long_tracks = excute_trackmate_in_Fiji(threshold, tracks_file_path, image_file_path)
         # restore_fiji_output()
+
+        # IJ.run("Set Scale...", "distance=6.2373 known=1 unit=micron")
+        # IJ.run("Scale Bar...", "width=10 height=5 thickness=3 bold overlay")
+
         if nr_spots == -1:
             paint_logger.error("\n'Process single image' did not manage to run 'paint_trackmate'")
             status = 'FAILED'
