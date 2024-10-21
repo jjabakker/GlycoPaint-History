@@ -460,7 +460,7 @@ def read_experiment_file(experiment_file_path: str, only_records_to_process: boo
         df_experiment = df_experiment[df_experiment['Process'].str.lower().isin(['yes', 'y'])]
 
     df_experiment.set_index('Ext Image Name', inplace=True, drop=False)
-    correct_all_images_column_types(df_experiment)
+    # correct_all_images_column_types(df_experiment)
 
     return df_experiment
 
