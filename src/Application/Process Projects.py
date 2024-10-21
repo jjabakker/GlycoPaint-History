@@ -31,8 +31,8 @@ if PAINT_DEBUG:
 else:
     CONF_FILE = '/Users/hans/Paint Source - v2/Configuration Files/paint data generation - v2.json'
     PAINT_SOURCE = '/Users/hans/Paint Source - v2'
-    PAINT_DATA = '/Users/Hans/Paint Data - v2'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v2'
+    PAINT_DATA = '/Users/Hans/Paint Data - v3'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v3'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
