@@ -15,7 +15,7 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 
-from src.Application.Support.Class_HeatmapControlDialog import HeatMapControlDialiog
+from src.Application.Support.Class_HeatmapControlDialog import HeatMapControlDialog
 from src.Application.Support.Class_SelectViewerDialog import SelectViewerDialog
 from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index, get_heatmap_data
 from src.Application.Support.Support_Functions import (
@@ -131,7 +131,7 @@ class ImageViewer:
 
     def setup_frame_images(self):
 
-        frame_width = 516
+        frame_width = 530
         frame_height = 670
 
         self.frame_picture_left = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width,
@@ -149,8 +149,8 @@ class ImageViewer:
         self.cn_left_image = tk.Canvas(self.frame_picture_left, width=512, height=512)
         self.cn_right_image = tk.Canvas(self.frame_picture_right, width=512, height=512)
 
-        self.cn_left_image.grid(column=0, row=0, padx=2, pady=2)
-        self.cn_right_image.grid(column=0, row=0, padx=2, pady=2)
+        self.cn_left_image.grid(column=0, row=0, padx=5, pady=5)
+        self.cn_right_image.grid(column=0, row=0, padx=5, pady=5)
 
         self.parent.bind('<Key>', self.key_pressed)
 
@@ -869,7 +869,7 @@ class ImageViewer:
         # If the heatmap is not already  active, then we need to run the heatmap dialog
         if not self.heatmap_active:
             self.heatmap_active = True
-            HeatMapControlDialiog(self)
+            HeatMapControlDialog(self)
             self.img_no -= 1
             self.go_forward_backward('FORWARD')
         return
