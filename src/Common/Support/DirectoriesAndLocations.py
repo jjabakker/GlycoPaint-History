@@ -107,35 +107,15 @@ def create_directories(image_directory, delete_existing=True):
     return tracks_dir, plt_dir, img_dir
 
 
-# def delete_files_in_directory(directory_path):
-#     """
-#     Delete all files in the specified directory.
-#     Note that only files are deleted, directories are left.
-#
-#     :param directory_path: The directory to be emptied
-#     :return:
-#     """
-#     try:
-#         if not os.path.exists(directory_path):
-#             return
-#         files = os.listdir(directory_path)
-#         for file in files:
-#             file_path = os.path.join(directory_path, file)
-#             if os.path.isfile(file_path):
-#                 os.remove(file_path)
-#     except OSError:
-#         print("Error occurred while deleting files.")     #TODO Add logging
-
-
 def _get_paint_configuration_directory(sub_dir):
-    conf_dir = os.path.join(os.path.expanduser('~'), 'Paint', 'Config')
+    conf_dir = os.path.join(os.path.expanduser('~'), 'Paint')
     if not os.path.exists(conf_dir):
         makedirs(os.path.join(conf_dir, sub_dir))
     return conf_dir
 
 
 def get_paint_profile_directory():
-    sub_dir = 'Paint Profile'
+    sub_dir = 'Profile'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
 
 
