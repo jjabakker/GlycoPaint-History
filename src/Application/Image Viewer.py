@@ -80,7 +80,7 @@ class ImageViewer:
         self.conf_file = conf_file
         self.mode_dir_or_conf = mode_dir_or_conf
         self.df_all_squares = None
-        self.heatmap_enabled = False
+        self.heatmap_active = False
 
         # UI state variables
         self.start_x = None
@@ -866,10 +866,12 @@ class ImageViewer:
         :return:
         """
 
-        self.heatmap_enabled = True
-        HeatMapControlDialiog(self)
-        self.img_no -= 1
-        self.go_forward_backward('FORWARD')
+        # If the heatmap is not already  active, then we need to run the heatmap dialog
+        if not self.heatmap_active:
+            self.heatmap_active = True
+            HeatMapControlDialiog(self)
+            self.img_no -= 1
+            self.go_forward_backward('FORWARD')
         return
 
         # Get the slider and neighbour state and save it
@@ -1054,7 +1056,7 @@ class ImageViewer:
                         self.draw_single_square(squares_row)
         return self.df_squares
 
-    def draw_single_square(self, squares_row):
+    def draw_single_square(self, squares_row, color='white'):
 
         colour_table = {1: ('red', 'white'),
                         2: ('yellow', 'white'),
@@ -1086,7 +1088,7 @@ class ImageViewer:
             if self.show_squares_numbers:
                 text_item = self.cn_left_image.create_text(
                     col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
-                    font=('Arial', -10), fill="white", tags=text_tag)
+                    font=('Arial', -10), fill=color, tags=text_tag)
         else:  # A square is allocated to a cell
             # Draw the outline without filling the rectangle
             rect_item = self.cn_left_image.create_rectangle(
@@ -1277,7 +1279,7 @@ class ImageViewer:
         # Set the name of the image
         self.image_name = self.list_images[self.img_no]['Left Image Name']
 
-        if self.heatmap_enabled:
+        if self.heatmap_active:
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
             self.display_heatmap()
@@ -1368,11 +1370,11 @@ class ImageViewer:
 
         selected_idx = self.rb_heatmap_parameter_value.get()
         if selected_idx == -1:
-            self.heatmap_enabled = False
+            self.heatmap_active = False
             self.select_squares_for_display()
             self.display_selected_squares()
         else:
-            self.heatmap_enabled = True
+            self.heatmap_active = True
             self.img_no -= 1
             self.go_forward_backward('FORWARD')
 
@@ -1392,6 +1394,11 @@ class ImageViewer:
         for square_number, value in enumerate(heatmapdata):
             self.draw_heatmap_square(square_number, value, min_val, max_val, colors)
 
+        if len(self.df_squares) > 0:
+            for index, squares_row in self.df_squares.iterrows():
+                if squares_row['Visible']:
+                    self.draw_single_square(squares_row, 'black')
+
     def draw_heatmap_square(self, square_nr, value, min_value, max_value, colors):
 
         col_nr = square_nr % self.nr_of_squares_in_row
@@ -1404,7 +1411,7 @@ class ImageViewer:
 
         self.cn_left_image.create_rectangle(
             col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-            fil=color)
+            fill=color, outline=color)
 
 
 def save_as_png(canvas, file_name):
