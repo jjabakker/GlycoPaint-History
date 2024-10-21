@@ -51,7 +51,6 @@ class ImageViewer:
         self.user_specified_directory = user_specified_directory
         self.user_specified_mode = user_specified_mode
 
-        self.parent = parent
         self.initialize_variables()
 
         self.setup_ui()
@@ -76,7 +75,6 @@ class ImageViewer:
     def initialize_variables(self):
 
         self.img_no = 0
-        self.root = root
         self.image_directory = None
 
         self.conf_file = conf_file
@@ -96,7 +94,7 @@ class ImageViewer:
         self.neighbour_mode = ""
         self.select_mode = ""
 
-        self.parent.title(
+        self.top.title(
             f'Image Viewer - {self.user_specified_directory if self.mode_dir_or_conf == "DIRECTORY" else self.user_specified_conf_file}')
 
     def setup_ui(self):
@@ -105,7 +103,7 @@ class ImageViewer:
         For each frame a setup function ios called
         """
 
-        self.content = ttk.Frame(self.root, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        self.content = ttk.Frame(self.top, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
 
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_navigation_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
@@ -154,7 +152,7 @@ class ImageViewer:
         self.cn_left_image.grid(column=0, row=0, padx=2, pady=2)
         self.cn_right_image.grid(column=0, row=0, padx=2, pady=2)
 
-        self.root.bind('<Key>', self.key_pressed)
+        self.top.bind('<Key>', self.key_pressed)
 
         # Define the labels and combobox widgets for the images
         self.list_images = []
@@ -163,17 +161,17 @@ class ImageViewer:
                                            width=30)
 
         # Label for the right image name
-        self.lbl_image_bf_name = StringVar(self.root, "")
+        self.lbl_image_bf_name = StringVar(self.top, "")
         lbl_image_bf_name = ttk.Label(self.frame_picture_right, textvariable=self.lbl_image_bf_name)
 
         # Labels for image info
-        self.text_for_info1 = StringVar(self.root, "")
+        self.text_for_info1 = StringVar(self.top, "")
         lbl_info1 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info1)
 
-        self.text_for_info2 = StringVar(self.root, "")
+        self.text_for_info2 = StringVar(self.top, "")
         lbl_info2 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
 
-        self.text_for_info3 = StringVar(self.root, "")
+        self.text_for_info3 = StringVar(self.top, "")
         lbl_info3 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info3)
 
         # Bind combobox selection
