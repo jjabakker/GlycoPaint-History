@@ -1,55 +1,105 @@
-import os
-
 import tkinter as tk
 from tkinter import ttk
+from src.Application.Support.Heatmap_Support import (
+    get_colormap_colors,
+    get_heatmap_min_max)
 
 
-class HeatMapControlDialiog:
+class HeatMapControlDialog:
+
     def __init__(self, image_viewer):
         # Create a new top-level window for the controls
 
         self.image_viewer = image_viewer
 
-        self.control_window = tk.Toplevel(self.image_viewer.root)
+        self.toggle = False
+
+        self.control_window = tk.Toplevel(self.image_viewer.parent)
         self.control_window.title("Heatmap Control Window")
-        self.control_window.geometry("300x350")
-        self.option_names = ["Tau", "Density", "Track Count", "Track Duration",
-                             "Cum Track Duration"]  # Customize option names
+        self.control_window.geometry("310x350")
+        self.option_names = ["Tau", "Density", "Track Count", "Track Duration", "Cum Track Duration"]
+
+        self.control_window.attributes('-topmost', True)
+
 
         # Bind the closing event to a custom function
         self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        # Configure the grid to center controls
-        self.control_window.columnconfigure(0, weight=1)
+        self.setup_userinterface()
 
-        # Add some controls to the control window
-        lbl_control = tk.Label(self.control_window, text="Control Window", font=("Arial", 16))
-        lbl_control.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
+        self.on_radio_button_change()
 
-        # Add a slider that updates the value in the main window
-        slider = ttk.Scale(self.control_window, from_=0, to=100, orient='horizontal',
-                           variable=image_viewer.slider_value)
-        slider.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
+    def setup_userinterface(self):
+        # Define the UI elements
+
+        self.content = ttk.Frame(self.control_window, padding=(5, 5, 5, 5))
+
+        self.frame_mode_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_legend = ttk.Frame(self.content, borderwidth=2, padding=(5, 5, 5, 5))
+        self.frame_controls = ttk.Frame(self.content, borderwidth=2, padding=(5, 5, 5, 5))
+
+        self.setup_mode_buttons()
+        self.setup_legend()
+        self.setup_controls()
+
+        self.frame_mode_buttons.grid(row=0, column=0, padx=5, pady=10)
+        self.frame_legend.grid(row=0, column=1, padx=5, pady=10)
+        self.frame_controls.grid(row=1, column=0, padx=5, pady=10)
+
+        self.content.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+    def setup_mode_buttons(self):
 
         # Add a label for radio button group
-        lbl_radio = tk.Label(self.control_window, text="Select an Option:", font=("Arial", 12))
+        lbl_radio = tk.Label(self.frame_mode_buttons, text="Select an Option:", font=("Arial", 12))
         lbl_radio.grid(row=2, column=0, padx=5, pady=5)
 
         # Add radio buttons for the provided option names
         for idx, name in enumerate(self.option_names, start=1):
-            radio_btn = tk.Radiobutton(self.control_window, text=name, variable=image_viewer.rb_heatmap_parameter_value,
-                                       value=idx)
+            radio_btn = tk.Radiobutton(self.frame_mode_buttons, text=name, command=self.on_radio_button_change,
+                                       variable=self.image_viewer.rb_heatmap_parameter_value, value=idx)
             radio_btn.grid(row=2 + idx, column=0, padx=5, pady=2, sticky=tk.W)
         self.image_viewer.rb_heatmap_parameter_value.set(1)
 
-        # Add a checkbox for an additional setting
-        checkbox = tk.Checkbutton(self.control_window, text="Enable Feature", variable=self.image_viewer.checkbox_value)
-        checkbox.grid(row=8, column=0, padx=5, pady=10, sticky=tk.W)
+        lbl_radio.grid(row=1, column=0, padx=5, pady=10)
 
-        # Add a button to close the control window
-        button = tk.Button(self.control_window, text="Close", command=self.on_close)
-        button.grid(row=9, column=0, padx=5, pady=10)
+    def setup_legend(self):
+        canvas = tk.Canvas(self.frame_legend, width=30)
+
+        colors = get_colormap_colors('Blues', 10)
+        for i, color in enumerate(colors):
+            canvas.create_rectangle(10, 10 + i * 20, 30, 80 + i * 20, fill=color, outline=color)
+        self.lbl_min = tk.Label(self.frame_legend, text="Min", font=("Arial", 12))
+        self.lbl_max = tk.Label(self.frame_legend, text="max", font=("Arial", 12))
+
+        canvas.grid(row=0, column=0, rowspan=11, padx=5, pady=10)
+        self.lbl_min.grid(row=1, column=6, padx=5, pady=10)
+        self.lbl_max.grid(row=10, column=6, padx=5, pady=10)
+
+    def setup_controls(self):
+        close_button = tk.Button(self.frame_controls, text="Close", command=self.on_close)
+        toggle_button = tk.Button(self.frame_controls, text="Toggle", command=self.on_toggle)
+
+        close_button.grid(row=0, column=0, padx=5, pady=10)
+        toggle_button.grid(row=0, column=1, padx=5, pady=10)
 
     def on_close(self):
         self.image_viewer.rb_heatmap_parameter_value.set(-1)
-        self.control_window.destroy()  # Actually close the control window
+        self.control_window.destroy()
+
+    def on_toggle(self):
+        if not self.toggle:
+            self.image_viewer.display_selected_squares()
+            self.toggle = True
+        else:
+            self.image_viewer.display_heatmap()
+            self.toggle = False
+        pass
+
+    def on_radio_button_change(self):
+        min, max = get_heatmap_min_max(self.image_viewer.df_all_squares, self.image_viewer.rb_heatmap_parameter_value.get())
+        self.lbl_min.config(text=str(min))
+        self.lbl_max.config(text=str(max))
+        pass
+
+

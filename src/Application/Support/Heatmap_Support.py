@@ -57,3 +57,22 @@ def get_heatmap_data(df_squares, df_all_squares, heatmap_mode):
 
     return heatmapdata, min_val, max_val
 
+def get_heatmap_min_max(df_all_squares, heatmap_mode):
+    heatmap_modes = {
+        1: 'Tau',
+        2: 'Density',
+        3: 'Nr Tracks',
+        4: 'Max Track Duration',
+        5: 'Total Track Duration'
+    }
+
+    if heatmap_mode in heatmap_modes:
+        column_name = heatmap_modes[heatmap_mode]
+        min_val = max(df_all_squares[column_name].min(),0)
+        max_val = df_all_squares[column_name].max()
+
+    else:
+        paint_logger.error("Function 'display_heatmap' failed - Unknown heatmap mode")
+        sys.exit()
+
+    return min_val, max_val
