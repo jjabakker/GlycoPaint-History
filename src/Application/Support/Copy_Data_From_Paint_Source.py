@@ -56,8 +56,10 @@ def copy_data_from_paint_source_to_paint_data(source_root, dest_root, include_ex
             src_dirs.sort()
 
             for src_dir in src_dirs:
-                # Do the actual copying
+                # Do the actual copying, but skip the Tau Plots directories
                 dest_dir = os.path.join(dest_root, exp, src_dir)
+                if 'Tau Plots' in src_dir:
+                    continue
                 try:
                     shutil.copytree(os.path.join(source_root, exp, src_dir), dest_dir, dirs_exist_ok=True)
                     paint_logger.debug(f"Copied directory from {os.path.join(source_root, exp, src_dir)} to {dest_dir}")
