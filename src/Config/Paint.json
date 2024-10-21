@@ -1,7 +1,8 @@
 {
     "app_name": "MyApp",
     "version": "1.0",
-    "settings": {
+    "Generate Squares": {
+        "plotfiles": "False",
         "theme": "dark",
         "logging": {
             "level": "INFO",
