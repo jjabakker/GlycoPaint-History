@@ -32,7 +32,7 @@ def _get_paint_configuration_directory(sub_dir):
     return conf_dir
 
 def get_paint_logger_directory():
-    sub_dir = 'Paint Logger'
+    sub_dir = 'Logger'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
 
 def create_file_handler(file_name):
