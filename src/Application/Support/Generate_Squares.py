@@ -11,6 +11,7 @@ from src.Application.Support.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
 from src.Application.Support.Paint_Messagebox import paint_messagebox
+from src.Application.Support.Config import load_paint_config
 from src.Application.Support.Support_Functions import (
     calc_variability,
     calculate_density,
@@ -447,7 +448,6 @@ def process_single_image_in_experiment_directory(
 
     # The tracks dataframe has been updated with label info, so write a copy to file
     new_tracks_file_name = tracks_file_path[:tracks_file_path.find('.csv')] + '-label.csv'
-    df_with_label.drop(['NUMBER_SPLITS', 'NUMBER_MERGES', 'TRACK_Z_LOCATION', 'NUMBER_COMPLEX'], axis=1, inplace=True)
     df_with_label.to_csv(new_tracks_file_name, index=False)
 
     # -------------------------------------------------------------------------------
@@ -511,7 +511,7 @@ def calc_single_tau_and_density_for_image(
         plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, image_name), image_name + ".png")
         tau, r_squared = curve_fit_and_plot(
             plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
-            file=plt_file, plot_to_screen=False, verbose=False)
+            file=plt_file, plot_to_screen=False, plot=False, verbose=False)          # TODO plot=Falsecnow hard coded
         if tau == -2:  # Tau calculation failed
             r_squared = 0
         tau = int(tau)
@@ -611,7 +611,7 @@ def create_df_squares(experiment_directory: str,
                                         image_name + "-square-" + str(square_seq_nr) + ".png")
                 tau, r_squared = curve_fit_and_plot(
                     plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
-                    file=plt_file, plot_to_screen=False, verbose=False)
+                    file=plt_file, plot_to_screen=False, plot=False, verbose=False)
                 if tau == -2:  # Tau calculation failed
                     r_squared = 0
                 if r_squared < min_r_squared:  # Tau was calculated, but not reliable
@@ -892,6 +892,8 @@ def image_needs_processing(
 
 
 if __name__ == "__main__":
+    paint_config = load_paint_config('/Users/hans/Paint Code Local/src/Config/Paint.json')
+
     root = tk.Tk()
     root.eval('tk::PlaceWindow . center')
     SquaresDialog(root)

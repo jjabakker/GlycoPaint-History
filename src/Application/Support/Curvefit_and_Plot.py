@@ -84,7 +84,7 @@ def compile_duration(tracks):
 
 
 def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histogram', file="", plot_to_screen=True,
-                       verbose=True):
+                       plot=False, verbose=True):
     """
     :param plot_data:
     :param nr_tracks
@@ -141,33 +141,34 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
             paint_logger.warning('CurveFitAndPlot: OptimizeWarning, RuntimeError, RuntimeWarning')
             r_squared = 0
 
-    fig, ax = plt.subplots()
-    ax.plot(x, y, linewidth=1.0, label="Data")
-    ax.plot(x, mono_exp(x, m, t, b), linewidth=1.0, label="Fitted")
+    if plot:
+        fig, ax = plt.subplots()
+        ax.plot(x, y, linewidth=1.0, label="Data")
+        ax.plot(x, mono_exp(x, m, t, b), linewidth=1.0, label="Fitted")
 
-    x_middle = plot_max_x / 2 - plot_max_x * 0.1
-    y_middle = y.max() / 2
-    plt.text(x_middle, y_middle, f"Tau = {tau_sec * 1e3:.0f} ms")
-    plt.text(x_middle, 0.8 * y_middle, f"R2 = {r_squared:.4f} ms")
-    plt.text(x_middle, 0.6 * y_middle, f"Number or tracks is {nr_tracks}")
-    plt.text(x_middle, 0.4 * y_middle, f"Zoomed in from 0 to {plot_max_x:.0f} s")
+        x_middle = plot_max_x / 2 - plot_max_x * 0.1
+        y_middle = y.max() / 2
+        plt.text(x_middle, y_middle, f"Tau = {tau_sec * 1e3:.0f} ms")
+        plt.text(x_middle, 0.8 * y_middle, f"R2 = {r_squared:.4f} ms")
+        plt.text(x_middle, 0.6 * y_middle, f"Number or tracks is {nr_tracks}")
+        plt.text(x_middle, 0.4 * y_middle, f"Zoomed in from 0 to {plot_max_x:.0f} s")
 
-    plt.xlim([0, plot_max_x])
+        plt.xlim([0, plot_max_x])
 
-    ax.set_xlabel('Duration [in s]')
-    ax.set_ylabel('Number of tracks')
-    ax.set_title(plot_title)
-    ax.legend()
+        ax.set_xlabel('Duration [in s]')
+        ax.set_ylabel('Number of tracks')
+        ax.set_title(plot_title)
+        ax.legend()
 
-    # Plot to screen per default, but don't when it has been overriden
-    # Plot to file when a filename has been specified
+        # Plot to screen per default, but don't when it has been overriden
+        # Plot to file when a filename has been specified
 
-    if plot_to_screen:
-        plt.show()
-    if file != "":
-        fig.savefig(file)
-        if verbose:
-            paint_logger.debug("\nWriting plot file: " + file)
+        if plot_to_screen:
+            plt.show()
+        if file != "":
+            fig.savefig(file)
+            if verbose:
+                paint_logger.debug("\nWriting plot file: " + file)
 
     # Inspect the parameters
     if verbose:
