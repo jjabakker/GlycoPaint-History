@@ -114,6 +114,34 @@ def excute_trackmate_in_Fiji(threshold, tracks_filename, image_filename):
         paint_logger.error('Routine paint_trackmate - process failed')
         return -1, -1, -1
 
+
+    # Get spots data, iterate through each track to calculate the mean square displacement
+
+    track_ids = model.getTrackModel().trackIDs(True)  # True means only return visible tracks
+    diffusion_coefficient_list = []
+    for track_id in track_ids:
+
+        # Get the set of spots in this track
+        track_spots = model.getTrackModel().trackSpots(track_id)
+
+        first_spot = True
+        cum_msd = 0
+        # Iterate through the spots in this track, retrieve values for x and y (in micron)
+        for spot in track_spots:
+            if first_spot:
+                x0 = spot.getFeature('POSITION_X')
+                y0 = spot.getFeature('POSITION_Y')
+                first_spot = False
+            else:
+                x = spot.getFeature('POSITION_X')
+                y = spot.getFeature('POSITION_Y')
+                cum_msd += (x - x0) ** 2 + (y - y0) ** 2
+        msd = cum_msd/ (len(track_spots) - 1)
+        diffusion_coefficient = msd / (2 * 2 * 0.05)
+
+        nice_diffusion_coefficient = round(diffusion_coefficient * 1000000, 0)
+        diffusion_coefficient_list.append(nice_diffusion_coefficient)
+
     # ----------------
     # Display results
     # ----------------
@@ -145,9 +173,7 @@ def excute_trackmate_in_Fiji(threshold, tracks_filename, image_filename):
     # Write the CSV file
     # ----------------
 
-    # We only need the first three fields, the rest is added to maintain compatability with earlier versions
-    fields = ["LABEL", "NUMBER_SPOTS", "TRACK_DURATION", 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'NUMBER_SPLITS',
-              'NUMBER_MERGES', 'TRACK_Z_LOCATION', 'NUMBER_COMPLEX']
+    fields = ["LABEL", "NUMBER_SPOTS", "TRACK_DURATION", 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'DIFFUSION_COEFFICIENT']
 
     # Determine write attributes
     open_attribute = fiji_get_file_open_write_attribute()
@@ -162,16 +188,18 @@ def excute_trackmate_in_Fiji(threshold, tracks_filename, image_filename):
         csvwriter.writerow('         ')
         csvwriter.writerow('         ')
 
-        for i in model.getTrackModel().trackIDs(True):
+        track_index = 0
+        for track_id in model.getTrackModel().trackIDs(True):
             # Fetch the track feature from the feature model.
-            label = 'Track_' + str(i)
-            duration = round(feature_model.getTrackFeature(i, 'TRACK_DURATION'), 3)
-            spots = feature_model.getTrackFeature(i, 'NUMBER_SPOTS')
-            x = round(feature_model.getTrackFeature(i, 'TRACK_X_LOCATION'), 2)
-            y = round(feature_model.getTrackFeature(i, 'TRACK_Y_LOCATION'), 2)
+            label = 'Track_' + str(track_id )
+            duration = round(feature_model.getTrackFeature(track_id, 'TRACK_DURATION'), 3)
+            spots = feature_model.getTrackFeature(track_id, 'NUMBER_SPOTS')
+            x = round(feature_model.getTrackFeature(track_id, 'TRACK_X_LOCATION'), 2)
+            y = round(feature_model.getTrackFeature(track_id, 'TRACK_Y_LOCATION'), 2)
 
             # Write the record for each track
-            csvwriter.writerow([label, spots, duration, x, y])
+            csvwriter.writerow([label, spots, duration, x, y, diffusion_coefficient_list[track_index]])
+            track_index += 1
 
     model.getLogger().log('Found ' + str(model.getTrackModel().nTracks(True)) + ' tracks.')
 
