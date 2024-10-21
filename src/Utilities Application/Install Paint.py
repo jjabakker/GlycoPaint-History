@@ -125,23 +125,20 @@ def install():
 
     # Determine the source_root from the current path
     head_tail = os.path.split(os.getcwd())
-    #source_root = os.path.split(head_tail[0])[0]
     source_root = head_tail[0]
 
     # Define the source directories
     fiji_grid_source = os.path.join(source_root, 'Fiji')
-    fiji_single_source = os.path.join(source_root, 'Fiji', 'Single')
     fiji_support_source = os.path.join(source_root, 'Fiji', 'Support')
 
     common_support_source = os.path.join(source_root, 'Common', 'Support')
 
     # Define the destination directories
     fiji_grid_dest = os.path.join(dest_root, 'Paint')
-    fiji_single_dest = os.path.join(dest_root, 'Paint', 'Single')
     library_dest = os.path.join(dest_root, 'Paint')
 
     # Create and empty the directories
-    fiji_directories = [library_dest, fiji_grid_dest, fiji_single_dest]
+    fiji_directories = [library_dest, fiji_grid_dest]
     for directory in fiji_directories:
         if os.path.exists(directory):
             delete_files_in_directory(directory)
@@ -155,11 +152,6 @@ def install():
     for file in plugin_files:
         copy_file_from_source_to_dest(fiji_grid_source, fiji_grid_dest, file)
 
-    # print(f"\n\nCopy from {fiji_single_source} to {fiji_single_dest}: ")
-    # plugin_files = ["Single_Analysis.py"]
-    # for file in plugin_files:
-    #     copy_file_from_source_to_dest(fiji_single_source, fiji_single_dest, file)
-
     print(f"\n\nCopy from {fiji_support_source} to {library_dest}: ")
     fiji_files = ["FijiSupportFunctions.py", "Trackmate.py"]
     for file in fiji_files:
@@ -171,9 +163,9 @@ def install():
         copy_file_from_source_to_dest(common_support_source, library_dest, file)
 
     # Create the Trackmate Data and Paint profile directories
-    profile_dir = os.path.join(os.path.expanduser('~'), "Paint", "Paint Profile")
-    logging_dir = os.path.join(os.path.expanduser('~'), "Paint", "Paint Logger")
-    # trackmate_dir = os.path.join(os.path.expanduser('~'), "Trackmate Data")
+    profile_dir = os.path.join(os.path.expanduser('~'), "Paint", "Profile")
+    logging_dir = os.path.join(os.path.expanduser('~'), "Paint", "Logger")
+    config_dir = os.path.join(os.path.expanduser('~'), "Paint", "Config")
 
     dirs_to_create = [profile_dir, logging_dir]
     for directory in dirs_to_create:
@@ -181,6 +173,8 @@ def install():
             print("\nCreated directory {dir}")
             os.makedirs(directory)
 
+    shutil.copyfile(os.path.join(source_root, 'Config', 'Paint.json'), os.path.join(config_dir, 'Paint.json'))
+    print(f'\nCopied config Paint.json to {config_dir}')
 
 if __name__ == '__main__':
     install()

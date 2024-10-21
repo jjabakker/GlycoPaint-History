@@ -1,0 +1,19 @@
+{
+    "app_name": "MyApp",
+    "version": "1.0",
+    "settings": {
+        "theme": "dark",
+        "logging": {
+            "level": "INFO",
+            "file": "/var/log/myapp.log"
+        }
+    },
+    "api_keys": {
+        "service_1": "abc123",
+        "service_2": "xyz789"
+    },
+    "features": {
+        "enable_feature_x": true,
+        "enable_feature_y": false
+    }
+}
