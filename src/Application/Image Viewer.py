@@ -17,6 +17,7 @@ from PIL import Image, ImageTk
 
 from src.Application.Support.Class_HeatmapControlDialog import HeatMapControlDialog
 from src.Application.Support.Class_SelectViewerDialog import SelectViewerDialog
+from src.Application.Support.Class_SelectSquareDialog import SelectSquareDialog
 from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index, get_heatmap_data
 from src.Application.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
@@ -121,7 +122,7 @@ class ImageViewer:
         self.frame_images.grid(column=0, row=0, rowspan=2, padx=5, pady=5, sticky=tk.N)
         self.frame_navigation_buttons.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
         self.frame_controls.grid(column=1, row=0, rowspan=2, padx=5, pady=5, sticky=N)
-        self.frame_filter.grid(column=2, row=0, padx=5, pady=5, sticky=N)
+        # self.frame_filter.grid(column=2, row=0, padx=5, pady=5, sticky=N)
         self.frame_duration_mode.grid(column=2, row=1, padx=5, pady=5, sticky=N)
 
         self.setup_frame_images()
@@ -899,6 +900,9 @@ class ImageViewer:
         Resets the current image. All squares are displayed, but the variability and density ratio sliders are applied
         :return:
         """
+
+        SelectSquareDialog(self)
+
 
         self.experiments_changed = True
 
