@@ -22,15 +22,15 @@ PAINT_DEBUG = False
 PAINT_FORCE = True
 
 if PAINT_DEBUG:
-    CONF_FILE = '/Users/hans/Paint Source - v2/Configuration Files/paint data generation - v2.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source - v2'
-    PAINT_DATA = '/Users/Hans/Paint Data - v2'
+    CONF_FILE = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source'
+    PAINT_DATA = '/Users/Hans/Paint Data'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v2'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 else:
-    CONF_FILE = '/Users/hans/Paint Source - v2/Configuration Files/paint data generation - v2.json'
-    PAINT_SOURCE = '/Users/hans/Paint Source - v2'
+    CONF_FILE = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
+    PAINT_SOURCE = '/Users/hans/Paint Source'
     PAINT_DATA = '/Users/Hans/Paint Data - v3'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v3'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
