@@ -10,20 +10,25 @@ EXPERIMENT_TM = "experiment_tm.csv"
 EXPERIMENT_INFO = "experiment_info.csv"
 EXPERIMENT_SQUARES = "experiment_squares.csv"
 
+
 def get_experiment_info_file_path(experiment_directory):
     return os.path.join(experiment_directory, EXPERIMENT_INFO)
+
 
 def get_experiment_tm_file_path(experiment_directory):
     return os.path.join(experiment_directory, EXPERIMENT_TM)
 
+
 def get_experiment_squares_file_path(experiment_directory):
-    return os.path.join(experiment_directory,  EXPERIMENT_SQUARES)
+    return os.path.join(experiment_directory, EXPERIMENT_SQUARES)
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # TrackMate Tracks
 # ----------------------------------------------------------------------------------------------------------------------
 
 TRACKMATE_TRACKS = "Trackmate Tracks"
+
 
 def get_tracks_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, TRACKMATE_TRACKS)
@@ -39,6 +44,7 @@ def get_tracks_file_path(experiment_directory, image_name):
 
 TRACKMATE_IMAGES = "Trackmate Images"
 
+
 def get_trackmate_image_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, TRACKMATE_IMAGES)
 
@@ -53,6 +59,7 @@ def get_image_file_path(experiment_directory, image_name):
 
 TAU_PLOTS = "Tau Plots"
 
+
 def get_tau_plots_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, TAU_PLOTS)
 
@@ -62,6 +69,7 @@ def get_tau_plots_dir_path(experiment_directory, image_name):
 # ----------------------------------------------------------------------------------------------------------------------
 
 SQUARES = "Squares"
+
 
 def get_squares_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, SQUARES)
@@ -116,6 +124,16 @@ def _get_paint_configuration_directory(sub_dir):
 
 def get_paint_profile_directory():
     sub_dir = 'Profile'
+    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
+
+
+def get_paint_logger_directory():
+    sub_dir = 'Logger'
+    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
+
+
+def get_paint_defaults_directory():
+    sub_dir = 'Defaults'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
 
 
