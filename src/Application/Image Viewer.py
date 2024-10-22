@@ -70,7 +70,7 @@ class ImageViewer:
         self.slider_value = tk.DoubleVar()
         self.rb_heatmap_parameter_value = tk.IntVar()
         self.rb_heatmap_parameter_value.set(1)  # Default selection is the first option
-        # The update_heatmap_rb_value function needs to be called when the radio button value is changed
+        # The update_heatmap_rb_value function is called when the radio button value is changed
         self.rb_heatmap_parameter_value.trace_add("write", self.update_heatmap_rb_value)
 
         self.checkbox_value = tk.BooleanVar()
@@ -99,8 +99,10 @@ class ImageViewer:
         self.select_mode = ""
         self.pop_square_info = None
 
-        self.parent.title(
-            f'Image Viewer - {self.user_specified_directory if self.mode_dir_or_conf == "DIRECTORY" else self.user_specified_conf_file}')
+        msg = f'Image Viewer - {self.user_specified_directory if self.mode_dir_or_conf == "DIRECTORY" else self.user_specified_conf_file}'
+        msg += f'{" - NO SAVING" if self.user_specified_mode == "CONF_FILE" else ""}'
+        self.parent.title(msg)
+
 
     def setup_ui(self):
         """
@@ -411,6 +413,7 @@ class ImageViewer:
             self.experiment_bf_directory = os.path.join(self.experiment_directory_path, 'Converted BF Images')
             experiment_tm_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
         else:
+            # self.experiment_directory_path is not set in this case    TODO: Check when it is set
             self.project_directory = os.path.split(self.user_specified_conf_file)[0]
             experiment_tm_file_path = self.user_specified_conf_file
 
@@ -478,6 +481,7 @@ class ImageViewer:
                 bf_dir = os.path.join(exp_dir, 'Converted BF Images')
                 squares_file_path = get_squares_file_path(exp_dir, image_name)
                 trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
+                # self.experiment_directory = exp_dir    # TODO: Check if this is correct
             else:
                 exp_dir = self.experiment_directory_path
                 bf_dir = self.experiment_bf_directory
@@ -754,16 +758,26 @@ class ImageViewer:
 
     def exit_viewer(self):
 
-        response_square = response_experiment = ""
+        response_square = None
+        response_experiment = None
 
         if self.experiments_changed:
-            response_experiment = self.save_experiment_file_if_requested()
+            if self.mode_dir_or_conf == "DIRECTORY":
+                response_experiment = self.save_experiment_file_if_requested()
+            else:
+                messagebox.showinfo("Save Warning", "No saving of experiment file is implemented in configuration mode")
 
         if self.square_changed:
-            response_square = self.save_squares_file_if_requested()
+            if self.mode_dir_or_conf == "DIRECTORY":
+                response_square = self.save_squares_file_if_requested()
+            else:
+                messagebox.showinfo("Save Warning", "No saving of squares file is implemented in configuration mode")
 
-        if response_experiment is None or response_square is None:
-            return
+        if self.mode_dir_or_conf == "DIRECTORY":
+            if response_experiment is None or response_square is None:
+                return
+            else:
+                root.quit()
         else:
             root.quit()
 
@@ -1286,15 +1300,38 @@ class ImageViewer:
     def go_forward_backward(self, direction):
         # The function is called when we switch image
 
-        if self.square_changed:
-            response = self.save_squares_file_if_requested()
-            if response is None:
-                return
+        experiment_warning = False
+        square_warning = False
 
         if self.experiments_changed:
-            response = self.save_experiment_file_if_requested()
-            if response is None:
-                return
+            if self.mode_dir_or_conf == "DIRECTORY":
+                response_experiment = self.save_experiment_file_if_requested()
+                if response_experiment is None:
+                    return
+            else:
+                experiment_warning = True
+
+        if self.square_changed:
+            if self.mode_dir_or_conf == "DIRECTORY":
+                response_square = self.save_squares_file_if_requested()
+                if response_square is None:
+                    return
+            else:
+                square_warning = True
+
+        if self.mode_dir_or_conf == 'CONF_FILE':
+            warnings = []
+            if square_warning:
+                warnings.append("squares file")
+            if experiment_warning:
+                warnings.append("experiment file")
+
+            if warnings:
+                message = "No saving of " + (" or ".join(warnings)) + " is implemented in configuration mode"
+                messagebox.showinfo('Save Warning',message)
+
+            self.square_changed = False
+            self.experiments_changed = False
 
         # Determine what the next image is, depending on the direction
         # Be sure not move beyond the boundaries (could happen when the left and right keys are used)
