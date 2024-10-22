@@ -8,26 +8,21 @@ from src.Application.Support.Heatmap_Support import (
 class HeatMapControlDialog:
 
     def __init__(self, image_viewer):
+
         # Create a new top-level window for the controls
 
         self.image_viewer = image_viewer
-
         self.toggle = False
 
         self.control_window = tk.Toplevel(self.image_viewer.parent)
         self.control_window.title("Heatmap Control Window")
         self.control_window.geometry("310x350")
         self.option_names = ["Tau", "Density", "Track Count", "Track Duration", "Cum Track Duration"]
-
         self.control_window.attributes('-topmost', True)
-
-
-        # Bind the closing event to a custom function
         self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.setup_userinterface()
-
-        self.on_radio_button_change()
+        self.on_heatmap_variable_change()
 
     def setup_userinterface(self):
         # Define the UI elements
@@ -38,7 +33,7 @@ class HeatMapControlDialog:
         self.frame_legend = ttk.Frame(self.content, borderwidth=2, padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, padding=(5, 5, 5, 5))
 
-        self.setup_mode_buttons()
+        self.setup_heatmap_variable_buttons()
         self.setup_legend()
         self.setup_controls()
 
@@ -48,18 +43,19 @@ class HeatMapControlDialog:
 
         self.content.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
 
-    def setup_mode_buttons(self):
+    def setup_heatmap_variable_buttons(self):
 
         # Add a label for radio button group
         lbl_radio = tk.Label(self.frame_mode_buttons, text="Select an Option:", font=("Arial", 12))
         lbl_radio.grid(row=2, column=0, padx=5, pady=5)
 
-        # Add radio buttons for the provided option names
+        # Add radio buttons for the provided option names, by cycling through the option names
+        # The variable that is updated is the image_viewer.heatmap_parameter_value
         for idx, name in enumerate(self.option_names, start=1):
-            radio_btn = tk.Radiobutton(self.frame_mode_buttons, text=name, command=self.on_radio_button_change,
-                                       variable=self.image_viewer.rb_heatmap_parameter_value, value=idx)
+            radio_btn = tk.Radiobutton(self.frame_mode_buttons, text=name, command=self.on_heatmap_variable_change,
+                                       variable=self.image_viewer.heatmap_parameter_value, value=idx)
             radio_btn.grid(row=2 + idx, column=0, padx=5, pady=2, sticky=tk.W)
-        self.image_viewer.rb_heatmap_parameter_value.set(1)
+        self.image_viewer.heatmap_parameter_value.set(1)
 
         lbl_radio.grid(row=1, column=0, padx=5, pady=10)
 
@@ -84,20 +80,23 @@ class HeatMapControlDialog:
         toggle_button.grid(row=0, column=1, padx=5, pady=10)
 
     def on_close(self):
-        self.image_viewer.rb_heatmap_parameter_value.set(-1)
+        # When the user closes the control window, the Viewwe dialog is notified
+        self.image_viewer.heatmap_parameter_value.set(-1)
         self.control_window.destroy()
 
     def on_toggle(self):
+        # If the user presses the toggle button a message is sent to the image viewer
+        # to toggle between the heatmap and the selected squares
         if not self.toggle:
             self.image_viewer.display_selected_squares()
-            self.toggle = True
         else:
             self.image_viewer.display_heatmap()
-            self.toggle = False
-        pass
+        self.toggle = not self.toggle
 
-    def on_radio_button_change(self):
-        min, max = get_heatmap_min_max(self.image_viewer.df_all_squares, self.image_viewer.rb_heatmap_parameter_value.get())
+    def on_heatmap_variable_change(self):
+        # This function is called by the UI when a different heatmap variable is selected
+        # When that happens, the min and max values of the new heatmap are updated
+        min, max = get_heatmap_min_max(self.image_viewer.df_all_squares, self.image_viewer.heatmap_parameter_value.get())
         self.lbl_min.config(text=str(min))
         self.lbl_max.config(text=str(max))
         pass

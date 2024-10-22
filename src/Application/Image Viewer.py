@@ -69,10 +69,10 @@ class ImageViewer:
 
     def setup_heatmap(self):
         self.slider_value = tk.DoubleVar()
-        self.rb_heatmap_parameter_value = tk.IntVar()
-        self.rb_heatmap_parameter_value.set(1)  # Default selection is the first option
+        self.heatmap_parameter_value = tk.IntVar()
+        self.heatmap_parameter_value.set(1)  # Default selection is the first option
         # The update_heatmap_rb_value function is called when the radio button value is changed
-        self.rb_heatmap_parameter_value.trace_add("write", self.update_heatmap_rb_value)
+        self.heatmap_parameter_value.trace_add("write", self.update_heatmap_rb_value)
 
         self.checkbox_value = tk.BooleanVar()
         self.checkbox_value.set(False)  # Default is unchecked
@@ -85,7 +85,6 @@ class ImageViewer:
         self.conf_file = conf_file
         self.mode_dir_or_conf = mode_dir_or_conf
         self.df_all_squares = None
-        self.heatmap_active = False
 
         # UI state variables
         self.start_x = None
@@ -104,6 +103,9 @@ class ImageViewer:
         self.min_track_duration = 0
         self.max_track_duration = 200
         self.neighbour_state = "Free"
+
+        self.select_square_dialog = None
+        self.heatmap_control_dialog = None
 
         msg = f'Image Viewer - {self.user_specified_directory if self.mode_dir_or_conf == "DIRECTORY" else self.user_specified_conf_file}'
         msg += f'{" - NO SAVING" if self.user_specified_mode == "CONF_FILE" else ""}'
@@ -143,7 +145,7 @@ class ImageViewer:
     def setup_frame_images(self):
 
         frame_width = 530
-        frame_height = 670
+        frame_height = 690
 
         self.frame_picture_left = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width,
                                             height=frame_height)
@@ -177,30 +179,31 @@ class ImageViewer:
 
         # Labels for image info
         self.text_for_info1 = StringVar(self.parent, "")
-        lbl_info1 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info1)
+        self.lbl_info1 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info1)
 
         self.text_for_info2 = StringVar(self.parent, "")
-        lbl_info2 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
+        self.lbl_info2 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
 
         self.text_for_info3 = StringVar(self.parent, "")
         self.lbl_info3 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info3)
+
+        self.text_for_info4 = StringVar(self.parent, "")
+        self.lbl_info4 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info4)
 
         # Create a ttk style object
         self.style = ttk.Style()
         self.style.configure("Red.Label", foreground="red")
         self.style.configure("Black.Label", foreground="red")
 
-        # Create a custom style for the label (set foreground to red)
-        self.style.configure("Red.TLabel", foreground="red")
-
         # Bind combobox selection
         self.cb_image_names.bind("<<ComboboxSelected>>", self.image_selected)
 
         # Layout labels and combobox
         self.cb_image_names.grid(column=0, row=1, padx=5, pady=5)
-        lbl_info1.grid(column=0, row=2, padx=5, pady=5)
-        lbl_info2.grid(column=0, row=3, padx=5, pady=5)
+        self.lbl_info1.grid(column=0, row=2, padx=5, pady=5)
+        self.lbl_info2.grid(column=0, row=3, padx=5, pady=5)
         self.lbl_info3.grid(column=0, row=4, padx=5, pady=5)
+        self.lbl_info4.grid(column=0, row=5, padx=5, pady=5)
         lbl_image_bf_name.grid(column=0, row=1, padx=0, pady=0)
 
     def setup_frame_navigation_buttons(self):
@@ -231,7 +234,7 @@ class ImageViewer:
         self.frame_output_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove',
                                                padding=(5, 5, 5, 5))
 
-        self.frame_cells.grid(column=0, row=2, padx=5, pady=5)
+        # self.frame_cells.grid(column=0, row=2, padx=5, pady=5)
         self.frame_output_commands.grid(column=0, row=3, padx=5, pady=5)
 
         self.setup_frame_cells()
@@ -283,6 +286,10 @@ class ImageViewer:
 
         button_width = 12
 
+        self.bn_heatmap = ttk.Button(self.frame_output_commands, text='Heatmap', command=lambda: self.show_heatmap(),
+                                       width=button_width)
+        self.bn_select_squares = ttk.Button(self.frame_output_commands, text='Select Squares', command=lambda: self.select_squares(),
+                                       width=button_width)
         self.bn_histogram = ttk.Button(self.frame_output_commands, text='Histogram', command=lambda: self.histogram(),
                                        width=button_width)
         self.bn_excel = ttk.Button(self.frame_output_commands, text='Excel', command=lambda: self.show_excel(),
@@ -292,10 +299,11 @@ class ImageViewer:
         self.bn_reset = ttk.Button(self.frame_output_commands, text='Reset', command=lambda: self.reset_image(),
                                    width=button_width)
 
-        self.bn_output.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_reset.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_excel.grid(column=0, row=2, padx=5, pady=5)
-        self.bn_histogram.grid(column=0, row=3, padx=5, pady=5)
+        self.bn_heatmap.grid(column=0, row=0, padx=5, pady=5)
+        self.bn_select_squares.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_output.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_reset.grid(column=0, row=3, padx=5, pady=5)
+        self.bn_excel.grid(column=0, row=4, padx=5, pady=5)
 
     def load_images_and_config(self):
 
@@ -325,18 +333,44 @@ class ImageViewer:
         self.img_no = -1
         self.go_forward_backward('FORWARD')
 
+    def show_heatmap(self):
+        # If the heatmap is not already  active, then we need to run the heatmap dialog
+        if not self.heatmap_control_dialog:
+            self.heatmap_control_dialog = HeatMapControlDialog(self)
+            self.img_no -= 1
+            self.go_forward_backward('FORWARD')
+        return
+
+        # Get the slider and neighbour state and save it
+        self.df_experiment.loc[self.image_name, 'Density Ratio Setting'] = self.min_required_density_ratio
+        self.df_experiment.loc[self.image_name, 'Variability Setting'] = self.max_allowable_variability
+        self.df_experiment.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_state
+
+
+    def select_squares(self):
+        self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Variability Setting']
+        self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Density Ratio Setting']
+        self.min_track_duration = 1
+        self.max_track_duration = 199
+
+        if self.select_square_dialog is None:
+            self.select_square_dialog = SelectSquareDialog(self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
+                                                           self.min_track_duration, self.max_track_duration, self.neighbour_state)
+
+        self.experiments_changed = True
+
     def setup_exclude_button(self):
         # Set up the exclude/include button state
 
         row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
         if self.df_experiment.loc[row_index, 'Exclude']:
             self.bn_exclude.config(text='Include')
-            self.text_for_info3.set('Excluded')
-            self.lbl_info3.config(style="Red.Label")
+            self.text_for_info4.set('Excluded')
+            self.lbl_info4.config(style="Red.Label")
         else:
             self.bn_exclude.config(text='Exclude')
-            self.text_for_info3.set('')
-            self.lbl_info3.config(style="Black.Label")
+            self.text_for_info4.set('')
+            self.lbl_info4.config(style="Black.Label")
 
     def get_images(self):
         """
@@ -439,6 +473,9 @@ class ImageViewer:
                 "Square Nrs": square_nrs,
                 "Squares File": self.squares_file_name,
 
+                "Min Required Density Ratio": self.df_experiment.iloc[index]['Density Ratio Setting'],
+                "Max Allowable Variability": self.df_experiment.iloc[index]['Variability Setting'],
+
                 "Tau": tau
             }
 
@@ -505,6 +542,8 @@ class ImageViewer:
         self.text_for_info1.set(cell_info)
         info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
         self.text_for_info2.set(info2)
+        info3 = f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
+        self.text_for_info3.set(info3)
 
     def exinclude(self):
         """
@@ -519,11 +558,14 @@ class ImageViewer:
         if not self.df_experiment.loc[row_index, 'Exclude']:
             self.df_experiment.loc[row_index, 'Exclude'] = True
             self.bn_exclude.config(text='Include')     # Change the button text
-            self.text_for_info3.set('Excluded')        # Change the info text to 'Excluded'
+            self.text_for_info4.set('Excluded')        # Change the info text to 'Excluded'
+            self.lbl_info4.config(style="Red.Label")
+            self.lbl_info4.configure(foreground='red')
         else:
             self.df_experiment.loc[row_index, 'Exclude'] = False
             self.bn_exclude.config(text='Exclude')      # Change the button text
-            self.text_for_info3.set('')
+            self.text_for_info4.set('')
+            self.lbl_info4.config(style="Black.Label")
         self.experiments_changed = True
 
 
@@ -766,15 +808,6 @@ class ImageViewer:
         :return:
         """
 
-        self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Variability Setting']
-        self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Density Ratio Setting']
-        self.min_track_duration = 1
-        self.max_track_duration = 199
-
-        SelectSquareDialog(self, self.update_slider_settings, self.min_required_density_ratio, self.max_allowable_variability,
-                           self.min_track_duration, self.max_track_duration, self.neighbour_state)
-
-        self.experiments_changed = True
 
         self.df_squares['Visible'] = True
         self.df_squares['Neighbour Visible'] = True
@@ -786,39 +819,54 @@ class ImageViewer:
         self.select_squares_for_display()
         self.display_selected_squares()
 
-    def update_slider_settings(self, setting_type, density_ratio, variability, min_duration, max_duration, neighbour_state):
+    def update_select_squares(self,
+                              setting_type: str,
+                              density_ratio: float,
+                              variability: float,
+                              min_duration: float,
+                              max_duration: float,
+                              neighbour_state: str) -> None:
+        """
+        This function is called from the SelectSquareDialog when acontrol has changed or when the control exists. Thisd
+        give an opportuinity to update the settings for the current image
+        :param setting_type:
+        :param density_ratio:
+        :param variability:
+        :param min_duration:
+        :param max_duration:
+        :param neighbour_state:
+        :return:
+        """
         if setting_type == "density_ratio":
             self.min_required_density_ratio = density_ratio
-            print(f'Density Ratio Setting: {density_ratio}')
+            self.df_experiment['Density Ratio Setting'] = density_ratio
+            self.experiments_changed = True
         elif setting_type == "variability":
             self.max_allowed_variability = variability
-            print(f'Variability Setting: {variability}')
-        elif setting_type == "min_duration":
-            self.min_track_duration = min_duration
-            print(f'Min Duration: {min_duration}')
-        elif setting_type == "max_duration":
-            self.max_track_duration
-            print(f'Max Duration: {max_duration}')
+            self.df_experiment['Variability Setting'] = variability
+            self.experiments_changed = True
         elif setting_type == "neighbour":
             self.neighbour_state = neighbour_state
-            print(f'Neighbour Setting: {neighbour_state}')
-        elif setting_type == "all":
+            self.df_experiment['Neighbour Setting'] = neighbour_state
+            self.experiments_changed = True
+        elif setting_type == "min_duration":
+            self.min_track_duration = min_duration
+        elif setting_type == "max_duration":
+            self.max_track_duration = max_duration
 
+        elif setting_type == "all":
             # Set the same settings for all recordings
-            print(f'Setting all recordings to: {density_ratio}, {variability}, {min_duration}, {max_duration}, {neighbour_state}')
             self.min_required_density_ratio = density_ratio
             self.max_allowed_variability = variability
             self.min_track_duration = min_duration
             self.max_track_duration = max_duration
             self.neighbour_state = neighbour_state
 
-            self.experiments_changed = True
             self.df_experiment['Neighbour Setting'] = neighbour_state
             self.df_experiment['Density Ratio Setting'] = density_ratio
             self.df_experiment['Variability Setting'] = variability
-            self.df_experiment['Min Duration'] = min_duration
-            self.df_experiment['Max Duration'] = max_duration
 
+            self.experiments_changed = True
 
         self.select_squares_for_display()
         self.display_selected_squares()
@@ -831,18 +879,6 @@ class ImageViewer:
         :return:
         """
 
-        # If the heatmap is not already  active, then we need to run the heatmap dialog
-        if not self.heatmap_active:
-            self.heatmap_active = True
-            HeatMapControlDialog(self)
-            self.img_no -= 1
-            self.go_forward_backward('FORWARD')
-        return
-
-        # Get the slider and neighbour state and save it
-        self.df_experiment.loc[self.image_name, 'Density Ratio Setting'] = self.min_required_density_ratio
-        self.df_experiment.loc[self.image_name, 'Variability Setting'] = self.max_allowable_variability
-        self.df_experiment.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_state
 
         # Generate the graphpad and pdf directories if needed
         # create_output_directories_for_graphpad(self.experiment_directory)
@@ -850,12 +886,6 @@ class ImageViewer:
         # Generate the graphpad info for summary statistics
         # df_stats = analyse_all_images(self.experiment_directory)
         # create_summary_graphpad(self.experiment_directory, df_stats)
-
-    def set_for_all_slider(self):
-        self.experiments_changed = True
-
-        self.df_experiment['Density Ratio Setting'] = self.sc_density_ratio.get()
-        self.df_experiment['Variability Setting'] = self.sc_variability.get()
 
     def track_duration_changed(self, _):
         self.select_squares_for_display()
@@ -1181,9 +1211,6 @@ class ImageViewer:
         self.display_selected_squares()
 
     def configure_widgets_state(self, state):
-        self.rb_neighbour_free.configure(state=state)
-        self.rb_neighbour_strict.configure(state=state)
-        self.rb_neighbour_relaxed.configure(state=state)
 
         self.rb_cell0.configure(state=state)
         self.rb_cell1.configure(state=state)
@@ -1193,19 +1220,6 @@ class ImageViewer:
         self.rb_cell5.configure(state=state)
         self.rb_cell6.configure(state=state)
 
-        self.sc_variability.configure(state=state, takefocus=(state == NORMAL))
-        self.sc_density_ratio.configure(state=state, takefocus=(state == NORMAL))
-
-    def select_neighbour_button(self):
-
-        self.experiments_changed = True
-
-        self.cn_left_image.delete("all")
-        self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-
-        self.df_squares['Neighbour Setting'] = self.neighbour_state
-        self.select_squares_for_display()
-        self.display_selected_squares()
 
     def go_forward_backward(self, direction):
         # The function is called when we switch image
@@ -1255,7 +1269,7 @@ class ImageViewer:
         # Set the name of the image
         self.image_name = self.list_images[self.img_no]['Left Image Name']
 
-        if self.heatmap_active:
+        if self.heatmap_control_dialog:
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
             self.display_heatmap()
@@ -1289,10 +1303,12 @@ class ImageViewer:
         cell_info = f"({self.list_images[self.img_no]['Cell Type']}) - ({adj_label}) - ({self.list_images[self.img_no]['Probe Type']}) - ({self.list_images[self.img_no]['Probe']})"
         self.text_for_info1.set(cell_info)
 
-        info1 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
+        info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
         if self.list_images[self.img_no]['Tau'] != 0:
-            info1 = f"{info1} - Tau: {int(self.list_images[self.img_no]['Tau'])}"
-        self.text_for_info2.set(info1)
+            info2 = f"{info2} - Tau: {int(self.list_images[self.img_no]['Tau'])}"
+        self.text_for_info2.set(info2)
+        info3 = f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
+        self.text_for_info3.set(info3)
 
         # Set correct state of Forward and back buttons
         if self.img_no == len(self.list_images) - 1:
@@ -1312,10 +1328,10 @@ class ImageViewer:
         row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
         if self.df_experiment.loc[row_index, 'Exclude']:
             self.bn_exclude.config(text='Include')
-            self.text_for_info3.set("Excluded")
+            self.text_for_info4.set("Excluded")
         else:
             self.bn_exclude.config(text='Exclude')
-            self.text_for_info3.set("")
+            self.text_for_info4.set("")
 
         # Reset user change
         self.square_changed = False
@@ -1343,19 +1359,38 @@ class ImageViewer:
                                              self.image_name + '-squares.csv')
         save_squares_to_file(self.df_squares, squares_file_path)  # TODO
 
-    # ---------------------------------------------
-    # ------------------ Heatmap ------------------
-    # ---------------------------------------------
 
-    def update_heatmap_rb_value(self, *args):
+    # ---------------------------------------------------------------------------------------
+    # Squares Dialog Interaction
+    # ---------------------------------------------------------------------------------------
+
+    def rb_select_square_value(self, *args):        # @@
 
         selected_idx = self.rb_heatmap_parameter_value.get()
         if selected_idx == -1:
-            self.heatmap_active = False
-            self.select_squares_for_display()
+            self.select_square_dialog_control_dialog = None
             self.display_selected_squares()
         else:
-            self.heatmap_active = True
+
+            self.img_no -= 1
+            self.go_forward_backward('FORWARD')
+
+        # selected_name = self.option_names[selected_idx - 1]  # Subtract 1 to match the list index
+        # self.lbl_radio_value.config(text=f"Selected Option: {selected_name}")
+
+
+    # ---------------------------------------------------------------------------------------
+    # Heatmap Dialog Interaction
+    # ---------------------------------------------------------------------------------------
+
+    def update_heatmap_rb_value(self, *args):
+
+        selected_idx = self.heatmap_parameter_value.get()
+        if selected_idx == -1:
+            self.heatmap_control_dialog = None
+            self.display_selected_squares()
+        else:
+
             self.img_no -= 1
             self.go_forward_backward('FORWARD')
 
@@ -1368,17 +1403,12 @@ class ImageViewer:
         self.cn_left_image.delete("all")
 
         colors = get_colormap_colors('Blues', 20)
-        heatmap_mode = self.rb_heatmap_parameter_value.get()
+        heatmap_mode = self.heatmap_parameter_value.get()
 
         heatmapdata, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode)
 
         for square_number, value in enumerate(heatmapdata):
             self.draw_heatmap_square(square_number, value, min_val, max_val, colors)
-
-        # if len(self.df_squares) > 0:
-        #     for index, squares_row in self.df_squares.iterrows():
-        #         if squares_row['Visible']:
-        #             self.draw_single_square(squares_row, 'black')
 
     def draw_heatmap_square(self, square_nr, value, min_value, max_value, colors):
 
@@ -1394,6 +1424,11 @@ class ImageViewer:
             col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
             fill=color, outline=color)
 
+
+
+# ---------------------------------------------------------------------------------------
+# Miscellaneous functions
+# ---------------------------------------------------------------------------------------
 
 def save_as_png(canvas, file_name):
     # First save as a postscript file
@@ -1424,6 +1459,11 @@ def save_square_info_to_batch(self):  # TODO
         self.df_experiment.loc[index, 'Nr Total Squares'] = nr_total_squares
         self.df_experiment.loc[index, 'Squares Ratio'] = squares_ratio
 
+
+
+# ---------------------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     root = tk.Tk()
