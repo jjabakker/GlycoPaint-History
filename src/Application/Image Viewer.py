@@ -96,14 +96,14 @@ class ImageViewer:
         self.show_squares = True
         self.square_changed = False
         self.experiments_changed = False
-        self.neighbour_mode = ""
         self.select_mode = ""
         self.pop_square_info = None
 
         self.max_allowable_variability = 5
-        self.min_required_density_ratio = 10
+        self.min_required_density_ratio = 2
         self.min_track_duration = 0
         self.max_track_duration = 200
+        self.neighbour_state = "Free"
 
         msg = f'Image Viewer - {self.user_specified_directory if self.mode_dir_or_conf == "DIRECTORY" else self.user_specified_conf_file}'
         msg += f'{" - NO SAVING" if self.user_specified_mode == "CONF_FILE" else ""}'
@@ -121,7 +121,7 @@ class ImageViewer:
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_navigation_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_filter = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        # self.frame_filter = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_duration_mode = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
         self.frame_images.grid(column=0, row=0, rowspan=2, padx=5, pady=5, sticky=tk.N)
@@ -132,7 +132,7 @@ class ImageViewer:
         self.setup_frame_images()
         self.setup_frame_navigation_buttons()
         self.setup_frame_controls()
-        self.setup_frame_filter()
+        #self.setup_frame_filter()
 
         self.content.grid(column=0, row=0)
 
@@ -227,46 +227,15 @@ class ImageViewer:
 
         frame_width = 30
 
-        self.frame_neighbours = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5),
-                                          width=frame_width)
         self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_output_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove',
                                                padding=(5, 5, 5, 5))
 
-        self.frame_neighbours.grid(column=0, row=1, padx=5, pady=5, sticky=tk.NSEW)
         self.frame_cells.grid(column=0, row=2, padx=5, pady=5)
         self.frame_output_commands.grid(column=0, row=3, padx=5, pady=5)
 
-        self.setup_frame_neighbours()
         self.setup_frame_cells()
         self.setup_frame_output_commands()
-
-    def setup_frame_neighbours(self):
-        # This frame is part of frame_controls and contains the following radio buttons: rb_neighbour_free, rb_neighbour_strict, rb_neighbour_relaxed, bn_set_neighbours_all
-
-        self.neighbour_var = StringVar(value="")
-        self.rb_neighbour_free = Radiobutton(self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12,
-                                             value="Free", command=self.select_neighbour_button, anchor=tk.W)
-        self.rb_neighbour_strict = Radiobutton(self.frame_neighbours, text="Strict", variable=self.neighbour_var,
-                                               width=12, value="Strict", command=self.select_neighbour_button,
-                                               anchor=tk.W)
-        self.rb_neighbour_relaxed = Radiobutton(self.frame_neighbours, text="Relaxed", variable=self.neighbour_var,
-                                                width=12, value="Relaxed", command=self.select_neighbour_button,
-                                                anchor=tk.W)
-        self.bn_set_neighbours_all = Button(self.frame_neighbours, text="Set for All",
-                                            command=lambda: self.set_for_all_neighbour_state())
-
-        # Place the radio buttons and button in the grid
-        self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_relaxed.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_strict.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
-        self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
-
-        # Place the radio buttons and button in the grid
-        self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_relaxed.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_strict.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
-        self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_cells(self):
         """
@@ -328,101 +297,18 @@ class ImageViewer:
         self.bn_excel.grid(column=0, row=2, padx=5, pady=5)
         self.bn_histogram.grid(column=0, row=3, padx=5, pady=5)
 
-    def setup_frame_filter(self):
-        # This frame is part of the content frame and contains the following frames: frame_variability, frame_density_ratio
-
-        self.frame_variability = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_density_ratio = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_duration = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-
-        self.setup_frame_variability()
-        self.setup_frame_density_ratio()
-        self.setup_frame_duration()
-
-        self.frame_variability.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
-        self.frame_density_ratio.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
-        self.frame_duration.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
-
-        # The set for all button ....
-        self.bn_set_for_all_slider = ttk.Button(self.frame_filter, text='Set for All', command=self.set_for_all_slider)
-        self.bn_set_for_all_slider.grid(column=0, row=3, padx=5, pady=5)
-
-    def setup_frame_variability(self):
-        # Define the Max Allowable Variability slider ....
-
-        self.variability = DoubleVar()
-        self.lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
-        self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability,
-                                       orient='vertical', resolution=0.5)
-        self.sc_variability.bind("<ButtonRelease-1>", self.variability_changed)
-        self.lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
-        self.sc_variability.grid(column=0, row=1, padx=5, pady=5)
-
-    def setup_frame_density_ratio(self):
-        # Define the Min Required Density Ratio slider ...
-
-        self.density_ratio = DoubleVar()
-        self.lbl_density_ratio_text = ttk.Label(self.frame_density_ratio, text='Min Required Density Ratio', width=20)
-        self.sc_density_ratio = tk.Scale(self.frame_density_ratio, from_=2, to=40, variable=self.density_ratio,
-                                         orient='vertical', resolution=0.1)
-        self.sc_density_ratio.bind("<ButtonRelease-1>", self.density_ratio_changed)
-        self.lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
-        self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
-
-    def setup_frame_duration(self):
-        # Define the Track Duration sliders ...
-
-        self.frame_max_duration = ttk.Frame(self.frame_duration, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_min_duration = ttk.Frame(self.frame_duration, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-
-        self.setup_max_duration()
-        self.setup_min_duration()
-
-        self.lbl_track_duration_text = ttk.Label(self.frame_duration, text='Track Duration', width=10)
-
-        self.frame_duration.columnconfigure(0, weight=1)  # First column
-        self.frame_duration.columnconfigure(1, weight=1)  # Second column
-        self.lbl_track_duration_text.grid(row=0, column=0, padx=5, pady=5, columnspan=2, sticky=tk.N)
-        self.frame_max_duration.grid(row=1, column=1, padx=5, pady=5, sticky=tk.N)
-        self.frame_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
-
-    def setup_max_duration(self):
-        # Define the max duration slider .....
-
-        self.track_max_duration = DoubleVar(value=200)
-        self.lbl_track_max_duration_text = ttk.Label(self.frame_max_duration, text='Max', width=10)
-        self.sc_track_max_duration = tk.Scale(self.frame_max_duration, from_=0, to=200,
-                                              variable=self.track_max_duration,
-                                              orient='vertical', resolution=0.1)
-        self.sc_track_max_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
-
-        self.lbl_track_max_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
-        self.sc_track_max_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
-
-    def setup_min_duration(self):
-        # Define the min duration slider .....
-
-        self.track_min_duration = DoubleVar(value=0)
-        self.lbl_track_min_duration_text = ttk.Label(self.frame_min_duration, text='Min', width=10)
-        self.sc_track_min_duration = tk.Scale(self.frame_min_duration, from_=0, to=200,
-                                              variable=self.track_min_duration,
-                                              orient='vertical', resolution=0.1)
-        self.sc_track_min_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
-        self.lbl_track_min_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
-        self.sc_track_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
-
     def load_images_and_config(self):
 
         if self.user_specified_mode == "DIRECTORY":
             self.experiment_directory_path = self.user_specified_directory
             self.experiment_bf_directory = os.path.join(self.experiment_directory_path, 'Converted BF Images')
-            experiment_tm_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
+            self.experiment_tm_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
         else:
             # self.experiment_directory_path is not set in this case    TODO: Check when it is set
             self.project_directory = os.path.split(self.user_specified_conf_file)[0]
-            experiment_tm_file_path = self.user_specified_conf_file
+            self.experiment_tm_file_path = self.user_specified_conf_file
 
-        self.df_experiment = read_experiment_file(experiment_tm_file_path, True)
+        self.df_experiment = read_experiment_file(self.experiment_tm_file_path, True)
         if self.df_experiment is None:
             self.show_error_and_exit("No 'experiment_squares.csv.csv' file, Did you select an image directory?")
 
@@ -451,12 +337,6 @@ class ImageViewer:
             self.bn_exclude.config(text='Exclude')
             self.text_for_info3.set('')
             self.lbl_info3.config(style="Black.Label")
-
-    def set_for_all_neighbour_state(self):
-        # Set the neighbour state for all images as specified in the radio buttons
-
-        self.experiments_changed = True
-        self.df_experiment['Neighbour Setting'] = self.neighbour_var.get()
 
     def get_images(self):
         """
@@ -735,16 +615,17 @@ class ImageViewer:
         msg = f"Do you want to save changes to {'experiments' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
         if response is True:
-            self.save_density_ratio_slider_state_into_df_experiment()
-            self.save_variability_slider_state_into_df_experiment()
-            self.save_neighbour_state_into_df_experiment()
+
+            # Store the slider positions in the experiments df
+            self.df_experiment.loc[self.image_name, 'Density Ratio Setting'] = self.min_required_density_ratio
+            self.df_experiment.loc[self.image_name, 'Variability Setting'] = self.max_allowable_variability
+            self.df_experiment.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_state
 
             # Write the Visible Squares visibility information into the squares file
-            self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
+            self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &     # TODO: Duration?
                                           self.df_squares['Variability Visible'] &
-                                          self.df_squares['Duration Visible'])
-            self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(
-                self.df_squares[self.df_squares['Visible']])
+                                          self.df_squares['Neighbour Visible'])
+            self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
             save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)     # TODO: Check if this is correct
         if response is not None:
             self.experiments_changed = False
@@ -792,27 +673,6 @@ class ImageViewer:
         index = self.list_of_image_names.index(image_name)
         self.img_no = index - 1
         self.go_forward_backward('FORWARD')
-
-    def set_variability_slider_state(self):
-        max_allowed_variability = self.df_experiment.loc[self.image_name]['Variability Setting']
-        self.sc_variability.set(max_allowed_variability)
-
-    def set_density_ratio_slider_state(self):
-        min_required_density = self.df_experiment.loc[self.image_name]['Density Ratio Setting']
-        self.sc_density_ratio.set(min_required_density)
-
-    def set_neighbour_state(self):
-        neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Setting']
-        self.neighbour_var.set(neighbour_state)
-
-    def save_variability_slider_state_into_df_experiment(self):
-        self.df_experiment.loc[self.image_name, 'Variability Setting'] = round(self.sc_variability.get(), 1)
-
-    def save_density_ratio_slider_state_into_df_experiment(self):
-        self.df_experiment.loc[self.image_name, 'Density Ratio Setting'] = round(self.sc_density_ratio.get(), 1)
-
-    def save_neighbour_state_into_df_experiment(self):
-        self.df_experiment.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_var.get()
 
     def histogram(self):
 
@@ -906,8 +766,13 @@ class ImageViewer:
         :return:
         """
 
-        SelectSquareDialog(self, self.update_slider_settings)
+        self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Variability Setting']
+        self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Density Ratio Setting']
+        self.min_track_duration = 1
+        self.max_track_duration = 199
 
+        SelectSquareDialog(self, self.update_slider_settings, self.min_required_density_ratio, self.max_allowable_variability,
+                           self.min_track_duration, self.max_track_duration, self.neighbour_state)
 
         self.experiments_changed = True
 
@@ -921,7 +786,7 @@ class ImageViewer:
         self.select_squares_for_display()
         self.display_selected_squares()
 
-    def update_slider_settings(self, setting_type, density_ratio, variability, min_duration, max_duration):
+    def update_slider_settings(self, setting_type, density_ratio, variability, min_duration, max_duration, neighbour_state):
         if setting_type == "density_ratio":
             self.min_required_density_ratio = density_ratio
             print(f'Density Ratio Setting: {density_ratio}')
@@ -934,6 +799,26 @@ class ImageViewer:
         elif setting_type == "max_duration":
             self.max_track_duration
             print(f'Max Duration: {max_duration}')
+        elif setting_type == "neighbour":
+            self.neighbour_state = neighbour_state
+            print(f'Neighbour Setting: {neighbour_state}')
+        elif setting_type == "all":
+
+            # Set the same settings for all recordings
+            print(f'Setting all recordings to: {density_ratio}, {variability}, {min_duration}, {max_duration}, {neighbour_state}')
+            self.min_required_density_ratio = density_ratio
+            self.max_allowed_variability = variability
+            self.min_track_duration = min_duration
+            self.max_track_duration = max_duration
+            self.neighbour_state = neighbour_state
+
+            self.experiments_changed = True
+            self.df_experiment['Neighbour Setting'] = neighbour_state
+            self.df_experiment['Density Ratio Setting'] = density_ratio
+            self.df_experiment['Variability Setting'] = variability
+            self.df_experiment['Min Duration'] = min_duration
+            self.df_experiment['Max Duration'] = max_duration
+
 
         self.select_squares_for_display()
         self.display_selected_squares()
@@ -955,9 +840,9 @@ class ImageViewer:
         return
 
         # Get the slider and neighbour state and save it
-        self.save_density_ratio_slider_state_into_df_experiment()
-        self.save_variability_slider_state_into_df_experiment()
-        self.save_neighbour_state_into_df_experiment()
+        self.df_experiment.loc[self.image_name, 'Density Ratio Setting'] = self.min_required_density_ratio
+        self.df_experiment.loc[self.image_name, 'Variability Setting'] = self.max_allowable_variability
+        self.df_experiment.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_state
 
         # Generate the graphpad and pdf directories if needed
         # create_output_directories_for_graphpad(self.experiment_directory)
@@ -1098,10 +983,10 @@ class ImageViewer:
 
         # All squares are visible, unless the Relaxed or Strict neighbour state is not satisfied
         self.df_squares['Neighbour Visible'] = True
-        neighbour_state = self.neighbour_var.get()
-        if neighbour_state == "Relaxed":
+
+        if self.neighbour_state == "Relaxed":
             eliminate_isolated_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
-        elif neighbour_state == "Strict":
+        elif self.neighbour_state == "Strict":
             eliminate_isolated_squares_strict(self.df_squares, self.nr_of_squares_in_row)
 
         # Squares are visible if they are visible based on the sliders and the neighbour state and if there is a valid Tau
@@ -1318,9 +1203,7 @@ class ImageViewer:
         self.cn_left_image.delete("all")
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
 
-        self.neighbour_mode = self.neighbour_var.get()
-
-        self.df_squares['Neighbour Setting'] = self.neighbour_mode
+        self.df_squares['Neighbour Setting'] = self.neighbour_state
         self.select_squares_for_display()
         self.display_selected_squares()
 
@@ -1382,10 +1265,15 @@ class ImageViewer:
 
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
-            self.set_variability_slider_state()
-            self.set_density_ratio_slider_state()
-            # Duration? TODO
-            self.set_neighbour_state()
+
+            # Set the filter parameters with values retrieved from the experiment file
+            self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Variability Setting']
+            self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Density Ratio Setting']
+            self.neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Setting']
+            self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
+            self.max_track_duration = 200 # self.df_experiment.loc[self.image_name]['Max Duration']
+            self.min_required_density = self.df_experiment.loc[self.image_name]['Density Ratio Setting']
+
             self.select_squares_for_display()
             self.display_selected_squares()
 
