@@ -122,7 +122,6 @@ class ImageViewer:
         self.frame_images.grid(column=0, row=0, rowspan=2, padx=5, pady=5, sticky=tk.N)
         self.frame_navigation_buttons.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
         self.frame_controls.grid(column=1, row=0, rowspan=2, padx=5, pady=5, sticky=N)
-        # self.frame_filter.grid(column=2, row=0, padx=5, pady=5, sticky=N)
         self.frame_duration_mode.grid(column=2, row=1, padx=5, pady=5, sticky=N)
 
         self.setup_frame_images()
@@ -895,13 +894,14 @@ class ImageViewer:
         print(f'The median Tau value:          {tau_median}')
         print(f'The Tau standard deviation:    {tau_std}')
 
+
     def reset_image(self):
         """
         Resets the current image. All squares are displayed, but the variability and density ratio sliders are applied
         :return:
         """
 
-        SelectSquareDialog(self)
+        SelectSquareDialog(self, self.update_settings)
 
 
         self.experiments_changed = True
@@ -915,6 +915,16 @@ class ImageViewer:
 
         self.select_squares_for_display()
         self.display_selected_squares()
+
+    def update_settings(self, setting_type, density_ratio, variability, min_duration, max_duration):
+        if setting_type == "density_ratio":
+            print(f'Density Ratio Setting: {density_ratio}')
+        elif setting_type == "variability":
+            print(f'Variability Setting: {variability}')
+        elif setting_type == "min_duration":
+            print(f'Min Duration: {min_duration}')
+        elif setting_type == "max_duration":
+            print(f'Max Duration: {max_duration}')
 
     def run_output(self):
         """
@@ -1359,8 +1369,8 @@ class ImageViewer:
 
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
-            self.set_variability_slider_state()
-            self.set_density_ratio_slider_state()
+            #self.set_variability_slider_state()
+            #self.set_density_ratio_slider_state()
             # Duration? TODO
             self.set_neighbour_state()
             self.select_squares_for_display()
