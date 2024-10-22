@@ -18,9 +18,9 @@ if __name__ == '__main__':
     # Example usage
     paint_config = load_paint_config('/Users/hans/Paint Code Local/src/Config/Paint.json')
 
-    if config:
-        plot = config['Generate Squares']['plotfiles']
-        print(f"App Name: {config['app_name']}")
-        print(f"Logging Level: {config['settings']['logging']['level']}")
-        print(f"Feature X Enabled: {config['features']['enable_feature_x']}")
+     if paint_config:
+        plot = paint_config['Generate Squares']['plotfiles']
+        print(f"App Name: {paint_config['app_name']}")
+        print(f"Logging Level: {paint_config['settings']['logging']['level']}")
+        print(f"Feature X Enabled: {paint_config['features']['enable_feature_x']}")
 ''
