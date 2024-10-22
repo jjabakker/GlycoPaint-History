@@ -42,8 +42,8 @@ class SelectSquareDialog:
         self.setup_frame_density_ratio()
         self.setup_frame_duration()
 
-        self.frame_variability.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N)
-        self.frame_density_ratio.grid(column=0, row=1, padx=5, pady=5, sticky=tk.N)
+        self.frame_variability.grid(column=0, row=0, padx=5, pady=5, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.frame_density_ratio.grid(column=0, row=1, padx=5, pady=5, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.frame_duration.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
 
         # The set for all button
