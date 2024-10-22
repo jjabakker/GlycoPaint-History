@@ -67,12 +67,22 @@ class ImageViewer:
         # Ensure the user can't close the window by clicking the X button
         self.parent.protocol("WM_DELETE_WINDOW", self.exit_viewer)
 
+    def setup_select_square(self):
+        self.select_square = tk.DoubleVar()
+        self.select_square_parameter_value = tk.IntVar()
+        self.select_square_parameter_value.set(1)  # Default selection is the first option
+        # The update_heatmap_rb_value function is called when the radio button value is changed
+        self.select_square_parameter_value.trace_add("write", self.update_heatmap_rb_value)
+
+        self.checkbox_value = tk.BooleanVar()
+        self.checkbox_value.set(False)  # Default is unchecked
+
     def setup_heatmap(self):
         self.slider_value = tk.DoubleVar()
-        self.heatmap_parameter_value = tk.IntVar()
-        self.heatmap_parameter_value.set(1)  # Default selection is the first option
+        self.heatmap_option = tk.IntVar()
+        self.heatmap_option.set(1)  # Default selection is the first option
         # The update_heatmap_rb_value function is called when the radio button value is changed
-        self.heatmap_parameter_value.trace_add("write", self.update_heatmap_rb_value)
+        self.heatmap_option.trace_add("write", self.update_heatmap_rb_value)
 
         self.checkbox_value = tk.BooleanVar()
         self.checkbox_value.set(False)  # Default is unchecked
@@ -837,24 +847,23 @@ class ImageViewer:
         :param neighbour_state:
         :return:
         """
-        if setting_type == "density_ratio":
+        if setting_type == "Min Required Density Ratio":
             self.min_required_density_ratio = density_ratio
             self.df_experiment['Density Ratio Setting'] = density_ratio
             self.experiments_changed = True
-        elif setting_type == "variability":
+        elif setting_type == "Max Allowable Variability":
             self.max_allowed_variability = variability
             self.df_experiment['Variability Setting'] = variability
             self.experiments_changed = True
-        elif setting_type == "neighbour":
+        elif setting_type == "Neighbour Mode":
             self.neighbour_state = neighbour_state
             self.df_experiment['Neighbour Setting'] = neighbour_state
             self.experiments_changed = True
-        elif setting_type == "min_duration":
+        elif setting_type == "Min Track Duration":
             self.min_track_duration = min_duration
-        elif setting_type == "max_duration":
+        elif setting_type == "Max Track Duration":
             self.max_track_duration = max_duration
-
-        elif setting_type == "all":
+        elif setting_type == "Set for All":
             # Set the same settings for all recordings
             self.min_required_density_ratio = density_ratio
             self.max_allowed_variability = variability
@@ -867,6 +876,8 @@ class ImageViewer:
             self.df_experiment['Variability Setting'] = variability
 
             self.experiments_changed = True
+        else:
+            paint_logger.error(f"Unknown setting type: {setting_type}")
 
         self.select_squares_for_display()
         self.display_selected_squares()
@@ -1364,14 +1375,13 @@ class ImageViewer:
     # Squares Dialog Interaction
     # ---------------------------------------------------------------------------------------
 
-    def rb_select_square_value(self, *args):        # @@
+    def select_square_value(self, *args):        # @@
 
-        selected_idx = self.rb_heatmap_parameter_value.get()
+        selected_idx = self.heatmap_option.get()
         if selected_idx == -1:
             self.select_square_dialog_control_dialog = None
             self.display_selected_squares()
         else:
-
             self.img_no -= 1
             self.go_forward_backward('FORWARD')
 
@@ -1385,7 +1395,7 @@ class ImageViewer:
 
     def update_heatmap_rb_value(self, *args):
 
-        selected_idx = self.heatmap_parameter_value.get()
+        selected_idx = self.heatmap_option.get()
         if selected_idx == -1:
             self.heatmap_control_dialog = None
             self.display_selected_squares()
@@ -1403,7 +1413,7 @@ class ImageViewer:
         self.cn_left_image.delete("all")
 
         colors = get_colormap_colors('Blues', 20)
-        heatmap_mode = self.heatmap_parameter_value.get()
+        heatmap_mode = self.heatmap_option.get()
 
         heatmapdata, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode)
 
