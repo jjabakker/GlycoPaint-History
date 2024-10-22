@@ -100,6 +100,11 @@ class ImageViewer:
         self.select_mode = ""
         self.pop_square_info = None
 
+        self.max_allowable_variability = 5
+        self.min_required_density_ratio = 10
+        self.min_track_duration = 0
+        self.max_track_duration = 200
+
         msg = f'Image Viewer - {self.user_specified_directory if self.mode_dir_or_conf == "DIRECTORY" else self.user_specified_conf_file}'
         msg += f'{" - NO SAVING" if self.user_specified_mode == "CONF_FILE" else ""}'
         self.parent.title(msg)
@@ -901,7 +906,7 @@ class ImageViewer:
         :return:
         """
 
-        SelectSquareDialog(self, self.update_settings)
+        SelectSquareDialog(self, self.update_slider_settings)
 
 
         self.experiments_changed = True
@@ -910,21 +915,29 @@ class ImageViewer:
         self.df_squares['Neighbour Visible'] = True
         self.df_squares['Variability Visible'] = True
         self.df_squares['Duration Visible'] = True
-        # self.df_squares['Density Ration Selected'] = True
+        # self.df_squares['Density Ratio Selected'] = True
         self.df_squares['Cell Id'] = 0
 
         self.select_squares_for_display()
         self.display_selected_squares()
 
-    def update_settings(self, setting_type, density_ratio, variability, min_duration, max_duration):
+    def update_slider_settings(self, setting_type, density_ratio, variability, min_duration, max_duration):
         if setting_type == "density_ratio":
+            self.min_required_density_ratio = density_ratio
             print(f'Density Ratio Setting: {density_ratio}')
         elif setting_type == "variability":
+            self.max_allowed_variability = variability
             print(f'Variability Setting: {variability}')
         elif setting_type == "min_duration":
+            self.min_track_duration = min_duration
             print(f'Min Duration: {min_duration}')
         elif setting_type == "max_duration":
+            self.max_track_duration
             print(f'Max Duration: {max_duration}')
+
+        self.select_squares_for_display()
+        self.display_selected_squares()
+
 
     def run_output(self):
         """
@@ -1070,17 +1083,17 @@ class ImageViewer:
         # All squares are invisible, unless the variability is sufficiently small
         self.df_squares['Variability Visible'] = False
         self.df_squares.loc[
-            self.df_squares['Variability'] <= round(self.sc_variability.get(), 1), 'Variability Visible'] = True
+            self.df_squares['Variability'] <= round(self.max_allowable_variability, 1), 'Variability Visible'] = True
 
         # All squares are invisible, unless the density ratio is sufficiently large
         self.df_squares['Density Ratio Visible'] = False
         self.df_squares.loc[
-            self.df_squares['Density Ratio'] >= round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = True
+            self.df_squares['Density Ratio'] >= round(self.min_required_density_ratio, 1), 'Density Ratio Visible'] = True
 
         # All squares are invisible, unless the max track duration is within the min and max limits
         self.df_squares['Duration Visible'] = False
-        mask = (self.df_squares['Max Track Duration'] > self.track_min_duration.get()) & \
-               (self.df_squares['Max Track Duration'] < self.track_max_duration.get())
+        mask = (self.df_squares['Max Track Duration'] > self.min_track_duration) & \
+               (self.df_squares['Max Track Duration'] < self.max_track_duration)
         self.df_squares.loc[mask, 'Duration Visible'] = True
 
         # All squares are visible, unless the Relaxed or Strict neighbour state is not satisfied
@@ -1369,8 +1382,8 @@ class ImageViewer:
 
             self.squares_file_name = self.list_images[self.img_no]['Squares File']
             self.df_squares = read_squares_from_file(self.squares_file_name)
-            #self.set_variability_slider_state()
-            #self.set_density_ratio_slider_state()
+            self.set_variability_slider_state()
+            self.set_density_ratio_slider_state()
             # Duration? TODO
             self.set_neighbour_state()
             self.select_squares_for_display()
