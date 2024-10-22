@@ -90,9 +90,10 @@ class ImageViewer:
         self.show_squares_numbers = True
         self.show_squares = True
         self.square_changed = False
-        self.experiments_squares_changed = False
+        self.experiments_changed = False
         self.neighbour_mode = ""
         self.select_mode = ""
+        self.pop_square_info = None
 
         self.parent.title(
             f'Image Viewer - {self.user_specified_directory if self.mode_dir_or_conf == "DIRECTORY" else self.user_specified_conf_file}')
@@ -121,7 +122,6 @@ class ImageViewer:
         self.setup_frame_navigation_buttons()
         self.setup_frame_controls()
         self.setup_frame_filter()
-        # self.setup_frame_duration_mode()
 
         self.content.grid(column=0, row=0)
 
@@ -250,7 +250,11 @@ class ImageViewer:
         self.bn_set_neighbours_all.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_cells(self):
-        # This frame is part of frame_controls and contains the following radio buttons: rb_cell0, rb_cell1, rb_cell2, rb_cell3, rb_cell4, rb_cell5, rb_cell6
+        """
+        This frame is part of frame_controls and contains the cell selection radio buttons:
+
+        :return:
+        """
 
         width_rb = 12
         self.cell_var = StringVar(value=1)
@@ -325,28 +329,29 @@ class ImageViewer:
         self.bn_set_for_all_slider.grid(column=0, row=3, padx=5, pady=5)
 
     def setup_frame_variability(self):
-        # The Max Allowable Variability slider ....
+        # Define the Max Allowable Variability slider ....
 
         self.variability = DoubleVar()
         self.lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
         self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability,
-                                       orient='vertical', resolution=0.5, command=self.variability_changing)
+                                       orient='vertical', resolution=0.5)
         self.sc_variability.bind("<ButtonRelease-1>", self.variability_changed)
         self.lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_variability.grid(column=0, row=1, padx=5, pady=5)
 
     def setup_frame_density_ratio(self):
-        # The Min Required Density Ratio slider ...
+        # Define the Min Required Density Ratio slider ...
 
         self.density_ratio = DoubleVar()
         self.lbl_density_ratio_text = ttk.Label(self.frame_density_ratio, text='Min Required Density Ratio', width=20)
         self.sc_density_ratio = tk.Scale(self.frame_density_ratio, from_=2, to=40, variable=self.density_ratio,
-                                         orient='vertical', resolution=0.1, command=self.density_ratio_changing)
+                                         orient='vertical', resolution=0.1)
         self.sc_density_ratio.bind("<ButtonRelease-1>", self.density_ratio_changed)
         self.lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
 
     def setup_frame_duration(self):
+        # Define the Track Duration sliders ...
 
         self.frame_max_duration = ttk.Frame(self.frame_duration, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_min_duration = ttk.Frame(self.frame_duration, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
@@ -363,30 +368,29 @@ class ImageViewer:
         self.frame_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
 
     def setup_max_duration(self):
-        # The max duration slider .....
+        # Define the max duration slider .....
+
         self.track_max_duration = DoubleVar(value=200)
         self.lbl_track_max_duration_text = ttk.Label(self.frame_max_duration, text='Max', width=10)
         self.sc_track_max_duration = tk.Scale(self.frame_max_duration, from_=0, to=200,
                                               variable=self.track_max_duration,
-                                              orient='vertical', resolution=0.1, command=self.track_duration_changing)
+                                              orient='vertical', resolution=0.1)
         self.sc_track_max_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
 
         self.lbl_track_max_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
         self.sc_track_max_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
 
     def setup_min_duration(self):
-        # The min duration slider .....
+        # Define the min duration slider .....
+
         self.track_min_duration = DoubleVar(value=0)
         self.lbl_track_min_duration_text = ttk.Label(self.frame_min_duration, text='Min', width=10)
         self.sc_track_min_duration = tk.Scale(self.frame_min_duration, from_=0, to=200,
                                               variable=self.track_min_duration,
-                                              orient='vertical', resolution=0.1, command=self.track_duration_changing)
+                                              orient='vertical', resolution=0.1)
         self.sc_track_min_duration.bind("<ButtonRelease-1>", self.track_duration_changed)
         self.lbl_track_min_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
         self.sc_track_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
-
-    def setup_frame_duration_mode(self):
-        pass
 
     def get_experiment_directory_from_conf_file(self, index=0):
         experiment = str(self.df_experiment.iloc[index]['Experiment Date'])
@@ -417,7 +421,7 @@ class ImageViewer:
         self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
         self.cb_image_names['values'] = self.list_of_image_names
 
-        self.update_image_display()
+        self.initialise_image_display()
         self.img_no = -1
         self.go_forward_backward('FORWARD')
 
@@ -436,10 +440,16 @@ class ImageViewer:
                 self.text_for_info3.set('')
 
     def set_for_all_neighbour_state(self):
-        self.experiments_squares_changed = True
+        # Set the neighbour state for all images as specified in the radio buttons
+
+        self.experiments_changed = True
         self.df_experiment['Neighbour Setting'] = self.neighbour_var.get()
 
     def get_images(self):
+        """
+        Retrieve the images to be displayed (for the left and right frame) from disk and return them as a list
+        :return:
+        """
 
         # Create an empty lst that will hold the images
         list_images = []
@@ -547,6 +557,14 @@ class ImageViewer:
         return list_images
 
     def get_corresponding_bf(self, bf_dir, image_name):
+        """
+        Retrieve the corresponding BF image for the given image name
+        :param bf_dir:
+        :param image_name:
+
+
+        :return:
+        """
 
         if not os.path.exists(bf_dir):
             paint_logger.error(
@@ -579,7 +597,7 @@ class ImageViewer:
         paint_logger.error(message)
         sys.exit()
 
-    def update_image_display(self):
+    def initialise_image_display(self):
         # Update the image display based on the current image number
 
         self.cn_left_image.create_image(0, 0, anchor=tk.NW, image=self.list_images[self.img_no]['Left Image'])
@@ -593,54 +611,68 @@ class ImageViewer:
         self.text_for_info2.set(info2)
 
     def exinclude(self):
+        """
+        Toggle the state of the recording. Change the button text and the info text
+        :return:
+        """
 
-        image_name = self.image_name
-        if 'Exclude' not in self.df_experiment.columns.values:
-            self.df_experiment['Exclude'] = False
-        row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == image_name].tolist()[0]
+        #row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
+        # This was complex code, but the index is already the image name
+
+        row_index = self.image_name
         if not self.df_experiment.loc[row_index, 'Exclude']:
             self.df_experiment.loc[row_index, 'Exclude'] = True
-            self.bn_exclude.config(text='Include')
-            self.text_for_info3.set('Excluded')
+            self.bn_exclude.config(text='Include')     # Change the button text
+            self.text_for_info3.set('Excluded')        # Change the info text to 'Excluded'
         else:
             self.df_experiment.loc[row_index, 'Exclude'] = False
-            self.bn_exclude.config(text='Exclude')
+            self.bn_exclude.config(text='Exclude')      # Change the button text
             self.text_for_info3.set('')
-        self.df_experiment.to_csv(self.experiment_tm_file_path)
+        self.experiments_changed = True
+
 
     def key_pressed(self, event):
-        self.cn_left_image.focus_set()
-        paint_logger.debug(f'Key pressed {event.keysym}')
+        """
+        This function is triggered by pressing a key and will perform the required actions
 
+        :return:
+        """
+        self.cn_left_image.focus_set()
+
+        # Displaying squares is toggled by pressing 's'
         if event.keysym == 's':
             self.show_squares = not self.show_squares
             self.display_selected_squares()
 
+        # Displaying square numbers is toggled by pressing 'n'
         if event.keysym == 'n':
             self.show_squares_numbers = not self.show_squares_numbers
-            self.show_squares = True
+            if self.show_squares:
+                self.show_numbers = True
             self.display_selected_squares()
 
+        # Pressing 'o' will generate a pdf file containing all the images
         if event.keysym == 'o':
             self.output_pictures()
 
     def output_pictures(self):
-        # Function is triggered by pressing 'o' and will generate a pdf file containing all the images.
-
-        save_img_no = self.img_no
-        self.img_no = -1
+        """
+        The function is triggered by pressing 'o' and will generate a pdf file containing all the images.
+        :return:
+        """
 
         # Create the squares directory if it does not exist
         squares_dir = os.path.join(self.experiment_directory_path, 'Output', 'Squares')
-        if not os.path.isdir(squares_dir):
-            os.makedirs(squares_dir)
+        os.makedirs(squares_dir, exist_ok=True)
 
         # Cycle through all images
+        save_img_no = self.img_no
+        self.img_no = -1
         for img_no in range(len(self.list_images)):
             self.go_forward_backward('FORWARD')
 
             image_name = self.list_images[self.img_no]['Left Image Name']
-            paint_logger.debug(image_name)
+            paint_logger.debug(f"Writing {image_name} tp pdf")
 
             # Delete the squares and write the canvas with just the tracks
             self.cn_left_image.delete("all")
@@ -654,8 +686,8 @@ class ImageViewer:
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
         # Find all the ps files and delete them
-        eps_files = os.listdir(squares_dir)
-        for item in eps_files:
+        ps_files = os.listdir(squares_dir)
+        for item in ps_files:
             if item.endswith(".ps"):
                 os.remove(os.path.join(squares_dir, item))
 
@@ -699,7 +731,7 @@ class ImageViewer:
                 self.df_squares[self.df_squares['Visible']])
             save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
         if response is not None:
-            self.experiments_squares_changed = False
+            self.experiments_changed = False
         return response
 
     def save_squares_file_if_requested(self):
@@ -717,7 +749,7 @@ class ImageViewer:
 
         response_square = response_experiment = ""
 
-        if self.experiments_squares_changed:
+        if self.experiments_changed:
             response_experiment = self.save_experiment_file_if_requested()
 
         if self.square_changed:
@@ -847,7 +879,7 @@ class ImageViewer:
         :return:
         """
 
-        self.experiments_squares_changed = True
+        self.experiments_changed = True
 
         self.df_squares['Visible'] = True
         self.df_squares['Neighbour Visible'] = True
@@ -887,93 +919,90 @@ class ImageViewer:
         # create_summary_graphpad(self.experiment_directory, df_stats)
 
     def set_for_all_slider(self):
-        self.experiments_squares_changed = True
+        self.experiments_changed = True
 
         self.df_experiment['Density Ratio Setting'] = self.sc_density_ratio.get()
         self.df_experiment['Variability Setting'] = self.sc_variability.get()
-
-    def variability_changing(self, event):
-        # Updating the numerical value of the slider is not needed with tk widget
-        pass
-
-    def track_duration_changing(self, event):
-        # Updating the numerical value of the slider is not needed with tk widget
-        pass
-
-    def density_ratio_changing(self, event):
-        # Updating the numerical value of the slider is not needed with tk widget
-        pass
 
     def track_duration_changed(self, _):
         self.select_squares_for_display()
         self.display_selected_squares()
 
     def variability_changed(self, _):
-        self.experiments_squares_changed = True
+        self.experiments_changed = True
         self.select_squares_for_display()
         self.display_selected_squares()
 
     def density_ratio_changed(self, _):
-        self.experiments_squares_changed = True
+        self.experiments_changed = True
         self.select_squares_for_display()
         self.display_selected_squares()
 
-    def provide_report_on_all_squares(self, _):
-
-        cell_ids = self.df_squares['Cell Id'].unique()
-        cell_ids.sort()
-        nr_cells = len(cell_ids)
-        nr_squares = len(self.df_squares)
-
-        print("All squares report")
-        print('------------------')
-        print("Number of squares: ", nr_squares)
-        print("Number of cells: ", nr_cells)
-
-        print(f'Cell Id |----------Tau--------------|--------Density------------|-------Variability--------|')
-        print(f'         Mean     Sd    Max    Min   Mean     Sd    Max   Min    Mean    Sd     Max    Min  ')
-
-        for cell_id in cell_ids:
-            df_cells = self.df_squares[self.df_squares['Cell Id'] == cell_id]
-            df_cells = df_cells[['Square Nr', 'Label Nr', 'Tau', 'Density', 'Variability', 'Density Ratio']]
-
-            mean_tau = round(df_cells['Tau'].mean(), 0)
-            sd_tau = round(df_cells['Tau'].std(), 0)
-            max_tau = round(df_cells['Tau'].max(), 0)
-            min_tau = round(df_cells['Tau'].min(), 0)
-
-            mean_density = round(df_cells['Density'].mean(), 0)
-            sd_density = round(df_cells['Density'].std(), 0)
-            max_density = round(df_cells['Density'].max(), 0)
-            min_density = round(df_cells['Density'].min(), 0)
-
-            mean_variability = round(df_cells['Variability'].mean(), 2)
-            sd_variability = round(df_cells['Variability'].std(), 2)
-            max_variability = round(df_cells['Variability'].max(), 2)
-            min_variability = round(df_cells['Variability'].min(), 2)
-
-            print(
-                f'{cell_id:6} {mean_tau:6} {sd_tau:6} {max_tau:6} {min_tau:6} {mean_density:6} {sd_density:6} {max_density:6} {min_density:6} {mean_variability:6} {sd_variability:6} {max_variability:6} {min_variability:6}')
-
-        print('\n\n')
-
-        for cell_id in cell_ids:
-            df_cells = self.df_squares[self.df_squares['Cell Id'] == cell_id]
-            df_cells = df_cells[['Square Nr', 'Label Nr', 'Tau', 'Density', 'Variability', 'Density Ratio']]
-
-            print(f'\n\nCell Id: {cell_id:6} \n')
-            print(df_cells)
-            print('\n')
+    # def provide_report_on_all_squares(self, _):
+    #
+    #     cell_ids = self.df_squares['Cell Id'].unique()
+    #     cell_ids.sort()
+    #     nr_cells = len(cell_ids)
+    #     nr_squares = len(self.df_squares)
+    #
+    #     print("All squares report")
+    #     print('------------------')
+    #     print("Number of squares: ", nr_squares)
+    #     print("Number of cells: ", nr_cells)
+    #
+    #     print(f'Cell Id |----------Tau--------------|--------Density------------|-------Variability--------|')
+    #     print(f'         Mean     Sd    Max    Min   Mean     Sd    Max   Min    Mean    Sd     Max    Min  ')
+    #
+    #     for cell_id in cell_ids:
+    #         df_cells = self.df_squares[self.df_squares['Cell Id'] == cell_id]
+    #         df_cells = df_cells[['Square Nr', 'Label Nr', 'Tau', 'Density', 'Variability', 'Density Ratio']]
+    #
+    #         mean_tau = round(df_cells['Tau'].mean(), 0)
+    #         sd_tau = round(df_cells['Tau'].std(), 0)
+    #         max_tau = round(df_cells['Tau'].max(), 0)
+    #         min_tau = round(df_cells['Tau'].min(), 0)
+    #
+    #         mean_density = round(df_cells['Density'].mean(), 0)
+    #         sd_density = round(df_cells['Density'].std(), 0)
+    #         max_density = round(df_cells['Density'].max(), 0)
+    #         min_density = round(df_cells['Density'].min(), 0)
+    #
+    #         mean_variability = round(df_cells['Variability'].mean(), 2)
+    #         sd_variability = round(df_cells['Variability'].std(), 2)
+    #         max_variability = round(df_cells['Variability'].max(), 2)
+    #         min_variability = round(df_cells['Variability'].min(), 2)
+    #
+    #         print(
+    #             f'{cell_id:6} {mean_tau:6} {sd_tau:6} {max_tau:6} {min_tau:6} {mean_density:6} {sd_density:6} {max_density:6} {min_density:6} {mean_variability:6} {sd_variability:6} {max_variability:6} {min_variability:6}')
+    #
+    #     print('\n\n')
+    #
+    #     for cell_id in cell_ids:
+    #         df_cells = self.df_squares[self.df_squares['Cell Id'] == cell_id]
+    #         df_cells = df_cells[['Square Nr', 'Label Nr', 'Tau', 'Density', 'Variability', 'Density Ratio']]
+    #
+    #         print(f'\n\nCell Id: {cell_id:6} \n')
+    #         print(df_cells)
+    #         print('\n')
 
     def provide_report_on_cell(self, _, cell_nr):
+        """
+        Invoked by right-clicking on a cell radio button. Only when there are actually squares defined for the cell,
+        information will be shown, including a histogram of the Tau values
 
-        # Retrieve the squares for the selected cell
+        :param _:
+        :param cell_nr:
+        :return:
+        """
+
+        # See if there are any squares defined for this cell
         df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
         df_visible = df_selection[df_selection['Visible']]
         if len(df_visible) == 0:
             paint_logger.debug(
                 f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
         else:
+            # The labels and tau values for the visible squares of that cell are retrieved
             tau_values = list(df_visible['Tau'])
             labels = list(df_visible['Label Nr'])
 
@@ -984,9 +1013,9 @@ class ImageViewer:
             cell_str_ids = list(map(str, cell_ids))
             plt.figure(figsize=(5, 5))
             plt.bar(cell_str_ids, tau_values)
-            plt.ylim(0, 400)
+            plt.ylim(0, 500)
 
-            # Print the numerical values
+            # Plot the numerical values
             for i in range(len(tau_values)):
                 plt.text(cell_str_ids[i],
                          tau_values[i] + 10,
@@ -998,39 +1027,36 @@ class ImageViewer:
         return
 
     def select_squares_for_display(self):
+        """
+        Determine which squares are visible and set the 'Visible' column in the df_squares DataFrame
+        :return:
+        """
+
+        # All squares are invisible, unless the variability is sufficiently small
         self.df_squares['Variability Visible'] = False
         self.df_squares.loc[
             self.df_squares['Variability'] <= round(self.sc_variability.get(), 1), 'Variability Visible'] = True
-        self.df_squares.loc[
-            self.df_squares['Variability'] > round(self.sc_variability.get(), 1), 'Variability Visible'] = False
 
+        # All squares are invisible, unless the density ratio is sufficiently large
         self.df_squares['Density Ratio Visible'] = False
         self.df_squares.loc[
             self.df_squares['Density Ratio'] >= round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = True
-        self.df_squares.loc[
-            self.df_squares['Density Ratio'] < round(self.density_ratio.get(), 1), 'Density Ratio Visible'] = False
 
+        # All squares are invisible, unless the max track duration is within the min and max limits
         self.df_squares['Duration Visible'] = False
         mask = (self.df_squares['Max Track Duration'] > self.track_min_duration.get()) & \
                (self.df_squares['Max Track Duration'] < self.track_max_duration.get())
         self.df_squares.loc[mask, 'Duration Visible'] = True
 
-        # self.df_squares.loc[
-        #     self.df_squares['Duration Visible'] < round(self.track_duration1.get(), 1), 'Duration Visible'] = True
-
-        self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &
-                                      self.df_squares['Variability Visible'] &
-                                      self.df_squares['Duration Visible'])
-
-        # Select which isolation mode to be applied
+        # All squares are visible, unless the Relaxed or Strict neighbour state is not satisfied
+        self.df_squares['Neighbour Visible'] = True
         neighbour_state = self.neighbour_var.get()
         if neighbour_state == "Relaxed":
             eliminate_isolated_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
         elif neighbour_state == "Strict":
             eliminate_isolated_squares_strict(self.df_squares, self.nr_of_squares_in_row)
-        elif neighbour_state == "Free":
-            self.df_squares['Neighbour Visible'] = True
 
+        # Squares are visible if they are visible based on the sliders and the neighbour state and if there is a valid Tau
         self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
                                       self.df_squares['Density Ratio Visible'] &
                                       self.df_squares['Variability Visible'] &
@@ -1038,6 +1064,10 @@ class ImageViewer:
                                       self.df_squares['Duration Visible'])
 
     def display_selected_squares(self):
+        """
+        Display the squares on the left image canvas, that have the Visible flag set
+        :return:
+        """
 
         # Clear the screen and reshow the picture
         self.cn_left_image.delete("all")
@@ -1054,7 +1084,6 @@ class ImageViewer:
                 for index, squares_row in self.df_squares.iterrows():
                     if squares_row['Visible']:
                         self.draw_single_square(squares_row)
-        return self.df_squares
 
     def draw_single_square(self, squares_row, color='white'):
 
@@ -1113,13 +1142,6 @@ class ImageViewer:
             invisible_rect, '<Button-2>', lambda e: self.provide_information_on_square(
                 e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
 
-        if self.show_squares_numbers:
-            self.cn_left_image.tag_bind(
-                text_item, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
-            self.cn_left_image.tag_bind(
-                text_item, '<Button-2>', lambda e: self.provide_information_on_square(
-                    e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
-
     def square_assigned_to_cell(self, square_nr):
 
         # Retrieve the old and new cell id
@@ -1141,56 +1163,56 @@ class ImageViewer:
         self.df_squares.at[square_nr, 'Cell Id'] = int(new_cell_id)
 
     def provide_information_on_square(self, event, label_nr, square_nr):
+        """
+        After right-clicking on a square, provides information on the square and shows it as a popup
+
+        :param event:
+        :param label_nr:
+        :param square_nr:
+        :return:
+        """
 
         # Define the popup
-        pop = Toplevel(root)
-        pop.title("Square Info")
-        pop.geometry("220x180")
+        if self.pop_square_info  is None:
+            self.pop_square_info = Toplevel(root)
+            self.pop_square_info.title("Square Info")
+            self.pop_square_info.geometry("220x180")
 
-        # Position the popup
-        x = root.winfo_x()
-        y = root.winfo_y()
-        pop.geometry("+%d+%d" % (x + event.x + 15, y + event.y + 40))
+            # Position the popup relative to the main window and the event
+            x = root.winfo_x()
+            y = root.winfo_y()
+            self.pop_square_info.geometry(f"+{x + event.x + 15}+{y + event.y + 40}")
 
-        # Get the data to display
-        square_nr = self.df_squares.loc[square_nr]['Square Nr']
-        variability = self.df_squares.loc[square_nr]['Variability']
-        density_ratio = self.df_squares.loc[square_nr]['Density Ratio']
-        density = self.df_squares.loc[square_nr]['Density']
-        tau = self.df_squares.loc[square_nr]['Tau']
-        nr_tracks = self.df_squares.loc[square_nr]['Nr Tracks']
-        max_track_duration = self.df_squares.loc[square_nr]['Max Track Duration']
+            # Get the data to display from the dataframe
+            square_data = self.df_squares.loc[square_nr]
 
-        # Fill the popup
-        padx_value = 10
-        pady_value = 1
-        lbl_width = 15
+            # Define the fields to display
+            fields = [
+                ("Label Nr", label_nr),
+                ("Square", square_data['Square Nr']),
+                ("Tau", square_data['Tau']),
+                ("Density", square_data['Density']),
+                ("Number of Tracks", square_data['Nr Tracks']),
+                ("Density Ratio", square_data['Density Ratio']),
+                ("Variability", square_data['Variability']),
+                ("Max Track Duration", square_data['Max Track Duration']),
+            ]
 
-        ttk.Label(pop, text=f"Label Nr", anchor=W, width=lbl_width).grid(row=1, column=1, padx=padx_value,
-                                                                         pady=pady_value)
-        ttk.Label(pop, text=f"Square", anchor=W, width=lbl_width).grid(row=2, column=1, padx=padx_value,
-                                                                       pady=pady_value)
-        ttk.Label(pop, text=f"Tau", anchor=W, width=lbl_width).grid(row=3, column=1,
-                                                                    padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"Density", anchor=W, width=lbl_width).grid(row=4, column=1,
-                                                                        padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"Number of Tracks", anchor=W, width=lbl_width).grid(row=5, column=1,
-                                                                                 padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"Density Ratio", anchor=W, width=lbl_width).grid(row=6, column=1,
-                                                                              padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"Variability", anchor=W, width=lbl_width).grid(row=7, column=1,
-                                                                            padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"Max Track Duration", anchor=W, width=lbl_width).grid(row=8, column=1,
-                                                                                   padx=padx_value, pady=pady_value)
+            # Fill the popup with labels using a loop
+            padx_value = 10
+            pady_value = 1
+            lbl_width = 15
 
-        ttk.Label(pop, text=f"{label_nr}", anchor=W).grid(row=1, column=2, padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"{square_nr}", anchor=W).grid(row=2, column=2, padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"{tau}", anchor=W).grid(row=3, column=2, padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"{density}", anchor=W).grid(row=4, column=2, padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"{nr_tracks}", anchor=W).grid(row=5, column=2, padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"{density_ratio}", anchor=W).grid(row=6, column=2, padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"{variability}", anchor=W).grid(row=7, column=2, padx=padx_value, pady=pady_value)
-        ttk.Label(pop, text=f"{max_track_duration}", anchor=W).grid(row=8, column=2, padx=padx_value, pady=pady_value)
+            for idx, (label, value) in enumerate(fields, start=1):
+                ttk.Label(self.pop_square_info, text=label, anchor=W, width=lbl_width).grid(row=idx, column=1, padx=padx_value,
+                                                                           pady=pady_value)
+                ttk.Label(self.pop_square_info, text=str(value), anchor=W).grid(row=idx, column=2, padx=padx_value, pady=pady_value)
+
+            # Bring the focus back to the root window so the canvas can detect more clicks
+            self.parent.focus_force()
+        else:
+            self.pop_square_info.destroy()
+            self.pop_square_info = None
 
     def start_rectangle(self, event):
         self.square_changed = True
@@ -1243,7 +1265,7 @@ class ImageViewer:
 
     def select_neighbour_button(self):
 
-        self.experiments_squares_changed = True
+        self.experiments_changed = True
 
         self.cn_left_image.delete("all")
         self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
@@ -1262,7 +1284,7 @@ class ImageViewer:
             if response is None:
                 return
 
-        if self.experiments_squares_changed:
+        if self.experiments_changed:
             response = self.save_experiment_file_if_requested()
             if response is None:
                 return
@@ -1394,10 +1416,10 @@ class ImageViewer:
         for square_number, value in enumerate(heatmapdata):
             self.draw_heatmap_square(square_number, value, min_val, max_val, colors)
 
-        if len(self.df_squares) > 0:
-            for index, squares_row in self.df_squares.iterrows():
-                if squares_row['Visible']:
-                    self.draw_single_square(squares_row, 'black')
+        # if len(self.df_squares) > 0:
+        #     for index, squares_row in self.df_squares.iterrows():
+        #         if squares_row['Visible']:
+        #             self.draw_single_square(squares_row, 'black')
 
     def draw_heatmap_square(self, square_nr, value, min_value, max_value, colors):
 
