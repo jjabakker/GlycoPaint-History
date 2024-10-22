@@ -57,20 +57,24 @@ class ImageViewer:
         self.load_images_and_config()
         self.setup_exclude_button()
         self.setup_exclude_button()
+        self.setup_heatmap()
 
         # Bind keys for navigation
         parent.bind('<Right>', lambda event: self.go_forward_backward('FORWARD'))
         parent.bind('<Left>', lambda event: self.go_forward_backward('BACKWARD'))
 
-        self.setup_heatmap()
+        # Ensure the user can't close the window by clicking the X button
+        self.parent.protocol("WM_DELETE_WINDOW", self.exit_viewer)
 
     def setup_heatmap(self):
         self.slider_value = tk.DoubleVar()
         self.rb_heatmap_parameter_value = tk.IntVar()
         self.rb_heatmap_parameter_value.set(1)  # Default selection is the first option
+        # The update_heatmap_rb_value function needs to be called when the radio button value is changed
+        self.rb_heatmap_parameter_value.trace_add("write", self.update_heatmap_rb_value)
+
         self.checkbox_value = tk.BooleanVar()
         self.checkbox_value.set(False)  # Default is unchecked
-        self.rb_heatmap_parameter_value.trace_add("write", self.update_heatmap_rb_value)
 
     def initialize_variables(self):
 
@@ -172,7 +176,15 @@ class ImageViewer:
         lbl_info2 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
 
         self.text_for_info3 = StringVar(self.parent, "")
-        lbl_info3 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info3)
+        self.lbl_info3 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info3)
+
+        # Create a ttk style object
+        self.style = ttk.Style()
+        self.style.configure("Red.Label", foreground="red")
+        self.style.configure("Black.Label", foreground="red")
+
+        # Create a custom style for the label (set foreground to red)
+        self.style.configure("Red.TLabel", foreground="red")
 
         # Bind combobox selection
         self.cb_image_names.bind("<<ComboboxSelected>>", self.image_selected)
@@ -181,7 +193,7 @@ class ImageViewer:
         self.cb_image_names.grid(column=0, row=1, padx=5, pady=5)
         lbl_info1.grid(column=0, row=2, padx=5, pady=5)
         lbl_info2.grid(column=0, row=3, padx=5, pady=5)
-        lbl_info3.grid(column=0, row=4, padx=5, pady=5)
+        self.lbl_info3.grid(column=0, row=4, padx=5, pady=5)
         lbl_image_bf_name.grid(column=0, row=1, padx=0, pady=0)
 
     def setup_frame_navigation_buttons(self):
@@ -392,10 +404,6 @@ class ImageViewer:
         self.lbl_track_min_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
         self.sc_track_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
 
-    def get_experiment_directory_from_conf_file(self, index=0):
-        experiment = str(self.df_experiment.iloc[index]['Experiment Date'])
-        return os.path.join(self.project_directory, experiment)
-
     def load_images_and_config(self):
 
         if self.user_specified_mode == "DIRECTORY":
@@ -404,8 +412,6 @@ class ImageViewer:
             experiment_tm_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
         else:
             self.project_directory = os.path.split(self.user_specified_conf_file)[0]
-            # self.experiment_directory_path  = self.get_experiment_directory_from_conf_file(0)
-            # self.experiment_bf_directory = os.path.join(self.experiment_directory_path, 'Converted BF Images')
             experiment_tm_file_path = self.user_specified_conf_file
 
         self.df_experiment = read_experiment_file(experiment_tm_file_path, True)
@@ -428,16 +434,15 @@ class ImageViewer:
     def setup_exclude_button(self):
         # Set up the exclude/include button state
 
-        if 'Exclude' not in self.df_experiment:
-            self.bn_exclude.config(text='Exclude')
+        row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
+        if self.df_experiment.loc[row_index, 'Exclude']:
+            self.bn_exclude.config(text='Include')
+            self.text_for_info3.set('Excluded')
+            self.lbl_info3.config(style="Red.Label")
         else:
-            row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
-            if self.df_experiment.loc[row_index, 'Exclude']:
-                self.bn_exclude.config(text='Include')
-                self.text_for_info3.set('Excluded')
-            else:
-                self.bn_exclude.config(text='Exclude')
-                self.text_for_info3.set('')
+            self.bn_exclude.config(text='Exclude')
+            self.text_for_info3.set('')
+            self.lbl_info3.config(style="Black.Label")
 
     def set_for_all_neighbour_state(self):
         # Set the neighbour state for all images as specified in the radio buttons
@@ -467,7 +472,9 @@ class ImageViewer:
 
             image_name = self.df_experiment.iloc[index]['Ext Image Name']
             if self.user_specified_mode == "CONF_FILE":
-                exp_dir = self.get_experiment_directory_from_conf_file(index)
+
+                experiment = str(self.df_experiment.iloc[index]['Experiment Date'])
+                exp_dir =  os.path.join(self.project_directory, experiment)
                 bf_dir = os.path.join(exp_dir, 'Converted BF Images')
                 squares_file_path = get_squares_file_path(exp_dir, image_name)
                 trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
@@ -729,7 +736,7 @@ class ImageViewer:
                                           self.df_squares['Duration Visible'])
             self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(
                 self.df_squares[self.df_squares['Visible']])
-            save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)
+            save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)     # TODO: Check if this is correct
         if response is not None:
             self.experiments_changed = False
         return response
