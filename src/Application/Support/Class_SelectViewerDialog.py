@@ -45,7 +45,7 @@ class SelectViewerDialog:
         """Adds widgets to the directory frame."""
         # Directory and Configuration file buttons
         self.add_button(frame, 'Experiment Directory', 0, self.change_root_dir)
-        self.add_button(frame, 'Configuration File', 1, self.change_conf_file)
+        self.add_button(frame, 'Project File', 1, self.change_conf_file)
 
         # Labels and Radio buttons
         self.lbl_root_dir = self.add_label(frame, self.root_directory, 0)
@@ -62,17 +62,17 @@ class SelectViewerDialog:
 
     def add_button(self, parent, text, row, command) -> None:
         """Helper function to add a button to a frame."""
-        ttk.Button(parent, text=text, command=command).grid(column=0, row=row, padx=10, pady=5)
+        ttk.Button(parent, text=text, command=command, width=15).grid(column=1, row=row, padx=2, pady=5)
 
     def add_label(self, parent, text, row) -> ttk.Label:
         """Helper function to add a label to a frame."""
         label = ttk.Label(parent, text=text, width=90)
-        label.grid(column=1, row=row, padx=20, pady=5)
+        label.grid(column=2, row=row, padx=20, pady=5)
         return label
 
     def add_radio_button(self, parent, text, row) -> None:
         """Helper function to add a radio button to a frame."""
-        ttk.Radiobutton(parent, text="", variable=self.mode_dir_or_conf, value=text, width=10).grid(column=2, row=row,
+        ttk.Radiobutton(parent, text="", variable=self.mode_dir_or_conf, value=text, width=2).grid(column=0, row=row,
                                                                                                     padx=10, pady=5)
 
     def change_root_dir(self) -> None:
