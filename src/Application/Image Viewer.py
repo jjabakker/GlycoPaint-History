@@ -775,7 +775,7 @@ class ImageViewer:
                 messagebox.showinfo("Save Warning", "No saving of squares file is implemented in configuration mode")
 
         if self.mode_dir_or_conf == "DIRECTORY":
-            if response_experiment is None or response_square is None:
+            if (self.experiments_changed and response_experiment == None) or (self.square_changed and response_square == None):
                 return
             else:
                 root.quit()
