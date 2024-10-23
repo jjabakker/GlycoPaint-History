@@ -89,8 +89,8 @@ class GenerateSquaresDialog:
             ("Nr of Squares in Row", self.nr_of_squares_in_row, 1),
             ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2),
             ("Min allowable R-squared", self.min_r_squared, 3),
-            ("Min density ratio", self.min_density_ratio, 4),
-            ("Max variability", self.max_variability, 5),
+            ("Min Required Density Ratio", self.min_density_ratio, 4),
+            ("Max Allowable Variability", self.max_variability, 5),
         ]
 
         for label_text, var, row in params:

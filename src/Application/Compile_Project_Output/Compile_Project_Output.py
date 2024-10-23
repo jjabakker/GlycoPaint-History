@@ -115,7 +115,7 @@ def compile_project_output(project_dir: str, verbose: bool):
         image_size = df_all_images.loc[image]['Image Size']
         experiment_nr = df_all_images.loc[image]['Experiment Nr']
         seq_nr = df_all_images.loc[image]['Batch Sequence Nr']
-        neighbour_setting = df_all_images.loc[image]['Neighbour Setting']
+        neighbour_setting = df_all_images.loc[image]['Neighbour Mode']
 
         # It can happen that image size is not filled in, handle that event
         # I don't think this can happen anymore, but leave for now
@@ -135,7 +135,7 @@ def compile_project_output(project_dir: str, verbose: bool):
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Threshold'] = threshold
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Experiment Nr'] = int(experiment_nr)
         df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Batch Sequence Nr'] = int(seq_nr)
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Neighbour Setting'] = neighbour_setting
+        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Neighbour Mode'] = neighbour_setting
 
     # Ensure column types are correct
     correct_all_images_column_types(df_all_images)

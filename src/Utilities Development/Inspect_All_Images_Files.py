@@ -31,9 +31,9 @@ def inspect_all_images_file(image_file_path: str, short_file_name: str) -> None:
     expected_traditional_columns =  {
         'Batch Sequence Nr', 'Experiment Date', 'Experiment Name', 'Experiment Nr',
         'Experiment Seq Nr', 'Image Name', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant',
-        'Concentration', 'Threshold', 'Density Ratio Setting', 'Process', 'Ext Image Name',
+        'Concentration', 'Threshold', 'Min Required Density Ratio', 'Process', 'Ext Image Name',
         'Nr Spots', 'Nr Tracks', 'Image Size', 'Run Time','Time Stamp', 'Min Tracks for Tau',
-        'Min R Squared', 'Nr of Squares in Row', 'Exclude', 'Neighbour Setting', 'Variability Setting',
+        'Min R Squared', 'Nr of Squares in Row', 'Exclude', 'Neighbour Mode', 'Max Allowable Variability',
         'Nr Total Squares', 'Nr Defined Squares', 'Nr Visible Squares',
         'Nr Invisible Squares', 'Nr Rejected Squares', 'Max Squares Ratio', 'Squares Ratio',
     }
@@ -74,16 +74,16 @@ def inspect_all_images_file(image_file_path: str, short_file_name: str) -> None:
     if f"{nr_of_squares} Squares" not in image_file_path:
         paint_logger.error(f"Number of squares per row is not in the file name: {image_file_path}")
 
-    paint_logger.info(f"Number of Density Ratio Settings is   : {df_images['Density Ratio Setting'].nunique()} - {', '.join(df_images['Density Ratio Setting'].unique().astype(str).tolist())}")
+    paint_logger.info(f"Number of Min Required Density Ratios is   : {df_images['Min Required Density Ratio'].nunique()} - {', '.join(df_images['Min Required Density Ratio'].unique().astype(str).tolist())}")
     if process_mode == 'Single':
         paint_logger.info(f"Number of Min Density Ratios is       : {df_images['Min Density Ratio'].nunique()} - {', '.join(df_images['Min Density Ratio'].unique().astype(str).tolist())}")
         if df_images['Min Density Ratio'].nunique() != 1:
             paint_logger.error(f"Multiple Min Density Ratios in the file: {', '.join(df_images['Min Density Ratio'].unique().astype(str).tolist())}")
         else:
             if f"{nr_of_squares} Squares" not in image_file_path:
-                density_ratio_setting = df_images.loc[0, 'Density Ratio Setting']
+                density_ratio_setting = df_images.loc[0, 'Min Required Density Ratio']
                 if f"{density_ratio_setting} DR" not in image_file_path:
-                    paint_logger.error(f"Density Ratio Setting of {density_ratio_setting} is not in the file name: {image_file_path}")
+                    paint_logger.error(f"Min Required Density Ratio of {density_ratio_setting} is not in the file name: {image_file_path}")
 
     paint_logger.info(f"Number of Cell Types is               : {df_images['Cell Type'].nunique()} - {', '.join(df_images['Cell Type'].unique())}")
     paint_logger.info(f"Number of Probes Types is             : {df_images['Probe Type'].nunique()} - {', '.join(df_images['Probe Type'].unique())}")

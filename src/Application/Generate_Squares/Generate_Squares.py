@@ -677,9 +677,9 @@ def add_columns_to_experiment_file(
     df_experiment.loc[mask, 'Nr of Squares in Row'] = int(nr_of_squares_in_row)
 
     df_experiment.loc[mask, 'Exclude'] = False
-    df_experiment.loc[mask, 'Neighbour Setting'] = 'Free'
-    df_experiment.loc[mask, 'Variability Setting'] = max_variability
-    df_experiment.loc[mask, 'Density Ratio Setting'] = min_density_ratio
+    df_experiment.loc[mask, 'Neighbour Mode'] = 'Free'
+    df_experiment.loc[mask, 'Max Allowable Variability'] = max_variability
+    df_experiment.loc[mask, 'Min Required Density Ratio'] = min_density_ratio
 
     df_experiment.loc[mask, 'Nr Total Squares'] = 0  # Equal to the square of the nr of squares in row
     df_experiment.loc[mask, 'Nr Defined Squares'] = 0  # The number of squares for which a Tau was successfully calculated

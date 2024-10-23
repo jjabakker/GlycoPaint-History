@@ -6,8 +6,8 @@ import time
 from src.Application.Compile_Project_Output.Compile_Project_Output import compile_project_output
 from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
 from src.Application.Generate_Squares.Generate_Squares import process_all_images_in_root_directory
-from src.Application.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
-from src.Application.Support.Support_Functions import copy_directory, format_time_nicely
+from src.Application.Utilities.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
+from src.Application.Utilities.Support_Functions import copy_directory, format_time_nicely
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -31,8 +31,8 @@ if PAINT_DEBUG:
 else:
     CONF_FILE = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
-    PAINT_DATA = '/Users/Hans/Paint Data - v3'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v3'
+    PAINT_DATA = '/Users/Hans/Paint Data - v4'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v4'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
@@ -59,16 +59,16 @@ def process_directory(paint_source_dir,
     paint_logger.info("-" * 40)
     paint_logger.info(msg)
     paint_logger.info("")
-    paint_logger.info(f"Probe Series        : {probe}")
-    paint_logger.info(f"Traditional mode    : {process_traditional}")
-    paint_logger.info(f"Single              : {process_single}")
-    paint_logger.info(f"Number of squares   : {nr_of_squares}")
-    paint_logger.info(f"Min density ratio   : {min_density_ratio}")
-    paint_logger.info(f"Min R squared       : {min_r_squared}")
-    paint_logger.info(f"Min tracks for tau  : {min_tracks_for_tau}")
-    paint_logger.info(f"Max variability     : {max_variability}")
-    paint_logger.info(f"Max square coverage : {max_square_coverage}")
-    paint_logger.info(f"Paint Force         : {paint_force}")
+    paint_logger.info(f"Probe Series                : {probe}")
+    paint_logger.info(f"Traditional mode            : {process_traditional}")
+    paint_logger.info(f"Single                      : {process_single}")
+    paint_logger.info(f"Number of squares           : {nr_of_squares}")
+    paint_logger.info(f"Min Required Density Ratio  : {min_density_ratio}")
+    paint_logger.info(f"Min R squared               : {min_r_squared}")
+    paint_logger.info(f"Min tracks for tau          : {min_tracks_for_tau}")
+    paint_logger.info(f"Max Allowable Variability   : {max_variability}")
+    paint_logger.info(f"Max square coverage         : {max_square_coverage}")
+    paint_logger.info(f"Paint Force                 : {paint_force}")
 
     paint_logger.info("")
     paint_logger.info("-" * 40)

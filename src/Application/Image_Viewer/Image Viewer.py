@@ -484,9 +484,9 @@ class ImageViewer:
         if response is True:
 
             # Store the slider positions in the experiments df
-            self.df_experiment.loc[self.image_name, 'Density Ratio Setting'] = self.min_required_density_ratio
-            self.df_experiment.loc[self.image_name, 'Variability Setting'] = self.max_allowable_variability
-            self.df_experiment.loc[self.image_name, 'Neighbour Setting'] = self.neighbour_state
+            self.df_experiment.loc[self.image_name, 'Min Required Density Ratio'] = self.min_required_density_ratio
+            self.df_experiment.loc[self.image_name, 'Max Allowable Variability'] = self.max_allowable_variability
+            self.df_experiment.loc[self.image_name, 'Neighbour Mode'] = self.neighbour_state
 
             # Write the Visible Squares visibility information into the squares file
             self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &     # TODO: Duration?
@@ -830,7 +830,7 @@ class ImageViewer:
                (self.df_squares['Max Track Duration'] < self.max_track_duration)
         self.df_squares.loc[mask, 'Duration Visible'] = True
 
-        # All squares are visible, unless the Relaxed or Strict neighbour state is not satisfied
+        # All squares are visible, unless the Relaxed or Strict Neighbour Mode is not satisfied
         self.df_squares['Neighbour Visible'] = True
 
         if self.neighbour_state == "Relaxed":
@@ -838,7 +838,7 @@ class ImageViewer:
         elif self.neighbour_state == "Strict":
             eliminate_isolated_squares_strict(self.df_squares, self.nr_of_squares_in_row)
 
-        # Squares are visible if they are visible based on the sliders and the neighbour state and if there is a valid Tau
+        # Squares are visible if they are visible based on the sliders and the Neighbour Mode and if there is a valid Tau
         self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
                                       self.df_squares['Density Ratio Visible'] &
                                       self.df_squares['Variability Visible'] &
@@ -1135,12 +1135,12 @@ class ImageViewer:
             self.df_squares = read_squares_from_file(self.squares_file_name)
 
             # Set the filter parameters with values retrieved from the experiment file
-            self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Variability Setting']
-            self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Density Ratio Setting']
-            self.neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Setting']
+            self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Max Allowable Variability']
+            self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
+            self.neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Mode']
             self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
             self.max_track_duration = 200 # self.df_experiment.loc[self.image_name]['Max Duration']
-            self.min_required_density = self.df_experiment.loc[self.image_name]['Density Ratio Setting']
+            self.min_required_density = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
 
             self.select_squares_for_display()
             self.display_selected_squares()

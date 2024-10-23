@@ -1,30 +1,41 @@
-import os
+
 from tkinter import *
 from tkinter import ttk, filedialog
-
+import os
 import pandas as pd
 
 
 def remove_min_density(root_directory):
-    image_dirs = os.listdir(root_directory)
-    image_dirs.sort()
-    for image_dir in image_dirs:
-        if 'Output' in image_dir:
+    # Traverse the root directory and all its subdirectories
+    for dirpath, dirnames, filenames in os.walk(root_directory):
+        # Skip directories that contain 'Output' in their names
+        if 'Output' in dirpath:
             continue
-        if os.path.isdir(os.path.join(root_directory, image_dir)):
 
-            df_batch = pd.read_csv(os.path.join(root_directory, image_dir, 'batch.csv'), index_col=False)
-            if {'Min Density Ratio'}.issubset(df_batch.columns):
-                df_batch.drop(['Min Density Ratio'], axis=1, inplace=True)
-                df_batch.to_csv(os.path.join(root_directory, image_dir, 'batch.csv'), index=False)
-                print(f'Deleted column in batch file: {os.path.join(root_directory, image_dir, 'batch.csv')}')
+        # Define the two files you're looking for
+        target_files = ['experiment_squares.csv', 'experiment_tm.csv']
 
-            if os.path.isfile(os.path.join(root_directory, image_dir, 'grid_batch.csv')):
-                df_batch = pd.read_csv(os.path.join(root_directory, image_dir, 'grid_batch.csv'), index_col=False)
-                if {'Min Density Ratio'}.issubset(df_batch.columns):
+        # Check each target file if it exists in the current directory
+        for target_file in target_files:
+            if target_file in filenames:  # Look for the exact file
+                # Construct the full path to the file
+                csv_path = os.path.join(dirpath, target_file)
+
+                # Read the CSV file into a pandas DataFrame
+                df_batch = pd.read_csv(csv_path, index_col=False)
+
+                # Check if 'Min Density Ratio' column exists and remove it
+                if 'Min Density Ratio' in df_batch.columns:
                     df_batch.drop(['Min Density Ratio'], axis=1, inplace=True)
-                    df_batch.to_csv(os.path.join(root_directory, image_dir, 'grid_batch.csv'), index=False)
-                    print(f'Deleted column in batch file: {os.path.join(root_directory, image_dir, 'grid_batch.csv')}')
+
+                    # Save the modified DataFrame back to the CSV file or a new file
+                    output_path = os.path.join(dirpath, target_file)
+                    df_batch.to_csv(output_path, index=False)
+
+                    # Print the path where the file was modified
+                    print(f"Deleted column in file: {output_path}")
+
+    print ('Exited normally')
 
 
 class Dialog:

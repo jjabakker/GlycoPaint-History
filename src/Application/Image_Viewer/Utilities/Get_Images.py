@@ -113,9 +113,9 @@ def get_images(self):
             "Square Nrs": square_nrs,
             "Squares File": self.squares_file_name,
 
-            "Min Required Density Ratio": self.df_experiment.iloc[index]['Density Ratio Setting'],
-            "Max Allowable Variability": self.df_experiment.iloc[index]['Variability Setting'],
-            "Neighbour Mode": self.df_experiment.iloc[index]['Neighbour Setting'],
+            "Min Required Density Ratio": self.df_experiment.iloc[index]['Min Required Density Ratio'],
+            "Max Allowable Variability": self.df_experiment.iloc[index]['Max Allowable Variability'],
+            "Neighbour Mode": self.df_experiment.iloc[index]['Neighbour Mode'],
 
             "Tau": tau
         }
