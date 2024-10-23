@@ -9,7 +9,7 @@ from src.Common.Support.DirectoriesAndLocations import (
     get_default_locations,
     save_default_locations)
 
-from src.Application.Utilities.Support_Functions import (
+from src.Application.Utilities.General_Support_Functions import (
     read_experiment_file
 )
 

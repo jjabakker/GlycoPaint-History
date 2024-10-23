@@ -5,12 +5,12 @@ from tkinter import *
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 
-from src.Application.Support.Support_Functions import (
+from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations)
 from src.Common.Support.LoggerConfig import paint_logger
 
-class SelectDialog:
+class SelectViewerDataDialog:
 
     def __init__(self, parent: tk.Tk) -> None:
 

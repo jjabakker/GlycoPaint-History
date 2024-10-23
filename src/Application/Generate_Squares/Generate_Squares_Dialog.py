@@ -8,13 +8,18 @@ from src.Application.Generate_Squares.Generate_Squares  import (
     process_all_images_in_experiment_directory)
 
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
+
 from src.Application.Utilities.Config import load_paint_config
-from src.Application.Utilities.Support_Functions import (
+
+from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
-    save_default_locations,
-    save_grid_defaults_to_file,
+    save_default_locations
 )
-from src.Application.Utilities.Support_Functions import get_grid_defaults_from_file
+
+from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
+    get_grid_defaults_from_file,
+    save_grid_defaults_to_file)
+
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,

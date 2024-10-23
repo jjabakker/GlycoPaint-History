@@ -9,20 +9,22 @@ from src.Application.Generate_Squares.Utilities.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
 
-from src.Application.Utilities.Support_Functions import (
+from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
+    check_experiment_integrity,
+    get_square_coordinates,
     calc_variability,
     calculate_density,
-    get_df_from_file,
-    get_square_coordinates,
     write_np_to_excel,
+    get_df_from_file,
+    get_area_of_square,
+    calc_average_track_count_of_lowest_squares, )
+
+from src.Application.Utilities.General_Support_Functions import (
     save_squares_to_file,
     save_experiment_to_file,
-    check_experiment_integrity,
     format_time_nicely,
-    calc_average_track_count_of_lowest_squares,
-    get_area_of_square,
-    read_experiment_tm_file
-)
+    read_experiment_tm_file)
+
 from src.Common.Support.DirectoriesAndLocations import (
     delete_files_in_directory,
     get_tau_plots_dir_path,
@@ -30,6 +32,7 @@ from src.Common.Support.DirectoriesAndLocations import (
     get_squares_dir_path,
     get_squares_file_path,
     get_tracks_file_path)
+
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -93,18 +96,6 @@ def process_all_images_in_experiment_directory(
     """
     This function processes all images in a paint directory. It reads the experiment file, to find out what
     images need processing
-
-    :param experiment_path:
-    :param nr_of_squares_in_row:
-    :param min_r_squared:
-    :param min_tracks_for_tau:
-    :param min_density_ratio:
-    :param max_variability:
-    :param max_square_coverage:
-    :param process_single: bool,
-    :param process_traditional: bool,
-    :param verbose:
-    :return:
     """
 
     time_stamp = time.time()
@@ -341,7 +332,7 @@ def calc_single_tau_and_density_for_image(
         plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, image_name), image_name + ".png")
         tau, r_squared = curve_fit_and_plot(
             plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
-            file=plt_file, plot_to_screen=False, plot=False, verbose=False)          # TODO plot=Falsecnow hard coded
+            file=plt_file, plot_to_screen=False, plot=False, verbose=False)          # TODO plot=False now hard coded
         if tau == -2:  # Tau calculation failed
             r_squared = 0
         tau = int(tau)

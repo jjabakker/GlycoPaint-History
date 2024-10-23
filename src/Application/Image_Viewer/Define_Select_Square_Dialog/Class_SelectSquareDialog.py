@@ -29,6 +29,7 @@ class SelectSquareDialog:
         # Set window properties
         self.select_dialog = tk.Toplevel(self.image_viewer.parent)
         self.select_dialog.title("Select Square Window")
+        self.select_dialog.resizable(False, False)
         self.select_dialog.geometry("300x790")
         self.select_dialog.attributes('-topmost', True)
         self.select_dialog.protocol("WM_DELETE_WINDOW", self.on_close)

@@ -5,7 +5,7 @@ from tkinter import *
 import pandas as pd
 from PIL import Image, ImageTk
 
-from src.Application.Support.Support_Functions import read_squares_from_file
+from src.Application.Utilities.General_Support_Functions import read_squares_from_file
 from src.Common.Support.DirectoriesAndLocations import (
     get_trackmate_image_dir_path,
     get_squares_file_path)

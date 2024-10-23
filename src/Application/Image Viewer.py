@@ -15,17 +15,18 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
-from src.Application.Image_Viewer.Select_Dialog.Class_SelectDialog import SelectDialog
+from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
 from src.Application.Image_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
 from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
 from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import get_colormap_colors, get_color_index, get_heatmap_data
 from src.Application.Image_Viewer.Utilities.Get_Images import get_images
-from src.Application.Image_Viewer.Utilities.Utilities import save_as_png
 
-from src.Application.Utilities.Support_Functions import (
+from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import (
     eliminate_isolated_squares_relaxed,
     eliminate_isolated_squares_strict,
     test_if_square_is_in_rectangle,
+    save_as_png)
+from src.Application.Utilities.General_Support_Functions import (
     read_experiment_file,
     read_squares_from_file,
     save_experiment_to_file,
@@ -49,6 +50,7 @@ class ImageViewer:
     def __init__(self, parent, user_specified_directory, user_specified_conf_file, user_specified_mode):
 
         self.parent = tk.Toplevel(parent)
+        self.parent.resizable(False, False)
 
         # Save the parameters
         self.user_specified_conf_file = user_specified_conf_file
@@ -68,7 +70,7 @@ class ImageViewer:
         parent.bind('<Left>', lambda event: self.on_forward_backward('BACKWARD'))
 
         # Ensure the user can't close the window by clicking the X button
-        self.parent.protocol("WM_DELETE_WINDOW", self.exit_viewer)
+        self.parent.protocol("WM_DELETE_WINDOW", self.on_exit_viewer)
 
     def setup_heatmap(self):
         self.slider_value = tk.DoubleVar()
@@ -94,8 +96,8 @@ class ImageViewer:
         self.rect = None
 
         # Variables to keep track if the user changed something
-        self.square_changed = False
-        self.experiments_changed = False
+        self.squares_changed = False
+        self.experiment_changed = False
 
         # Variables indicating whether to show squares and square numbers in the left pane
         self.show_squares_numbers = True
@@ -317,7 +319,7 @@ class ImageViewer:
                 self.min_track_duration, self.max_track_duration, self.neighbour_state)
 
     def on_define_cells(self):
-        self.define_cells_dialog = DefineCellDialog(self, self.callback_assign_squares_to_celln_cell_id, self.callback_reset_square_selection)
+        self.define_cells_dialog = DefineCellDialog(self, self.callback_assign_squares_to_cell_cell_id, self.callback_reset_square_selection)
 
     def callback_reset_square_selection(self, cell_id):
         """
@@ -328,7 +330,7 @@ class ImageViewer:
         self.squares_in_rectangle = []
         self.display_selected_squares()
 
-    def callback_assign_squares_to_celln_cell_id(self, cell_id):
+    def callback_assign_squares_to_cell_cell_id(self, cell_id):
         """
         This function is called by the DefineCellsDialog when a cell id has been selected to is assigned to a square
         See if there are any squares selected and if so update the cell id, then update the display
@@ -336,6 +338,8 @@ class ImageViewer:
 
         for square_nr in self.squares_in_rectangle:
             self.df_squares.at[square_nr, 'Cell Id'] = int(cell_id)
+
+        self.squares_changed = True
         self.display_selected_squares()
 
     def setup_exclude_button(self):
@@ -391,7 +395,7 @@ class ImageViewer:
             self.bn_exclude.config(text='Exclude')      # Change the button text
             self.text_for_info4.set('')
             self.lbl_info4.config(style="Black.Label")
-        self.experiments_changed = True
+        self.experiment_changed = True
 
 
     def on_key_pressed(self, event):
@@ -495,7 +499,7 @@ class ImageViewer:
             self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
             save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)     # TODO: Check if this is correct
         if response is not None:
-            self.experiments_changed = False
+            self.experiment_changed = False
         return response
 
     def save_squares_file_if_requested(self):
@@ -506,28 +510,28 @@ class ImageViewer:
         response = messagebox.askyesnocancel("Save Changes", message=msg)
         if response is True:
             self.update_squares_file()
-            self.square_changed = False
+            self.squares_changed = False
         return response
 
-    def exit_viewer(self):
+    def on_exit_viewer(self):
 
         response_square = None
         response_experiment = None
 
-        if self.experiments_changed:
+        if self.experiment_changed:
             if self.user_specified_mode == "DIRECTORY":
                 response_experiment = self.save_experiment_file_if_requested()
             else:
                 messagebox.showinfo("Save Warning", "No saving of experiment file is implemented in configuration mode")
 
-        if self.square_changed:
+        if self.squares_changed:
             if self.user_specified_mode == "DIRECTORY":
                 response_square = self.save_squares_file_if_requested()
             else:
                 messagebox.showinfo("Save Warning", "No saving of squares file is implemented in configuration mode")
 
         if self.user_specified_mode == "DIRECTORY":
-            if (self.experiments_changed and response_experiment is None) or (self.square_changed and response_square is None):
+            if (self.experiment_changed and response_experiment is None) or (self.squares_changed and response_square is None):
                 return
             else:
                 root.quit()
@@ -665,15 +669,15 @@ class ImageViewer:
         if setting_type == "Min Required Density Ratio":
             self.min_required_density_ratio = density_ratio
             self.list_images[self.img_no]['Min Required Density Ratio'] = density_ratio
-            self.experiments_changed = True
+            self.experiment_changed = True
         elif setting_type == "Max Allowable Variability":
             self.max_allowed_variability = variability
             self.list_images[self.img_no]['Max Allowable Variability'] = variability
-            self.experiments_changed = True
+            self.experiment_changed = True
         elif setting_type == "Neighbour Mode":
             self.neighbour_state = neighbour_mode
             self.list_images[self.img_no]['Neighbour Mode'] = neighbour_mode
-            self.experiments_changed = True
+            self.experiment_changed = True
         elif setting_type == "Min Track Duration":
             self.min_track_duration = min_duration
         elif setting_type == "Max Track Duration":
@@ -691,7 +695,7 @@ class ImageViewer:
                 image['Max Allowable Variability'] = variability
                 image['Neighbour Mode'] = neighbour_mode
 
-            self.experiments_changed = True
+            self.experiment_changed = True
         elif setting_type == "Exit":
             self.select_square_dialog = None
         else:
@@ -1001,7 +1005,7 @@ class ImageViewer:
     #--------------------------------------------------------------------------------------
 
     def start_rectangle(self, event):
-        self.square_changed = True
+        self.squares_changed = True
         self.start_x = event.x
         self.start_y = event.y
         self.rect = self.cn_left_image.create_rectangle(
@@ -1062,12 +1066,11 @@ class ImageViewer:
         """
 
         # ----------------------------------------------------------------------------
-        # Check if the user has changed the settings and if so, ask if they want to save
+        # Check if the user has changed the Cell assignments and if so, ask if they want to save
         # ----------------------------------------------------------------------------
 
-        if not self.select_square_dialog:
-            if False:     # TODO @@@@
-                self.save_select_square_changes()
+        if self.squares_changed:
+            self.save_changes()
 
         # ----------------------------------------------------------------------------
         # Determine what the next image is, depending on the direction
@@ -1186,10 +1189,10 @@ class ImageViewer:
                 self.text_for_info4.set("")
 
         # Reset user change
-        self.square_changed = False
+        self.squares_changed = False
 
 
-    def save_select_square_changes(self):
+    def save_changes(self):
 
         integral_save = False
 
@@ -1199,7 +1202,7 @@ class ImageViewer:
             experiment_warning = False
             square_warning = False
 
-            if self.experiments_changed:
+            if self.experiment_changed:
                 if self.user_specified_mode == "DIRECTORY":
                     response_experiment = self.save_experiment_file_if_requested()
                     if response_experiment is None:
@@ -1207,7 +1210,7 @@ class ImageViewer:
                 else:
                     experiment_warning = True
 
-            if self.square_changed:
+            if self.squares_changed:
                 if self.user_specified_mode == "DIRECTORY":
                     response_square = self.save_squares_file_if_requested()
                     if response_square is None:
@@ -1226,8 +1229,8 @@ class ImageViewer:
                     message = "No saving of " + (" or ".join(warnings)) + " is implemented in configuration mode"
                     messagebox.showinfo('Save Warning', message)
 
-                self.square_changed = False
-                self.experiments_changed = False
+                self.squares_changed = False
+                self.experiment_changed = False
 
 
     def read_squares(self, image_name):
@@ -1317,7 +1320,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     root.withdraw()
     root.eval('tk::PlaceWindow . center')
-    dialog_result = SelectDialog(root)
+    dialog_result = SelectViewerDataDialog(root)
     proceed, root_directory, conf_file, mode = dialog_result.get_result()
 
     if proceed:
