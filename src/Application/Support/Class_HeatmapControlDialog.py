@@ -135,10 +135,7 @@ class HeatMapControlDialog:
         When that happens, the min and max values of the new heatmap are updated
         """
 
-        # Determine the min and max values of the new heatmap
         min, max = get_heatmap_min_max(self.image_viewer.df_all_squares, self.image_viewer.heatmap_option.get())
-
-        # Update the min and max labels
         self.lbl_min.config(text=str(min))
         self.lbl_max.config(text=str(max))
 

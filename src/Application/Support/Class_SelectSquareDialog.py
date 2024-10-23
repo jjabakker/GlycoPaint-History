@@ -221,7 +221,6 @@ class SelectSquareDialog:
         The callback function (update_select_squares) is called in the ImageViewer dialog
         """
 
-        # self.image_viewer.select_square_value(-1)
         self.image_viewer.update_select_squares("Exit", self.sc_density_ratio.get(), self.sc_variability.get(),
                       self.track_min_duration.get(), self.track_max_duration.get(), self.neighbour_var.get())
         self.select_dialog.destroy()
@@ -246,31 +245,3 @@ class SelectSquareDialog:
         self.track_min_duration.set(min_track_duration)
         self.track_max_duration.set(max_track_duration)
         self.neighbour_var.set(neighbour_mode)
-
-
-# --------------------------------------------------------------------------------------------------------
-# Main
-# --------------------------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    root = tk.Tk()
-    root.withdraw()  # Hide the root window
-
-    # Dummy image_viewer class to pass to SelectSquareDialog
-    class DummyImageViewer:
-        parent = root
-        df_experiment = {'Density Ratio Setting': 0, 'Variability Setting': 0}
-        select_square_value = tk.IntVar()
-
-        def display_selected_squares(self):
-            print("Displaying selected squares")
-
-        def display_heatmap(self):
-            print("Displaying heatmap")
-
-    # Create an instance of DummyImageViewer
-    image_viewer = DummyImageViewer()
-
-    # Create and show the SelectSquareDialog
-    app = SelectSquareDialog(image_viewer)
-    root.mainloop()
