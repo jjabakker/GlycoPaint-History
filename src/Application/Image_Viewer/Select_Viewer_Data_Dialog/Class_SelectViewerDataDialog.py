@@ -2,7 +2,7 @@ import os
 
 import tkinter as tk
 from tkinter import *
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 from tkinter import ttk
 
 from src.Application.Utilities.General_Support_Functions import (

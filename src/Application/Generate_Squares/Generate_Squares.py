@@ -695,9 +695,7 @@ def image_needs_processing(
     :return:
     """
 
-    squares_file_name = os.path.join(experiment_path, "grid", image_name + "-squares.csv")
     squares_file_name = os.path.join(get_squares_dir_path(experiment_path, image_name), image_name + "-squares.csv")
-    tracks_file_name = os.path.join(experiment_path, "tracks", image_name + "-full-tracks.csv")
     tracks_file_name = os.path.join(get_tracks_dir_path(experiment_path, image_name), image_name + "-tracks.csv")
 
     if not os.path.isfile(squares_file_name):  # If the squares file does not exist, force processing

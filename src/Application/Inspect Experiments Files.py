@@ -82,12 +82,12 @@ class InspectDialog:
     A class for handling the user interface to inspect experiment files.
     """
 
-    def __init__(self, root):
-        root.title('Inspect Experiments Files')
+    def __init__(self, _root):
+        _root.title('Inspect Experiments Files')
         self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
 
         # Set up the UI layout
-        content = ttk.Frame(root)
+        content = ttk.Frame(_root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 

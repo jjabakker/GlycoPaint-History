@@ -321,7 +321,7 @@ class ImageViewer:
     def on_define_cells(self):
         self.define_cells_dialog = DefineCellDialog(self, self.callback_assign_squares_to_cell_cell_id, self.callback_reset_square_selection)
 
-    def callback_reset_square_selection(self, cell_id):
+    def callback_reset_square_selection(self):
         """
         This function is called by the DefineCellsDialog
         It will empty the list og squares that are currently selected and update the display
@@ -504,7 +504,7 @@ class ImageViewer:
 
     def save_squares_file_if_requested(self):
 
-        file = f"{self.squares_file_name if self.user_specified_mode == "DIRECTORY" else self.conf_file}"
+        file = f"{self.squares_file_name if self.user_specified_mode == "DIRECTORY" else self.user_specified_conf_file}"
         file = os.path.split(file)[1]
         msg = f"Do you want to save changes to tracks file: {file}"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
@@ -932,7 +932,7 @@ class ImageViewer:
 
         # Retrieve the old and new cell id
         old_cell_id = self.df_squares.at[square_nr, 'Cell Id']
-        new_cell_id = int(self.cell_var.get())
+        new_cell_id = int(self.cell_var.get())            # ToDo: Check if this is correct
         if new_cell_id == old_cell_id:
             new_cell_id = 0
 
@@ -1049,16 +1049,6 @@ class ImageViewer:
             self.cn_left_image.create_rectangle(
                 col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
                 outline='white', fill="", width=3)
-
-    def configure_widgets_state(self, state):
-
-        self.rb_cell0.configure(state=state)
-        self.rb_cell1.configure(state=state)
-        self.rb_cell2.configure(state=state)
-        self.rb_cell3.configure(state=state)
-        self.rb_cell4.configure(state=state)
-        self.rb_cell5.configure(state=state)
-        self.rb_cell6.configure(state=state)
 
     def on_forward_backward(self, direction):
         """
@@ -1283,9 +1273,9 @@ class ImageViewer:
         colors = get_colormap_colors('Blues', 20)
         heatmap_mode = self.heatmap_option.get()
 
-        heatmapdata, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode)
+        heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode)
 
-        for square_number, value in enumerate(heatmapdata):
+        for square_number, value in enumerate(heatmap_data):
             draw_heatmap_square(self.cn_left_image, square_number, self.nr_of_squares_in_row, value, min_val, max_val, colors)
 
 def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):

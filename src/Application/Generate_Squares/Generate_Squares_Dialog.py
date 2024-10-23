@@ -32,11 +32,11 @@ if not paint_logger_file_name_assigned:
 class GenerateSquaresDialog:
     DEFAULT_MAX_SQUARE_COVERAGE = 100  # Use constant for non-changing values
 
-    def __init__(self, root):
-        self.root = root
+    def __init__(self, _root):
+        self.root = _root
         self.load_saved_parameters()  # Initialize saved parameters and directories
-        self.create_ui(root)
-        root.title('Generate Squares')
+        self.create_ui(_root)
+        _root.title('Generate Squares')
 
     def load_saved_parameters(self):
         """Load parameters from disk or use default values if unavailable."""
@@ -51,9 +51,9 @@ class GenerateSquaresDialog:
         self.process_traditional = tk.IntVar(value=values.get('process_traditional', 1))
         self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
 
-    def create_ui(self, root):
+    def create_ui(self, _root):
         """Create and layout the UI components."""
-        content = ttk.Frame(root)
+        content = ttk.Frame(_root)
 
         # Define frames
         frame_parameters = self.create_frame(content, 30)
@@ -71,8 +71,8 @@ class GenerateSquaresDialog:
         content.grid(column=0, row=0, sticky="nsew")
 
         # Add weight to center the frames within the grid
-        root.grid_rowconfigure(0, weight=1)  # Center vertically
-        root.grid_columnconfigure(0, weight=1)  # Center horizontally
+        _root.grid_rowconfigure(0, weight=1)  # Center vertically
+        _root.grid_columnconfigure(0, weight=1)  # Center horizontally
 
         # Layout the frames
         frame_parameters.grid(column=0, row=0, padx=5, pady=5, sticky="nsew")
@@ -81,8 +81,8 @@ class GenerateSquaresDialog:
 
         # Center the button frame exactly in the middle
         frame_buttons.grid(column=0, row=2, columnspan=2, padx=5, pady=5, sticky="nsew")
-        root.grid_rowconfigure(2, weight=1)
-        root.grid_columnconfigure(0, weight=1)
+        _root.grid_rowconfigure(2, weight=1)
+        _root.grid_columnconfigure(0, weight=1)
 
     def create_frame(self, parent, padding=5):
         """Helper method to create a standard frame."""

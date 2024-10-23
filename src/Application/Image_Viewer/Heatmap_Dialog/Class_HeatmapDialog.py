@@ -46,7 +46,7 @@ class HeatMapDialog:
         self.frame_legend = ttk.Frame(self.content, borderwidth=2, padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, padding=(5, 5, 5, 5))
 
-        # Setup the UI elements for the three frames
+        # Set up the UI elements for the three frames
         self.setup_heatmap_variable_buttons()
         self.setup_legend()
         self.setup_controls()
@@ -136,9 +136,9 @@ class HeatMapDialog:
         When that happens, the min and max values of the new heatmap are updated
         """
 
-        min, max = get_heatmap_min_max(self.image_viewer.df_all_squares, self.image_viewer.heatmap_option.get())
-        self.lbl_min.config(text=str(min))
-        self.lbl_max.config(text=str(max))
+        min_val, max_val = get_heatmap_min_max(self.image_viewer.df_all_squares, self.image_viewer.heatmap_option.get())
+        self.lbl_min.config(text=str(min_val))
+        self.lbl_max.config(text=str(max_val))
 
 
 

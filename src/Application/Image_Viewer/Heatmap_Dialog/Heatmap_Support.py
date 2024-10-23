@@ -41,21 +41,21 @@ def get_heatmap_data(df_squares, df_all_squares, heatmap_mode):
 
     if heatmap_mode in heatmap_modes:
         column_name = heatmap_modes[heatmap_mode]
-        heatmapdata = df_squares[column_name]
+        heatmap_data = df_squares[column_name]
         min_val = df_all_squares[column_name].min()
         max_val = df_all_squares[column_name].max()
 
         # There can be Nan values in the data, so we need to replace them
-        heatmapdata = heatmapdata.fillna(0)
+        heatmap_data = heatmap_data.fillna(0)
 
         # Sort on square number
-        heatmapdata = heatmapdata.sort_index()
+        heatmap_data = heatmap_data.sort_index()
 
     else:
         paint_logger.error("Function 'display_heatmap' failed - Unknown heatmap mode")
         sys.exit()
 
-    return heatmapdata, min_val, max_val
+    return heatmap_data, min_val, max_val
 
 def get_heatmap_min_max(df_all_squares, heatmap_mode):
     heatmap_modes = {

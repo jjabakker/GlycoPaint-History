@@ -22,15 +22,15 @@ def set_directory_tree_timestamp(dir_to_change, timestamp=None):
         timestamp = time.time()
 
     try:
-        for dirpath, dirnames, filenames in os.walk(dir_to_change):
+        for dir_path, dir_names, filenames in os.walk(dir_to_change):
 
             # Set timestamp for each file in the directory
             os.utime(dir_to_change, (timestamp, timestamp))
-            for dirname in dirnames:
-                filepath = os.path.join(dirpath, dirname)
+            for dirname in dir_names:
+                filepath = os.path.join(dir_path, dirname)
                 os.utime(filepath, (timestamp, timestamp))
             for filename in filenames:
-                filepath = os.path.join(dirpath, filename)
+                filepath = os.path.join(dir_path, filename)
                 os.utime(filepath, (timestamp, timestamp))
         paint_logger.debug(f"Updated timestamps for directory '{dir_to_change}' successfully.")
 

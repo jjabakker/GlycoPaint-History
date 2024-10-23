@@ -1,6 +1,5 @@
 import csv
 import os
-import re
 
 import numpy as np
 import pandas as pd
@@ -264,19 +263,6 @@ def check_experiment_integrity(df_experiment):
         return False
 
 
-def read_squares_from_file(squares_file_path):
-    try:
-        df_squares = pd.read_csv(squares_file_path, header=0, skiprows=[])
-    except IOError:
-        paint_logger.error(f'Read_squares from_file: file {squares_file_path} could not be opened.')
-        exit(-1)
-
-    df_squares['Experiment Date'] = df_squares['Experiment Date'].astype(str)
-
-    df_squares.set_index('Square Nr', inplace=True, drop=False)
-    return df_squares
-
-
 def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_squares):
     """
     The function calculates the average track count of the lowest average_count_squares squares with a track count > 0.
@@ -306,33 +292,13 @@ def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_s
     return average
 
 
-def split_probe_valency(row):
-    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
-    match = regexp.match(row['Probe'])
-    if match is not None:
-        valency = match.group('valency')
-        return int(valency)
-    else:
-        return 0
-
-
-def split_probe_structure(row):
-    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
-    match = regexp.match(row['Probe'])
-    if match is not None:
-        structure = match.group('structure')
-        return structure
-    else:
-        return ""
-
-
 def get_area_of_square(nr_of_squares_in_row):
-    MICROMETER_PER_PIXEL = 0.1602804  # Referenced from Fiji
-    PIXEL_PER_IMAGE = 512  # Referenced from Fiji
+    micrometer_per_pixel = 0.1602804  # Referenced from Fiji
+    pixel_per_image = 512  # Referenced from Fiji
 
-    MICROMETER_PER_IMAGE = MICROMETER_PER_PIXEL * PIXEL_PER_IMAGE
+    micrometer_per_image = micrometer_per_pixel * pixel_per_image
 
-    micrometer_per_square = MICROMETER_PER_IMAGE / nr_of_squares_in_row
+    micrometer_per_square = micrometer_per_image / nr_of_squares_in_row
     area = micrometer_per_square * micrometer_per_square
 
     return area

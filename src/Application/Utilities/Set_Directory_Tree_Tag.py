@@ -37,10 +37,8 @@ def set_directory_tree_tag(dir_to_change, tags=None):
             # Set tags for each file in the directory
             set_finder_tags(dir_to_change, tags)
             for dirname in dirnames:
-                filepath = os.path.join(dirpath, dirname)
                 set_finder_tags(dir_to_change, tags)
             for filename in filenames:
-                filepath = os.path.join(dirpath, filename)
                 set_finder_tags(dir_to_change, tags)
         paint_logger.debug(f"Updated tags for directory '{dir_to_change}' successfully.")
 

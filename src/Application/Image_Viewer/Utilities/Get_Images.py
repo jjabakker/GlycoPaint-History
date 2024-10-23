@@ -91,7 +91,7 @@ def get_images(self):
         tau = self.df_experiment['Tau'].iloc[index] if 'Tau' in self.df_experiment.columns else 0
 
         # Find the corresponding BF
-        right_valid, right_img = get_corresponding_bf(self, bf_dir, image_name)
+        right_valid, right_img = get_corresponding_bf(bf_dir, image_name)
 
         record = {
             "Left Image Name": self.df_experiment.iloc[index]['Ext Image Name'],
@@ -131,7 +131,7 @@ def get_images(self):
     return list_images
 
 
-def get_corresponding_bf(self, bf_dir, image_name):
+def get_corresponding_bf(bf_dir, image_name):
     """
     Retrieve the corresponding BF image for the given image name
     """

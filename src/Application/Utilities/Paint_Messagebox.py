@@ -4,7 +4,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk  # Importing from Pillow
 
 
-def _paint_messagebox(root, title, message, icon_path):
+def _paint_messagebox(_root, title, message, icon_path):
     # Create a new window for the messagebox
     msg_box = tk.Toplevel()
     msg_box.title(title)
@@ -40,10 +40,10 @@ def _paint_messagebox(root, title, message, icon_path):
     ok_button.grid(row=1, column=1, padx=10, pady=10, sticky='e')
 
     # Calculate center position relative to the root window
-    root_x = root.winfo_x()
-    root_y = root.winfo_y()
-    root_width = root.winfo_width()
-    root_height = root.winfo_height()
+    root_x = _root.winfo_x()
+    root_y = _root.winfo_y()
+    root_width = _root.winfo_width()
+    root_height = _root.winfo_height()
 
     # Calculate x and y coordinates for centering the messagebox
     msg_box_width = 300
@@ -55,12 +55,12 @@ def _paint_messagebox(root, title, message, icon_path):
     # Set the position of the messagebox
     msg_box.geometry(f"{msg_box_width}x{msg_box_height}+{x_position}+{y_position}")
 
-    # Run the messagebox win"/Users/hans/Downloads/Paint.jpg"dow
+    # Run the messagebox window
     msg_box.mainloop()
 
 
-def paint_messagebox(root, title, message):
-    _paint_messagebox(root, title, message,
+def paint_messagebox(_root, title, message):
+    _paint_messagebox(_root, title, message,
                       "/Users/hans/Downloads/Paint.jpg")  # TODO: Change the path to the actual icon
 
 

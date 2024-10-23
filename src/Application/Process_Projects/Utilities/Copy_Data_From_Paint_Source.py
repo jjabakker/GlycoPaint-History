@@ -11,6 +11,7 @@ def copy_data_from_paint_source_to_paint_data(source_root, dest_root, include_ex
 
     :param source_root:
     :param dest_root:
+    :param include_experiment_file
     :return:
     """
 

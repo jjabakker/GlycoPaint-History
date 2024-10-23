@@ -92,6 +92,7 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
     :param plot_title: optional title for histogram plot
     :param file:
     :param plot_to_screen:
+    :param plot
     :param verbose:
     :return: nothing
     """
@@ -108,7 +109,7 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
     p0 = (2000, 4, 10)  # this is more what we see
 
     try:
-        params, cv = curve_fit(mono_exp, x, y, p0)
+        params, cv = curve_fit(mono_exp, x, y, p0)   # noinspection PyTupleAssignment
         m, t, b = params
     except ValueError:
         if verbose:
@@ -160,7 +161,7 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
         ax.set_title(plot_title)
         ax.legend()
 
-        # Plot to screen per default, but don't when it has been overriden
+        # Plot to screen per default, but don't when it has been overruled
         # Plot to file when a filename has been specified
 
         if plot_to_screen:

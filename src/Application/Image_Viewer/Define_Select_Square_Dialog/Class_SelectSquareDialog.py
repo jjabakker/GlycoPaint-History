@@ -1,7 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-
-from numpy.ma.extras import column_stack
+from tkinter import ttk
 
 
 class SelectSquareDialog:
@@ -38,7 +36,7 @@ class SelectSquareDialog:
         self.setup_userinterface()
 
         # Initialise the controls
-        self.initalise_controls(
+        self.initialise_controls(
             min_required_density_ratio, max_allowable_variability, min_track_duration,
             max_track_duration, neighbour_mode)
 
@@ -121,7 +119,7 @@ class SelectSquareDialog:
         """
         Create a scale for the variability.
         The moment that the slider button is released, the variability_changed function is called.
-        The value of the slider is stored in the self.variability variable
+        The value of the slider is stored in the variability variable
         """
 
         self.variability = tk.DoubleVar(value=self.max_allowable_variability)
@@ -227,11 +225,11 @@ class SelectSquareDialog:
         self.select_dialog.destroy()
 
     # --------------------------------------------------------------------------------------------------------
-    # Information from the Inage Viewer
+    # Information from the Image Viewer
     # --------------------------------------------------------------------------------------------------------
 
-    def initalise_controls(self, min_required_density_ratio, max_allowable_variability, min_track_duration,
-                           max_track_duration, neighbour_mode):
+    def initialise_controls(self, min_required_density_ratio, max_allowable_variability, min_track_duration,
+                            max_track_duration, neighbour_mode):
 
         # Set the initial values for the sliders and radio buttons as advised by the Image Viewer
         self.min_required_density_ratio = min_required_density_ratio

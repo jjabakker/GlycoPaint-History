@@ -26,9 +26,6 @@ class DefineCellDialog:
 
         self.setup_userinterface()
 
-        # Initialise by pretending a value has been changed
-        # self.on_heatmap_variable_change()
-
     def setup_userinterface(self):
         """
         This function sets up the UI elements for the control window.
@@ -43,7 +40,7 @@ class DefineCellDialog:
         self.frame_cells = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, padding=(5, 5, 5, 5))
 
-        # Setup the UI elements for the two frames
+        # Set up the UI elements for the two frames
         self.setup_frame_cells()
         self.setup_frame_controls()
 
@@ -53,8 +50,6 @@ class DefineCellDialog:
 
     def setup_frame_cells(self):
 
-        # Define variables
-        width_rb = 12
         self.cell_var = tk.StringVar(value=1)
 
         # Define colors for each cell

@@ -165,7 +165,7 @@ def install():
     # Create the Trackmate Data and Paint profile directories
     profile_dir = os.path.join(os.path.expanduser('~'), "Paint", "Profile")
     logging_dir = os.path.join(os.path.expanduser('~'), "Paint", "Logger")
-    config_dir = os.path.join(os.path.expanduser('~'), "Paint", "Config")
+    config_dir = os.path.join(os.path.expanduser('~'), "Paint", "Defaults")
 
     dirs_to_create = [profile_dir, logging_dir]
     for directory in dirs_to_create:

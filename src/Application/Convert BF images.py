@@ -58,7 +58,7 @@ class ConvertDialog:
             messagebox.showwarning(title='Warning', message=message)
         else:
             # prepare_experiment_info_file(self.image_directory, self.paint_directory)
-            self.exit_dialog()
+            self.on_exit_dialog()
 
     def on_exit_dialog(self):
         self.root.destroy()

@@ -1,11 +1,7 @@
-import re
-import sys
 from tkinter import *
 
 import pandas as pd
 from PIL import Image
-
-from src.Common.Support.LoggerConfig import paint_logger
 
 pd.options.mode.copy_on_write = True
 
@@ -19,25 +15,25 @@ def save_as_png(canvas, file_name):
     img.save(f"{file_name}.png", 'png')
 
 
-def save_square_info_to_batch(self):  # TODO
-    for index, row in self.df_experiment.iterrows():
-        self.squares_file_name = self.list_images[self.img_no]['Squares File']
-        df_squares = read_squares_from_file(self.squares_file_name)
-        if df_squares is None:
-            paint_logger.error("Function 'save_square_info_to_batch' failed: - Square file does not exist")
-            sys.exit()
-        if len(df_squares) > 0:
-            nr_visible_squares = len(df_squares[df_squares['Visible']])
-            nr_total_squares = len(df_squares)
-            squares_ratio = round(nr_visible_squares / nr_total_squares, 2)
-        else:
-            nr_visible_squares = 0
-            nr_total_squares = 0
-            squares_ratio = 0.0
-
-        self.df_experiment.loc[index, 'Nr Visible Squares'] = nr_visible_squares
-        self.df_experiment.loc[index, 'Nr Total Squares'] = nr_total_squares
-        self.df_experiment.loc[index, 'Squares Ratio'] = squares_ratio
+# def save_square_info_to_batch(self):  # TODO
+#     for index, row in self.df_experiment.iterrows():
+#         self.squares_file_name = self.list_images[self.img_no]['Squares File']
+#         df_squares = read_squares_from_file(self.squares_file_name)
+#         if df_squares is None:
+#             paint_logger.error("Function 'save_square_info_to_batch' failed: - Square file does not exist")
+#             sys.exit()
+#         if len(df_squares) > 0:
+#             nr_visible_squares = len(df_squares[df_squares['Visible']])
+#             nr_total_squares = len(df_squares)
+#             squares_ratio = round(nr_visible_squares / nr_total_squares, 2)
+#         else:
+#             nr_visible_squares = 0
+#             nr_total_squares = 0
+#             squares_ratio = 0.0
+#
+#         self.df_experiment.loc[index, 'Nr Visible Squares'] = nr_visible_squares
+#         self.df_experiment.loc[index, 'Nr Total Squares'] = nr_total_squares
+#         self.df_experiment.loc[index, 'Squares Ratio'] = squares_ratio
 
 
 def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
@@ -217,70 +213,3 @@ def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
         return x0 >= xr1 and x1 <= xr0 and y0 >= yr0 and y1 <= yr1
 
     return False
-
-
-def check_experiment_integrity(df_experiment):
-    """
-    Check if the experiment file has the expected columns and makes sure that the types are correct
-    :param df_experiment:
-    :return:
-    """
-    expected_columns = {
-        'Batch Sequence Nr',
-        'Experiment Date',
-        'Experiment Name',
-        'Experiment Nr',
-        'Experiment Seq Nr',
-        'Image Name',
-        'Probe',
-        'Probe Type',
-        'Cell Type',
-        'Adjuvant',
-        'Concentration',
-        'Threshold',
-        'Process',
-        'Ext Image Name',
-        'Nr Spots',
-        'Image Size',
-        'Run Time',
-        'Time Stamp'}.issubset(df_experiment.columns)
-
-    if expected_columns:
-        # Make sure that there is a meaningful index           # TODO: Check if this is not causing problems
-        df_experiment.set_index('Batch Sequence Nr', inplace=True, drop=False)
-        return True
-    else:
-        return False
-
-
-def read_squares_from_file(squares_file_path):
-    try:
-        df_squares = pd.read_csv(squares_file_path, header=0, skiprows=[])
-    except IOError:
-        paint_logger.error(f'Read_squares from_file: file {squares_file_path} could not be opened.')
-        exit(-1)
-
-    df_squares['Experiment Date'] = df_squares['Experiment Date'].astype(str)
-
-    df_squares.set_index('Square Nr', inplace=True, drop=False)
-    return df_squares
-
-
-def split_probe_valency(row):
-    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
-    match = regexp.match(row['Probe'])
-    if match is not None:
-        valency = match.group('valency')
-        return int(valency)
-    else:
-        return 0
-
-
-def split_probe_structure(row):
-    regexp = re.compile(r'(?P<valency>\d) +(?P<structure>[A-Za-z]+)')
-    match = regexp.match(row['Probe'])
-    if match is not None:
-        structure = match.group('structure')
-        return structure
-    else:
-        return ""

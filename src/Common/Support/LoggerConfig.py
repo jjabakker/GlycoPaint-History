@@ -38,10 +38,10 @@ def get_paint_logger_directory():
 def create_file_handler(file_name):
     file_handler_dir = get_paint_logger_directory()
 
-    file_handler = logging.FileHandler(path.join(file_handler_dir, file_name), mode='w')  # Logs to a file
-    file_handler.setLevel(logging.INFO)  # Only logs at INFO level or higher go to the file
-    file_handler.setFormatter(formatter)
-    return file_handler
+    _file_handler = logging.FileHandler(path.join(file_handler_dir, file_name), mode='w')  # Logs to a file
+    _file_handler.setLevel(logging.INFO)  # Only logs at INFO level or higher go to the file
+    _file_handler.setFormatter(formatter)
+    return _file_handler
 
 file_handler = create_file_handler('paint.log')
 

@@ -171,7 +171,7 @@ if __name__ == '__main__':
         def process(self):
             if self.image_directory == "" or self.paint_directory == "":
                 message = 'The image directory needs to point to where the images are.\n\n'
-                message += 'The experimen directory is where the experiment_info.csv will be placed.'
+                message += 'The experiment directory is where the experiment_info.csv will be placed.'
                 messagebox.showwarning(title='Warning', message=message)
             else:
                 convert_bf_images(self.image_directory, self.paint_directory)
