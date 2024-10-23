@@ -11,17 +11,20 @@ class SelectSquareDialog:
     # --------------------------------------------------------------------------------------------------------
 
     def __init__(self, image_viewer, callback, min_required_density_ratio, max_allowable_variability,
-                 min_track_duration, max_track_duration, neighbour_state):
+                 min_track_duration, max_track_duration, neighbour_mode):
+        """
+        The callback function that is called is self.update_select_squares
+        """
 
+        # Create a new top-level window
         self.image_viewer = image_viewer
         self.callback = callback   # This is the callback function the UI calls when the sliders are changed
 
-        # Set the initial values for the sliders and radio buttons as advised by the Image Viewer
-        self.min_required_density_ratio = min_required_density_ratio
-        self.max_allowable_variability = max_allowable_variability
-        self.min_track_duration = min_track_duration
-        self.max_track_duration = max_track_duration
-        self.neighbour_state = neighbour_state
+        self.min_required_density_ratio = None
+        self.max_allowable_variability = None
+        self.min_track_duration = None
+        self.max_track_duration = None
+        self.neighbour_mode = None
 
         # Set window properties
         self.select_dialog = tk.Toplevel(self.image_viewer.parent)
@@ -32,6 +35,11 @@ class SelectSquareDialog:
 
         # Set up the user interface
         self.setup_userinterface()
+
+        # Initialise the controls
+        self.initalise_controls(
+            min_required_density_ratio, max_allowable_variability, min_track_duration,
+            max_track_duration, neighbour_mode)
 
     def setup_userinterface(self):
 
@@ -101,15 +109,12 @@ class SelectSquareDialog:
             command=lambda: self.filter_changed('Neighbour Mode'), anchor=tk.W)
         self.rb_neighbour_relaxed = tk.Radiobutton(
             self.frame_neighbours, text="Relaxed", variable=self.neighbour_var, width=12, value="Relaxed",
-           command=lambda: self.filter_changed('Neighbour Mode'), anchor=tk.W)
+            command=lambda: self.filter_changed('Neighbour Mode'), anchor=tk.W)
 
         # Place the radio buttons and button in the grid
         self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
         self.rb_neighbour_relaxed.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
         self.rb_neighbour_strict.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
-
-        # Set the radio button to the initial value
-        self.neighbour_var.set(self.neighbour_state)
 
     def setup_frame_variability(self):
         """
@@ -216,8 +221,31 @@ class SelectSquareDialog:
         The callback function (update_select_squares) is called in the ImageViewer dialog
         """
 
-        self.image_viewer.select_square_value(-1)
+        # self.image_viewer.select_square_value(-1)
+        self.image_viewer.update_select_squares("Exit", self.sc_density_ratio.get(), self.sc_variability.get(),
+                      self.track_min_duration.get(), self.track_max_duration.get(), self.neighbour_var.get())
         self.select_dialog.destroy()
+
+    # --------------------------------------------------------------------------------------------------------
+    # Information from the Inage Viewer
+    # --------------------------------------------------------------------------------------------------------
+
+    def initalise_controls(self, min_required_density_ratio, max_allowable_variability, min_track_duration,
+                           max_track_duration, neighbour_mode):
+
+        # Set the initial values for the sliders and radio buttons as advised by the Image Viewer
+        self.min_required_density_ratio = min_required_density_ratio
+        self.max_allowable_variability = max_allowable_variability
+        self.min_track_duration = min_track_duration
+        self.max_track_duration = max_track_duration
+        self.neighbour_mode = neighbour_mode
+
+        # Set the sliders to the initial values
+        self.density_ratio.set(min_required_density_ratio)
+        self.variability.set(max_allowable_variability)
+        self.track_min_duration.set(min_track_duration)
+        self.track_max_duration.set(max_track_duration)
+        self.neighbour_var.set(neighbour_mode)
 
 
 # --------------------------------------------------------------------------------------------------------
