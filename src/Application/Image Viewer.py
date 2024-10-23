@@ -18,6 +18,7 @@ from PIL import Image, ImageTk
 from src.Application.Support.Class_HeatmapControlDialog import HeatMapControlDialog
 from src.Application.Support.Class_SelectViewerDialog import SelectViewerDialog
 from src.Application.Support.Class_SelectSquareDialog import SelectSquareDialog
+from src.Application.Support.Class_DefineCellDialog import DefineCellDialog
 from src.Application.Support.Heatmap_Support import get_colormap_colors, get_color_index, get_heatmap_data
 from src.Application.Support.Support_Functions import (
     eliminate_isolated_squares_relaxed,
@@ -48,6 +49,7 @@ class ImageViewer:
 
         self.parent = tk.Toplevel(parent)
 
+        # Save the parameters
         self.user_specified_conf_file = user_specified_conf_file
         self.user_specified_directory = user_specified_directory
         self.user_specified_mode = user_specified_mode
@@ -67,16 +69,6 @@ class ImageViewer:
         # Ensure the user can't close the window by clicking the X button
         self.parent.protocol("WM_DELETE_WINDOW", self.exit_viewer)
 
-    # def setup_select_square(self):
-    #     self.select_square = tk.DoubleVar()
-    #     self.select_square_parameter_value = tk.IntVar()
-    #     self.select_square_parameter_value.set(1)  # Default selection is the first option
-    #     # The update_heatmap_rb_value function is called when the radio button value is changed
-    #     self.select_square_parameter_value.trace_add("write", self.update_heatmap_rb_value)
-    #
-    #     self.checkbox_value = tk.BooleanVar()
-    #     self.checkbox_value.set(False)  # Default is unchecked
-
     def setup_heatmap(self):
         self.slider_value = tk.DoubleVar()
         self.heatmap_option = tk.IntVar()
@@ -92,39 +84,45 @@ class ImageViewer:
         self.img_no = 0
         self.image_directory = None
 
-        self.conf_file = conf_file
-        self.mode_dir_or_conf = mode_dir_or_conf
         self.df_all_squares = None
+        self.squares_file_name = None
 
         # UI state variables
         self.start_x = None
         self.start_y = None
         self.rect = None
-        self.squares_file_name = None
-        self.show_squares_numbers = True
-        self.show_squares = True
+
+        # Variables to keep track if the user changed something
         self.square_changed = False
         self.experiments_changed = False
-        self.select_mode = ""
-        self.pop_square_info = None
 
-        self.max_allowable_variability = 5
-        self.min_required_density_ratio = 2
-        self.min_track_duration = 0
-        self.max_track_duration = 200
-        self.neighbour_state = "Free"
+        # Variables indicating whether to show squares and square numbers in the left pane
+        self.show_squares_numbers = True
+        self.show_squares = True
 
+        # Variables to hold the information on the current image
+        self.max_allowable_variability = None
+        self.min_required_density_ratio = None
+        self.min_track_duration = None
+        self.max_track_duration = None
+        self.neighbour_state = None
+
+        # Variables to hold references to the Dialogs, initially all empty
         self.select_square_dialog = None
         self.heatmap_control_dialog = None
+        self.define_cells_dialog = None
+        self.square_info_popup = None
 
-        msg = f'Image Viewer - {self.user_specified_directory if self.mode_dir_or_conf == "DIRECTORY" else self.user_specified_conf_file}'
+        self.squares_in_rectangle = []
+
+        msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "DIRECTORY" else self.user_specified_conf_file}'
         msg += f'{" - NO SAVING" if self.user_specified_mode == "CONF_FILE" else ""}'
         self.parent.title(msg)
 
     def setup_ui(self):
         """
         Sets up the UI by defining the top level frames
-        For each frame a setup function ios called
+        For each frame a setup function is called
         """
 
         self.content = ttk.Frame(self.parent, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
@@ -132,7 +130,6 @@ class ImageViewer:
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_navigation_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
-        # self.frame_filter = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_duration_mode = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
         self.frame_images.grid(column=0, row=0, rowspan=2, padx=5, pady=5, sticky=tk.N)
@@ -178,8 +175,8 @@ class ImageViewer:
         # Define the labels and combobox widgets for the images
         self.list_images = []
         self.list_of_image_names = []
-        self.cb_image_names = ttk.Combobox(self.frame_picture_left, values=self.list_of_image_names, state='readonly',
-                                           width=30)
+        self.cb_image_names = ttk.Combobox(
+            self.frame_picture_left, values=self.list_of_image_names, state='readonly', width=30)
 
         # Label for the right image name
         self.lbl_image_bf_name = StringVar(self.parent, "")
@@ -217,11 +214,11 @@ class ImageViewer:
     def setup_frame_navigation_buttons(self):
         # This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
 
-        self.bn_forward = ttk.Button(self.frame_navigation_buttons, text='Forward',
-                                     command=lambda: self.go_forward_backward('FORWARD'))
+        self.bn_forward = ttk.Button(
+            self.frame_navigation_buttons, text='Forward', command=lambda: self.go_forward_backward('FORWARD'))
         self.bn_exclude = ttk.Button(self.frame_navigation_buttons, text='Reject', command=lambda: self.exinclude())
-        self.bn_backward = ttk.Button(self.frame_navigation_buttons, text='Backward',
-                                      command=lambda: self.go_forward_backward('BACKWARD'))
+        self.bn_backward = ttk.Button(
+            self.frame_navigation_buttons, text='Backward', command=lambda: self.go_forward_backward('BACKWARD'))
         self.bn_exit = ttk.Button(self.frame_navigation_buttons, text='Exit', command=lambda: self.exit_viewer())
 
         # Layout the buttons
@@ -234,84 +231,38 @@ class ImageViewer:
         self.bn_backward.configure(state=tk.DISABLED)
 
     def setup_frame_controls(self):
-        # This frame is part of the content frame and contains the following frames: frame_neighbours, frame_cells, frame_commands
+        # This frame is part of the content frame and contains the following frames: frame_commands
 
-        frame_width = 30
+        self.frame_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        self.setup_frame_commands()
+        self.frame_commands.grid(column=0, row=3, padx=5, pady=5)
 
-        self.frame_cells = ttk.Frame(self.frame_controls, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_output_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove',
-                                               padding=(5, 5, 5, 5))
-
-        # self.frame_cells.grid(column=0, row=2, padx=5, pady=5)
-        self.frame_output_commands.grid(column=0, row=3, padx=5, pady=5)
-
-        self.setup_frame_cells()
-        self.setup_frame_output_commands()
-
-    def setup_frame_cells(self):
-        """
-        This frame is part of frame_controls and contains the cell selection radio buttons:
-
-        :return:
-        """
-
-        width_rb = 12
-        self.cell_var = StringVar(value=1)
-        self.rb_cell0 = Radiobutton(self.frame_cells, text="Not on cell", width=width_rb, variable=self.cell_var,
-                                    value=0)
-        self.rb_cell1 = Radiobutton(self.frame_cells, text="On cell 1", width=width_rb, bg="red", fg="white",
-                                    variable=self.cell_var, value=1)
-        self.rb_cell2 = Radiobutton(self.frame_cells, text="On cell 2", width=width_rb, bg="yellow", fg="black",
-                                    variable=self.cell_var, value=2)
-        self.rb_cell3 = Radiobutton(self.frame_cells, text="On cell 3", width=width_rb, bg="green", fg="white",
-                                    variable=self.cell_var, value=3)
-        self.rb_cell4 = Radiobutton(self.frame_cells, text="On cell 4", width=width_rb, bg="magenta", fg="black",
-                                    variable=self.cell_var, value=4)
-        self.rb_cell5 = Radiobutton(self.frame_cells, text="On cell 5", width=width_rb, bg="cyan", fg="black",
-                                    variable=self.cell_var, value=5)
-        self.rb_cell6 = Radiobutton(self.frame_cells, text="On cell 6", width=width_rb, bg="black", fg="white",
-                                    variable=self.cell_var, value=7)
-
-        self.rb_cell0.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_cell1.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_cell2.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
-        self.rb_cell3.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
-        self.rb_cell4.grid(column=0, row=4, padx=5, pady=5, sticky=tk.W)
-        self.rb_cell5.grid(column=0, row=5, padx=5, pady=5, sticky=tk.W)
-        self.rb_cell6.grid(column=0, row=6, padx=5, pady=5, sticky=tk.W)
-
-        # Bind the right mouse click
-        self.rb_cell1.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 1))
-        self.rb_cell2.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 2))
-        self.rb_cell3.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 3))
-        self.rb_cell4.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 4))
-        self.rb_cell5.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 5))
-        self.rb_cell6.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 6))
-        self.rb_cell0.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 0))
-
-    def setup_frame_output_commands(self):
+    def setup_frame_commands(self):
         # This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
 
         button_width = 12
 
         self.bn_heatmap = ttk.Button(
-            self.frame_output_commands, text='Heatmap', command=lambda: self.show_heatmap(), width=button_width)
+            self.frame_commands, text='Heatmap', command=lambda: self.show_heatmap(), width=button_width)
         self.bn_select_squares = ttk.Button(
-            self.frame_output_commands, text='Select Squares', command=lambda: self.select_squares(), width=button_width)
+            self.frame_commands, text='Select Squares', command=lambda: self.select_squares(), width=button_width)
+        self.bn_define_cell = ttk.Button(
+            self.frame_commands, text='Define Cells', command=lambda: self.define_cells(), width=button_width)
         self.bn_histogram = ttk.Button(
-            self.frame_output_commands, text='Histogram', command=lambda: self.histogram(), width=button_width)
+            self.frame_commands, text='Histogram', command=lambda: self.histogram(), width=button_width)
         self.bn_excel = ttk.Button(
-            self.frame_output_commands, text='Excel', command=lambda: self.show_excel(),  width=button_width)
+            self.frame_commands, text='Excel', command=lambda: self.show_excel(),  width=button_width)
         self.bn_output = ttk.Button(
-            self.frame_output_commands, text='Output', command=lambda: self.run_output(), width=button_width)
+            self.frame_commands, text='Output', command=lambda: self.run_output(), width=button_width)
         self.bn_reset = ttk.Button(
-            self.frame_output_commands, text='Reset', command=lambda: self.reset_image(), width=button_width)
+            self.frame_commands, text='Reset', command=lambda: self.reset_image(), width=button_width)
 
         self.bn_heatmap.grid(column=0, row=0, padx=5, pady=5)
         self.bn_select_squares.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_output.grid(column=0, row=2, padx=5, pady=5)
-        self.bn_reset.grid(column=0, row=3, padx=5, pady=5)
-        self.bn_excel.grid(column=0, row=4, padx=5, pady=5)
+        self.bn_define_cell.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_output.grid(column=0, row=3, padx=5, pady=5)
+        self.bn_reset.grid(column=0, row=4, padx=5, pady=5)
+        self.bn_excel.grid(column=0, row=5, padx=5, pady=5)
 
     def load_images_and_config(self):
 
@@ -364,6 +315,34 @@ class ImageViewer:
                 self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
                 self.min_track_duration, self.max_track_duration, self.neighbour_state)
 
+    def define_cells(self):
+        self.define_cells_dialog = DefineCellDialog(self, self.assign_cell_id, self.reset_rectangle_selection)
+
+    def reset_rectangle_selection(self, cell_id):
+        self.squares_in_rectangle = []
+        self.display_selected_squares()
+
+    def assign_cell_id(self, cell_id):
+        """
+        This function is called by the DefineCellsDialog when a cell is assigned to a square
+        :param cell_id:
+        :return:
+        """
+
+        # See if there are squares selected and if so update the cell id
+        for square_nr in self.squares_in_rectangle:
+            self.df_squares.at[square_nr, 'Cell Id'] = int(cell_id)
+
+        # if not self.df_all_squares.empty:
+        #
+        #     for i in range(len(self.df_squares)):
+        #         square = self.df_squares.iloc[i]
+        #         if square['Visible']:
+        #             if self.df_squares.at[square['Square Nr'], 'Cell Id']  == 7:
+        #                 self.df_squares.at[square['Square Nr'], 'Cell Id'] = int(cell_id)
+
+        # Update the display
+        self.display_selected_squares()
 
     def setup_exclude_button(self):
         # Set up the exclude/include button state
@@ -502,8 +481,6 @@ class ImageViewer:
         :param bf_dir:
         :param image_name:
 
-
-        :return:
         """
 
         if not os.path.exists(bf_dir):
@@ -659,9 +636,9 @@ class ImageViewer:
 
     def save_experiment_file_if_requested(self):
 
-        file = f"{self.experiment_directory_path if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
+        file = f"{self.experiment_directory_path if self.user_specified_mode == "DIRECTORY" else self.user_specified_conf_file}"
         file = os.path.split(file)[1]
-        msg = f"Do you want to save changes to {'experiments' if self.mode_dir_or_conf == 'DIRECTORY' else 'configuration'} file: {file} ?"
+        msg = f"Do you want to save changes to {'experiments' if self.user_specified_mode == 'DIRECTORY' else 'configuration'} file: {file} ?"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
         if response is True:
 
@@ -682,7 +659,7 @@ class ImageViewer:
 
     def save_squares_file_if_requested(self):
 
-        file = f"{self.squares_file_name if self.mode_dir_or_conf == "DIRECTORY" else self.conf_file}"
+        file = f"{self.squares_file_name if self.user_specified_mode == "DIRECTORY" else self.conf_file}"
         file = os.path.split(file)[1]
         msg = f"Do you want to save changes to tracks file: {file}"
         response = messagebox.askyesnocancel("Save Changes", message=msg)
@@ -697,19 +674,19 @@ class ImageViewer:
         response_experiment = None
 
         if self.experiments_changed:
-            if self.mode_dir_or_conf == "DIRECTORY":
+            if self.user_specified_mode == "DIRECTORY":
                 response_experiment = self.save_experiment_file_if_requested()
             else:
                 messagebox.showinfo("Save Warning", "No saving of experiment file is implemented in configuration mode")
 
         if self.square_changed:
-            if self.mode_dir_or_conf == "DIRECTORY":
+            if self.user_specified_mode == "DIRECTORY":
                 response_square = self.save_squares_file_if_requested()
             else:
                 messagebox.showinfo("Save Warning", "No saving of squares file is implemented in configuration mode")
 
-        if self.mode_dir_or_conf == "DIRECTORY":
-            if (self.experiments_changed and response_experiment == None) or (self.square_changed and response_square == None):
+        if self.user_specified_mode == "DIRECTORY":
+            if (self.experiments_changed and response_experiment is None) or (self.square_changed and response_square is None):
                 return
             else:
                 root.quit()
@@ -872,10 +849,6 @@ class ImageViewer:
                 image['Min Required Density Ratio'] = density_ratio
                 image['Max Allowable Variability'] = variability
                 image['Neighbour Mode'] = neighbour_mode
-
-            # self.df_experiment['Neighbour Setting'] = neighbour_state
-            # self.df_experiment['Density Ratio Setting'] = density_ratio
-            # self.df_experiment['Variability Setting'] = variability
 
             self.experiments_changed = True
         elif setting_type == "Exit":
@@ -1155,15 +1128,15 @@ class ImageViewer:
         """
 
         # Define the popup
-        if self.pop_square_info  is None:
-            self.pop_square_info = Toplevel(root)
-            self.pop_square_info.title("Square Info")
-            self.pop_square_info.geometry("220x180")
+        if self.square_info_popup  is None:
+            self.square_info_popup = Toplevel(root)
+            self.square_info_popup.title("Square Info")
+            self.square_info_popup.geometry("220x180")
 
             # Position the popup relative to the main window and the event
             x = root.winfo_x()
             y = root.winfo_y()
-            self.pop_square_info.geometry(f"+{x + event.x + 15}+{y + event.y + 40}")
+            self.square_info_popup.geometry(f"+{x + event.x + 15}+{y + event.y + 40}")
 
             # Get the data to display from the dataframe
             square_data = self.df_squares.loc[square_nr]
@@ -1186,48 +1159,73 @@ class ImageViewer:
             lbl_width = 15
 
             for idx, (label, value) in enumerate(fields, start=1):
-                ttk.Label(self.pop_square_info, text=label, anchor=W, width=lbl_width).grid(row=idx, column=1, padx=padx_value,
-                                                                           pady=pady_value)
-                ttk.Label(self.pop_square_info, text=str(value), anchor=W).grid(row=idx, column=2, padx=padx_value, pady=pady_value)
+                ttk.Label(self.square_info_popup, text=label, anchor=W, width=lbl_width).grid(row=idx, column=1, padx=padx_value,
+                                                                                              pady=pady_value)
+                ttk.Label(self.square_info_popup, text=str(value), anchor=W).grid(row=idx, column=2, padx=padx_value, pady=pady_value)
 
             # Bring the focus back to the root window so the canvas can detect more clicks
             self.parent.focus_force()
         else:
-            self.pop_square_info.destroy()
-            self.pop_square_info = None
+            self.square_info_popup.destroy()
+            self.square_info_popup = None
+
+    #--------------------------------------------------------------------------------------
+    # Rectangle functions
+    #--------------------------------------------------------------------------------------
 
     def start_rectangle(self, event):
         self.square_changed = True
         self.start_x = event.x
         self.start_y = event.y
-        self.rect = self.cn_left_image.create_rectangle(self.start_x,
-                                                        self.start_y,
-                                                        self.start_x + 1,
-                                                        self.start_y + 1,
-                                                        fill="", outline='white')
+        self.rect = self.cn_left_image.create_rectangle(
+            self.start_x, self.start_y, self.start_x + 1, self.start_y + 1, fill="", outline='white')
 
     def increase_rectangle_size(self, event):
-        cur_x, cur_y = (event.x, event.y)
-
-        # expand rectangle as you drag the mouse
-        self.cn_left_image.coords(self.rect, self.start_x, self.start_y, cur_x, cur_y)
+        # Expand rectangle as you drag the mouse
+        self.cn_left_image.coords(self.rect, self.start_x, self.start_y, event.x, event.y)
 
     def define_rectangle(self, event):
-        cur_x, cur_y = (event.x, event.y)
 
-        # Record the new cell id`
-        cell_id = int(self.cell_var.get())
+        # Remove the rectangle
+        self.cn_left_image.delete( self.rect)
 
+        if self.define_cells_dialog is None:   # @@@@
+
+            pass
+            # Maybe open the dialog here
+            # self.define_cells_dialog = DefineCellsDialog(self, self.df_squares)
+            # self.define_cells_dialog.protocol("WM_DELETE_WINDOW", self.on_closing_define_cells_dialog)
+
+        # self.squares_in_rectangle = []
         for i in range(len(self.df_squares)):
             square = self.df_squares.iloc[i]
-            # if square_is_visible(self.df_squares, square['Square Nr']):
             if square['Visible']:
                 if test_if_square_is_in_rectangle(
                         square['X0'], square['Y0'], square['X1'], square['Y1'], self.start_x, self.start_y,
-                        cur_x, cur_y):
-                    self.df_squares.at[square['Square Nr'], 'Cell Id'] = int(cell_id)
+                        event.x, event.y):
+                    self.squares_in_rectangle.append(square['Square Nr'])
 
-        self.display_selected_squares()
+        self.mark_selected_squares(self.squares_in_rectangle)
+
+    def mark_selected_squares(self, list_of_squares):
+
+        for square_nr in list_of_squares:
+            col_nr = square_nr % self.nr_of_squares_in_row
+            row_nr = square_nr // self.nr_of_squares_in_row
+            width = 512 / self.nr_of_squares_in_row
+            height = 512 / self.nr_of_squares_in_row
+
+            # Draw the outline without filling the rectangle
+            self.cn_left_image.create_rectangle(
+                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+                outline='white', fill="", width=3)
+
+            # if self.show_squares_numbers:
+            #     self.cn_left_image.create_text(
+            #         col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(square['Label Nr']),
+            #         font=('Arial', -10), fill=colour_table[cell_id][1], tags=text_tag)
+
+
 
     def configure_widgets_state(self, state):
 
@@ -1383,7 +1381,7 @@ class ImageViewer:
             square_warning = False
 
             if self.experiments_changed:
-                if self.mode_dir_or_conf == "DIRECTORY":
+                if self.user_specified_mode == "DIRECTORY":
                     response_experiment = self.save_experiment_file_if_requested()
                     if response_experiment is None:
                         return
@@ -1391,14 +1389,14 @@ class ImageViewer:
                     experiment_warning = True
 
             if self.square_changed:
-                if self.mode_dir_or_conf == "DIRECTORY":
+                if self.user_specified_mode == "DIRECTORY":
                     response_square = self.save_squares_file_if_requested()
                     if response_square is None:
                         return
                 else:
                     square_warning = True
 
-            if self.mode_dir_or_conf == 'CONF_FILE':
+            if self.user_specified_mode == 'CONF_FILE':
                 warnings = []
                 if square_warning:
                     warnings.append("squares file")
@@ -1424,7 +1422,7 @@ class ImageViewer:
 
     def update_squares_file(self):
         # It is necessary to the squares file, because the user may have made changes
-        if self.mode_dir_or_conf == 'DIRECTORY':
+        if self.user_specified_mode == 'DIRECTORY':
             squares_file_path = get_squares_file_path(self.experiment_directory_path, self.image_name)
             squares_file_name = os.path.join(self.experiment_directory_path, self.image_name, 'grid',
                                              self.image_name + '-squares.csv')
@@ -1546,18 +1544,18 @@ if __name__ == '__main__':
     root.withdraw()
     root.eval('tk::PlaceWindow . center')
     dialog_result = SelectViewerDialog(root)
-    proceed, root_directory, conf_file, mode_dir_or_conf = dialog_result.get_result()
+    proceed, root_directory, conf_file, mode = dialog_result.get_result()
 
     if proceed:
         root = tk.Tk()
         root.withdraw()
         root.eval('tk::PlaceWindow . center')
-        paint_logger.debug(f'Mode: {mode_dir_or_conf}')
-        if mode_dir_or_conf == 'DIRECTORY':
+        paint_logger.debug(f'Mode: {mode}')
+        if mode == 'DIRECTORY':
             paint_logger.info(f'Root directory: {root_directory}')
         else:
             paint_logger.debug(f'Project file: {conf_file}')
 
-        image_viewer = ImageViewer(root, root_directory, conf_file, mode_dir_or_conf)
+        image_viewer = ImageViewer(root, root_directory, conf_file, mode)
 
     root.mainloop()
