@@ -3,9 +3,9 @@ import os
 import sys
 import time
 
-from src.Application.Support.Compile_Project_Output import compile_squares_file
-from src.Application.Support.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
-from src.Application.Support.Generate_Squares import process_all_images_in_root_directory
+from src.Application.Compile_Project_Output.Compile_Project_Output import compile_project_output
+from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
+from src.Application.Generate_Squares.Generate_Squares import process_all_images_in_root_directory
 from src.Application.Support.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
 from src.Application.Support.Support_Functions import copy_directory, format_time_nicely
 from src.Common.Support.LoggerConfig import (
@@ -112,7 +112,7 @@ def process_directory(paint_source_dir,
         verbose=False)
 
     # Compile the squares file
-    compile_squares_file(paint_data_dir, verbose=True)
+    compile_project_output(paint_data_dir, verbose=True)
 
     # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine)
     output_source = os.path.join(paint_data_dir, 'Output')

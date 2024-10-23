@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
-from src.Application.Support.Heatmap_Support import (
+from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors,
     get_heatmap_min_max)
 
 
-class HeatMapControlDialog:
+class HeatMapDialog:
 
     #--------------------------------------------------------------
     # Setting up

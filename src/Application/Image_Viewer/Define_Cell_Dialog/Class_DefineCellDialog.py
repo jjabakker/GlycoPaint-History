@@ -1,8 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-from src.Application.Support.Heatmap_Support import (
-    get_colormap_colors,
-    get_heatmap_min_max)
 
 
 class DefineCellDialog:

@@ -1,7 +1,3 @@
-
-
-from tkinter import filedialog, messagebox, ttk
-from src.Application.Support.Convert_BF_from_nd2_to_jpg import convert_bf_images
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 from tkinter import *
@@ -25,8 +21,8 @@ class ConvertDialog:
         frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
         # Fill the button frame
-        btn_process = ttk.Button(frame_buttons, text='Process', command=self.process)
-        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
+        btn_process = ttk.Button(frame_buttons, text='Process', command=self.on_process)
+        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.on_exit_dialog)
         btn_process.grid(column=0, row=1)
         btn_exit.grid(column=0, row=2)
 
@@ -55,7 +51,7 @@ class ConvertDialog:
         if len(self.paint_directory) != 0:
             self.lbl_paint_dir.config(text=self.paint_directory)
 
-    def process(self):
+    def on_process(self):
         if self.image_directory == "" or self.paint_directory == "":
             message = 'The image directory needs to point to where the images are.\n\n'
             message += 'The experiment directory is where the experiment_info.csv will be placed.'
@@ -64,7 +60,7 @@ class ConvertDialog:
             # prepare_experiment_info_file(self.image_directory, self.paint_directory)
             self.exit_dialog()
 
-    def exit_dialog(self):
+    def on_exit_dialog(self):
         self.root.destroy()
 
 

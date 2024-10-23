@@ -10,7 +10,7 @@ from src.Application.Support.Support_Functions import (
     save_default_locations)
 from src.Common.Support.LoggerConfig import paint_logger
 
-class SelectViewerDialog:
+class SelectDialog:
 
     def __init__(self, parent: tk.Tk) -> None:
 

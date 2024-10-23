@@ -9,7 +9,7 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Application.Support.Support_Functions import (
+from src.Application.Utilities.Support_Functions import (
     get_default_locations,
     save_default_locations,
     read_experiment_file,
@@ -34,7 +34,7 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
 
-def compile_squares_file(project_dir: str, verbose: bool):
+def compile_project_output(project_dir: str, verbose: bool):
     paint_logger.info(f"Compiling output for {project_dir}")
     time_stamp = time.time()
 
@@ -209,7 +209,7 @@ class CompileDialog:
             self.lbl_root_dir.config(text=self.root_directory)
 
     def process(self) -> None:
-        compile_squares_file(project_dir=self.root_directory, verbose=True)
+        compile_project_output(project_dir=self.root_directory, verbose=True)
         self.root.destroy()
 
     def exit_dialog(self) -> None:
