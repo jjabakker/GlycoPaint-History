@@ -159,16 +159,16 @@ If the filenames comply with this format, part of the batch file information is 
 
 Using example file name: 240623-Exp-1-A1-3
 
-- Batch Sequence Nr:	A simple sequential number
-- Experiment Date:  	'240623' (Retrieved from the image name or specified)
-- Experiment Name:  	'240623-Exp-1' (Retrieved from the image name or specified)
-- Experiment Nr:    	'1' (Retrieved from the image name or specified)
-- Experiment Seq Nr:  	'3' (Retrieved from the image name or specified)
-- Image Name:       	'240623-Exp-1-A1-3' (The image name as found in the directory)
-- Probe:	            A user specified text string
-- Probe Type:	        A user specified text string. In this experiment ‘simple’ or ‘epitope’
-- Cell Type:        	A user specified text string
-- Adjuvant:	            A user specified text string
+- Recording Sequence Nr:	A simple sequential number
+- Experiment Date:      	'240623' (Retrieved from the image name or specified)
+- Experiment Name:  	    '240623-Exp-1' (Retrieved from the image name or specified)
+- Condition Nr:      	    '1' (Retrieved from the image name or specified)
+- Replicate Nr:     	    '3' (Retrieved from the image name or specified)
+- Recording Name:      	    '240623-Exp-1-A1-3' (The image name as found in the directory)
+- Probe:	                A user specified text string
+- Probe Type:	            A user specified text string. In this experiment ‘simple’ or ‘epitope’
+- Cell Type:        	    A user specified text string
+- Adjuvant:	                A user specified text string
 - Concentration:    	A user specified number
 
 ## Directory structure

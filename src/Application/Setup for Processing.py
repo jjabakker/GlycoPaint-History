@@ -110,7 +110,7 @@ def prepare_experiment_info_file(image_source_directory, experiment_directory):
             paint_logger.info(
                 f"There were filenames not in the expected format (\\d{6})-Exp-\\d{1, 2}-[AB][1234]-(\\d{1, 2})")
             paint_logger.info(
-                "Please supply values for Batch Sequence Nr, Experiment Date, Experiment Nr, Experiment Seq Nr yourself.")
+                "Please supply values for Experiment Date, Condition Nr, Replicate Nr yourself.")
         paint_logger.info('')
         paint_logger.info(f"Process finished normally with {seq_nr - 1} images processed.")
 

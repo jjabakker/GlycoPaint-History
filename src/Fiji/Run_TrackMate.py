@@ -133,7 +133,6 @@ def process_image(row, image_source_directory, experiment_directory):
 
     image_file_name = os.path.join(image_source_directory, image_name + '.nd2')
 
-    print 'Point 2'
     if not os.path.exists(image_file_name):
         paint_logger.warning("Processing: Failed to open image: " + image_file_name)
         row['Recording Size'] = 0
