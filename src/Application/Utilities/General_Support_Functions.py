@@ -59,7 +59,7 @@ def read_experiment_file(experiment_file_path: str, only_records_to_process: boo
     if only_records_to_process:
         df_experiment = df_experiment[df_experiment['Process'].str.lower().isin(['yes', 'y'])]
 
-    df_experiment.set_index('Ext Image Name', inplace=True, drop=False)
+    df_experiment.set_index('Ext Recording Name', inplace=True, drop=False)
     df_experiment['Experiment Date'] = df_experiment['Experiment Date'].astype(str)
 
     return df_experiment
@@ -79,9 +79,9 @@ def correct_all_images_column_types(df_experiment):
     """
 
     try:
-        df_experiment['Batch Sequence Nr'] = df_experiment['Batch Sequence Nr'].astype(int)
-        df_experiment['Experiment Seq Nr'] = df_experiment['Experiment Seq Nr'].astype(int)
-        df_experiment['Experiment Nr'] = df_experiment['Experiment Nr'].astype(int)
+        df_experiment['Recording Sequence Nr'] = df_experiment['Recording Sequence Nr'].astype(int)
+        df_experiment['Condition Nr'] = df_experiment['Condition Nr'].astype(int)
+        df_experiment['Replicate Nr'] = df_experiment['Replicate Nr'].astype(int)
         df_experiment['Experiment Date'] = df_experiment['Experiment Date'].astype(str)
         df_experiment['Threshold'] = df_experiment['Threshold'].astype(int)
         df_experiment['Min Tracks for Tau'] = df_experiment['Min Tracks for Tau'].astype(int)

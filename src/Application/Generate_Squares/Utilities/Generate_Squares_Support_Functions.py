@@ -236,12 +236,12 @@ def check_experiment_integrity(df_experiment):
     :return:
     """
     expected_columns = {
-        'Batch Sequence Nr',
+        'Recording Sequence Nr',
         'Experiment Date',
         'Experiment Name',
-        'Experiment Nr',
-        'Experiment Seq Nr',
-        'Image Name',
+        'Condition Nr',
+        'Replicate Nr',
+        'Recording Name',
         'Probe',
         'Probe Type',
         'Cell Type',
@@ -249,15 +249,15 @@ def check_experiment_integrity(df_experiment):
         'Concentration',
         'Threshold',
         'Process',
-        'Ext Image Name',
+        'Ext Recording Name',
         'Nr Spots',
-        'Image Size',
+        'Recording Size',
         'Run Time',
         'Time Stamp'}.issubset(df_experiment.columns)
 
     if expected_columns:
         # Make sure that there is a meaningful index           # TODO: Check if this is not causing problems
-        df_experiment.set_index('Batch Sequence Nr', inplace=True, drop=False)
+        df_experiment.set_index('Recording Sequence Nr', inplace=True, drop=False)
         return True
     else:
         return False
