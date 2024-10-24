@@ -17,7 +17,7 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
     write_np_to_excel,
     get_df_from_file,
     get_area_of_square,
-    calc_average_track_count_of_lowest_squares, )
+    calc_average_track_count_of_lowest_squares)
 
 from src.Application.Utilities.General_Support_Functions import (
     save_squares_to_file,

@@ -18,7 +18,8 @@ from src.Application.Utilities.General_Support_Functions import (
 
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
-    save_grid_defaults_to_file)
+    save_grid_defaults_to_file,
+    count_experiment_files_sub_directories)
 
 from src.Common.Support.LoggerConfig import (
     paint_logger,
@@ -155,6 +156,11 @@ class GenerateSquaresDialog:
         """Process the grid and save the parameters."""
         start_time = time.time()
 
+        if not os.path.isdir(self.experiment_directory):
+            paint_logger.info('Invalid directory selected')
+            paint_messagebox(self.root, 'Invalid Directory', 'The directory does not exist')
+            return
+
         process_function = self.determine_process_function()
         if process_function:
             process_function(
@@ -174,7 +180,7 @@ class GenerateSquaresDialog:
         """Determine the processing function based on the directory contents."""
         if os.path.isfile(os.path.join(self.experiment_directory, 'experiment_tm.csv')):
             return process_all_images_in_experiment_directory
-        elif os.path.isfile(os.path.join(self.experiment_directory, 'root.txt')):
+        elif count_experiment_files_sub_directories(self.experiment_directory) > 0:
             return process_all_images_in_root_directory
         return None
 
