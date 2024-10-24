@@ -481,6 +481,8 @@ class ImageViewer:
 
     def save_experiment_file_if_requested(self):
 
+        return      # ToDo
+
         file = f"{self.experiment_directory_path if self.user_specified_mode == "DIRECTORY" else self.user_specified_conf_file}"
         file = os.path.split(file)[1]
         msg = f"Do you want to save changes to {'experiments' if self.user_specified_mode == 'DIRECTORY' else 'configuration'} file: {file} ?"
@@ -503,6 +505,8 @@ class ImageViewer:
         return response
 
     def save_squares_file_if_requested(self):
+
+        return     # ToDo
 
         file = f"{self.squares_file_name if self.user_specified_mode == "DIRECTORY" else self.user_specified_conf_file}"
         file = os.path.split(file)[1]
