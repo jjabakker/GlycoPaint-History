@@ -1,5 +1,5 @@
 {
-    "App_Name": "Paint",
+    "App Name": "Paint",
     "Version": "1.0",
     "Directory_Locations": {
         "root": "~/Paint",
@@ -8,10 +8,22 @@
         "Defaults": "Defaults"
     },
     "Generate Squares": {
-        "plot_files": false,
+        "Plot Files": false,
         "logging": {
             "level": "INFO",
             "file": "Generate Squares.log"
+        }
+    }
+    "Image Viewer": {
+        "logging": {
+            "level": "INFO",
+            "file": "Image Viewer.log"
+        }
+    },
+    "Compile Project Output": {
+        "logging": {
+            "level": "INFO",
+            "file": "Compile Project Output.log"
         }
     },
     "TrackMate": {

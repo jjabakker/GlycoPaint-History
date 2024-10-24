@@ -1,11 +1,14 @@
 import os
+import sys
 import platform
 import shutil
 import subprocess
+import json
 
 # import winreg
-from src.Common.Support.DirectoriesAndLocations import delete_files_in_directory
 
+from src.Common.Support.DirectoriesAndLocations import delete_files_in_directory
+from src.Application.Utilities.Config import load_paint_config
 
 # def find_app_path_windows():
 #     reg_paths = [
@@ -173,7 +176,15 @@ def install():
             print("\nCreated directory {dir}")
             os.makedirs(directory)
 
-    shutil.copyfile(os.path.join(source_root, 'Config', 'Paint.json'), os.path.join(config_dir, 'Paint.json'))
+
+    config_file = os.path.join(source_root, 'Config', 'Paint.json')
+
+    config = load_paint_config(config_file)
+    if config is None:
+        print("\n\nError: Failed to parse JSON file.")
+        return
+
+    shutil.copyfile(config_file, os.path.join(config_dir, 'Paint.json'))
     print(f'\nCopied config Paint.json to {config_dir}')
 
 if __name__ == '__main__':
