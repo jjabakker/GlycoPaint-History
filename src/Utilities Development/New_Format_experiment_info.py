@@ -34,9 +34,9 @@ def process_experiment_info_files(root_directory):
                     new_df[col] = pd.NA  # Or use None if you prefer
 
             # Rename the original 'experiment_info.csv' to 'old_experiment_info.csv'
-            old_file_path = os.path.join(dirpath, 'old_experiment_info.csv')
-            os.rename(original_file_path, old_file_path)
-            print(f"Renamed original file to: {old_file_path}")
+              # old_file_path = os.path.join(dirpath, 'old_experiment_info.csv')
+            # os.rename(original_file_path, old_file_path)
+            # print(f"Renamed original file to: {old_file_path}")
 
             # Write the new DataFrame to 'experiment_info.csv' (overwriting the original filename)
             new_file_path = os.path.join(dirpath, 'experiment_info.csv')
@@ -44,5 +44,5 @@ def process_experiment_info_files(root_directory):
             print(f"Processed and saved new file: {new_file_path}")
 
 # Example usage: Provide the root directory where the traversal should start
-root_dir = '/Users/hans/Paint Regular Probes - Experiment'
+root_dir = '/Users/hans/Paint Source Test'
 process_experiment_info_files(root_dir)
