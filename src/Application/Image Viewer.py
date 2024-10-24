@@ -861,8 +861,8 @@ class ImageViewer:
 
         # Bind left buttons for canvas
         self.cn_left_image.bind('<Button-1>', lambda e: self.start_rectangle(e))
-        self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.define_rectangle(e))
-        self.cn_left_image.bind('<B1-Motion>', lambda e: self.increase_rectangle_size(e))
+        self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.close_rectangle(e))
+        self.cn_left_image.bind('<B1-Motion>', lambda e: self.expand_rectangle_size(e))
 
         if self.show_squares:
             # If there are no squares you can stop here
@@ -1005,28 +1005,23 @@ class ImageViewer:
     #--------------------------------------------------------------------------------------
 
     def start_rectangle(self, event):
-        self.squares_changed = True
         self.start_x = event.x
         self.start_y = event.y
         self.rect = self.cn_left_image.create_rectangle(
             self.start_x, self.start_y, self.start_x + 1, self.start_y + 1, fill="", outline='white')
 
-    def increase_rectangle_size(self, event):
+    def expand_rectangle_size(self, event):
         # Expand rectangle as you drag the mouse
         self.cn_left_image.coords(self.rect, self.start_x, self.start_y, event.x, event.y)
 
-    def define_rectangle(self, event):
+    def close_rectangle(self, event):
 
         # Remove the rectangle
         self.cn_left_image.delete( self.rect)
 
-        if self.define_cells_dialog is None:   # @@@@
+        if self.define_cells_dialog is None:
+            pass    # ToDO Maybe open the dialog here
 
-            pass
-            # Maybe open the dialog here
-
-
-        # self.squares_in_rectangle = []
         for i in range(len(self.df_squares)):
             square = self.df_squares.iloc[i]
             if square['Visible']:
@@ -1181,6 +1176,8 @@ class ImageViewer:
         # Reset user change
         self.squares_changed = False
 
+        # Make sure that there is no user square selection left
+        self.squares_in_rectangle = []
 
     def save_changes(self):
 
@@ -1291,15 +1288,6 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
     canvas_to_draw_on.create_rectangle(
         col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
         fill=color, outline=color)
-
-
-
-# ---------------------------------------------------------------------------------------
-# Miscellaneous functions
-# ---------------------------------------------------------------------------------------
-
-
-
 
 
 # ---------------------------------------------------------------------------------------

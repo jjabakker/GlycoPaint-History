@@ -19,7 +19,6 @@ from src.Application.Utilities.General_Support_Functions import (
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-
 def inspect_experiment_squares_files(root_dir):
     """
     Inspects experiments files in the given root directory and generates an output summary.

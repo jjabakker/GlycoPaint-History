@@ -47,8 +47,8 @@ class GenerateSquaresDialog:
         self.min_density_ratio = tk.DoubleVar(value=values.get('min_density_ratio', 0.5))
         self.max_variability = tk.DoubleVar(value=values.get('max_variability', 0.5))
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
-        self.process_single = tk.IntVar(value=values.get('process_single', 0))
-        self.process_traditional = tk.IntVar(value=values.get('process_traditional', 1))
+        self.process_average_tau = tk.IntVar(value=values.get('process_single', 0))
+        self.process_square_specific_tau = tk.IntVar(value=values.get('process_traditional', 1))
         self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
 
     def create_ui(self, _root):
@@ -110,8 +110,8 @@ class GenerateSquaresDialog:
 
     def create_processing_controls(self, frame):
         """Create the processing checkboxes."""
-        self.create_checkbox(frame, "Process Traditional", self.process_traditional, 0)
-        self.create_checkbox(frame, "Process Single", self.process_single, 1)
+        self.create_checkbox(frame, "Square Specific Tau", self.process_square_specific_tau, 0)
+        self.create_checkbox(frame, "Averaged Tau", self.process_average_tau, 1)
 
     def create_checkbox(self, frame, text, var, row):
         """Helper method to create a labeled checkbox."""
@@ -160,7 +160,7 @@ class GenerateSquaresDialog:
             process_function(
                 self.experiment_directory, self.nr_of_squares_in_row.get(), self.min_r_squared.get(),
                 self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
-                self.max_square_coverage.get(), self.process_single.get(), self.process_traditional.get()
+                self.max_square_coverage.get(), self.process_average_tau.get(), self.process_square_specific_tau.get()
             )
             self.log_processing_time(time.time() - start_time)
             self.save_parameters()
@@ -183,7 +183,7 @@ class GenerateSquaresDialog:
         save_grid_defaults_to_file(
             self.nr_of_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
-            self.process_single.get(), self.process_traditional.get()
+            self.process_average_tau.get(), self.process_square_specific_tau.get()
         )
         save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.conf_file)
 

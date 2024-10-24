@@ -115,7 +115,7 @@ class DefineCellDialog:
         pass
 
     def on_reset(self):
-        self.call_back_to_reset_square_selection(0)
+        self.call_back_to_reset_square_selection()
         pass
 
 

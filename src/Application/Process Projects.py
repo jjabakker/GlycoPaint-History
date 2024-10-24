@@ -18,7 +18,7 @@ from src.Common.Support.LoggerConfig import (
 paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
 
-PAINT_DEBUG = False
+PAINT_DEBUG = True
 PAINT_FORCE = True
 
 if PAINT_DEBUG:
@@ -31,8 +31,8 @@ if PAINT_DEBUG:
 else:
     CONF_FILE = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
-    PAINT_DATA = '/Users/Hans/Paint Data - v4'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v4'
+    PAINT_DATA = '/Users/Hans/Paint Data - v5'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v6'
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
