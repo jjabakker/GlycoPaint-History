@@ -174,7 +174,7 @@ def process_all_images_in_experiment_directory(
             df_experiment.loc[index, 'Max Squares Ratio'] = max_square_coverage
             df_experiment.loc[index, 'Nr Rejected Squares'] = nr_total_squares - nr_defined_squares
 
-            # df_experiment.loc[index, 'Ext Recording Name'] = ext_recording_name     ToDo confirm this is not needed
+            df_experiment.loc[index, 'Ext Recording Name'] = ext_recording_name
             df_experiment.loc[index, 'Tau'] = tau
             df_experiment.loc[index, 'Density'] = density
             df_experiment.loc[index, 'R Squared'] = round(r_squared, 3)

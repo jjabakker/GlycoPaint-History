@@ -237,11 +237,11 @@ def check_experiment_integrity(df_experiment):
     """
     expected_columns = {
         'Recording Sequence Nr',
+        'Recording Name',
         'Experiment Date',
         'Experiment Name',
         'Condition Nr',
         'Replicate Nr',
-        'Recording Name',
         'Probe',
         'Probe Type',
         'Cell Type',

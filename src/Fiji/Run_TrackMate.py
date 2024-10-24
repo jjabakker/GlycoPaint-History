@@ -51,8 +51,8 @@ def run_trackmate(experiment_directory, recording_source_directory):
 
         csv_reader = csv.DictReader(experiment_info_file)
         if not {'Recording Sequence Nr', 'Recording Name', 'Experiment Date', 'Experiment Name', 'Condition Nr',
-                'Replicate Nr', 'Recording Condition Name', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant',
-                'Concentration', 'Threshold', 'Process'} <= set(csv_reader.fieldnames):
+                'Replicate Nr', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant', 'Concentration', 'Threshold',
+                'Process'} <= set(csv_reader.fieldnames):
             paint_logger.error("Error: Missing expected column headers ")
             suppress_fiji_output()
             sys.exit()
