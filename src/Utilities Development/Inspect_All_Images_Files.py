@@ -29,9 +29,9 @@ def inspect_all_images_file(image_file_path: str, short_file_name: str) -> None:
     # -------------------------------------------------------------------------------------------
 
     expected_traditional_columns =  {
-        'Batch Sequence Nr', 'Experiment Date', 'Experiment Name', 'Experiment Nr',
-        'Experiment Seq Nr', 'Image Name', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant',
-        'Concentration', 'Threshold', 'Min Required Density Ratio', 'Process', 'Ext Image Name',
+        'Recording Sequence Nr', 'Experiment Date', 'Experiment Name', 'Condition Nr',
+        'Replicate Nr', 'Recording Name', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant',
+        'Concentration', 'Threshold', 'Min Required Density Ratio', 'Process', 'Ext Recording Name',
         'Nr Spots', 'Nr Tracks', 'Image Size', 'Run Time','Time Stamp', 'Min Tracks for Tau',
         'Min R Squared', 'Nr of Squares in Row', 'Exclude', 'Neighbour Mode', 'Max Allowable Variability',
         'Nr Total Squares', 'Nr Defined Squares', 'Nr Visible Squares',

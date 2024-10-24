@@ -65,16 +65,16 @@ def compile_project_output(project_dir: str, verbose: bool):
 
         for index, row in df_experiment_squares.iterrows():
 
-            image_name = row['Ext Image Name']
+            recording_name = row['Ext Recording Name']
             if row['Exclude']:  # Skip over images that are Excluded
                 continue
 
-            squares_file_path = get_squares_file_path(experiment_dir_path, image_name)
+            squares_file_path = get_squares_file_path(experiment_dir_path, recording_name)
             df_squares = read_squares_from_file(squares_file_path)
 
             if df_squares is None:
                 paint_logger.error(
-                    f'Compile Squares: No squares file found for image {image_name} in the directory {experiment_names}')
+                    f'Compile Squares: No squares file found for image {recording_name} in the directory {experiment_names}')
                 continue
             if len(df_squares) == 0:  # Ignore it when it is empty
                 continue
@@ -102,7 +102,7 @@ def compile_project_output(project_dir: str, verbose: bool):
     # Add data from df_all_images to df_all_squares
     # ----------------------------------------
 
-    list_of_images = df_all_squares['Ext Image Name'].unique().tolist()
+    list_of_images = df_all_squares['Ext Recording Name'].unique().tolist()
     for image in list_of_images:
 
         # Get data from df_experiment_squares to add to df_all_squares
@@ -112,30 +112,30 @@ def compile_project_output(project_dir: str, verbose: bool):
         cell_type = df_all_images.loc[image]['Cell Type']
         concentration = df_all_images.loc[image]['Concentration']
         threshold = df_all_images.loc[image]['Threshold']
-        image_size = df_all_images.loc[image]['Image Size']
-        experiment_nr = df_all_images.loc[image]['Experiment Nr']
-        seq_nr = df_all_images.loc[image]['Batch Sequence Nr']
+        recording_size = df_all_images.loc[image]['Recording Size']
+        condition_nr = df_all_images.loc[image]['Condition Nr']
+        recording_sequence_nr = df_all_images.loc[image]['Recording Sequence Nr']
         neighbour_setting = df_all_images.loc[image]['Neighbour Mode']
 
         # It can happen that image size is not filled in, handle that event
         # I don't think this can happen anymore, but leave for now
         try:
-            image_size = int(image_size)
+            recording_size = int(recording_size)
         except (ValueError, TypeError):
             # If the specified images size was not valid (not a number), set it to 0
-            df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Image Size'] = 0
+            df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Recording Size'] = 0
             paint_logger.error(f"Invalid image size in {image}")
 
         # Add the data that was obtained from df_all_images
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe'] = probe
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Probe Type'] = probe_type
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Adjuvant'] = adjuvant
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Cell Type'] = cell_type
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Concentration'] = concentration
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Threshold'] = threshold
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Experiment Nr'] = int(experiment_nr)
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Batch Sequence Nr'] = int(seq_nr)
-        df_all_squares.loc[df_all_squares['Ext Image Name'] == image, 'Neighbour Mode'] = neighbour_setting
+        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Probe'] = probe
+        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Probe Type'] = probe_type
+        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Adjuvant'] = adjuvant
+        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Cell Type'] = cell_type
+        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Concentration'] = concentration
+        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Threshold'] = threshold
+        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Condition Nr'] = int(condition_nr)
+        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Recording Sequence Nr'] = int(recording_sequence_nr)
+        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Neighbour Mode'] = neighbour_setting
 
     # Ensure column types are correct
     correct_all_images_column_types(df_all_images)
@@ -146,11 +146,11 @@ def compile_project_output(project_dir: str, verbose: bool):
     # Drop the squares that have no tracks
     df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
 
-    # Change image_name to image_name
-    df_all_squares.rename(columns={'Ext Image Name': 'Image Name'}, inplace=True)
+    # Change recording_name to recording_name
+    df_all_squares.rename(columns={'Ext Recording Name': 'Recording Name'}, inplace=True)
 
     # Set the columns for df_image_summary
-    df_image_summary.columns = ['Image', 'Nr Cell Types', 'Nr Probe Types', 'Adjuvants', 'Nr Probes']
+    df_image_summary.columns = ['Recording', 'Nr Cell Types', 'Nr Probe Types', 'Adjuvants', 'Nr Probes']
 
     # ------------------------------------
     # Save the files
@@ -169,6 +169,7 @@ def compile_project_output(project_dir: str, verbose: bool):
 
     run_time = time.time() - time_stamp
     paint_logger.info(f"Compiled  output for {project_dir} in {format_time_nicely(run_time)}")
+    paint_logger.info("")
 
 
 class CompileDialog:

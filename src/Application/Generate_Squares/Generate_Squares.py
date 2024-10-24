@@ -314,8 +314,8 @@ def calc_single_tau_and_density_for_image(
         df_tracks: pd.DataFrame,
         min_tracks_for_tau: int,
         min_r_squared: float,
-        image_path: str,
-        image_name: str,
+        recording_path: str,
+        recording_name: str,
         nr_of_squares_in_row: int,
         concentration: float) -> tuple:
     # Identify the squares that contribute to the Tau calculation
@@ -329,7 +329,7 @@ def calc_single_tau_and_density_for_image(
         r_squared = 0
     else:
         duration_data = compile_duration(df_tracks_for_tau)
-        plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, image_name), image_name + ".png")
+        plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name), recording_name + ".png")
         tau, r_squared = curve_fit_and_plot(
             plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
             file=plt_file, plot_to_screen=False, plot=False, verbose=False)          # TODO plot=False now hard coded
@@ -347,8 +347,8 @@ def calc_single_tau_and_density_for_image(
 
 def create_df_squares(experiment_directory: str,
                       df_tracks: pd.DataFrame,
-                      image_path: str,
-                      image_name: str,
+                      recording_path: str,
+                      recording_name: str,
                       nr_of_squares_in_row: int,
                       concentration: float,
                       nr_spots: int,
@@ -428,8 +428,8 @@ def create_df_squares(experiment_directory: str,
                 r_squared = 0
             else:
                 duration_data = compile_duration(df_tracks_square)
-                plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, image_name),
-                                        image_name + "-square-" + str(square_seq_nr) + ".png")
+                plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name),
+                                        recording_name + "-square-" + str(square_seq_nr) + ".png")
                 tau, r_squared = curve_fit_and_plot(
                     plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
                     file=plt_file, plot_to_screen=False, plot=False, verbose=False)
@@ -457,11 +457,11 @@ def create_df_squares(experiment_directory: str,
 
         # Create the new squares record to add all the data for this square
         squares_row = {'Experiment Date': experiment_date,
-                       'Ext Recording Name': image_name,
+                       'Ext Recording Name': recording_name,
                        'Experiment Name': experiment_name,
                        'Condition Nr': experiment_nr,
                        'Replicate Nr': experiment_seq_nr,
-                       'Batch Recording Nr': int(seq_nr),
+                       'Recording Sequence Nr': int(seq_nr),
                        'Label Nr': 0,
                        'Square Nr': int(square_seq_nr),
                        'Row Nr': int(row_nr + 1),
@@ -507,15 +507,15 @@ def create_df_squares(experiment_directory: str,
     df_squares = df_squares.sort_values(by=['Nr Tracks'], ascending=False)
 
     if verbose:
-        write_matrices(image_path, image_name, tau_matrix, density_matrix, count_matrix, variability_matrix, verbose)
+        write_matrices(recording_path, recording_name, tau_matrix, density_matrix, count_matrix, variability_matrix, verbose)
 
     df_squares.set_index('Square Nr', inplace=True, drop=False)
     return df_squares, tau_matrix
 
 
 def write_matrices(
-        image_path: str,
-        image_name: str,
+        recording_path: str,
+        recording_name: str,
         tau_matrix: np.ndarray,
         density_matrix: np.ndarray,
         count_matrix: np.ndarray,
@@ -527,47 +527,47 @@ def write_matrices(
     """
 
     # Check if the grid directory exist
-    dir_name = os.path.join(image_path, "grid")
+    dir_name = os.path.join(recording_path, "grid")
     if not os.path.exists(dir_name):
         paint_logger.error(f"Function 'write_matrices' failed: Directory {dir_name} does not exists.")
         exit(-1)
 
     # Write the Tau matrix to file
     if verbose:
-        print(f"\n\nThe Tau matrix for image : {image_name}\n")
+        print(f"\n\nThe Tau matrix for image : {recording_name}\n")
         print(tau_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-tau.xlsx"
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-tau.xlsx"
     write_np_to_excel(tau_matrix, filename)
 
     # Write the Density matrix to file
     if verbose:
-        print(f"\n\nThe Density matrix for image : {image_name}\n")
+        print(f"\n\nThe Density matrix for image : {recording_name}\n")
         print(tau_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-density.xlsx"
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-density.xlsx"
     write_np_to_excel(density_matrix, filename)
 
     # Write the count matrix to file
     if verbose:
-        print(f"\n\nThe Count matrix for image: {image_name}\n")
+        print(f"\n\nThe Count matrix for image: {recording_name}\n")
         print(count_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-count.xlsx"
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-count.xlsx"
     write_np_to_excel(count_matrix, filename)
 
     # Write the percentage matrix to file
     percentage_matrix = count_matrix / count_matrix.sum() * 100
     percentage_matrix.round(1)
     if verbose:
-        print(f"\n\nThe Percentage matrix for image: {image_name}\n")
+        print(f"\n\nThe Percentage matrix for image: {recording_name}\n")
         with np.printoptions(precision=1, suppress=True):
             print(count_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-percentage.xlsx"
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-percentage.xlsx"
     write_np_to_excel(percentage_matrix, filename)
 
     # Write the variability matrix to file
     if verbose:
-        print(f"\n\nThe Variability matrix for image: {image_name}\n")
+        print(f"\n\nThe Variability matrix for image: {recording_name}\n")
         print(variability_matrix)
-    filename = image_path + os.sep + "grid" + os.sep + image_name + "-variability.xlsx"
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-variability.xlsx"
     write_np_to_excel(variability_matrix, filename)
 
     return 0
@@ -686,17 +686,17 @@ def add_columns_to_experiment_file(
 
 def image_needs_processing(
         experiment_path: str,
-        image_name: str) -> bool:
+        recording_name: str) -> bool:
     """
     This function checks if the squares file needs to be updated. It does this by comparing the timestamps of the
     tracks and squares files
     :param experiment_path:
-    :param image_name:
+    :param recording_name:
     :return:
     """
 
-    squares_file_name = os.path.join(get_squares_dir_path(experiment_path, image_name), image_name + "-squares.csv")
-    tracks_file_name = os.path.join(get_tracks_dir_path(experiment_path, image_name), image_name + "-tracks.csv")
+    squares_file_name = os.path.join(get_squares_dir_path(experiment_path, recording_name), recording_name + "-squares.csv")
+    tracks_file_name = os.path.join(get_tracks_dir_path(experiment_path, recording_name), recording_name + "-tracks.csv")
 
     if not os.path.isfile(squares_file_name):  # If the squares file does not exist, force processing
         return True

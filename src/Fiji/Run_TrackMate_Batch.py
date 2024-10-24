@@ -86,7 +86,7 @@ if __name__ == "__main__":
                         paint_logger.info(message)
                         paint_logger.info("-" * len(message))
                         run_trackmate(experiment_directory=os.path.join(row['Source'], row['Image']),
-                                      image_source_directory=os.path.join(row['Destination'], row['Image']))
+                                      recording_source_directory=os.path.join(row['Destination'], row['Image']))
                         paint_logger.info("")
                         paint_logger.info("")
                 run_time = round(time.time() - time_stamp, 1)

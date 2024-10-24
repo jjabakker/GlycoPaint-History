@@ -345,7 +345,7 @@ class ImageViewer:
     def setup_exclude_button(self):
         # Set up the exclude/include button state
 
-        row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
+        row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
         if self.df_experiment.loc[row_index, 'Exclude']:
             self.bn_exclude.config(text='Include')
             self.text_for_info4.set('Excluded')
@@ -380,7 +380,7 @@ class ImageViewer:
         :return:
         """
 
-        #row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
+        #row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
         # This was complex code, but the index is already the image name
 
         row_index = self.image_name
@@ -1165,7 +1165,7 @@ class ImageViewer:
         # ---------------------------------------------------------------------------------------
 
         if self.heatmap_control_dialog is None:
-            row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
+            row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
             if self.df_experiment.loc[row_index, 'Exclude']:
                 self.bn_exclude.config(text='Include')
                 self.text_for_info4.set("Excluded")

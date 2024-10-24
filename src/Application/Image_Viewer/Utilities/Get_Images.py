@@ -32,7 +32,7 @@ def get_images(self):
         if self.df_experiment.iloc[index]['Process'] in ['No', 'N']:
             continue
 
-        image_name = self.df_experiment.iloc[index]['Ext Image Name']
+        image_name = self.df_experiment.iloc[index]['Ext Recording Name']
         if self.user_specified_mode == "CONF_FILE":
 
             experiment = str(self.df_experiment.iloc[index]['Experiment Date'])
@@ -94,7 +94,7 @@ def get_images(self):
         right_valid, right_img = get_corresponding_bf(bf_dir, image_name)
 
         record = {
-            "Left Image Name": self.df_experiment.iloc[index]['Ext Image Name'],
+            "Left Image Name": self.df_experiment.iloc[index]['Ext Recording Name'],
             "Left Image": left_img,
             "Left Valid": valid,
 
@@ -131,7 +131,7 @@ def get_images(self):
     return list_images
 
 
-def get_corresponding_bf(bf_dir, image_name):
+def get_corresponding_bf(bf_dir, recording_name):
     """
     Retrieve the corresponding BF image for the given image name
     """
@@ -142,20 +142,20 @@ def get_corresponding_bf(bf_dir, image_name):
         sys.exit()
 
     # Peel off the 'threshold' and add -BF*.jpg
-    image_name = "-".join(image_name.split("-")[:-2])
+    recording_name = "-".join(recording_name.split("-")[:-2])
 
     # List of possible BF image names
-    bf_images = [f"{image_name}-BF.jpg", f"{image_name}-BF1.jpg", f"{image_name}-BF2.jpg"]
+    bf_images = [f"{recording_name}-BF.jpg", f"{recording_name}-BF1.jpg", f"{recording_name}-BF2.jpg"]
 
     # Iterate through the list and check if the file exists
-    image_name = None
+    recording_name = None
     for img in bf_images:
         if os.path.isfile(os.path.join(bf_dir, img)):
-            image_name = img
+            recording_name = img
             break
 
-    if image_name:
-        img = ImageTk.PhotoImage(Image.open(os.path.join(bf_dir, image_name)))
+    if recording_name:
+        img = ImageTk.PhotoImage(Image.open(os.path.join(bf_dir, recording_name)))
         valid = True
     else:
         img = ImageTk.PhotoImage(Image.new('RGB', (512, 512), (235, 235, 235)))

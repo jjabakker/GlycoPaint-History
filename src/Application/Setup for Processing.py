@@ -66,12 +66,10 @@ def prepare_experiment_info_file(image_source_directory, experiment_directory):
             condition_nr = ""
             replicate_nr = ""
             exp_date = ""
-            recording_condition = ""
         else:
             condition_nr = match.group('condition_nr')
             replicate_nr = match.group('replicate_nr')
             exp_date = match.group('exp_date')
-            recording_condition = f'{exp_date}-Exp-{condition_nr}'
 
         # For further processing skip the BF file
         if recording_name.find("BF") != -1:
@@ -87,7 +85,6 @@ def prepare_experiment_info_file(image_source_directory, experiment_directory):
                'Experiment Name': exp_date,
                'Condition Nr': condition_nr,
                'Replicate Nr': replicate_nr,
-               'Recording Condition Name': recording_condition,
                'Probe': '',
                'Probe Type': '',
                'Cell Type': '',
