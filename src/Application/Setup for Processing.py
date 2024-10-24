@@ -18,16 +18,16 @@ def prepare_experiment_info_file(image_source_directory, experiment_directory):
     :return:
     """
 
-    all_images = os.listdir(image_source_directory)
-    all_images.sort()
+    all_recordings = os.listdir(image_source_directory)
+    all_recordings.sort()
     format_problem = False
 
     # Check if this is a likely correct directory. There should be lots of nd2 files
     count = 0
     count_bf = 0
-    for image_name in all_images:
-        if image_name.endswith(".nd2"):
-            if image_name.find("BF") == -1:
+    for recording_name in all_recordings:
+        if recording_name.endswith(".nd2"):
+            if recording_name.find("BF") == -1:
                 count += 1
             else:
                 count_bf += 1
@@ -44,48 +44,50 @@ def prepare_experiment_info_file(image_source_directory, experiment_directory):
     df_experiment = pd.DataFrame()
 
     # Scan the files
-    all_images = os.listdir(image_source_directory)
-    all_images.sort()
+    all_recordings = os.listdir(image_source_directory)
+    all_recordings.sort()
 
     seq_nr = 1
     paint_logger.info("")
 
-    for image_name in all_images:
+    for recording_name in all_recordings:
 
         # Skip files starting with .
-        if image_name.startswith(('._', '.DS')) or not image_name.endswith(".nd2"):
+        if recording_name.startswith(('._', '.DS')) or not recording_name.endswith(".nd2"):
             continue
 
         # Check the filename format of both the film and the BF
         regexp = re.compile(
-            r'(?P<exp_date>\d{6})-Exp-(?P<exp_nr>\d{1,2})-[AB][1234]-(?P<exp_seq_nr>\d{1,2})(-BF[1-2])?$')
-        match = regexp.match(os.path.splitext(image_name)[0])
+            r'(?P<exp_date>\d{6})-Exp-(?P<condition_nr>\d{1,2})-[AB][1234]-(?P<replicate_nr>\d{1,2})(-BF[1-2])?$')
+        match = regexp.match(os.path.splitext(recording_name)[0])
         if match is None:
             format_problem = True
-            paint_logger.info(f"Image name: {image_name} is not in the expected format")
-            exp_nr = ""
-            exp_seq_nr = ""
+            paint_logger.info(f"Image name: {recording_name} is not in the expected format")
+            condition_nr = ""
+            replicate_nr = ""
             exp_date = ""
-            exp_name = ""
+            recording_condition = ""
         else:
-            exp_nr = match.group('exp_nr')
-            exp_seq_nr = match.group('exp_seq_nr')
+            condition_nr = match.group('condition_nr')
+            replicate_nr = match.group('replicate_nr')
             exp_date = match.group('exp_date')
-            exp_name = f'{exp_date}-Exp-{exp_nr}'
+            recording_condition = f'{exp_date}-Exp-{condition_nr}'
 
         # For further processing skip the BF file
-        if image_name.find("BF") != -1:
+        if recording_name.find("BF") != -1:
             continue
 
-        paint_logger.info(f'Processing file: {image_name}')
+        paint_logger.info(f'Processing file: {recording_name}')
 
-        image_name = image_name.replace(".nd2", "")
-        row = {'Batch Sequence Nr': seq_nr,
+        recording_name = recording_name.replace(".nd2", "")
+
+        row = {'Recording Sequence Nr': seq_nr,
+               'Recording Name': recording_name,
                'Experiment Date': exp_date,
-               'Experiment Name': exp_name,
-               'Experiment Nr': exp_nr,
-               'Experiment Seq Nr': exp_seq_nr,
-               'Image Name': image_name,
+               'Experiment Name': exp_date,
+               'Condition Nr': condition_nr,
+               'Replicate Nr': replicate_nr,
+               'Recording Condition Name': recording_condition,
                'Probe': '',
                'Probe Type': '',
                'Cell Type': '',

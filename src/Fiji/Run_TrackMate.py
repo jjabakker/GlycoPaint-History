@@ -50,9 +50,9 @@ def run_trackmate(experiment_directory, image_source_directory):
     with open(experiment_info_path, mode='r') as experiment_info_file:
 
         csv_reader = csv.DictReader(experiment_info_file)
-        if not {'Batch Sequence Nr', 'Experiment Date', 'Experiment Name', 'Experiment Nr', 'Experiment Seq Nr',
-                'Image Name', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant', 'Concentration', 'Threshold',
-                'Process'} <= set(csv_reader.fieldnames):
+        if not {'Recording Sequence Nr', 'Recording Name', 'Experiment Date', 'Experiment Name', 'Condition Nr',
+                'Replicate Nr', 'Recording Condition Name', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant',
+                'Concentration', 'Threshold', 'Process'} <= set(csv_reader.fieldnames):
             paint_logger.error("Error: Missing expected column headers ")
             suppress_fiji_output()
             sys.exit()
@@ -73,7 +73,7 @@ def run_trackmate(experiment_directory, image_source_directory):
             paint_logger.info(message)
 
             # Initialise the experiment_tm file with the column headers
-            col_names = csv_reader.fieldnames + ['Nr Spots', 'Nr Tracks', 'Run Time', 'Ext Image Name', 'Image Size', 'Time Stamp']
+            col_names = csv_reader.fieldnames + ['Nr Spots', 'Nr Tracks', 'Run Time', 'Ext Recording Name', 'Recording Size', 'Time Stamp']
             experiment_tm_file_path = initialise_experiment_tm_file(experiment_directory, col_names)
 
             # And now cycle through the experiment file
@@ -89,10 +89,9 @@ def run_trackmate(experiment_directory, image_source_directory):
                 if 'y' in row['Process'].lower():
                     file_count += 1
                     paint_logger.info(
-                        "Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Image Name'])
+                        "Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Recording Name'])
 
                     status, row = process_image(row, image_source_directory, experiment_directory)
-
                     if status == 'OK':
                         nr_images_processed += 1
                     elif status == 'NOT_FOUND':
@@ -118,7 +117,7 @@ def run_trackmate(experiment_directory, image_source_directory):
             return 0
 
         except KeyError as e:
-            paint_logger.error("Missing expected column in row: {e}")
+            paint_logger.error("Run_Trackmate: Missing expected column in row: {e}")
             suppress_fiji_output()
             sys.exit(0)
 
@@ -126,7 +125,7 @@ def run_trackmate(experiment_directory, image_source_directory):
 def process_image(row, image_source_directory, experiment_directory):
     status = 'OK'
     adjuvant = row['Adjuvant']
-    image_name = row['Image Name']
+    image_name = row['Recording Name']
     threshold = float(row['Threshold'])
 
     if adjuvant == 'None':
@@ -134,12 +133,13 @@ def process_image(row, image_source_directory, experiment_directory):
 
     image_file_name = os.path.join(image_source_directory, image_name + '.nd2')
 
+    print 'Point 2'
     if not os.path.exists(image_file_name):
         paint_logger.warning("Processing: Failed to open image: " + image_file_name)
-        row['Image Size'] = 0
+        row['Recording Size'] = 0
         status = 'NOT_FOUND'
     else:
-        row['Image Size'] = os.path.getsize(image_file_name)
+        row['Recording Size'] = os.path.getsize(image_file_name)
         imp = IJ.openImage(image_file_name)
         imp.show()
         IJ.run("Enhance Contrast", "saturated=0.35")
@@ -178,7 +178,7 @@ def process_image(row, image_source_directory, experiment_directory):
         row['Nr Spots'] = nr_spots
         row['Nr Tracks'] = long_tracks
         row['Run Time'] = run_time
-        row['Ext Image Name'] = ext_image_name
+        row['Ext Recording Name'] = ext_image_name
         row['Time Stamp'] = time.asctime(time.localtime(time.time()))
 
     return status, row
