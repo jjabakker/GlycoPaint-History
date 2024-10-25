@@ -222,6 +222,7 @@ class SelectSquareDialog:
 
         self.image_viewer.update_select_squares("Exit", self.sc_density_ratio.get(), self.sc_variability.get(),
                       self.track_min_duration.get(), self.track_max_duration.get(), self.neighbour_var.get())
+        self.image_viewer.set_dialog_buttons(tk.NORMAL)
         self.select_dialog.destroy()
 
     # --------------------------------------------------------------------------------------------------------

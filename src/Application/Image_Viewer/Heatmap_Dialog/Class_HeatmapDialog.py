@@ -115,6 +115,7 @@ class HeatMapDialog:
         When the user closes the control window, the Viewer dialog is notified, and the dialog is destroyed.
         """
 
+        self.image_viewer.set_dialog_buttons(tk.NORMAL)
         self.image_viewer.heatmap_option.set(-1)
         self.control_window.destroy()
 

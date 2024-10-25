@@ -8,12 +8,13 @@ class DefineCellDialog:
     # Setting up
     #--------------------------------------------------------------
 
-    def __init__(self, image_viewer, call_back_to_assign_squares_to_cell, call_back_to_reset_square_selection):
+    def __init__(self, image_viewer, call_back_to_assign_squares_to_cell, call_back_to_reset_square_selection, call_back_to_close):
 
         # Create a new top-level window for the controls
         self.image_viewer = image_viewer
         self.call_back_to_assign_squares_to_cell = call_back_to_assign_squares_to_cell
         self.call_back_to_reset_square_selection = call_back_to_reset_square_selection
+        self.call_back_to_close = call_back_to_close
 
         # Set windows properties
         self.control_window = tk.Toplevel(self.image_viewer.parent)
@@ -107,6 +108,8 @@ class DefineCellDialog:
         When the user closes the control window, the Viewer dialog is notified, and the dialog is destroyed.
         """
 
+        self.image_viewer.set_dialog_buttons(tk.NORMAL)
+        self.call_back_to_close()
         self.on_reset()
         self.control_window.destroy()
 

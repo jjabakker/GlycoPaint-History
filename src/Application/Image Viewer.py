@@ -245,12 +245,12 @@ class ImageViewer:
 
         button_width = 12
 
-        self.bn_heatmap = ttk.Button(
+        self.bn_show_heatmap = ttk.Button(
             self.frame_commands, text='Heatmap', command=lambda: self.on_show_heatmap(), width=button_width)
-        self.bn_select_squares = ttk.Button(
-            self.frame_commands, text='Select Squares', command=lambda: self.on_select_squares(), width=button_width)
-        self.bn_define_cell = ttk.Button(
-            self.frame_commands, text='Define Cells', command=lambda: self.on_define_cells(), width=button_width)
+        self.bn_show_select_squares = ttk.Button(
+            self.frame_commands, text='Select Squares', command=lambda: self.on_show_select_squares(), width=button_width)
+        self.bn_show_define_cells = ttk.Button(
+            self.frame_commands, text='Define Cells', command=lambda: self.on_show_define_cells(), width=button_width)
         self.bn_histogram = ttk.Button(
             self.frame_commands, text='Histogram', command=lambda: self.on_histogram(), width=button_width)
         self.bn_excel = ttk.Button(
@@ -260,9 +260,9 @@ class ImageViewer:
         self.bn_reset = ttk.Button(
             self.frame_commands, text='Reset', command=lambda: self.on_reset_image(), width=button_width)
 
-        self.bn_heatmap.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_select_squares.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_define_cell.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_show_heatmap.grid(column=0, row=0, padx=5, pady=5)
+        self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_show_define_cells.grid(column=0, row=2, padx=5, pady=5)
         self.bn_output.grid(column=0, row=3, padx=5, pady=5)
         self.bn_reset.grid(column=0, row=4, padx=5, pady=5)
         self.bn_excel.grid(column=0, row=5, padx=5, pady=5)
@@ -297,29 +297,53 @@ class ImageViewer:
 
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
-        if not self.heatmap_control_dialog:
+
+        if any(dialog is not None for dialog in [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
+            return
+        else:
+            self.set_dialog_buttons(tk.DISABLED)
             self.heatmap_control_dialog = HeatMapDialog(self)
             self.img_no -= 1
             self.on_forward_backward('FORWARD')
-        return
 
-    def on_select_squares(self):
+    def set_dialog_buttons(self, state):
+        self.bn_show_heatmap.configure(state=state)
+        self.bn_show_define_cells.configure(state=state)
+        self.bn_show_select_squares.configure(state=state)
+
+    def on_show_select_squares(self):
         # If the select square dialog is not already active, then we need to run the select square dialog
 
-        self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
-        self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
-        self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
+        if any(dialog is not None for dialog in [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
+            return
+        else:
+            self.set_dialog_buttons(tk.DISABLED)
 
-        self.min_track_duration = 1
-        self.max_track_duration = 199
+            self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
+            self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
+            self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
 
-        if self.select_square_dialog is None:
-            self.select_square_dialog = SelectSquareDialog(
-                self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
-                self.min_track_duration, self.max_track_duration, self.neighbour_state)
+            self.min_track_duration = 1
+            self.max_track_duration = 199
 
-    def on_define_cells(self):
-        self.define_cells_dialog = DefineCellDialog(self, self.callback_assign_squares_to_cell_cell_id, self.callback_reset_square_selection)
+            if self.select_square_dialog is None:
+                self.select_square_dialog = SelectSquareDialog(
+                    self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
+                    self.min_track_duration, self.max_track_duration, self.neighbour_state)
+
+    def on_show_define_cells(self):
+
+        if any(dialog is not None for dialog in
+                   [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
+            return
+        else:
+            self.set_dialog_buttons(tk.DISABLED)
+            self.define_cells_dialog = DefineCellDialog(
+                self, self.callback_assign_squares_to_cell_cell_id, self.callback_reset_square_selection,
+                self.call_back_close_define_cells)
+
+    def call_back_close_define_cells(self):
+        self.define_cells_dialog = None
 
     def callback_reset_square_selection(self):
         """
@@ -1088,63 +1112,15 @@ class ImageViewer:
         self.cb_image_names.set(self.image_name)
 
         # ----------------------------------------------------------------------------
-        # If the Heatmap control is up, the new heatmap will be displayed
-        # ----------------------------------------------------------------------------
-
-        if self.heatmap_control_dialog:
-            self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            self.df_squares = read_squares_from_file(self.squares_file_name)
-            self.display_heatmap()
-
-        # ----------------------------------------------------------------------------
-        # If the Square Select control is up, the sliders will need to be updated
-        # ----------------------------------------------------------------------------
-
-        if self.select_square_dialog:
-            self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
-            self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
-            self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
-
-            # self.min_track_duration = 1
-            # self.max_track_duration = 199
-
-            self.select_square_dialog.initalise_controls(
-                self.min_required_density_ratio, self.max_allowable_variability, self.min_track_duration,
-                self.max_track_duration, self.neighbour_state)
-
-        # ----------------------------------------------------------------------------
-        # If the Heatmap control is not up, the regular image will be updated
-        # ----------------------------------------------------------------------------
-
-        if not self.heatmap_control_dialog:    # Place new image in the canvas and draw the squares
-            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-
-            self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            self.df_squares = read_squares_from_file(self.squares_file_name)
-
-            # Set the filter parameters with values retrieved from the experiment file
-            self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Max Allowable Variability']
-            self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
-            self.neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Mode']
-            self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
-            self.max_track_duration = 200 # self.df_experiment.loc[self.image_name]['Max Duration']
-            self.min_required_density = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
-
-            self.select_squares_for_display()
-            self.display_selected_squares()
-
-        # ----------------------------------------------------------------------------
-        # In all cases update the BF image
+        # Irrespective up heatmap or normal image update the BF image, the bright field
+        # and the labels can be updated
         # ----------------------------------------------------------------------------
 
         # Place new image_bf
         self.cn_right_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Right Image'])
         self.lbl_image_bf_name.set(str(self.img_no + 1) + ":  " + self.list_images[self.img_no]['Right Image Name'])
 
-        # ----------------------------------------------------------------------------
         # The information labels are updated
-        # ----------------------------------------------------------------------------
-
         if self.list_images[self.img_no]['Adjuvant'] is None:
             adj_label = 'No'
         else:
@@ -1160,18 +1136,86 @@ class ImageViewer:
         info3 = f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
         self.text_for_info3.set(info3)
 
-        # ---------------------------------------------------------------------------------------
         # Set the correct label for Exclude/Include button
-        # ---------------------------------------------------------------------------------------
-
         if self.heatmap_control_dialog is None:
-            row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
+            row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[
+                0]
             if self.df_experiment.loc[row_index, 'Exclude']:
                 self.bn_exclude.config(text='Include')
                 self.text_for_info4.set("Excluded")
             else:
                 self.bn_exclude.config(text='Exclude')
                 self.text_for_info4.set("")
+
+
+        # ----------------------------------------------------------------------------
+        # Now it depends what control dialog is up
+        # ----------------------------------------------------------------------------
+
+        # If the heatmap control dialog is up just display the heatmap
+        if self.heatmap_control_dialog:
+
+            self.squares_file_name = self.list_images[self.img_no]['Squares File']
+            self.df_squares = read_squares_from_file(self.squares_file_name)
+            self.display_heatmap()
+            return
+
+        else:   #update the reguklar image
+
+            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+
+            self.squares_file_name = self.list_images[self.img_no]['Squares File']
+            self.df_squares = read_squares_from_file(self.squares_file_name)
+
+            # Set the filter parameters with values retrieved from the experiment file
+
+            # self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Max Allowable Variability']
+            # self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
+            # self.neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Mode']
+            self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
+            self.max_track_duration = 200  # self.df_experiment.loc[self.image_name]['Max Duration']
+
+
+            self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
+            self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
+            self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
+
+            # self.min_track_duration = 1
+            # self.max_track_duration = 199
+
+            if self.select_square_dialog:
+                self.select_square_dialog.initialise_controls(
+                    self.min_required_density_ratio, self.max_allowable_variability, self.min_track_duration,
+                    self.max_track_duration, self.neighbour_state)
+
+        # ----------------------------------------------------------------------------
+        # If the Heatmap control is not up, the regular image will be updated
+        # ----------------------------------------------------------------------------
+
+        #if not self.heatmap_control_dialog:    # Place new image in the canvas and draw the squares
+            # self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+            #
+            # self.squares_file_name = self.list_images[self.img_no]['Squares File']
+            # self.df_squares = read_squares_from_file(self.squares_file_name)
+            #
+            # # Set the filter parameters with values retrieved from the experiment file
+            # self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Max Allowable Variability']
+            # self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
+            # self.neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Mode']
+            # self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
+            # self.max_track_duration = 200 # self.df_experiment.loc[self.image_name]['Max Duration']
+            # # self.min_required_density = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
+
+        # ----------------------------------------------------------------------------
+        # Then display
+        # ----------------------------------------------------------------------------
+
+        if  self.heatmap_control_dialog:
+            self.display_heatmap()
+        else:
+            self.select_squares_for_display()
+            self.display_selected_squares()
+
 
         # Reset user change
         self.squares_changed = False

@@ -6,7 +6,7 @@
 ## Install PyCharm Environment
 
 - Download PyCharm (either the professional or the free community edition) from <https://www.jetbrains.com/pycharm/>
-- The version used is PyCharm 2014.1.1 (Professional Edition), but other versions or any other Python development environment can also be used
+- The version used is PyCharm 2024.2.4 (Professional Edition), but other versions or any other Python development environment can also be used
 
 ## Create PyCharm project PAINT code
 
@@ -14,7 +14,7 @@
 
 ## Configure the PyCharm project
 
-- Select a Python interpreter (used Python 3.12)
+- Select a Python interpreter (used Python 3.13)
 - Install the following libraries:
   - pandas (2.2.2)
   - matplotlib (3.9.0)
@@ -24,11 +24,11 @@
 ## Install Fiji
 
 - Install Fiji from <https://imagej.net/software/fiji/downloads>
-- Determine the location of the Fiji application, as $fiji_app$, e.g. /Applications/Fiji.app
-- Ensure that directories $ fiji_app$/scripts/plugins exist (they normally are present)
+- Determine the location of the Fiji application, as 'fiji_app', e.g. /Users/Hans/Applications/Fiji.app
+- Ensure that directories 'fiji_app'/scripts/plugins exist (they normally are present)
 - You may have to edit the script Install Paint to specify the fiji_app variable (there are a few defaults listed)
 - Run the ‘Install Paint.py’ script to copy the following files to the Fiji directory tree:
-  - Grid_Process_Batch.py
+  - Process_Batch.py
   - Convert_BF_images.py
   - Single_Analysis.py
   - FijiSupportFunctions.py
