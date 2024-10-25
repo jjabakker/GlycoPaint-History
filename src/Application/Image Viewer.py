@@ -368,13 +368,13 @@ class ImageViewer:
         else:
             self.set_dialog_buttons(tk.DISABLED)
             self.define_cells_dialog = DefineCellDialog(
-                self, self.callback_assign_squares_to_cell_cell_id, self.callback_reset_square_selection,
-                self.call_back_close_define_cells)
+                self, self.callback_to_assign_squares_to_cell_cell_id, self.callback_to_reset_square_selection,
+                self.callback_to_close_define_cells)
 
-    def call_back_close_define_cells(self):
+    def callback_to_close_define_cells(self):
         self.define_cells_dialog = None
 
-    def callback_reset_square_selection(self):
+    def callback_to_reset_square_selection(self):
         """
         This function is called by the DefineCellsDialog
         It will empty the list og squares that are currently selected and update the display
@@ -383,7 +383,7 @@ class ImageViewer:
         self.squares_in_rectangle = []
         self.display_selected_squares()
 
-    def callback_assign_squares_to_cell_cell_id(self, cell_id):
+    def callback_to_assign_squares_to_cell_cell_id(self, cell_id):
         """
         This function is called by the DefineCellsDialog when a cell id has been selected to is assigned to a square
         See if there are any squares selected and if so update the cell id, then update the display
@@ -393,7 +393,9 @@ class ImageViewer:
             self.df_squares.at[square_nr, 'Cell Id'] = int(cell_id)
 
         self.squares_changed = True
+        self.squares_in_rectangle = []
         self.display_selected_squares()
+
 
     def setup_exclude_button(self):
         # Set up the exclude/include button state
@@ -473,6 +475,10 @@ class ImageViewer:
         # Pressing 'o' will generate a pdf file containing all the images
         if event.keysym == 'o':
             self.output_pictures_to_pdf()
+
+        if event.keysym == 't':
+            self.show_squares = not self.show_squares
+            self.display_selected_squares()
 
     def output_pictures_to_pdf(self):
         """
@@ -868,17 +874,26 @@ class ImageViewer:
         if self.show_squares:
             # If there are no squares you can stop here
             if len(self.df_squares) > 0:
+
+                # Then draw the of squares that are assigned to a cell
+                for index, squares_row in self.df_squares.iterrows():
+                    if squares_row['Visible']:
+                        if squares_row['Cell Id'] != 0:
+                            self.draw_single_square(squares_row)
+                # Then draw the thin lines of squares that are not assigned to a cell
                 for index, squares_row in self.df_squares.iterrows():
                     if squares_row['Visible']:
                         self.draw_single_square(squares_row)
+                # Then draw the thick lines of squares that are marked
+                self.mark_selected_squares(self.squares_in_rectangle)
 
     def draw_single_square(self, squares_row, color='white'):
 
         colour_table = {1: ('red', 'white'),
-                        2: ('yellow', 'white'),
+                        2: ('yellow', 'black'),
                         3: ('green', 'white'),
                         4: ('magenta', 'white'),
-                        5: ('cyan', 'white'),
+                        5: ('cyan', 'black'),
                         6: ('black', 'white')}
 
         square_nr = squares_row['Square Nr']
@@ -895,27 +910,29 @@ class ImageViewer:
 
         if cell_id == -1:  # The square is deleted (for good), stop processing
             return
-        elif cell_id == 0:  # Square is removed from a cell
-            # Draw the outline without filling the rectangle
-            rect_item = self.cn_left_image.create_rectangle(
+
+        if cell_id != 0:   # The square is assigned to a cell
+            col = colour_table[self.df_squares.loc[square_nr]['Cell Id']][0]
+            self.cn_left_image.create_rectangle(
                 col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-                outline="white", fill="", width=0.5, tags=square_tag)
+                outline=col, fill=col, width=0, tags=square_tag)
 
             if self.show_squares_numbers:
-                text_item = self.cn_left_image.create_text(
-                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
-                    font=('Arial', -10), fill=color, tags=text_tag)
-        else:  # A square is allocated to a cell
-            # Draw the outline without filling the rectangle
-            rect_item = self.cn_left_image.create_rectangle(
-                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-                outline=colour_table[self.df_squares.loc[square_nr]['Cell Id']][0], fill="", width=3, tags=square_tag)
-
-            if self.show_squares_numbers:
-                text_item = self.cn_left_image.create_text(
+                self.cn_left_image.create_text(
                     col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
                     text=str(self.df_squares.loc[square_nr]['Label Nr']), font=('Arial', -10),
                     fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1], tags=text_tag)
+
+        # for all the squares draw the outline without filling the rectangle
+        self.cn_left_image.create_rectangle(
+            col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+            outline="white", fill="", width=1, tags=square_tag)
+
+        if self.show_squares_numbers:
+            if cell_id == 0: # The number of a square assigned to a cell should not be overwritten
+                self.cn_left_image.create_text(
+                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
+                    font=('Arial', -10), fill='white', tags=text_tag)
 
         # Create a transparent rectangle (clickable area)
         invisible_rect = self.cn_left_image.create_rectangle(
@@ -923,40 +940,24 @@ class ImageViewer:
             outline="", fill="", tags=f"invisible-{square_nr}")
 
         # Bind events to the invisible rectangle (transparent clickable area)
-        # self.cn_left_image.tag_bind(
-        #     invisible_rect, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
+        self.cn_left_image.tag_bind(
+            invisible_rect, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
         self.cn_left_image.tag_bind(
             invisible_rect, '<Button-2>', lambda e: self.provide_information_on_square(
                 e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
 
-    # def square_assigned_to_cell(self, square_nr):
-    #
-    #     # Retrieve the old and new cell id
-    #     old_cell_id = self.df_squares.at[square_nr, 'Cell Id']
-    #     new_cell_id = int(self.cell_var.get())            # ToDo: Check if this is correct
-    #     if new_cell_id == old_cell_id:
-    #         new_cell_id = 0
-    #
-    #     # Delete the current square
-    #     square_tag = f'square-{square_nr}'
-    #     text_tag = f'text-{square_nr}'
-    #     self.cn_left_image.delete(square_tag, text_tag)
-    #     self.cn_left_image.delete(text_tag)
-    #
-    #     # Draw the new one
-    #     self.draw_single_square(self.df_squares.loc[square_nr])
-    #
-    #     # Record the new cell id`
-    #     self.df_squares.at[square_nr, 'Cell Id'] = int(new_cell_id)
+    def square_assigned_to_cell(self, square_nr):
+
+        if square_nr in self.squares_in_rectangle:
+            self.squares_in_rectangle.remove(square_nr)
+        else:
+            self.squares_in_rectangle.append(int(square_nr))
+
+        self.mark_selected_squares(self.squares_in_rectangle)
 
     def provide_information_on_square(self, event, label_nr, square_nr):
         """
         After right-clicking on a square, provides information on the square and shows it as a popup
-
-        :param event:
-        :param label_nr:
-        :param square_nr:
-        :return:
         """
 
         # Define the popup
@@ -1023,7 +1024,7 @@ class ImageViewer:
         self.cn_left_image.delete(self.rect)
 
         if self.define_cells_dialog is None:
-            pass  # ToDO Maybe open the dialog here
+            pass  # ToDo Maybe open the dialog here
 
         for i in range(len(self.df_squares)):
             square = self.df_squares.iloc[i]
@@ -1031,9 +1032,10 @@ class ImageViewer:
                 if test_if_square_is_in_rectangle(
                         square['X0'], square['Y0'], square['X1'], square['Y1'], self.start_x, self.start_y,
                         event.x, event.y):
-                    self.squares_in_rectangle.append(square['Square Nr'])
+                    self.squares_in_rectangle.append(int(square['Square Nr']))
 
-        self.mark_selected_squares(self.squares_in_rectangle)
+        # self.mark_selected_squares(self.squares_in_rectangle)
+        self.display_selected_squares()
 
     def mark_selected_squares(self, list_of_squares):
 
@@ -1142,7 +1144,7 @@ class ImageViewer:
             self.display_heatmap()
             return
 
-        else:  # update the reguklar image
+        else:  # update the regular image
 
             self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
 
@@ -1150,10 +1152,6 @@ class ImageViewer:
             self.df_squares = read_squares_from_file(self.squares_file_name)
 
             # Set the filter parameters with values retrieved from the experiment file
-
-            # self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Max Allowable Variability']
-            # self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
-            # self.neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Mode']
             self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
             self.max_track_duration = 200  # self.df_experiment.loc[self.image_name]['Max Duration']
 
@@ -1161,31 +1159,10 @@ class ImageViewer:
             self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
             self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
 
-            # self.min_track_duration = 1
-            # self.max_track_duration = 199
-
             if self.select_square_dialog:
                 self.select_square_dialog.initialise_controls(
                     self.min_required_density_ratio, self.max_allowable_variability, self.min_track_duration,
                     self.max_track_duration, self.neighbour_state)
-
-        # ----------------------------------------------------------------------------
-        # If the Heatmap control is not up, the regular image will be updated
-        # ----------------------------------------------------------------------------
-
-        # if not self.heatmap_control_dialog:    # Place new image in the canvas and draw the squares
-        # self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-        #
-        # self.squares_file_name = self.list_images[self.img_no]['Squares File']
-        # self.df_squares = read_squares_from_file(self.squares_file_name)
-        #
-        # # Set the filter parameters with values retrieved from the experiment file
-        # self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Max Allowable Variability']
-        # self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
-        # self.neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Mode']
-        # self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
-        # self.max_track_duration = 200 # self.df_experiment.loc[self.image_name]['Max Duration']
-        # # self.min_required_density = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
 
         # ----------------------------------------------------------------------------
         # Then display
@@ -1202,6 +1179,7 @@ class ImageViewer:
 
         # Make sure that there is no user square selection left
         self.squares_in_rectangle = []
+        self.mark_selected_squares(self.squares_in_rectangle)
 
     def save_changes(self):
 
@@ -1325,7 +1303,6 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
     canvas_to_draw_on.create_rectangle(
         col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
         fill=color, outline=color)
-
 
 # ---------------------------------------------------------------------------------------
 # Main
