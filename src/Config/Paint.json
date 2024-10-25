@@ -13,7 +13,7 @@
             "level": "INFO",
             "file": "Generate Squares.log"
         }
-    }
+    },
     "Image Viewer": {
         "logging": {
             "level": "INFO",

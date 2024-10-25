@@ -18,6 +18,8 @@ def get_colormap_colors(cmap_name, num_colors):
 def get_color_index(var, var_max, var_min, nr_levels):
     if var < 0:
         var = 0
+    if var_max == var_min:
+        return 0
     index = math.floor(var * nr_levels / (var_max - var_min))
     if index == nr_levels:
         index -= 1

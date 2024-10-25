@@ -19,10 +19,10 @@ def load_paint_config(file_path):
             config = json.load(config_file)
         return config
     except FileNotFoundError:
-        paint_logger.Error(f"Error: Configuration file {file_path} not found.")
+        paint_logger.error(f"Error: Configuration file {file_path} not found.")
         return None
     except json.JSONDecodeError:
-        paint_logger.Error(f"Failed to parse JSON from {file_path}.")
+        paint_logger.error(f"Failed to parse JSON from {file_path}.")
         return None
 
 
