@@ -5,7 +5,7 @@ import time
 
 from src.Application.Compile_Project_Output.Compile_Project_Output import compile_project_output
 from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
-from src.Application.Generate_Squares.Generate_Squares import process_all_images_in_root_directory
+from src.Application.Generate_Squares.Generate_Squares import process_project_directory
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import set_directory_tree_timestamp, get_timestamp_from_string
 from src.Application.Utilities.General_Support_Functions import copy_directory, format_time_nicely
 from src.Common.Support.LoggerConfig import (
@@ -24,15 +24,15 @@ PAINT_FORCE = True
 if PAINT_PRODUCTION:
     PROJECT_LEVEL = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
-    PAINT_DATA = '/Users/Hans/Paint Data - v6'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v6'
-    TIME_STAMP = ''  # '%Y-%m-%d %H:%M:%S
+    PAINT_DATA = '/Users/Hans/Paint Data - v7'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v7'
+    time_stamp = None # '%Y-%m-%d %H:%M:%S
 else:
     PROJECT_LEVEL = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
     PAINT_DATA = '/Users/Hans/Paint Data'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v2'
-    TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
+    time_stamp = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
 def process_directory(paint_source_dir,
@@ -98,7 +98,7 @@ def process_directory(paint_source_dir,
     if not os.path.exists(r_dest_dir):
         os.makedirs(r_dest_dir)
 
-    process_all_images_in_root_directory(
+    process_project_directory(
         paint_data_dir,
         nr_of_squares_in_row=nr_of_squares,
         min_r_squared=min_r_squared,
@@ -122,11 +122,14 @@ def process_directory(paint_source_dir,
     paint_logger.info(f"Copied output to {output_destination}")
 
     # Set the timestamp for the R data destination directory
-    specific_time = get_timestamp_from_string(TIME_STAMP)
-    if specific_time:
-        set_directory_tree_timestamp(r_dest_dir, specific_time)
+
+    if time_stamp is not None:
+        specific_time = get_timestamp_from_string(time_stamp)
+        if specific_time is None:
+            paint_logger.error(f"Time string '{time_stamp}' is not a valid date string.")
     else:
-        paint_logger.error(f"Time string '{TIME_STAMP}' is not a valid date string.")
+        specific_time = None
+    set_directory_tree_timestamp(r_dest_dir, specific_time)
 
     paint_logger.info("")
     paint_logger.info(

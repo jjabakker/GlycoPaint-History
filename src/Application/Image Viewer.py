@@ -47,13 +47,13 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 
 class ImageViewer:
 
-    def __init__(self, parent, user_specified_directory, user_specified_level, user_specified_mode):
+    def __init__(self, parent, user_specified_directory, user_specified_conf_file, user_specified_mode):
 
         self.parent = tk.Toplevel(parent)
         self.parent.resizable(False, False)
 
         # Save the parameters
-        self.user_specified_level = user_specified_level
+        self.user_specified_conf_file = user_specified_conf_file
         self.user_specified_directory = user_specified_directory
         self.user_specified_mode = user_specified_mode
 
@@ -118,8 +118,8 @@ class ImageViewer:
 
         self.squares_in_rectangle = []
 
-        msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "EXPERIMENT_LEVEL" else self.user_specified_level}'
-        msg += f'{" - NO SAVING" if self.user_specified_mode == "PROJECT_LEVEL" else ""}'
+        msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "DIRECTORY" else self.user_specified_conf_file}'
+        msg += f'{" - NO SAVING" if self.user_specified_mode == "CONF_FILE" else ""}'
         self.parent.title(msg)
 
     def setup_ui(self):
@@ -133,10 +133,12 @@ class ImageViewer:
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_navigation_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_duration_mode = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
         self.frame_images.grid(column=0, row=0, rowspan=2, padx=5, pady=5, sticky=tk.N)
         self.frame_navigation_buttons.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
         self.frame_controls.grid(column=1, row=0, rowspan=2, padx=5, pady=5, sticky=N)
+        self.frame_duration_mode.grid(column=2, row=1, padx=5, pady=5, sticky=N)
 
         self.setup_frame_images()
         self.setup_frame_navigation_buttons()
@@ -215,24 +217,18 @@ class ImageViewer:
     def setup_frame_navigation_buttons(self):
         # This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
 
-        self.bn_end = ttk.Button(
-            self.frame_navigation_buttons, text='>>', command=lambda: self.on_forward_backward('END'))
         self.bn_forward = ttk.Button(
-            self.frame_navigation_buttons, text='>', command=lambda: self.on_forward_backward('FORWARD'))
+            self.frame_navigation_buttons, text='Forward', command=lambda: self.on_forward_backward('FORWARD'))
         self.bn_exclude = ttk.Button(self.frame_navigation_buttons, text='Reject', command=lambda: self.on_exinclude())
         self.bn_backward = ttk.Button(
-            self.frame_navigation_buttons, text='<', command=lambda: self.on_forward_backward('BACKWARD'))
-        self.bn_start = ttk.Button(
-            self.frame_navigation_buttons, text='<<', command=lambda: self.on_forward_backward('START'))
+            self.frame_navigation_buttons, text='Backward', command=lambda: self.on_forward_backward('BACKWARD'))
         self.bn_exit = ttk.Button(self.frame_navigation_buttons, text='Exit', command=lambda: self.on_exit_viewer())
 
         # Layout the buttons
-        self.bn_start.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_backward.grid(column=1, row=0, padx=5, pady=5)
-        self.bn_exclude.grid(column=2, row=0, padx=5, pady=5)
-        self.bn_forward.grid(column=3, row=0, padx=5, pady=5)
-        self.bn_end.grid(column=4, row=0, padx=5, pady=5)
-        self.bn_exit.grid(column=5, row=0, padx=30, pady=5)
+        self.bn_backward.grid(column=0, row=0, padx=5, pady=5)
+        self.bn_exclude.grid(column=1, row=0, padx=5, pady=5)
+        self.bn_forward.grid(column=2, row=0, padx=5, pady=5)
+        self.bn_exit.grid(column=4, row=0, padx=30, pady=5)
 
         # Initially disable the back button
         self.bn_backward.configure(state=tk.DISABLED)
@@ -241,24 +237,20 @@ class ImageViewer:
         # This frame is part of the content frame and contains the following frames: frame_commands
 
         self.frame_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_save_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.setup_frame_commands()
-        self.setup_frame_save_commands()
         self.frame_commands.grid(column=0, row=3, padx=5, pady=5)
-        self.frame_save_commands.grid(column=0, row=6, padx=5, pady=5)
 
     def setup_frame_commands(self):
         # This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
 
         button_width = 12
 
-        self.bn_show_heatmap = ttk.Button(
+        self.bn_heatmap = ttk.Button(
             self.frame_commands, text='Heatmap', command=lambda: self.on_show_heatmap(), width=button_width)
-        self.bn_show_select_squares = ttk.Button(
-            self.frame_commands, text='Select Squares', command=lambda: self.on_show_select_squares(),
-            width=button_width)
-        self.bn_show_define_cells = ttk.Button(
-            self.frame_commands, text='Define Cells', command=lambda: self.on_show_define_cells(), width=button_width)
+        self.bn_select_squares = ttk.Button(
+            self.frame_commands, text='Select Squares', command=lambda: self.on_select_squares(), width=button_width)
+        self.bn_define_cell = ttk.Button(
+            self.frame_commands, text='Define Cells', command=lambda: self.on_define_cells(), width=button_width)
         self.bn_histogram = ttk.Button(
             self.frame_commands, text='Histogram', command=lambda: self.on_histogram(), width=button_width)
         self.bn_excel = ttk.Button(
@@ -268,44 +260,25 @@ class ImageViewer:
         self.bn_reset = ttk.Button(
             self.frame_commands, text='Reset', command=lambda: self.on_reset_image(), width=button_width)
 
-        self.bn_show_heatmap.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_show_define_cells.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_heatmap.grid(column=0, row=0, padx=5, pady=5)
+        self.bn_select_squares.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_define_cell.grid(column=0, row=2, padx=5, pady=5)
         self.bn_output.grid(column=0, row=3, padx=5, pady=5)
         self.bn_reset.grid(column=0, row=4, padx=5, pady=5)
         self.bn_excel.grid(column=0, row=5, padx=5, pady=5)
 
-    def setup_frame_save_commands(self):
-
-        # Create three radio buttons for the neighbour mode
-        self.save_state_var = tk.StringVar(value="Ask")
-        self.rb_always_save = tk.Radiobutton(
-            self.frame_save_commands, text="Always Save", variable=self.save_state_var, width=12, value="Always",
-            anchor=tk.W)
-        self.rb_never_save = tk.Radiobutton(
-            self.frame_save_commands, text="Never Save", variable=self.save_state_var, width=12, value="Never",
-            anchor=tk.W)
-        self.rb_ask_toSave = tk.Radiobutton(
-            self.frame_save_commands, text="Ask to Save", variable=self.save_state_var, width=12, value="Ask",
-            anchor=tk.W)
-
-        # Place the radio buttons and button in the grid
-        self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
-
     def load_images_and_config(self):
 
-        if self.user_specified_mode == "EXPERIMENT_LEVEL":
+        if self.user_specified_mode == "DIRECTORY":
             self.experiment_directory_path = self.user_specified_directory
             self.experiment_bf_directory = os.path.join(self.experiment_directory_path, 'Converted BF Images')
-            self.experiment_squares_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
+            self.experiment_tm_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
         else:
             # self.experiment_directory_path is not set in this case    TODO: Check when it is set
-            self.project_directory = os.path.split(self.user_specified_level)[0]
-            self.experiment_squares_file_path = self.user_specified_level
+            self.project_directory = os.path.split(self.user_specified_conf_file)[0]
+            self.experiment_tm_file_path = self.user_specified_conf_file
 
-        self.df_experiment = read_experiment_file(self.experiment_squares_file_path, True)
+        self.df_experiment = read_experiment_file(self.experiment_tm_file_path, True)
         if self.df_experiment is None:
             self.show_error_and_exit("No 'experiment_squares.csv.csv' file, Did you select an image directory?")
 
@@ -324,57 +297,32 @@ class ImageViewer:
 
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
-
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
-            return
-        else:
-            self.set_dialog_buttons(tk.DISABLED)
+        if not self.heatmap_control_dialog:
             self.heatmap_control_dialog = HeatMapDialog(self)
             self.img_no -= 1
             self.on_forward_backward('FORWARD')
+        return
 
-    def set_dialog_buttons(self, state):
-        self.bn_show_heatmap.configure(state=state)
-        self.bn_show_define_cells.configure(state=state)
-        self.bn_show_select_squares.configure(state=state)
-
-    def on_show_select_squares(self):
+    def on_select_squares(self):
         # If the select square dialog is not already active, then we need to run the select square dialog
 
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
-            return
-        else:
-            self.set_dialog_buttons(tk.DISABLED)
+        self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
+        self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
+        self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
 
-            self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
-            self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
-            self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
+        self.min_track_duration = 1
+        self.max_track_duration = 199
 
-            self.min_track_duration = 1
-            self.max_track_duration = 199
+        if self.select_square_dialog is None:
+            self.select_square_dialog = SelectSquareDialog(
+                self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
+                self.min_track_duration, self.max_track_duration, self.neighbour_state)
 
-            if self.select_square_dialog is None:
-                self.select_square_dialog = SelectSquareDialog(
-                    self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
-                    self.min_track_duration, self.max_track_duration, self.neighbour_state)
+    def on_define_cells(self):
+        self.define_cells_dialog = DefineCellDialog(self, self.callback_assign_squares_to_cell_cell_id,
+                                                    self.callback_reset_square_selection)
 
-    def on_show_define_cells(self):
-
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
-            return
-        else:
-            self.set_dialog_buttons(tk.DISABLED)
-            self.define_cells_dialog = DefineCellDialog(
-                self, self.callback_to_assign_squares_to_cell_cell_id, self.callback_to_reset_square_selection,
-                self.callback_to_close_define_cells)
-
-    def callback_to_close_define_cells(self):
-        self.define_cells_dialog = None
-
-    def callback_to_reset_square_selection(self):
+    def callback_reset_square_selection(self):
         """
         This function is called by the DefineCellsDialog
         It will empty the list og squares that are currently selected and update the display
@@ -383,7 +331,7 @@ class ImageViewer:
         self.squares_in_rectangle = []
         self.display_selected_squares()
 
-    def callback_to_assign_squares_to_cell_cell_id(self, cell_id):
+    def callback_assign_squares_to_cell_cell_id(self, cell_id):
         """
         This function is called by the DefineCellsDialog when a cell id has been selected to is assigned to a square
         See if there are any squares selected and if so update the cell id, then update the display
@@ -393,14 +341,12 @@ class ImageViewer:
             self.df_squares.at[square_nr, 'Cell Id'] = int(cell_id)
 
         self.squares_changed = True
-        self.squares_in_rectangle = []
         self.display_selected_squares()
-
 
     def setup_exclude_button(self):
         # Set up the exclude/include button state
 
-        row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
+        row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
         if self.df_experiment.loc[row_index, 'Exclude']:
             self.bn_exclude.config(text='Include')
             self.text_for_info4.set('Excluded')
@@ -435,7 +381,7 @@ class ImageViewer:
         :return:
         """
 
-        # row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
+        # row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
         # This was complex code, but the index is already the image name
 
         row_index = self.image_name
@@ -476,10 +422,6 @@ class ImageViewer:
         if event.keysym == 'o':
             self.output_pictures_to_pdf()
 
-        if event.keysym == 't':
-            self.show_squares = not self.show_squares
-            self.display_selected_squares()
-
     def output_pictures_to_pdf(self):
         """
         The function is triggered by pressing 'o' and will generate a pdf file containing all the images.
@@ -497,7 +439,7 @@ class ImageViewer:
             self.on_forward_backward('FORWARD')
 
             image_name = self.list_images[self.img_no]['Left Image Name']
-            paint_logger.debug(f"Writing {image_name} to pdf file {os.path.join(squares_dir, image_name)}")
+            paint_logger.debug(f"Writing {image_name} tp pdf")
 
             # Delete the squares and write the canvas with just the tracks
             self.cn_left_image.delete("all")
@@ -537,198 +479,256 @@ class ImageViewer:
         self.img_no -= 1
         self.on_forward_backward('FORWARD')
 
-    def on_exit_viewer(self):
 
-        status = False
-        if self.experiment_changed or self.squares_changed:
-            status = self.save_changes()
+def save_experiment_file_if_requested(self):
+    return  # ToDo
 
-        if status == False or status == True:
-            root.quit()
+    file = f"{self.experiment_directory_path if self.user_specified_mode == "DIRECTORY" else self.user_specified_conf_file}"
+    file = os.path.split(file)[1]
+    msg = f"Do you want to save changes to {'experiments' if self.user_specified_mode == 'DIRECTORY' else 'configuration'} file: {file} ?"
+    response = messagebox.askyesnocancel("Save Changes", message=msg)
+    if response is True:
+        # Store the slider positions in the experiments df
+        self.df_experiment.loc[self.image_name, 'Min Required Density Ratio'] = self.min_required_density_ratio
+        self.df_experiment.loc[self.image_name, 'Max Allowable Variability'] = self.max_allowable_variability
+        self.df_experiment.loc[self.image_name, 'Neighbour Mode'] = self.neighbour_state
+
+        # Write the Visible Squares visibility information into the squares file
+        self.df_squares['Visible'] = (self.df_squares['Density Ratio Visible'] &  # TODO: Duration?
+                                      self.df_squares['Variability Visible'] &
+                                      self.df_squares['Neighbour Visible'])
+        self.df_experiment.loc[self.image_name, 'Nr Visible Squares'] = len(self.df_squares[self.df_squares['Visible']])
+        save_experiment_to_file(self.df_experiment, self.experiment_tm_file_path)  # TODO: Check if this is correct
+    if response is not None:
+        self.experiment_changed = False
+    return response
+
+
+def save_squares_file_if_requested(self):
+    return  # ToDo
+
+    file = f"{self.squares_file_name if self.user_specified_mode == "DIRECTORY" else self.user_specified_conf_file}"
+    file = os.path.split(file)[1]
+    msg = f"Do you want to save changes to tracks file: {file}"
+    response = messagebox.askyesnocancel("Save Changes", message=msg)
+    if response is True:
+        self.update_squares_file()
+        self.squares_changed = False
+    return response
+
+
+def on_exit_viewer(self):
+    response_square = None
+    response_experiment = None
+
+    if self.experiment_changed:
+        if self.user_specified_mode == "DIRECTORY":
+            response_experiment = self.save_experiment_file_if_requested()
         else:
+            messagebox.showinfo("Save Warning", "No saving of experiment file is implemented in configuration mode")
+
+    if self.squares_changed:
+        if self.user_specified_mode == "DIRECTORY":
+            response_square = self.save_squares_file_if_requested()
+        else:
+            messagebox.showinfo("Save Warning", "No saving of squares file is implemented in configuration mode")
+
+    if self.user_specified_mode == "DIRECTORY":
+        if (self.experiment_changed and response_experiment is None) or (
+                self.squares_changed and response_square is None):
             return
+        else:
+            root.quit()
+    else:
+        root.quit()
 
-    def image_selected(self, _):
-        image_name = self.cb_image_names.get()
-        paint_logger.debug(image_name)
-        index = self.list_of_image_names.index(image_name)
-        self.img_no = index - 1
-        self.on_forward_backward('FORWARD')
 
-    def on_histogram(self):
+def image_selected(self, _):
+    image_name = self.cb_image_names.get()
+    paint_logger.debug(image_name)
+    index = self.list_of_image_names.index(image_name)
+    self.img_no = index - 1
+    self.on_forward_backward('FORWARD')
 
-        unique_cells = self.df_squares['Cell Id'].unique().tolist()
-        for cell_id in unique_cells:
-            self.provide_report_on_cell(self, cell_id)
 
-            df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_id]
-            df_selection_visible = df_selection[df_selection['Visible']]
-            tau_values_visible = df_selection_visible['Tau'].to_list()
+def on_histogram(self):
+    unique_cells = self.df_squares['Cell Id'].unique().tolist()
+    for cell_id in unique_cells:
+        self.provide_report_on_cell(self, cell_id)
 
-            if len(tau_values_visible) > 0:
-                tau_mean = round(statistics.mean(tau_values_visible), 0)
-                tau_median = round(statistics.median(tau_values_visible), 0)
-                tau_std = round(statistics.stdev(tau_values_visible), 1)
+        df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_id]
+        df_selection_visible = df_selection[df_selection['Visible']]
+        tau_values_visible = df_selection_visible['Tau'].to_list()
 
-                print(
-                    f"For Cell Id: {cell_id}, the tau mean is {tau_mean}, the tau median is {tau_median} and the tau std is {tau_std}\n")
+        if len(tau_values_visible) > 0:
+            tau_mean = round(statistics.mean(tau_values_visible), 0)
+            tau_median = round(statistics.median(tau_values_visible), 0)
+            tau_std = round(statistics.stdev(tau_values_visible), 1)
 
-    def on_how_excel(self):
-        # Path to the Excel application
+            print(
+                f"For Cell Id: {cell_id}, the tau mean is {tau_mean}, the tau median is {tau_median} and the tau std is {tau_std}\n")
+
+
+def on_how_excel(self):
+    # Path to the Excel application
+    if platform.system() == 'Darwin':
+        # On macOS, we use the 'open' command to open applications
+        excel_command = 'open'
+        excel_args = ['-a', '/Applications/Microsoft Excel.app']
+    else:
+        # On Windows, we directly call the Excel executable
+        excel_command = r'C:\Program Files\Microsoft Office\root\OfficeXX\Excel.exe'  # Update Excel path as needed
+        excel_args = [excel_command]
+
+    # Create a temporary directory manually, so we can control when it's deleted
+    temp_dir = tempfile.mkdtemp()
+
+    try:
+        # Define the destination path inside the temporary directory
+        temp_file = os.path.join(temp_dir, os.path.basename(self.squares_file_name))
+
+        # Save squares data to the temporary file
+        save_squares_to_file(self.df_squares, temp_file)
+
+        # Make sure the file exists before continuing
+        if not os.path.exists(temp_file):
+            raise FileNotFoundError(f"Temporary file {temp_file} does not exist")
+
+        # Print the file path for debugging purposes
+        print(f"Opening Excel with file: {temp_file}")
+
+        # Open Excel with the temp file
         if platform.system() == 'Darwin':
-            # On macOS, we use the 'open' command to open applications
-            excel_command = 'open'
-            excel_args = ['-a', '/Applications/Microsoft Excel.app']
+            subprocess.Popen([excel_command] + excel_args + [temp_file])
         else:
-            # On Windows, we directly call the Excel executable
-            excel_command = r'C:\Program Files\Microsoft Office\root\OfficeXX\Excel.exe'  # Update Excel path as needed
-            excel_args = [excel_command]
+            subprocess.Popen(excel_args + [temp_file], shell=True)
 
-        # Create a temporary directory manually, so we can control when it's deleted
-        temp_dir = tempfile.mkdtemp()
+        # Optionally, wait for Excel to open the file before continuing
+        time.sleep(2)  # Pause to give Excel time to open the file
 
-        try:
-            # Define the destination path inside the temporary directory
-            temp_file = os.path.join(temp_dir, os.path.basename(self.squares_file_name))
+    finally:
+        # Ensure that the temporary directory is deleted after use
+        print(f"Cleaning up temporary directory: {temp_dir}")
+        shutil.rmtree(temp_dir)
 
-            # Save squares data to the temporary file
-            save_squares_to_file(self.df_squares, temp_file)
+    nr_total_squares = len(self.df_squares)
+    tau_values = self.df_squares[self.df_squares['Visible']]['Tau'].tolist()
+    nr_visible_squares = len(tau_values)
+    if nr_visible_squares != 0:
+        tau_min = min(tau_values)
+        tau_max = max(tau_values)
+        tau_mean = round(statistics.mean(tau_values), 0)
+        tau_median = round(statistics.median(tau_values), 0)
+        tau_std = round(statistics.stdev(tau_values), 1)
+    else:
+        tau_min = '-'
+        tau_max = '-'
+        tau_mean = '-'
+        tau_median = '-'
+        tau_std = '-'
 
-            # Make sure the file exists before continuing
-            if not os.path.exists(temp_file):
-                raise FileNotFoundError(f"Temporary file {temp_file} does not exist")
+    print('\n\n')
+    print(f'The total number of squares:   {nr_total_squares}')
+    print(f'The visible number of squares: {nr_visible_squares}')
+    print(f'The maximum Tau value:         {tau_max}')
+    print(f'The minimum Tau value:         {tau_min}')
+    print(f'The mean Tau value:            {tau_mean}')
+    print(f'The median Tau value:          {tau_median}')
+    print(f'The Tau standard deviation:    {tau_std}')
 
-            # Print the file path for debugging purposes
-            print(f"Opening Excel with file: {temp_file}")
 
-            # Open Excel with the temp file
-            if platform.system() == 'Darwin':
-                subprocess.Popen([excel_command] + excel_args + [temp_file])
-            else:
-                subprocess.Popen(excel_args + [temp_file], shell=True)
+def on_reset_image(self):
+    """
+    Resets the current image. All squares are displayed, but the variability and density ratio sliders are applied
+    :return:
+    """
 
-            # Optionally, wait for Excel to open the file before continuing
-            time.sleep(2)  # Pause to give Excel time to open the file
+    self.df_squares['Visible'] = True
+    self.df_squares['Neighbour Visible'] = True
+    self.df_squares['Variability Visible'] = True
+    self.df_squares['Duration Visible'] = True
+    # self.df_squares['Density Ratio Selected'] = True
+    self.df_squares['Cell Id'] = 0
 
-        finally:
-            # Ensure that the temporary directory is deleted after use
-            print(f"Cleaning up temporary directory: {temp_dir}")
-            shutil.rmtree(temp_dir)
+    self.select_squares_for_display()
+    self.display_selected_squares()
 
-        nr_total_squares = len(self.df_squares)
-        tau_values = self.df_squares[self.df_squares['Visible']]['Tau'].tolist()
-        nr_visible_squares = len(tau_values)
-        if nr_visible_squares != 0:
-            tau_min = min(tau_values)
-            tau_max = max(tau_values)
-            tau_mean = round(statistics.mean(tau_values), 0)
-            tau_median = round(statistics.median(tau_values), 0)
-            tau_std = round(statistics.stdev(tau_values), 1)
-        else:
-            tau_min = '-'
-            tau_max = '-'
-            tau_mean = '-'
-            tau_median = '-'
-            tau_std = '-'
 
-        print('\n\n')
-        print(f'The total number of squares:   {nr_total_squares}')
-        print(f'The visible number of squares: {nr_visible_squares}')
-        print(f'The maximum Tau value:         {tau_max}')
-        print(f'The minimum Tau value:         {tau_min}')
-        print(f'The mean Tau value:            {tau_mean}')
-        print(f'The median Tau value:          {tau_median}')
-        print(f'The Tau standard deviation:    {tau_std}')
+def update_select_squares(self,
+                          setting_type: str,
+                          density_ratio: float,
+                          variability: float,
+                          min_duration: float,
+                          max_duration: float,
+                          neighbour_mode: str) -> None:
+    """
+    This function is called from the SelectSquareDialog when a control has changed or when the control exists. This
+    give an opportunity to update the settings for the current image
+    :param setting_type:
+    :param density_ratio:
+    :param variability:
+    :param min_duration:
+    :param max_duration:
+    :param neighbour_mode:
+    :return:
+    """
+    if setting_type == "Min Required Density Ratio":
+        self.min_required_density_ratio = density_ratio
+        self.list_images[self.img_no]['Min Required Density Ratio'] = density_ratio
+        self.experiment_changed = True
+    elif setting_type == "Max Allowable Variability":
+        self.max_allowed_variability = variability
+        self.list_images[self.img_no]['Max Allowable Variability'] = variability
+        self.experiment_changed = True
+    elif setting_type == "Neighbour Mode":
+        self.neighbour_state = neighbour_mode
+        self.list_images[self.img_no]['Neighbour Mode'] = neighbour_mode
+        self.experiment_changed = True
+    elif setting_type == "Min Track Duration":
+        self.min_track_duration = min_duration
+    elif setting_type == "Max Track Duration":
+        self.max_track_duration = max_duration
+    elif setting_type == "Set for All":
+        # Set the same settings for all recordings
+        self.min_required_density_ratio = density_ratio
+        self.max_allowed_variability = variability
+        self.min_track_duration = min_duration
+        self.max_track_duration = max_duration
+        self.neighbour_state = neighbour_mode
 
-    def on_reset_image(self):
-        """
-        Resets the current image. All squares are displayed, but the variability and density ratio sliders are applied
-        :return:
-        """
+        for image in self.list_images:
+            image['Min Required Density Ratio'] = density_ratio
+            image['Max Allowable Variability'] = variability
+            image['Neighbour Mode'] = neighbour_mode
 
-        self.df_squares['Visible'] = True
-        self.df_squares['Neighbour Visible'] = True
-        self.df_squares['Variability Visible'] = True
-        self.df_squares['Duration Visible'] = True
-        # self.df_squares['Density Ratio Selected'] = True
-        self.df_squares['Cell Id'] = 0
+        self.experiment_changed = True
+    elif setting_type == "Exit":
+        self.select_square_dialog = None
+    else:
+        paint_logger.error(f"Unknown setting type: {setting_type}")
 
-        self.select_squares_for_display()
-        self.display_selected_squares()
+    self.select_squares_for_display()
+    self.display_selected_squares()
 
-    def update_select_squares(self,
-                              setting_type: str,
-                              density_ratio: float,
-                              variability: float,
-                              min_duration: float,
-                              max_duration: float,
-                              neighbour_mode: str) -> None:
-        """
-        This function is called from the SelectSquareDialog when a control has changed or when the control exists. This
-        give an opportunity to update the settings for the current image
-        :param setting_type:
-        :param density_ratio:
-        :param variability:
-        :param min_duration:
-        :param max_duration:
-        :param neighbour_mode:
-        :return:
-        """
-        if setting_type == "Min Required Density Ratio":
-            self.min_required_density_ratio = density_ratio
-            self.list_images[self.img_no]['Min Required Density Ratio'] = density_ratio
-            self.experiment_changed = True
-        elif setting_type == "Max Allowable Variability":
-            self.max_allowed_variability = variability
-            self.list_images[self.img_no]['Max Allowable Variability'] = variability
-            self.experiment_changed = True
-        elif setting_type == "Neighbour Mode":
-            self.neighbour_state = neighbour_mode
-            self.list_images[self.img_no]['Neighbour Mode'] = neighbour_mode
-            self.experiment_changed = True
-        elif setting_type == "Min Track Duration":
-            self.min_track_duration = min_duration
-        elif setting_type == "Max Track Duration":
-            self.max_track_duration = max_duration
-        elif setting_type == "Set for All":
-            # Set the same settings for all recordings
-            self.min_required_density_ratio = density_ratio
-            self.max_allowed_variability = variability
-            self.min_track_duration = min_duration
-            self.max_track_duration = max_duration
-            self.neighbour_state = neighbour_mode
+    # Update the info line
+    info3 = f"Min Required Density Ratio: {density_ratio:,} - Max Allowable Variability: {variability}"
+    self.text_for_info3.set(info3)
 
-            for image in self.list_images:
-                image['Min Required Density Ratio'] = density_ratio
-                image['Max Allowable Variability'] = variability
-                image['Neighbour Mode'] = neighbour_mode
 
-            self.experiment_changed = True
-        elif setting_type == "Exit":
-            self.select_square_dialog = None
-        else:
-            paint_logger.error(f"Unknown setting type: {setting_type}")
+def on_run_output(self):
+    """
+    Prepares the output files.
+    For specific sets up probes or cell types, specific functions are needed
+    :return:
+    """
 
-        self.select_squares_for_display()
-        self.display_selected_squares()
 
-        # Update the info line
-        info3 = f"Min Required Density Ratio: {density_ratio:,} - Max Allowable Variability: {variability}"
-        self.text_for_info3.set(info3)
+    # Generate the graphpad and pdf directories if needed
+    # create_output_directories_for_graphpad(self.experiment_directory)
 
-    def on_run_output(self):
-        """
-        Prepares the output files.
-        For specific sets up probes or cell types, specific functions are needed
-        :return:
-        """
-
-        # Generate the graphpad and pdf directories if needed
-        # create_output_directories_for_graphpad(self.experiment_directory)
-
-        # Generate the graphpad info for summary statistics
-        # df_stats = analyse_all_images(self.experiment_directory)
-        # create_summary_graphpad(self.experiment_directory, df_stats)
+    # Generate the graphpad info for summary statistics
+    # df_stats = analyse_all_images(self.experiment_directory)
+    # create_summary_graphpad(self.experiment_directory, df_stats)
 
     # def provide_report_on_all_squares(self, _):
     #
@@ -777,518 +777,520 @@ class ImageViewer:
     #         print(df_cells)
     #         print('\n')
 
-    def provide_report_on_cell(self, _, cell_nr):
-        """
-        Invoked by right-clicking on a cell radio button. Only when there are actually squares defined for the cell,
-        information will be shown, including a histogram of the Tau values
 
-        :param _:
-        :param cell_nr:
-        :return:
-        """
+def provide_report_on_cell(self, _, cell_nr):
+    """
+    Invoked by right-clicking on a cell radio button. Only when there are actually squares defined for the cell,
+    information will be shown, including a histogram of the Tau values
 
-        # See if there are any squares defined for this cell
-        df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
-        df_visible = df_selection[df_selection['Visible']]
-        if len(df_visible) == 0:
-            paint_logger.debug(
-                f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
-        else:
-            # The labels and tau values for the visible squares of that cell are retrieved
-            tau_values = list(df_visible['Tau'])
-            labels = list(df_visible['Label Nr'])
+    :param _:
+    :param cell_nr:
+    :return:
+    """
 
-            print(f'There are {len(df_visible)} squares visible for cell {cell_nr}: {labels}')
-            print(f'The tau values for cell {cell_nr} are: {tau_values}')
+    # See if there are any squares defined for this cell
+    df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
+    df_visible = df_selection[df_selection['Visible']]
+    if len(df_visible) == 0:
+        paint_logger.debug(
+            f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
+    else:
+        # The labels and tau values for the visible squares of that cell are retrieved
+        tau_values = list(df_visible['Tau'])
+        labels = list(df_visible['Label Nr'])
 
-            cell_ids = list(df_visible['Label Nr'])
-            cell_str_ids = list(map(str, cell_ids))
-            plt.figure(figsize=(5, 5))
-            plt.bar(cell_str_ids, tau_values)
-            plt.ylim(0, 500)
+        print(f'There are {len(df_visible)} squares visible for cell {cell_nr}: {labels}')
+        print(f'The tau values for cell {cell_nr} are: {tau_values}')
 
-            # Plot the numerical values
-            for i in range(len(tau_values)):
-                plt.text(cell_str_ids[i],
-                         tau_values[i] + 10,
-                         str(tau_values[i]),
-                         horizontalalignment='center',
-                         verticalalignment='center')
-            plt.title(self.image_name + ' - Cell ' + str(cell_nr))
-            plt.show()
+        cell_ids = list(df_visible['Label Nr'])
+        cell_str_ids = list(map(str, cell_ids))
+        plt.figure(figsize=(5, 5))
+        plt.bar(cell_str_ids, tau_values)
+        plt.ylim(0, 500)
+
+        # Plot the numerical values
+        for i in range(len(tau_values)):
+            plt.text(cell_str_ids[i],
+                     tau_values[i] + 10,
+                     str(tau_values[i]),
+                     horizontalalignment='center',
+                     verticalalignment='center')
+        plt.title(self.image_name + ' - Cell ' + str(cell_nr))
+        plt.show()
+    return
+
+
+def select_squares_for_display(self):
+    """
+    Determine which squares are visible and set the 'Visible' column in the df_squares DataFrame
+    :return:
+    """
+
+    # All squares are invisible, unless the variability is sufficiently small
+    self.df_squares['Variability Visible'] = False
+    self.df_squares.loc[
+        self.df_squares['Variability'] <= round(self.max_allowable_variability, 1), 'Variability Visible'] = True
+
+    # All squares are invisible, unless the density ratio is sufficiently large
+    self.df_squares['Density Ratio Visible'] = False
+    self.df_squares.loc[
+        self.df_squares['Density Ratio'] >= round(self.min_required_density_ratio, 1), 'Density Ratio Visible'] = True
+
+    # All squares are invisible, unless the max track duration is within the min and max limits
+    self.df_squares['Duration Visible'] = False
+    mask = (self.df_squares['Max Track Duration'] > self.min_track_duration) & \
+           (self.df_squares['Max Track Duration'] < self.max_track_duration)
+    self.df_squares.loc[mask, 'Duration Visible'] = True
+
+    # All squares are visible, unless the Relaxed or Strict Neighbour Mode is not satisfied
+    self.df_squares['Neighbour Visible'] = True
+
+    if self.neighbour_state == "Relaxed":
+        eliminate_isolated_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
+    elif self.neighbour_state == "Strict":
+        eliminate_isolated_squares_strict(self.df_squares, self.nr_of_squares_in_row)
+
+    # Squares are visible if they are visible based on the sliders and the Neighbour Mode and if there is a valid Tau
+    self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
+                                  self.df_squares['Density Ratio Visible'] &
+                                  self.df_squares['Variability Visible'] &
+                                  self.df_squares['Neighbour Visible'] &
+                                  self.df_squares['Duration Visible'])
+
+
+def display_selected_squares(self):
+    """
+    Display the squares on the left image canvas, that have the Visible flag set
+    :return:
+    """
+
+    # Clear the screen and reshow the picture
+    self.cn_left_image.delete("all")
+    self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+
+    # Bind left buttons for canvas
+    self.cn_left_image.bind('<Button-1>', lambda e: self.start_rectangle(e))
+    self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.close_rectangle(e))
+    self.cn_left_image.bind('<B1-Motion>', lambda e: self.expand_rectangle_size(e))
+
+    if self.show_squares:
+        # If there are no squares you can stop here
+        if len(self.df_squares) > 0:
+            for index, squares_row in self.df_squares.iterrows():
+                if squares_row['Visible']:
+                    self.draw_single_square(squares_row)
+
+
+def draw_single_square(self, squares_row, color='white'):
+    colour_table = {1: ('red', 'white'),
+                    2: ('yellow', 'white'),
+                    3: ('green', 'white'),
+                    4: ('magenta', 'white'),
+                    5: ('cyan', 'white'),
+                    6: ('black', 'white')}
+
+    square_nr = squares_row['Square Nr']
+    cell_id = squares_row['Cell Id']
+    label_nr = squares_row['Label Nr']
+
+    col_nr = square_nr % self.nr_of_squares_in_row
+    row_nr = square_nr // self.nr_of_squares_in_row
+    width = 512 / self.nr_of_squares_in_row
+    height = 512 / self.nr_of_squares_in_row
+
+    square_tag = f'square-{square_nr}'
+    text_tag = f'text-{square_nr}'
+
+    if cell_id == -1:  # The square is deleted (for good), stop processing
         return
-
-    def select_squares_for_display(self):
-        """
-        Determine which squares are visible and set the 'Visible' column in the df_squares DataFrame
-        :return:
-        """
-
-        # All squares are invisible, unless the variability is sufficiently small
-        self.df_squares['Variability Visible'] = False
-        self.df_squares.loc[
-            self.df_squares['Variability'] <= round(self.max_allowable_variability, 1), 'Variability Visible'] = True
-
-        # All squares are invisible, unless the density ratio is sufficiently large
-        self.df_squares['Density Ratio Visible'] = False
-        self.df_squares.loc[
-            self.df_squares['Density Ratio'] >= round(self.min_required_density_ratio,
-                                                      1), 'Density Ratio Visible'] = True
-
-        # All squares are invisible, unless the max track duration is within the min and max limits
-        self.df_squares['Duration Visible'] = False
-        mask = (self.df_squares['Max Track Duration'] > self.min_track_duration) & \
-               (self.df_squares['Max Track Duration'] < self.max_track_duration)
-        self.df_squares.loc[mask, 'Duration Visible'] = True
-
-        # All squares are visible, unless the Relaxed or Strict Neighbour Mode is not satisfied
-        self.df_squares['Neighbour Visible'] = True
-
-        if self.neighbour_state == "Relaxed":
-            eliminate_isolated_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
-        elif self.neighbour_state == "Strict":
-            eliminate_isolated_squares_strict(self.df_squares, self.nr_of_squares_in_row)
-
-        # Squares are visible if they are visible based on the sliders and the Neighbour Mode and if there is a valid Tau
-        self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
-                                      self.df_squares['Density Ratio Visible'] &
-                                      self.df_squares['Variability Visible'] &
-                                      self.df_squares['Neighbour Visible'] &
-                                      self.df_squares['Duration Visible'])
-
-    def display_selected_squares(self):
-        """
-        Display the squares on the left image canvas, that have the Visible flag set
-        :return:
-        """
-
-        # Clear the screen and reshow the picture
-        self.cn_left_image.delete("all")
-        self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-
-        # Bind left buttons for canvas
-        self.cn_left_image.bind('<Button-1>', lambda e: self.start_rectangle(e))
-        self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.close_rectangle(e))
-        self.cn_left_image.bind('<B1-Motion>', lambda e: self.expand_rectangle_size(e))
-
-        if self.show_squares:
-            # If there are no squares you can stop here
-            if len(self.df_squares) > 0:
-
-                # Then draw the of squares that are assigned to a cell
-                for index, squares_row in self.df_squares.iterrows():
-                    if squares_row['Visible']:
-                        if squares_row['Cell Id'] != 0:
-                            self.draw_single_square(squares_row)
-                # Then draw the thin lines of squares that are not assigned to a cell
-                for index, squares_row in self.df_squares.iterrows():
-                    if squares_row['Visible']:
-                        self.draw_single_square(squares_row)
-                # Then draw the thick lines of squares that are marked
-                self.mark_selected_squares(self.squares_in_rectangle)
-
-    def draw_single_square(self, squares_row, color='white'):
-
-        colour_table = {1: ('red', 'white'),
-                        2: ('yellow', 'black'),
-                        3: ('green', 'white'),
-                        4: ('magenta', 'white'),
-                        5: ('cyan', 'black'),
-                        6: ('black', 'white')}
-
-        square_nr = squares_row['Square Nr']
-        cell_id = squares_row['Cell Id']
-        label_nr = squares_row['Label Nr']
-
-        col_nr = square_nr % self.nr_of_squares_in_row
-        row_nr = square_nr // self.nr_of_squares_in_row
-        width = 512 / self.nr_of_squares_in_row
-        height = 512 / self.nr_of_squares_in_row
-
-        square_tag = f'square-{square_nr}'
-        text_tag = f'text-{square_nr}'
-
-        if cell_id == -1:  # The square is deleted (for good), stop processing
-            return
-
-        if cell_id != 0:   # The square is assigned to a cell
-            col = colour_table[self.df_squares.loc[square_nr]['Cell Id']][0]
-            self.cn_left_image.create_rectangle(
-                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-                outline=col, fill=col, width=0, tags=square_tag)
-
-            if self.show_squares_numbers:
-                self.cn_left_image.create_text(
-                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
-                    text=str(self.df_squares.loc[square_nr]['Label Nr']), font=('Arial', -10),
-                    fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1], tags=text_tag)
-
-        # for all the squares draw the outline without filling the rectangle
-        self.cn_left_image.create_rectangle(
+    elif cell_id == 0:  # Square is removed from a cell
+        # Draw the outline without filling the rectangle
+        rect_item = self.cn_left_image.create_rectangle(
             col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-            outline="white", fill="", width=1, tags=square_tag)
+            outline="white", fill="", width=0.5, tags=square_tag)
 
         if self.show_squares_numbers:
-            if cell_id == 0: # The number of a square assigned to a cell should not be overwritten
-                self.cn_left_image.create_text(
-                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
-                    font=('Arial', -10), fill='white', tags=text_tag)
-
-        # Create a transparent rectangle (clickable area)
-        invisible_rect = self.cn_left_image.create_rectangle(
+            text_item = self.cn_left_image.create_text(
+                col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
+                font=('Arial', -10), fill=color, tags=text_tag)
+    else:  # A square is allocated to a cell
+        # Draw the outline without filling the rectangle
+        rect_item = self.cn_left_image.create_rectangle(
             col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-            outline="", fill="", tags=f"invisible-{square_nr}")
+            outline=colour_table[self.df_squares.loc[square_nr]['Cell Id']][0], fill="", width=3, tags=square_tag)
 
-        # Bind events to the invisible rectangle (transparent clickable area)
-        self.cn_left_image.tag_bind(
-            invisible_rect, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
-        self.cn_left_image.tag_bind(
-            invisible_rect, '<Button-2>', lambda e: self.provide_information_on_square(
-                e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
+        if self.show_squares_numbers:
+            text_item = self.cn_left_image.create_text(
+                col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
+                text=str(self.df_squares.loc[square_nr]['Label Nr']), font=('Arial', -10),
+                fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1], tags=text_tag)
 
-    def square_assigned_to_cell(self, square_nr):
+    # Create a transparent rectangle (clickable area)
+    invisible_rect = self.cn_left_image.create_rectangle(
+        col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+        outline="", fill="", tags=f"invisible-{square_nr}")
 
-        if square_nr in self.squares_in_rectangle:
-            self.squares_in_rectangle.remove(square_nr)
-        else:
-            self.squares_in_rectangle.append(int(square_nr))
+    # Bind events to the invisible rectangle (transparent clickable area)
+    self.cn_left_image.tag_bind(
+        invisible_rect, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
+    self.cn_left_image.tag_bind(
+        invisible_rect, '<Button-2>', lambda e: self.provide_information_on_square(
+            e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
 
-        self.mark_selected_squares(self.squares_in_rectangle)
 
-    def provide_information_on_square(self, event, label_nr, square_nr):
-        """
-        After right-clicking on a square, provides information on the square and shows it as a popup
-        """
+def square_assigned_to_cell(self, square_nr):
+    # Retrieve the old and new cell id
+    old_cell_id = self.df_squares.at[square_nr, 'Cell Id']
+    new_cell_id = int(self.cell_var.get())  # ToDo: Check if this is correct
+    if new_cell_id == old_cell_id:
+        new_cell_id = 0
 
-        # Define the popup
-        if self.square_info_popup is None:
-            self.square_info_popup = Toplevel(root)
-            self.square_info_popup.title("Square Info")
-            self.square_info_popup.geometry("220x180")
+    # Delete the current square
+    square_tag = f'square-{square_nr}'
+    text_tag = f'text-{square_nr}'
+    self.cn_left_image.delete(square_tag, text_tag)
+    self.cn_left_image.delete(text_tag)
 
-            # Position the popup relative to the main window and the event
-            x = root.winfo_x()
-            y = root.winfo_y()
-            self.square_info_popup.geometry(f"+{x + event.x + 15}+{y + event.y + 40}")
+    # Draw the new one
+    self.draw_single_square(self.df_squares.loc[square_nr])
 
-            # Get the data to display from the dataframe
-            square_data = self.df_squares.loc[square_nr]
+    # Record the new cell id`
+    self.df_squares.at[square_nr, 'Cell Id'] = int(new_cell_id)
 
-            # Define the fields to display
-            fields = [
-                ("Label Nr", label_nr),
-                ("Square", square_data['Square Nr']),
-                ("Tau", square_data['Tau']),
-                ("Density", square_data['Density']),
-                ("Number of Tracks", square_data['Nr Tracks']),
-                ("Density Ratio", square_data['Density Ratio']),
-                ("Variability", square_data['Variability']),
-                ("Max Track Duration", square_data['Max Track Duration']),
-            ]
 
-            # Fill the popup with labels using a loop
-            padx_value = 10
-            pady_value = 1
-            lbl_width = 15
+def provide_information_on_square(self, event, label_nr, square_nr):
+    """
+    After right-clicking on a square, provides information on the square and shows it as a popup
 
-            for idx, (label, value) in enumerate(fields, start=1):
-                ttk.Label(self.square_info_popup, text=label, anchor=W, width=lbl_width).grid(row=idx, column=1,
-                                                                                              padx=padx_value,
-                                                                                              pady=pady_value)
-                ttk.Label(self.square_info_popup, text=str(value), anchor=W).grid(row=idx, column=2, padx=padx_value,
-                                                                                  pady=pady_value)
+    :param event:
+    :param label_nr:
+    :param square_nr:
+    :return:
+    """
 
-            # Bring the focus back to the root window so the canvas can detect more clicks
-            self.parent.focus_force()
-        else:
-            self.square_info_popup.destroy()
-            self.square_info_popup = None
+    # Define the popup
+    if self.square_info_popup is None:
+        self.square_info_popup = Toplevel(root)
+        self.square_info_popup.title("Square Info")
+        self.square_info_popup.geometry("220x180")
+
+        # Position the popup relative to the main window and the event
+        x = root.winfo_x()
+        y = root.winfo_y()
+        self.square_info_popup.geometry(f"+{x + event.x + 15}+{y + event.y + 40}")
+
+        # Get the data to display from the dataframe
+        square_data = self.df_squares.loc[square_nr]
+
+        # Define the fields to display
+        fields = [
+            ("Label Nr", label_nr),
+            ("Square", square_data['Square Nr']),
+            ("Tau", square_data['Tau']),
+            ("Density", square_data['Density']),
+            ("Number of Tracks", square_data['Nr Tracks']),
+            ("Density Ratio", square_data['Density Ratio']),
+            ("Variability", square_data['Variability']),
+            ("Max Track Duration", square_data['Max Track Duration']),
+        ]
+
+        # Fill the popup with labels using a loop
+        padx_value = 10
+        pady_value = 1
+        lbl_width = 15
+
+        for idx, (label, value) in enumerate(fields, start=1):
+            ttk.Label(self.square_info_popup, text=label, anchor=W, width=lbl_width).grid(row=idx, column=1,
+                                                                                          padx=padx_value,
+                                                                                          pady=pady_value)
+            ttk.Label(self.square_info_popup, text=str(value), anchor=W).grid(row=idx, column=2, padx=padx_value,
+                                                                              pady=pady_value)
+
+        # Bring the focus back to the root window so the canvas can detect more clicks
+        self.parent.focus_force()
+    else:
+        self.square_info_popup.destroy()
+        self.square_info_popup = None
 
     # --------------------------------------------------------------------------------------
     # Rectangle functions
     # --------------------------------------------------------------------------------------
 
-    def start_rectangle(self, event):
-        self.start_x = event.x
-        self.start_y = event.y
-        self.rect = self.cn_left_image.create_rectangle(
-            self.start_x, self.start_y, self.start_x + 1, self.start_y + 1, fill="", outline='white')
 
-    def expand_rectangle_size(self, event):
-        # Expand rectangle as you drag the mouse
-        self.cn_left_image.coords(self.rect, self.start_x, self.start_y, event.x, event.y)
+def start_rectangle(self, event):
+    self.start_x = event.x
+    self.start_y = event.y
+    self.rect = self.cn_left_image.create_rectangle(
+        self.start_x, self.start_y, self.start_x + 1, self.start_y + 1, fill="", outline='white')
 
-    def close_rectangle(self, event):
 
-        # Remove the rectangle
-        self.cn_left_image.delete(self.rect)
+def expand_rectangle_size(self, event):
+    # Expand rectangle as you drag the mouse
+    self.cn_left_image.coords(self.rect, self.start_x, self.start_y, event.x, event.y)
 
-        if self.define_cells_dialog is None:
-            pass  # ToDo Maybe open the dialog here
 
-        for i in range(len(self.df_squares)):
-            square = self.df_squares.iloc[i]
-            if square['Visible']:
-                if test_if_square_is_in_rectangle(
-                        square['X0'], square['Y0'], square['X1'], square['Y1'], self.start_x, self.start_y,
-                        event.x, event.y):
-                    self.squares_in_rectangle.append(int(square['Square Nr']))
+def close_rectangle(self, event):
+    # Remove the rectangle
+    self.cn_left_image.delete(self.rect)
 
-        # self.mark_selected_squares(self.squares_in_rectangle)
+    if self.define_cells_dialog is None:
+        pass  # ToDO Maybe open the dialog here
+
+    for i in range(len(self.df_squares)):
+        square = self.df_squares.iloc[i]
+        if square['Visible']:
+            if test_if_square_is_in_rectangle(
+                    square['X0'], square['Y0'], square['X1'], square['Y1'], self.start_x, self.start_y,
+                    event.x, event.y):
+                self.squares_in_rectangle.append(square['Square Nr'])
+
+    self.mark_selected_squares(self.squares_in_rectangle)
+
+
+def mark_selected_squares(self, list_of_squares):
+    for square_nr in list_of_squares:
+        col_nr = square_nr % self.nr_of_squares_in_row
+        row_nr = square_nr // self.nr_of_squares_in_row
+        width = 512 / self.nr_of_squares_in_row
+        height = 512 / self.nr_of_squares_in_row
+
+        # Draw the outline without filling the rectangle
+        self.cn_left_image.create_rectangle(
+            col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
+            outline='white', fill="", width=3)
+
+
+def on_forward_backward(self, direction):
+    """
+    The function is called when we switch image
+    """
+
+    # ----------------------------------------------------------------------------
+    # Check if the user has changed the Cell assignments and if so, ask if they want to save
+    # ----------------------------------------------------------------------------
+
+    if self.squares_changed:
+        self.save_changes()
+
+    # ----------------------------------------------------------------------------
+    # Determine what the next image is, depending on the direction
+    # Be sure not move beyond the boundaries (could happen when the left and right keys are used)
+    # Disable the forward and backward buttons when the boundaries are reached
+    # ----------------------------------------------------------------------------
+
+    # Determine the next image number
+    if direction == 'FORWARD':
+        if self.img_no != len(self.list_images) - 1:
+            self.img_no += 1
+    elif direction == 'BACKWARD':
+        if self.img_no != 0:
+            self.img_no -= 1
+
+    # Set the name of the image
+    self.image_name = self.list_images[self.img_no]['Left Image Name']
+
+    # Set correct state of Forward and back buttons
+    if self.img_no == len(self.list_images) - 1:
+        self.bn_forward.configure(state=DISABLED)
+    else:
+        self.bn_forward.configure(state=NORMAL)
+    if self.img_no == 0:
+        self.bn_backward.configure(state=DISABLED)
+    else:
+        self.bn_backward.configure(state=NORMAL)
+
+    # image_name = self.list_images[self.img_no]['Left Image Name']
+    self.cb_image_names.set(self.image_name)
+
+    # ----------------------------------------------------------------------------
+    # If the Heatmap control is up, the new heatmap will be displayed
+    # ----------------------------------------------------------------------------
+
+    if self.heatmap_control_dialog:
+        self.squares_file_name = self.list_images[self.img_no]['Squares File']
+        self.df_squares = read_squares_from_file(self.squares_file_name)
+        self.display_heatmap()
+
+    # ----------------------------------------------------------------------------
+    # If the Square Select control is up, the sliders will need to be updated
+    # ----------------------------------------------------------------------------
+
+    if self.select_square_dialog:
+        self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
+        self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
+        self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
+
+        # self.min_track_duration = 1
+        # self.max_track_duration = 199
+
+        self.select_square_dialog.initalise_controls(
+            self.min_required_density_ratio, self.max_allowable_variability, self.min_track_duration,
+            self.max_track_duration, self.neighbour_state)
+
+    # ----------------------------------------------------------------------------
+    # If the Heatmap control is not up, the regular image will be updated
+    # ----------------------------------------------------------------------------
+
+    if not self.heatmap_control_dialog:  # Place new image in the canvas and draw the squares
+        self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+
+        self.squares_file_name = self.list_images[self.img_no]['Squares File']
+        self.df_squares = read_squares_from_file(self.squares_file_name)
+
+        # Set the filter parameters with values retrieved from the experiment file
+        self.max_allowable_variability = self.df_experiment.loc[self.image_name]['Max Allowable Variability']
+        self.min_required_density_ratio = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
+        self.neighbour_state = self.df_experiment.loc[self.image_name]['Neighbour Mode']
+        self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
+        self.max_track_duration = 200  # self.df_experiment.loc[self.image_name]['Max Duration']
+        self.min_required_density = self.df_experiment.loc[self.image_name]['Min Required Density Ratio']
+
+        self.select_squares_for_display()
         self.display_selected_squares()
 
-    def mark_selected_squares(self, list_of_squares):
+    # ----------------------------------------------------------------------------
+    # In all cases update the BF image
+    # ----------------------------------------------------------------------------
 
-        for square_nr in list_of_squares:
-            col_nr = square_nr % self.nr_of_squares_in_row
-            row_nr = square_nr // self.nr_of_squares_in_row
-            width = 512 / self.nr_of_squares_in_row
-            height = 512 / self.nr_of_squares_in_row
+    # Place new image_bf
+    self.cn_right_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Right Image'])
+    self.lbl_image_bf_name.set(str(self.img_no + 1) + ":  " + self.list_images[self.img_no]['Right Image Name'])
 
-            # Draw the outline without filling the rectangle
-            self.cn_left_image.create_rectangle(
-                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-                outline='white', fill="", width=3)
+    # ----------------------------------------------------------------------------
+    # The information labels are updated
+    # ----------------------------------------------------------------------------
 
-    def on_forward_backward(self, direction):
-        """
-        The function is called when we switch image
-        """
+    if self.list_images[self.img_no]['Adjuvant'] is None:
+        adj_label = 'No'
+    else:
+        adj_label = self.list_images[self.img_no]['Adjuvant']
+    cell_info = f"({self.list_images[self.img_no]['Cell Type']}) - ({adj_label}) - ({self.list_images[self.img_no]['Probe Type']}) - ({self.list_images[self.img_no]['Probe']})"
+    self.text_for_info1.set(cell_info)
 
-        # ----------------------------------------------------------------------------
-        # Check if the user has changed the Cell assignments and if so, ask if they want to save
-        # ----------------------------------------------------------------------------
+    info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
+    if self.list_images[self.img_no]['Tau'] != 0:
+        info2 = f"{info2} - Tau: {int(self.list_images[self.img_no]['Tau'])}"
+    self.text_for_info2.set(info2)
+    # TODO: If saved, the Tau value should be displayed
+    info3 = f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
+    self.text_for_info3.set(info3)
+
+    # ---------------------------------------------------------------------------------------
+    # Set the correct label for Exclude/Include button
+    # ---------------------------------------------------------------------------------------
+
+    if self.heatmap_control_dialog is None:
+        row_index = self.df_experiment.index[self.df_experiment['Ext Image Name'] == self.image_name].tolist()[0]
+        if self.df_experiment.loc[row_index, 'Exclude']:
+            self.bn_exclude.config(text='Include')
+            self.text_for_info4.set("Excluded")
+        else:
+            self.bn_exclude.config(text='Exclude')
+            self.text_for_info4.set("")
+
+    # Reset user change
+    self.squares_changed = False
+
+    # Make sure that there is no user square selection left
+    self.squares_in_rectangle = []
+
+
+def save_changes(self):
+    integral_save = False
+
+    if integral_save:
+        pass
+    else:
+        experiment_warning = False
+        square_warning = False
+
+        if self.experiment_changed:
+            if self.user_specified_mode == "DIRECTORY":
+                response_experiment = self.save_experiment_file_if_requested()
+                if response_experiment is None:
+                    return
+            else:
+                experiment_warning = True
 
         if self.squares_changed:
-            self.save_changes()
-
-        # ----------------------------------------------------------------------------
-        # Determine what the next image is, depending on the direction
-        # Be sure not move beyond the boundaries (could happen when the left and right keys are used)
-        # Disable the forward and backward buttons when the boundaries are reached
-        # ----------------------------------------------------------------------------
-
-        # Determine the next image number
-        if direction == 'START':
-            self.img_no = 0
-        elif direction == 'END':
-            self.img_no = len(self.list_images) - 1
-        if direction == 'FORWARD':
-            if self.img_no != len(self.list_images) - 1:
-                self.img_no += 1
-        elif direction == 'BACKWARD':
-            if self.img_no != 0:
-                self.img_no -= 1
-
-        # Set the name of the image
-        self.image_name = self.list_images[self.img_no]['Left Image Name']
-
-        # Set correct state of Forward and back buttons
-        if self.img_no == len(self.list_images) - 1:
-            self.bn_forward.configure(state=DISABLED)
-        else:
-            self.bn_forward.configure(state=NORMAL)
-        if self.img_no == 0:
-            self.bn_backward.configure(state=DISABLED)
-        else:
-            self.bn_backward.configure(state=NORMAL)
-
-        # image_name = self.list_images[self.img_no]['Left Image Name']
-        self.cb_image_names.set(self.image_name)
-
-        # ----------------------------------------------------------------------------
-        # Irrespective up heatmap or normal image update the BF image, the bright field
-        # and the labels can be updated
-        # ----------------------------------------------------------------------------
-
-        # Place new image_bf
-        self.cn_right_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Right Image'])
-        self.lbl_image_bf_name.set(str(self.img_no + 1) + ":  " + self.list_images[self.img_no]['Right Image Name'])
-
-        # The information labels are updated
-        if self.list_images[self.img_no]['Adjuvant'] is None:
-            adj_label = 'No'
-        else:
-            adj_label = self.list_images[self.img_no]['Adjuvant']
-        cell_info = f"({self.list_images[self.img_no]['Cell Type']}) - ({adj_label}) - ({self.list_images[self.img_no]['Probe Type']}) - ({self.list_images[self.img_no]['Probe']})"
-        self.text_for_info1.set(cell_info)
-
-        info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
-        if self.list_images[self.img_no]['Tau'] != 0:
-            info2 = f"{info2} - Tau: {int(self.list_images[self.img_no]['Tau'])}"
-        self.text_for_info2.set(info2)
-        # TODO: If saved, the Tau value should be displayed
-        info3 = f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
-        self.text_for_info3.set(info3)
-
-        # Set the correct label for Exclude/Include button
-        if self.heatmap_control_dialog is None:
-            row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[
-                0]
-            if self.df_experiment.loc[row_index, 'Exclude']:
-                self.bn_exclude.config(text='Include')
-                self.text_for_info4.set("Excluded")
+            if self.user_specified_mode == "DIRECTORY":
+                response_square = self.save_squares_file_if_requested()
+                if response_square is None:
+                    return
             else:
-                self.bn_exclude.config(text='Exclude')
-                self.text_for_info4.set("")
+                square_warning = True
 
-        # ----------------------------------------------------------------------------
-        # Now it depends what control dialog is up
-        # ----------------------------------------------------------------------------
+        if self.user_specified_mode == 'CONF_FILE':
+            warnings = []
+            if square_warning:
+                warnings.append("squares file")
+            if experiment_warning:
+                warnings.append("experiment file")
 
-        # If the heatmap control dialog is up just display the heatmap
-        if self.heatmap_control_dialog:
+            if warnings:
+                message = "No saving of " + (" or ".join(warnings)) + " is implemented in configuration mode"
+                messagebox.showinfo('Save Warning', message)
 
-            self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            self.df_squares = read_squares_from_file(self.squares_file_name)
-            self.display_heatmap()
-            return
-
-        else:  # update the regular image
-
-            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-
-            self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            self.df_squares = read_squares_from_file(self.squares_file_name)
-
-            # Set the filter parameters with values retrieved from the experiment file
-            self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
-            self.max_track_duration = 200  # self.df_experiment.loc[self.image_name]['Max Duration']
-
-            self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
-            self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
-            self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
-
-            if self.select_square_dialog:
-                self.select_square_dialog.initialise_controls(
-                    self.min_required_density_ratio, self.max_allowable_variability, self.min_track_duration,
-                    self.max_track_duration, self.neighbour_state)
-
-        # ----------------------------------------------------------------------------
-        # Then display
-        # ----------------------------------------------------------------------------
-
-        if self.heatmap_control_dialog:
-            self.display_heatmap()
-        else:
-            self.select_squares_for_display()
-            self.display_selected_squares()
-
-        # Reset user change
-        self.squares_changed = False
-
-        # Make sure that there is no user square selection left
-        self.squares_in_rectangle = []
-        self.mark_selected_squares(self.squares_in_rectangle)
-
-    def save_changes(self):
-
-        # See if there is anything to save
-        if not (self.experiment_changed or self.squares_changed):
-            return False
-
-        # There is something to save but in PROJECT_LEVEL mode, changes are never saved
-        if self.user_specified_mode == "PROJECT_LEVEL":
-            paint_logger.debug("Changed were made, but in PROJECT_LEVEL mode Changes are never saved.")
-            return False
-
-        # There is something to save but the Never option is selected
-        if self.save_state_var.get() == 'Never':
-            paint_logger.debug("Changes were not saved, because the 'Never' option was selected.")
-            return False
-
-        # There is experiments data to save.
-        if self.experiment_changed:
-            if self.save_state_var.get() == 'Ask':
-                save = self.user_confirms_save('Experiment')
-            else:  # Then must be 'Always'
-                save = True
-            if save:
-                for i in range(len(self.list_images)):
-                    image_name = self.list_images[i]['Left Image Name']
-                    self.df_experiment.loc[image_name, 'Min Required Density Ratio'] = self.list_images[i][
-                        'Min Required Density Ratio']
-                    self.df_experiment.loc[image_name, 'Max Allowable Variability'] = self.list_images[i][
-                        'Max Allowable Variability']
-                    self.df_experiment.loc[image_name, 'Neighbour Mode'] = self.list_images[i]['Neighbour Mode']
-                save_experiment_to_file(self.df_experiment, self.experiment_squares_file_path)
-                paint_logger.debug(f"Experiment file {self.experiment_squares_file_path} was saved.")
+            self.squares_changed = False
             self.experiment_changed = False
 
-        # There is squares data to save.
-        if self.squares_changed:
-            if self.save_state_var.get() == 'Ask':
-                save = self.user_confirms_save('Squares')
-            else:  # Then must be 'Always'
-                save = True
-            if save:
-                save_squares_to_file(self.df_squares, self.squares_file_name)
-                paint_logger.debug(f"Squares file {self.squares_file_name} was saved.")
-            self.squares_changed = False
-        return save
 
-    def user_confirms_save(self, mode):
-        """
-        Ask the user if they want to save the changes
-        :return: True if the user wants to save, False if not
-        """
-        answer = messagebox.askyesno("Save Changes", f"Do you want to save the {mode} changes?")
-        return answer
+def read_squares(self, image_name):
+    self.squares_file_name = os.path.join(self.experiment_directory_path, image_name, 'grid',
+                                          image_name + '-squares.csv')
+    self.df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
+    if self.df_squares is None:
+        paint_logger.error(f"Function 'read_squares' failed - Squares file {self.squares_file_name} was not found.")
+        sys.exit()
+    return self.df_squares
 
-    def read_squares(self, image_name):
-        self.squares_file_name = os.path.join(self.experiment_directory_path, image_name, 'grid',
-                                              image_name + '-squares.csv')
-        self.df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
-        if self.df_squares is None:
-            paint_logger.error(f"Function 'read_squares' failed - Squares file {self.squares_file_name} was not found.")
-            sys.exit()
-        return self.df_squares
 
-    def update_squares_file(self):
-        # It is necessary to the squares file, because the user may have made changes
-        if self.user_specified_mode == 'EXPERIMENT_LEVEL':
-            squares_file_path = get_squares_file_path(self.experiment_directory_path, self.image_name)
-            squares_file_name = os.path.join(self.experiment_directory_path, self.image_name, 'grid',
-                                             self.image_name + '-squares.csv')
-        else:
-            squares_file_path = os.path.join(self.experiment_directory_path,
-                                             str(self.df_experiment.iloc[self.img_no]['Experiment Date']),
-                                             self.image_name,
-                                             'grid',
-                                             self.image_name + '-squares.csv')
-        save_squares_to_file(self.df_squares, squares_file_path)  # TODO
+def update_squares_file(self):
+    # It is necessary to the squares file, because the user may have made changes
+    if self.user_specified_mode == 'DIRECTORY':
+        squares_file_path = get_squares_file_path(self.experiment_directory_path, self.image_name)
+        squares_file_name = os.path.join(self.experiment_directory_path, self.image_name, 'grid',
+                                         self.image_name + '-squares.csv')
+    else:
+        squares_file_path = os.path.join(self.experiment_directory_path,
+                                         str(self.df_experiment.iloc[self.img_no]['Experiment Date']),
+                                         self.image_name,
+                                         'grid',
+                                         self.image_name + '-squares.csv')
+    save_squares_to_file(self.df_squares, squares_file_path)  # TODO
+
 
     # ---------------------------------------------------------------------------------------
     # Heatmap Dialog Interaction
     # ---------------------------------------------------------------------------------------
 
-    def heatmap_type_selection_changed(self, *args):
 
-        selected_idx = self.heatmap_option.get()
-        if selected_idx == -1:
-            self.heatmap_control_dialog = None
-            self.display_selected_squares()
-        else:
+def heatmap_type_selection_changed(self, *args):
+    selected_idx = self.heatmap_option.get()
+    if selected_idx == -1:
+        self.heatmap_control_dialog = None
+        self.display_selected_squares()
+    else:
 
-            self.img_no -= 1
-            self.on_forward_backward('FORWARD')
+        self.img_no -= 1
+        self.on_forward_backward('FORWARD')
 
-        # selected_name = self.option_names[selected_idx - 1]  # Subtract 1 to match the list index
-        # self.lbl_radio_value.config(text=f"Selected Option: {selected_name}")
+    # selected_name = self.option_names[selected_idx - 1]  # Subtract 1 to match the list index
+    # self.lbl_radio_value.config(text=f"Selected Option: {selected_name}")
 
-    def display_heatmap(self):
 
-        # Clear the screen and reshow the picture
-        self.cn_left_image.delete("all")
+def display_heatmap(self):
+    # Clear the screen and reshow the picture
+    self.cn_left_image.delete("all")
 
-        colors = get_colormap_colors('Blues', 20)
-        heatmap_mode = self.heatmap_option.get()
+    colors = get_colormap_colors('Blues', 20)
+    heatmap_mode = self.heatmap_option.get()
 
-        heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode)
+    heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode)
 
-        for square_number, value in enumerate(heatmap_data):
-            draw_heatmap_square(self.cn_left_image, square_number, self.nr_of_squares_in_row, value, min_val, max_val,
-                                colors)
+    for square_number, value in enumerate(heatmap_data):
+        draw_heatmap_square(self.cn_left_image, square_number, self.nr_of_squares_in_row, value, min_val, max_val,
+                            colors)
 
 
 def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):
@@ -1304,6 +1306,7 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
         col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
         fill=color, outline=color)
 
+
 # ---------------------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------------------
@@ -1313,18 +1316,18 @@ if __name__ == '__main__':
     root.withdraw()
     root.eval('tk::PlaceWindow . center')
     dialog_result = SelectViewerDataDialog(root)
-    proceed, root_directory, level, mode = dialog_result.get_result()
+    proceed, root_directory, conf_file, mode = dialog_result.get_result()
 
     if proceed:
         root = tk.Tk()
         root.withdraw()
         root.eval('tk::PlaceWindow . center')
         paint_logger.debug(f'Mode: {mode}')
-        if mode == 'EXPERIMENT_LEVEL':
+        if mode == 'DIRECTORY':
             paint_logger.info(f'Root directory: {root_directory}')
         else:
-            paint_logger.debug(f'Project file: {level}')
+            paint_logger.debug(f'Project file: {conf_file}')
 
-        image_viewer = ImageViewer(root, root_directory, level, mode)
+        image_viewer = ImageViewer(root, root_directory, conf_file, mode)
 
     root.mainloop()

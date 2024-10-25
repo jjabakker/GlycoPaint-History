@@ -3,24 +3,18 @@ import time
 import tkinter as tk
 from tkinter import ttk, filedialog
 
-from src.Application.Generate_Squares.Generate_Squares  import (
-    process_all_images_in_root_directory,
-    process_all_images_in_experiment_directory)
-
-from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-
+from src.Application.Generate_Squares.Generate_Squares import (
+    process_project_directory,
+    process_experiment_directory)
+from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
+    get_grid_defaults_from_file,
+    save_grid_defaults_to_file)
 from src.Application.Utilities.Config import load_paint_config
-
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations
 )
-
-from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
-    get_grid_defaults_from_file,
-    save_grid_defaults_to_file,
-    count_experiment_files_sub_directories)
-
+from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -50,7 +44,7 @@ class GenerateSquaresDialog:
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_average_tau = tk.IntVar(value=values.get('process_single', 0))
         self.process_square_specific_tau = tk.IntVar(value=values.get('process_traditional', 1))
-        self.root_directory, self.experiment_directory, self.images_directory, self.level = get_default_locations()
+        self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
 
     def create_ui(self, _root):
         """Create and layout the UI components."""
@@ -111,7 +105,7 @@ class GenerateSquaresDialog:
 
     def create_processing_controls(self, frame):
         """Create the processing checkboxes."""
-        self.create_checkbox(frame, "Square-pecific Tau", self.process_square_specific_tau, 0)
+        self.create_checkbox(frame, "Square-Specific Tau", self.process_square_specific_tau, 0)
         self.create_checkbox(frame, "Averaged Tau", self.process_average_tau, 1)
 
     def create_checkbox(self, frame, text, var, row):
@@ -129,8 +123,8 @@ class GenerateSquaresDialog:
 
     def create_button_controls(self, frame):
         """Create buttons for the UI."""
-        btn_process = ttk.Button(frame, text='Process', command=self.process_grid)
-        btn_exit = ttk.Button(frame, text='Exit', command=self.exit_pressed)
+        btn_generate = ttk.Button(frame, text='Generate Squares', command=self.on_generate_squares_pressed)
+        btn_exit = ttk.Button(frame, text='Exit', command=self.on_exit_pressed)
 
         # Create two empty columns to balance the buttons in the center
         frame.grid_columnconfigure(0, weight=1)  # Left empty column
@@ -138,7 +132,7 @@ class GenerateSquaresDialog:
         frame.grid_columnconfigure(2, weight=1)  # Right empty column
 
         # Center the buttons by placing them in column 1
-        btn_process.grid(column=1, row=0, padx=10, pady=0, sticky="ew")  # Center Process button
+        btn_generate.grid(column=1, row=0, padx=10, pady=0, sticky="ew")  # Center Process button
         btn_exit.grid(column=1, row=1, padx=10, pady=0, sticky="ew")  # Center Exit button
 
     def change_dir(self):
@@ -148,22 +142,18 @@ class GenerateSquaresDialog:
             self.experiment_directory = paint_directory
             self.lbl_directory.config(text=paint_directory)
 
-    def exit_pressed(self):
+    def on_exit_pressed(self):
         """Handle the exit button click."""
         self.root.destroy()
 
-    def process_grid(self):
-        """Process the grid and save the parameters."""
+    def on_generate_squares_pressed(self):
+        """Generate the squares and save the parameters."""
         start_time = time.time()
 
-        if not os.path.isdir(self.experiment_directory):
-            paint_logger.info('Invalid directory selected')
-            paint_messagebox(self.root, 'Invalid Directory', 'The directory does not exist')
-            return
-
-        process_function = self.determine_process_function()
-        if process_function:
-            process_function(
+        # Determine which processing function to use
+        generate_function = self.determine_process_function()
+        if generate_function:  # If a funnction was found, call it
+            generate_function(
                 self.experiment_directory, self.nr_of_squares_in_row.get(), self.min_r_squared.get(),
                 self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
                 self.max_square_coverage.get(), self.process_average_tau.get(), self.process_square_specific_tau.get()
@@ -174,29 +164,31 @@ class GenerateSquaresDialog:
             paint_logger.error('Invalid directory selected')
             paint_messagebox(self.root, 'Error GS:001', "The directory does not contain an 'experiment_tm.csv' file.'")
 
-        # self.exit_pressed()
-
     def determine_process_function(self):
-        """Determine the processing function based on the directory contents."""
+        """
+        Determine the processing function based on the directory contents.
+        If the directory contains an experiment_squares.csv file, use the process_experiment_directory function.
+        Otherwise,  check if the directories below experiment_squares.csv files and then call process_project_directory
+        function.
+        """
+
         if os.path.isfile(os.path.join(self.experiment_directory, 'experiment_tm.csv')):
-            return process_all_images_in_experiment_directory
-        elif count_experiment_files_sub_directories(self.experiment_directory) > 0:
-            return process_all_images_in_root_directory
+            return process_experiment_directory
+        elif os.path.isfile(os.path.join(self.experiment_directory, 'root.txt')):
+            return process_project_directory
         return None
 
     def save_parameters(self):
-        """Save current settings to disk."""
         save_grid_defaults_to_file(
             self.nr_of_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
             self.process_average_tau.get(), self.process_square_specific_tau.get()
         )
-        save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.level)
+        save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.conf_file)
 
     def log_processing_time(self, run_time):
         """Log the processing time."""
         paint_logger.info(f"Total processing time is {run_time:.1f} seconds")
-
 
 
 if __name__ == "__main__":
