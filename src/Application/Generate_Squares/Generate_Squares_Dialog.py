@@ -3,6 +3,7 @@ import time
 import tkinter as tk
 from tkinter import ttk, filedialog
 
+from src.Application.Create_All_Tracks.Create_All_Tracks import create_all_tracks
 from src.Application.Generate_Squares.Generate_Squares import (
     process_project_directory,
     process_experiment_directory)
@@ -44,7 +45,7 @@ class GenerateSquaresDialog:
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_average_tau = tk.IntVar(value=values.get('process_single', 0))
         self.process_square_specific_tau = tk.IntVar(value=values.get('process_traditional', 1))
-        self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
+        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
 
     def create_ui(self, _root):
         """Create and layout the UI components."""
@@ -117,13 +118,13 @@ class GenerateSquaresDialog:
     def create_directory_controls(self, frame):
         """Create controls for directory management."""
         btn_change_dir = ttk.Button(frame, text='Change Directory', width=15, command=self.change_dir)
-        self.lbl_directory = ttk.Label(frame, text=self.experiment_directory, width=80)
+        self.lbl_directory = ttk.Label(frame, text=self.paint_directory, width=80)
         btn_change_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_directory.grid(column=1, row=0, padx=20, pady=5)
 
     def create_button_controls(self, frame):
         """Create buttons for the UI."""
-        btn_generate = ttk.Button(frame, text='Generate Squares', command=self.on_generate_squares_pressed)
+        btn_generate = ttk.Button(frame, text='Generate', command=self.on_generate_squares_pressed)
         btn_exit = ttk.Button(frame, text='Exit', command=self.on_exit_pressed)
 
         # Create two empty columns to balance the buttons in the center
@@ -137,9 +138,9 @@ class GenerateSquaresDialog:
 
     def change_dir(self):
         """Change the paint directory through a dialog."""
-        paint_directory = filedialog.askdirectory(initialdir=self.experiment_directory)
+        paint_directory = filedialog.askdirectory(initialdir=self.paint_directory)
         if paint_directory:
-            self.experiment_directory = paint_directory
+            self.paint_directory = paint_directory
             self.lbl_directory.config(text=paint_directory)
 
     def on_exit_pressed(self):
@@ -150,11 +151,14 @@ class GenerateSquaresDialog:
         """Generate the squares and save the parameters."""
         start_time = time.time()
 
+        # Start with compiling the All Tracks file
+        # create_all_tracks(self.paint_directory)
+
         # Determine which processing function to use
         generate_function = self.determine_process_function()
-        if generate_function:  # If a funnction was found, call it
+        if generate_function:  # If a function was found, call it
             generate_function(
-                self.experiment_directory, self.nr_of_squares_in_row.get(), self.min_r_squared.get(),
+                self.paint_directory, self.nr_of_squares_in_row.get(), self.min_r_squared.get(),
                 self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
                 self.max_square_coverage.get(), self.process_average_tau.get(), self.process_square_specific_tau.get()
             )
@@ -172,9 +176,9 @@ class GenerateSquaresDialog:
         function.
         """
 
-        if os.path.isfile(os.path.join(self.experiment_directory, 'experiment_tm.csv')):
+        if os.path.isfile(os.path.join(self.paint_directory, 'experiment_tm.csv')):
             return process_experiment_directory
-        elif os.path.isfile(os.path.join(self.experiment_directory, 'root.txt')):
+        elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):
             return process_project_directory
         return None
 
@@ -184,7 +188,7 @@ class GenerateSquaresDialog:
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
             self.process_average_tau.get(), self.process_square_specific_tau.get()
         )
-        save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.conf_file)
+        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
 
     def log_processing_time(self, run_time):
         """Log the processing time."""

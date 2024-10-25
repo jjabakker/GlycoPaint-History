@@ -122,7 +122,7 @@ if __name__ == '__main__':
     class BatchDialog:
 
         def __init__(self, _root):
-            _root.title('Prepare batch file')
+            _root.title('Prepare Experiments Info file')
 
             self.image_directory = ""
             self.paint_directory = ""
@@ -137,9 +137,9 @@ if __name__ == '__main__':
             frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
             # Fill the button frame
-            btn_process = ttk.Button(frame_buttons, text='Process', command=self.process)
-            btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
-            btn_process.grid(column=0, row=1)
+            btn_prepare = ttk.Button(frame_buttons, text='Prepare', command=self.on_prepare_pressed)
+            btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.on_exit_pressed)
+            btn_prepare.grid(column=0, row=1)
             btn_exit.grid(column=0, row=2)
 
             # Fill the directory frame
@@ -167,7 +167,7 @@ if __name__ == '__main__':
             if len(self.paint_directory) != 0:
                 self.lbl_paint_dir.config(text=self.paint_directory)
 
-        def process(self):
+        def on_prepare_pressed(self):
             if self.image_directory == "" or self.paint_directory == "":
                 message = 'The image directory needs to point to where the images are.\n\n'
                 message += 'The experiment directory is where the experiment_info.csv will be placed.'
@@ -175,9 +175,9 @@ if __name__ == '__main__':
             else:
                 convert_bf_images(self.image_directory, self.paint_directory)
                 prepare_experiment_info_file(self.image_directory, self.paint_directory)
-                self.exit_dialog()
+                self.on_exit_pressed()
 
-        def exit_dialog(self):
+        def on_exit_pressed(self):
             root.destroy()
 
 

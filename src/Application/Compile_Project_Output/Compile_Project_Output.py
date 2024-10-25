@@ -191,9 +191,9 @@ class CompileDialog:
         frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
         # Fill the button frame
-        btn_process = ttk.Button(frame_buttons, text='Process', command=self.process)
-        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
-        btn_process.grid(column=0, row=1)
+        btn_compile = ttk.Button(frame_buttons, text='Compile', command=self.on_compile_pressed)
+        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.on_exit_pressed)
+        btn_compile.grid(column=0, row=1)
         btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
@@ -209,11 +209,11 @@ class CompileDialog:
         if len(self.root_directory) != 0:
             self.lbl_root_dir.config(text=self.root_directory)
 
-    def process(self) -> None:
+    def on_compile_pressed(self) -> None:
         compile_project_output(project_dir=self.root_directory, verbose=True)
         self.root.destroy()
 
-    def exit_dialog(self) -> None:
+    def on_exit_pressed(self) -> None:
         self.root.destroy()
 
 

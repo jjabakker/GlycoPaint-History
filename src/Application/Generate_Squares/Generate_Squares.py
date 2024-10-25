@@ -55,19 +55,6 @@ def process_project_directory(root_directory: str,
     """
     This function processes all images in a root directory. It calls the function
     'process_all_images_in_paint_directory' for each directory in the root directory.
-
-
-    :param root_directory:
-    :param nr_of_squares_in_row:
-    :param min_r_squared:
-    :param min_tracks_for_tau:
-    :param min_density_ratio:
-    :param max_variability:
-    :param max_square_coverage:
-    :param process_single:
-    :param process_traditional:
-    :param verbose:
-    :return:
     """
 
     experiment_dirs = os.listdir(root_directory)
