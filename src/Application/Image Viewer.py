@@ -217,18 +217,24 @@ class ImageViewer:
     def setup_frame_navigation_buttons(self):
         # This frame is part of the content frame and contains the following buttons: bn_forward, bn_exclude, bn_backward, bn_exit
 
+        self.bn_end = ttk.Button(
+            self.frame_navigation_buttons, text='>>', command=lambda: self.on_forward_backward('END'))
         self.bn_forward = ttk.Button(
-            self.frame_navigation_buttons, text='Forward', command=lambda: self.on_forward_backward('FORWARD'))
+            self.frame_navigation_buttons, text='>', command=lambda: self.on_forward_backward('FORWARD'))
         self.bn_exclude = ttk.Button(self.frame_navigation_buttons, text='Reject', command=lambda: self.on_exinclude())
         self.bn_backward = ttk.Button(
-            self.frame_navigation_buttons, text='Backward', command=lambda: self.on_forward_backward('BACKWARD'))
+            self.frame_navigation_buttons, text='<', command=lambda: self.on_forward_backward('BACKWARD'))
+        self.bn_start = ttk.Button(
+            self.frame_navigation_buttons, text='<<', command=lambda: self.on_forward_backward('START'))
         self.bn_exit = ttk.Button(self.frame_navigation_buttons, text='Exit', command=lambda: self.on_exit_viewer())
 
         # Layout the buttons
-        self.bn_backward.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_exclude.grid(column=1, row=0, padx=5, pady=5)
-        self.bn_forward.grid(column=2, row=0, padx=5, pady=5)
-        self.bn_exit.grid(column=4, row=0, padx=30, pady=5)
+        self.bn_start.grid(column=0, row=0, padx=5, pady=5)
+        self.bn_backward.grid(column=1, row=0, padx=5, pady=5)
+        self.bn_exclude.grid(column=2, row=0, padx=5, pady=5)
+        self.bn_forward.grid(column=3, row=0, padx=5, pady=5)
+        self.bn_end.grid(column=4, row=0, padx=5, pady=5)
+        self.bn_exit.grid(column=5, row=0, padx=30, pady=5)
 
         # Initially disable the back button
         self.bn_backward.configure(state=tk.DISABLED)
@@ -1088,6 +1094,10 @@ class ImageViewer:
         # ----------------------------------------------------------------------------
 
         # Determine the next image number
+        if direction == 'START':
+            self.img_no = 0
+        elif direction == 'END':
+            self.img_no = len(self.list_images) - 1
         if direction == 'FORWARD':
             if self.img_no != len(self.list_images) - 1:
                 self.img_no += 1
