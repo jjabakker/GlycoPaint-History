@@ -133,12 +133,10 @@ class ImageViewer:
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_navigation_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_duration_mode = ttk.Frame(self.content, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
 
         self.frame_images.grid(column=0, row=0, rowspan=2, padx=5, pady=5, sticky=tk.N)
         self.frame_navigation_buttons.grid(column=0, row=2, padx=5, pady=5, sticky=tk.N)
         self.frame_controls.grid(column=1, row=0, rowspan=2, padx=5, pady=5, sticky=N)
-        self.frame_duration_mode.grid(column=2, row=1, padx=5, pady=5, sticky=N)
 
         self.setup_frame_images()
         self.setup_frame_navigation_buttons()
@@ -243,8 +241,11 @@ class ImageViewer:
         # This frame is part of the content frame and contains the following frames: frame_commands
 
         self.frame_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_save_commands = ttk.Frame(self.frame_controls, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.setup_frame_commands()
+        self.setup_frame_save_commands()
         self.frame_commands.grid(column=0, row=3, padx=5, pady=5)
+        self.frame_save_commands.grid(column=0, row=6, padx=5, pady=5)
 
     def setup_frame_commands(self):
         # This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
@@ -272,6 +273,25 @@ class ImageViewer:
         self.bn_output.grid(column=0, row=3, padx=5, pady=5)
         self.bn_reset.grid(column=0, row=4, padx=5, pady=5)
         self.bn_excel.grid(column=0, row=5, padx=5, pady=5)
+
+    def setup_frame_save_commands(self):
+
+        # Create three radio buttons for the neighbour mode
+        self.save_state_var = tk.StringVar(value="Never")
+        self.rb_always_save = tk.Radiobutton(
+            self.frame_save_commands, text="Always Save", variable=self.save_state_var, width=12, value="Always",
+            anchor=tk.W)
+        self.rb_never_save = tk.Radiobutton(
+            self.frame_save_commands, text="Never Save", variable=self.save_state_var, width=12, value="Never",
+            anchor=tk.W)
+        self.rb_ask_toSave = tk.Radiobutton(
+            self.frame_save_commands, text="Ask to Save", variable=self.save_state_var, width=12, value="Ask",anchor=tk.W)
+
+        # Place the radio buttons and button in the grid
+        self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+
 
     def load_images_and_config(self):
 
