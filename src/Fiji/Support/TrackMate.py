@@ -35,7 +35,7 @@ from FijiSupportFunctions import fiji_get_file_open_write_attribute
 from LoggerConfig import paint_logger
 
 
-def excute_trackmate_in_Fiji(threshold, tracks_filename, image_filename):
+def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
 
     # We have to do the following to avoid errors with UTF8 chars generated in
@@ -170,10 +170,10 @@ def excute_trackmate_in_Fiji(threshold, tracks_filename, image_filename):
     feature_model = model.getFeatureModel()
 
     # ----------------
-    # Write the CSV file
+    # Write the Tracks file
     # ----------------
 
-    fields = ["LABEL", "NUMBER_SPOTS", "TRACK_DURATION", 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'DIFFUSION_COEFFICIENT']
+    fields = ["RECORDING NAME", "LABEL", "NUMBER_SPOTS", "TRACK_DURATION", 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'DIFFUSION_COEFFICIENT']
 
     # Determine write attributes
     open_attribute = fiji_get_file_open_write_attribute()
@@ -198,7 +198,7 @@ def excute_trackmate_in_Fiji(threshold, tracks_filename, image_filename):
             y = round(feature_model.getTrackFeature(track_id, 'TRACK_Y_LOCATION'), 2)
 
             # Write the record for each track
-            csvwriter.writerow([label, spots, duration, x, y, diffusion_coefficient_list[track_index]])
+            csvwriter.writerow([recording_name, label, spots, duration, x, y, diffusion_coefficient_list[track_index]])
             track_index += 1
 
     model.getLogger().log('Found ' + str(model.getTrackModel().nTracks(True)) + ' tracks.')
