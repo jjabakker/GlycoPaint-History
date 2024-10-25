@@ -1,5 +1,6 @@
 import os
 import time
+import pandas as pd
 import tkinter as tk
 from tkinter import ttk, filedialog
 
@@ -15,7 +16,8 @@ from src.Application.Utilities.Config import load_paint_config
 
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
-    save_default_locations
+    save_default_locations,
+    format_time_nicely
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.LoggerConfig import (
@@ -154,7 +156,28 @@ class GenerateSquaresDialog:
         start_time = time.time()
 
         # Start with compiling the All Tracks file
-        # create_all_tracks(self.paint_directory)
+        df_tracks = create_all_tracks(self.paint_directory)
+        if df_tracks is None:
+            paint_logger.error('No tracks found')
+            paint_messagebox(self.root, 'Error GS:002', "No tracks found in the selected directory.")
+            return
+        else:
+            paint_logger.info(f"Combined {len(df_tracks)} tracks.")
+            df_tracks.to_csv(os.path.join(self.paint_directory, 'Output', 'All Tracks.csv'), index=False)
+
+        df_dc = df_tracks.groupby('RECORDING NAME').agg({
+            'DIFFUSION_COEFFICIENT': ['mean', 'median', 'std', 'count']
+        })
+        # Convert tuple column names to strings
+        df_dc.columns = ['_'.join(col) for col in df_dc.columns]
+
+        df_dc = df_dc.round(0)
+
+        df_dc.rename(columns={'DIFFUSION_COEFFICIENT_mean': 'Mean',
+                                'DIFFUSION_COEFFICIENT_median': 'Median',
+                                'DIFFUSION_COEFFICIENT_std': 'Std',
+                                'DIFFUSION_COEFFICIENT_count': 'Count'}, inplace=True)
+
 
         # Determine which processing function to use
         generate_function = self.determine_process_function()
@@ -162,7 +185,8 @@ class GenerateSquaresDialog:
             generate_function(
                 self.paint_directory, self.nr_of_squares_in_row.get(), self.min_r_squared.get(),
                 self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
-                self.max_square_coverage.get(), self.process_average_tau.get(), self.process_square_specific_tau.get()
+                self.max_square_coverage.get(), self.process_average_tau.get(), self.process_square_specific_tau.get(),
+                df_dc
             )
             self.log_processing_time(time.time() - start_time)
             self.save_parameters()
@@ -189,11 +213,12 @@ class GenerateSquaresDialog:
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
             self.process_average_tau.get(), self.process_square_specific_tau.get()
         )
-        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
+        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
 
     def log_processing_time(self, run_time):
-        """Log the processing time."""
-        paint_logger.info(f"Total processing time is {run_time:.1f} seconds")
+
+        time_str = format_time_nicely(run_time)
+        paint_logger.info(f"Total processing time is {time_str}")
 
 
 

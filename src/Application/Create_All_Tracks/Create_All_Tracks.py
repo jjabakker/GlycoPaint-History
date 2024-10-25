@@ -25,7 +25,9 @@ def create_all_tracks(root_dir):
                     csv_files.append(os.path.join(root, file))
                     paint_logger.info(f"Process file: {file}")
 
+
     # Read and concatenate all CSV files found
-    combined_df = pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True)
-    combined_df.to_csv('All Tracks.csv', index=False)
+    df_tracks = pd.concat((pd.read_csv(f, header=0, skiprows=[1, 2, 3]) for f in csv_files), ignore_index=True)
+    # df_tracks.to_csv('All Tracks.csv', index=False)
     paint_logger.info(f"Combined {len(csv_files)} tracks files.")
+    return df_tracks
