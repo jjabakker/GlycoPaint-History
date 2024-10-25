@@ -4,13 +4,15 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 
 from src.Application.Create_All_Tracks.Create_All_Tracks import create_all_tracks
-from src.Application.Generate_Squares.Generate_Squares import (
+from src.Application.Generate_Squares.Generate_Squares  import (
     process_project_directory,
     process_experiment_directory)
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
-    save_grid_defaults_to_file)
+    save_grid_defaults_to_file,
+    count_experiment_files_sub_directories)
 from src.Application.Utilities.Config import load_paint_config
+
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations
@@ -45,7 +47,7 @@ class GenerateSquaresDialog:
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_average_tau = tk.IntVar(value=values.get('process_single', 0))
         self.process_square_specific_tau = tk.IntVar(value=values.get('process_traditional', 1))
-        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
+        self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
     def create_ui(self, _root):
         """Create and layout the UI components."""
@@ -175,10 +177,9 @@ class GenerateSquaresDialog:
         Otherwise,  check if the directories below experiment_squares.csv files and then call process_project_directory
         function.
         """
-
         if os.path.isfile(os.path.join(self.paint_directory, 'experiment_tm.csv')):
             return process_experiment_directory
-        elif os.path.isfile(os.path.join(self.paint_directory, 'root.txt')):
+        elif count_experiment_files_sub_directories(self.paint_directory) > 0:
             return process_project_directory
         return None
 
@@ -193,6 +194,7 @@ class GenerateSquaresDialog:
     def log_processing_time(self, run_time):
         """Log the processing time."""
         paint_logger.info(f"Total processing time is {run_time:.1f} seconds")
+
 
 
 if __name__ == "__main__":

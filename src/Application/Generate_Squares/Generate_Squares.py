@@ -120,7 +120,7 @@ def process_experiment_directory(
     paint_logger.info(f"Processing {nr_files:2d} images in {experiment_path}")
 
     for index, row in df_experiment.iterrows():
-        ext_image_name = row["Image Name"] + '-threshold-' + str(row["Threshold"])
+        ext_image_name = row["Recording Name"] + '-threshold-' + str(row["Threshold"])
         ext_image_path = os.path.join(experiment_path, ext_image_name)
         concentration = row["Concentration"]
 
