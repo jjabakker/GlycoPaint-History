@@ -90,6 +90,8 @@ class SelectSquareDialog:
         self.frame_duration.grid(column=0, row=3, padx=5, pady=5, sticky=tk.N)
         self.frame_buttons.grid(column=0, row=4, padx=5, pady=1, sticky=(tk.N, tk.S, tk.E, tk.W))
 
+
+
     def setup_frame_buttons(self):
 
         bn_set_neighbours_all = tk.Button(self.frame_buttons, text="Set for All", command=self.set_for_all, width=10)
