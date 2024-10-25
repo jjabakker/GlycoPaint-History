@@ -22,13 +22,13 @@ PAINT_PRODUCTION = True
 PAINT_FORCE = True
 
 if PAINT_PRODUCTION:
-    CONF_FILE = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
+    PROJECT_LEVEL = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
     PAINT_DATA = '/Users/Hans/Paint Data - v6'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v6'
     TIME_STAMP = ''  # '%Y-%m-%d %H:%M:%S
 else:
-    CONF_FILE = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
+    PROJECT_LEVEL = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
     PAINT_DATA = '/Users/Hans/Paint Data'
     R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v2'
@@ -137,14 +137,14 @@ def process_directory(paint_source_dir,
 def main():
     # Load the configuration file
     try:
-        with open(CONF_FILE, 'r') as file:
+        with open(PROJECT_LEVEL, 'r') as file:
             config = json.load(file)
     except FileNotFoundError:
-        paint_logger.error(f"The configuration file {CONF_FILE} was not found.")
+        paint_logger.error(f"The configuration file {PROJECT_LEVEL} was not found.")
         config = []
         sys.exit(1)
     except json.JSONDecodeError:
-        paint_logger.error(f"Failed to decode JSON from the configuration file {CONF_FILE}.")
+        paint_logger.error(f"Failed to decode JSON from the configuration file {PROJECT_LEVEL}.")
         config = []
         sys.exit(1)
 
@@ -157,7 +157,7 @@ def main():
     paint_logger.info("")
     paint_logger.info(f"New Run - {'Debug' if PAINT_DEBUG else 'Production'} mode")
     paint_logger.info("")
-    paint_logger.info(f'The configuration file is: {CONF_FILE}')
+    paint_logger.info(f'The configuration file is: {PROJECT_LEVEL}')
     paint_logger.info(f'The Paint Source directory is: {PAINT_SOURCE}')
     paint_logger.info(f'The Paint Data directory is: {PAINT_DATA}')
     paint_logger.info(f'The R Output directory is: {R_DATA_DEST}')

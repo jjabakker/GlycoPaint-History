@@ -33,7 +33,7 @@ def get_images(self):
             continue
 
         image_name = self.df_experiment.iloc[index]['Ext Recording Name']
-        if self.user_specified_mode == "CONF_FILE":
+        if self.user_specified_mode == "PROJECT_LEVEL":
 
             experiment = str(self.df_experiment.iloc[index]['Experiment Date'])
             exp_dir = os.path.join(self.project_directory, experiment)

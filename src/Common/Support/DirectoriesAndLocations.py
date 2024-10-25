@@ -144,32 +144,32 @@ def get_default_locations():
     image_directory = os.path.expanduser('~')
     paint_directory = os.path.expanduser('~')
     root_directory = os.path.expanduser('~')
-    conf_file = os.path.expanduser('~')
+    level = os.path.expanduser('~')
 
     try:
         # Check if the file exists
         if not os.path.exists(default_locations_file_path):
-            return root_directory, paint_directory, image_directory, conf_file
+            return root_directory, paint_directory, image_directory, level
 
         # Open and read the CSV file
         with open(default_locations_file_path, mode='r') as file:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
-            required_columns = ['images_directory', 'paint_directory', 'root_directory', 'conf_file']
+            required_columns = ['images_directory', 'paint_directory', 'root_directory', 'level']
             for col in required_columns:
                 if col not in reader.fieldnames:
                     # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
-                    return root_directory, paint_directory, image_directory, conf_file
+                    return root_directory, paint_directory, image_directory, level
 
             # Ensure file is not empty
             rows = list(reader)  # Read all rows into a list to check content
             if not rows:
-                return root_directory, paint_directory, image_directory, conf_file
+                return root_directory, paint_directory, image_directory, level
 
             # Access the first row of data
             row = rows[0]
-            return row['root_directory'], row['paint_directory'], row['images_directory'], row['conf_file']
+            return row['root_directory'], row['paint_directory'], row['images_directory'], row['level']
 
     except KeyError as e:
         print("Error: {}".format(e))
@@ -177,15 +177,15 @@ def get_default_locations():
         print("Error: {}".format(e))
     except Exception as e:
         print("An unexpected error occurred: {}".format(e))
-    return root_directory, paint_directory, image_directory, conf_file
+    return root_directory, paint_directory, image_directory, level
 
 
-def save_default_locations(root_directory, paint_directory, images_directory, conf_file):
+def save_default_locations(root_directory, paint_directory, images_directory, level):
     default_locations_file_path = os.path.join(get_paint_profile_directory(), "default_locations.csv")
 
     try:
 
-        fieldnames = ['images_directory', 'paint_directory', 'root_directory', 'conf_file']
+        fieldnames = ['images_directory', 'paint_directory', 'root_directory', 'level']
 
         # Open the file in write mode ('w') and overwrite any existing content
         with open(default_locations_file_path, mode='w') as file:
@@ -199,7 +199,7 @@ def save_default_locations(root_directory, paint_directory, images_directory, co
                 'images_directory': images_directory,
                 'paint_directory': paint_directory,
                 'root_directory': root_directory,
-                'conf_file': conf_file
+                'level': level
             })
 
     except Exception as e:

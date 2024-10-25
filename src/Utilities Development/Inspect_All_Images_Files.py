@@ -5,7 +5,7 @@ import json
 import pandas as pd
 from  src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 
-CONF_FILE = '/Users/hans/Paint Source/paint data generation - production.json'
+PROJECT_LEVEL = '/Users/hans/Paint Source/paint data generation - production.json'
 PAINT_SOURCE = '/Users/hans/Paint Source'
 PAINT_DATA = '/Users/Hans/Paint Data'
 R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data New'
@@ -97,14 +97,14 @@ def main():
 
     # Load the configuration file
     try:
-        with open(CONF_FILE, 'r') as file:
+        with open(PROJECT_LEVEL, 'r') as file:
             config = json.load(file)
     except FileNotFoundError:
-        paint_logger.error(f"The configuration file {CONF_FILE} was not found.")
+        paint_logger.error(f"The configuration file {PROJECT_LEVEL} was not found.")
         config = []
         sys.exit(1)
     except json.JSONDecodeError:
-        paint_logger.error(f"Failed to decode JSON from the configuration file {CONF_FILE}.")
+        paint_logger.error(f"Failed to decode JSON from the configuration file {PROJECT_LEVEL}.")
         config = []
         sys.exit(1)
 

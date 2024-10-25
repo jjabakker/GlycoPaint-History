@@ -22,7 +22,7 @@ def ask_user_for_paint_directory(title='Select Folder'):
     """
 
     # Retrieve the default from file
-    root_dir, paint_dir, images_dir, conf_file = get_default_locations()
+    root_dir, paint_dir, images_dir, level = get_default_locations()
 
     # If that fails, select a reasonable default
     if not os.path.isdir(paint_dir):
@@ -33,7 +33,7 @@ def ask_user_for_paint_directory(title='Select Folder'):
 
     # If the user returned something, save it to file
     if len(image_directory) != 0:
-        save_default_locations(root_dir, paint_dir, images_dir, conf_file)
+        save_default_locations(root_dir, paint_dir, images_dir, level)
     return image_directory
 
 

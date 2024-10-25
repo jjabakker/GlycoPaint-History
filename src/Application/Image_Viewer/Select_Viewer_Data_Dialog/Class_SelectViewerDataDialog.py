@@ -19,7 +19,7 @@ class SelectViewerDataDialog:
         self.parent.title('Select Viewer')
 
         self.proceed = False
-        self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
+        self.root_directory, self.experiment_directory, self.images_directory, self.level = get_default_locations()
 
         # Main content frame
         content = ttk.Frame(parent)
@@ -45,15 +45,15 @@ class SelectViewerDataDialog:
         """Adds widgets to the directory frame."""
         # Directory and Configuration file buttons
         self.add_button(frame, 'Experiment Directory', 0, self.change_root_dir)
-        self.add_button(frame, 'Project File', 1, self.change_conf_file)
+        self.add_button(frame, 'Project File', 1, self.change_level)
 
         # Labels and Radio buttons
         self.lbl_root_dir = self.add_label(frame, self.root_directory, 0)
-        self.lbl_conf_file = self.add_label(frame, self.conf_file, 1)
+        self.lbl_level = self.add_label(frame, self.level, 1)
 
-        self.mode_dir_or_conf = StringVar(value="DIRECTORY")
-        self.add_radio_button(frame, "DIRECTORY", 0)
-        self.add_radio_button(frame, "CONF_FILE", 1)
+        self.mode_dir_or_conf = StringVar(value="EXPERIMENT_LEVEL")
+        self.add_radio_button(frame, "EXPERIMENT_LEVEL", 0)
+        self.add_radio_button(frame, "PROJECT_LEVEL", 1)
 
     def add_buttons(self, frame) -> None:
         """Adds the Process and Exit buttons."""
@@ -78,27 +78,27 @@ class SelectViewerDataDialog:
     def change_root_dir(self) -> None:
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
         if self.root_directory:
-            self.mode_dir_or_conf.set('DIRECTORY')
+            self.mode_dir_or_conf.set('EXPERIMENT_LEVEL')
             self.lbl_root_dir.config(text=self.root_directory)
             save_default_locations(self.root_directory, self.experiment_directory, self.images_directory,
-                                   self.conf_file)
+                                   self.level)
 
-    def change_conf_file(self) -> None:
-        self.conf_file = filedialog.askopenfilename(initialdir=self.experiment_directory,
+    def change_level(self) -> None:
+        self.level = filedialog.askopenfilename(initialdir=self.experiment_directory,
                                                     title='Select a configuration file')
-        if self.conf_file:
-            self.mode_dir_or_conf.set('CONF_FILE')
-            self.lbl_conf_file.config(text=self.conf_file)
+        if self.level:
+            self.mode_dir_or_conf.set('PROJECT_LEVEL')
+            self.lbl_level.config(text=self.level)
             save_default_locations(self.root_directory, self.experiment_directory, self.images_directory,
-                                   self.conf_file)
+                                   self.level)
 
     def process(self) -> None:
         error = False
 
-        if self.mode_dir_or_conf == "DIRECTORY" and not os.path.isdir(self.root_directory):
+        if self.mode_dir_or_conf == "EXPERIMENT_LEVEL" and not os.path.isdir(self.root_directory):
             paint_logger.error('The root directory does not exist!')
             error = True
-        elif self.mode_dir_or_conf == "CONF_FILE" and not os.path.isfile(self.conf_file):
+        elif self.mode_dir_or_conf == "PROJECT_LEVEL" and not os.path.isfile(self.level):
             paint_logger.error('No configuration file has been selected!')
             error = True
 
@@ -112,4 +112,4 @@ class SelectViewerDataDialog:
 
     def get_result(self):
         self.top.wait_window()
-        return self.proceed, self.root_directory, self.conf_file, self.mode_dir_or_conf.get()
+        return self.proceed, self.root_directory, self.level, self.mode_dir_or_conf.get()

@@ -50,7 +50,7 @@ class GenerateSquaresDialog:
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_average_tau = tk.IntVar(value=values.get('process_single', 0))
         self.process_square_specific_tau = tk.IntVar(value=values.get('process_traditional', 1))
-        self.root_directory, self.experiment_directory, self.images_directory, self.conf_file = get_default_locations()
+        self.root_directory, self.experiment_directory, self.images_directory, self.level = get_default_locations()
 
     def create_ui(self, _root):
         """Create and layout the UI components."""
@@ -191,7 +191,7 @@ class GenerateSquaresDialog:
             self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
             self.process_average_tau.get(), self.process_square_specific_tau.get()
         )
-        save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.conf_file)
+        save_default_locations(self.root_directory, self.experiment_directory, self.images_directory, self.level)
 
     def log_processing_time(self, run_time):
         """Log the processing time."""

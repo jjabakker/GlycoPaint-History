@@ -83,7 +83,7 @@ class InspectDialog:
 
     def __init__(self, _root):
         _root.title('Inspect Experiments Files')
-        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
+        self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
         # Set up the UI layout
         content = ttk.Frame(_root)
@@ -114,7 +114,7 @@ class InspectDialog:
         """
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
         if self.root_directory:
-            save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
+            save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
             self.lbl_root_dir.config(text=self.root_directory)
 
     def process(self):

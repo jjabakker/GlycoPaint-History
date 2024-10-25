@@ -24,7 +24,7 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
     :param directory:
     :return:
     """
-    root_dir, paint_dir, images_dir, conf_file = get_default_locations()
+    root_dir, paint_dir, images_dir, level = get_default_locations()
 
     if directory == 'Paint':
         def_dir = paint_dir
@@ -44,7 +44,7 @@ def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
             paint_dir = selected_directory
         else:
             images_dir = selected_directory
-        save_default_locations(root_dir, paint_dir, images_dir, conf_file)
+        save_default_locations(root_dir, paint_dir, images_dir, level)
         return selected_directory.getAbsolutePath()
     else:
         return ""

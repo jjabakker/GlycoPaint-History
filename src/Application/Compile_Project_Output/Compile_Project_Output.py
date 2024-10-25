@@ -179,7 +179,7 @@ class CompileDialog:
 
         self.root.title('Compile Square Data')
 
-        self.root_directory, self.paint_directory, self.images_directory, self.conf_file = get_default_locations()
+        self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
         content = ttk.Frame(self.root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
@@ -205,7 +205,7 @@ class CompileDialog:
 
     def change_root_dir(self) -> None:
         self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
-        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.conf_file)
+        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
         if len(self.root_directory) != 0:
             self.lbl_root_dir.config(text=self.root_directory)
 
