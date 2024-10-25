@@ -111,7 +111,7 @@ class GenerateSquaresDialog:
 
     def create_processing_controls(self, frame):
         """Create the processing checkboxes."""
-        self.create_checkbox(frame, "Square Specific Tau", self.process_square_specific_tau, 0)
+        self.create_checkbox(frame, "Square-pecific Tau", self.process_square_specific_tau, 0)
         self.create_checkbox(frame, "Averaged Tau", self.process_average_tau, 1)
 
     def create_checkbox(self, frame, text, var, row):

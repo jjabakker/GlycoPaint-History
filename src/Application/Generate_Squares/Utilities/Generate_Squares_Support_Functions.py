@@ -317,7 +317,7 @@ def count_experiment_files_sub_directories(current_dir):
         # Check if the item is a directory
         if os.path.isdir(item_path):
             # Check if the file 'experiment_squares.csv' exists in that directory
-            file_path = os.path.join(item_path, 'experiment_squares.csv')
+            file_path = os.path.join(item_path, 'experiment_tm.csv')
             if os.path.isfile(file_path):
                 count += 1
 

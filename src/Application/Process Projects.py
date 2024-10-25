@@ -35,8 +35,6 @@ else:
     TIME_STAMP = '2024-10-11 00:00:00'  # '%Y-%m-%d %H:%M:%S
 
 
-
-
 def process_directory(paint_source_dir,
                       process_directory: str,
                       paint_data_dir: str,
