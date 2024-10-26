@@ -68,7 +68,7 @@ class HeatMapDialog:
         lbl_radio.grid(row=2, column=0, padx=5, pady=5)
 
         # Add radio buttons for the provided option names
-        self.option_names = ["Tau", "Density", "Track Count", "Track Duration", "Cum Track Duration"]
+        self.option_names = ["Tau", "Density", "Mean DC", "Track Duration", "Cum Track Duration"]
         for idx, name in enumerate(self.option_names, start=1):
             radio_btn = tk.Radiobutton(self.frame_mode_buttons, text=name, command=self.on_heatmap_variable_change,
                                        variable=self.image_viewer.heatmap_option, value=idx)

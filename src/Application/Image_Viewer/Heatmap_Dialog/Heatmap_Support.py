@@ -36,7 +36,7 @@ def get_heatmap_data(df_squares, df_all_squares, heatmap_mode):
     heatmap_modes = {
         1: 'Tau',
         2: 'Density',
-        3: 'Nr Tracks',
+        3: 'Mean DC',
         4: 'Max Track Duration',
         5: 'Total Track Duration'
     }
