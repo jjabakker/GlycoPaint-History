@@ -53,6 +53,15 @@ def analyse_tracks(df_tracks, nr_of_squares_in_row, project_directory):
         if path:
             df_squares = pd.read_csv(path)
 
+        df_squares.drop('Mean DC', axis=1, errors='ignore', inplace=True)
+        df_squares.drop('DC Mean', axis=1, errors='ignore', inplace=True)
+
+        df_squares = df_squares.sort_values(by='Square Nr', ascending=True)
+        df_squares['DC'] = 0
+        dc_col_index = df_squares.columns.get_loc('DC')
+
+
+
         count = 0
         for i in range(nr_squares):
             x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, i)
@@ -65,8 +74,9 @@ def analyse_tracks(df_tracks, nr_of_squares_in_row, project_directory):
             else:
                 dc_mean = -1
 
-            df_squares.loc[i, 'Mean DC'] = int(dc_mean)
+            df_squares.iloc[i, dc_col_index] = int(dc_mean)
 
+        df_squares = df_squares.sort_values(by='Nr Tracks', ascending=False)
         df_squares.to_csv(path, index=False)
 
 

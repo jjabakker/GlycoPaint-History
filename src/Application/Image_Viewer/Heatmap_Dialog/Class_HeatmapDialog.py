@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+
 from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors,
     get_heatmap_data)
@@ -7,9 +8,9 @@ from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
 
 class HeatMapDialog:
 
-    #--------------------------------------------------------------
+    # --------------------------------------------------------------
     # Setting up
-    #--------------------------------------------------------------
+    # --------------------------------------------------------------
 
     def __init__(self, image_viewer):
 
@@ -21,7 +22,7 @@ class HeatMapDialog:
         self.control_window = tk.Toplevel(self.image_viewer.parent)
         self.control_window.title("Heatmap Control Window")
         self.control_window.resizable(False, False)
-        self.control_window.geometry("400x400")
+        self.control_window.geometry("370x420")
         self.control_window.resizable(False, False)
         self.control_window.attributes('-topmost', True)
         self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -39,11 +40,11 @@ class HeatMapDialog:
 
         # Create a content frame for the control window
         self.content = ttk.Frame(self.control_window, padding=(5, 5, 5, 5))
-        self.content.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.content.grid(row=0, column=0, sticky='nsew')
 
         # Create three frames for the different sections of the control window
         self.frame_mode_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_legend = ttk.Frame(self.content, borderwidth=2, padding=(5, 5, 5, 5))
+        self.frame_legend = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_controls = ttk.Frame(self.content, borderwidth=2, padding=(5, 5, 5, 5))
 
         # Set up the UI elements for the three frames
@@ -52,9 +53,13 @@ class HeatMapDialog:
         self.setup_controls()
 
         # Place the frames in the content frame
-        self.frame_mode_buttons.grid(row=0, column=0, padx=5, pady=10)
-        self.frame_legend.grid(row=0, column=1, padx=5, pady=10)
-        self.frame_controls.grid(row=1, column=0, padx=5, pady=10)
+        self.frame_mode_buttons.grid(row=0, column=0, padx=10, pady=(10, 0), sticky='nsew')
+        self.frame_legend.grid(row=0, column=1, padx=5, pady=(10, 0), sticky='nsew')
+        self.frame_controls.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky='we')
+
+        # Configure rows to ensure control frame can expand horizontally
+        self.content.rowconfigure(0, weight=1)  # Top row with frames
+        self.content.rowconfigure(1, weight=0)  # Control frame row does not expand
 
     def setup_heatmap_variable_buttons(self):
         """
@@ -100,27 +105,41 @@ class HeatMapDialog:
         self.global_min_max.set(1)
         self.cb_global_min_max = tk.Checkbutton(
             self.frame_legend, text="Global Min/Max", variable=self.image_viewer.heatmap_global_min_max,
-            command=self.on_heatmap_variable_change)
+            command=self.on_heatmap_global_local_change)
 
-        self.cb_global_min_max.grid(row=0, column=0, padx=5, pady=10)
-        self.canvas.grid(row=1, column=0, rowspan=11, padx=5, pady=10)
-        self.lbl_min.grid(row=1, column=6, padx=5, pady=10)
-        self.lbl_max.grid(row=10, column=6, padx=5, pady=10)
+
+        self.canvas.grid(row=1, column=0, rowspan=11, padx=5, pady=0)
+        self.lbl_min.grid(row=0, column=0, padx=2, pady=5)
+        self.lbl_max.grid(row=15, column=0, padx=2, pady=5)
+        self.cb_global_min_max.grid(row=16, column=0, padx=5, pady=10)
 
     def setup_controls(self):
         """
-        Add a close button and a toggle button to the control window.
+        Add Close and Toggle buttons to the control window, centered within frame_controls with controlled width.
         """
 
-        close_button = tk.Button(self.frame_controls, text="Close", command=self.on_close)
-        toggle_button = tk.Button(self.frame_controls, text="Toggle", command=self.on_toggle)
+        # Configure frame_controls to center its contents
+        self.frame_controls.columnconfigure(0, weight=1)
 
-        close_button.grid(row=0, column=0, padx=5, pady=10)
-        toggle_button.grid(row=0, column=1, padx=5, pady=10)
+        # Create a container frame to hold the buttons, which will be centered within frame_controls
+        button_container = ttk.Frame(self.frame_controls)
+        button_container.grid(row=0, column=0, padx=5, pady=10, sticky="n")
 
-    #--------------------------------------------------------------
+        # Configure two equally weighted columns in the button_container to keep buttons close
+        button_container.columnconfigure(0, weight=1)
+        button_container.columnconfigure(1, weight=1)
+
+        # Create the Close and Toggle buttons with a fixed width
+        close_button = tk.Button(button_container, text="Close", command=self.on_close, width=10)
+        toggle_button = tk.Button(button_container, text="Toggle", command=self.on_toggle, width=10)
+
+        # Grid the buttons in the container frame
+        close_button.grid(row=0, column=0, padx=5, pady=5)
+        toggle_button.grid(row=0, column=1, padx=5, pady=5)
+
+    # --------------------------------------------------------------
     # Event Handlers
-    #--------------------------------------------------------------
+    # --------------------------------------------------------------
 
     def on_close(self):
         """
@@ -145,18 +164,26 @@ class HeatMapDialog:
 
     def on_heatmap_variable_change(self):
         """
-        This function is called by the UI when a different heatmap variable is selected
-        When that happens, the min and max values of the new heatmap are updated
         """
 
         var = self.image_viewer.heatmap_option.get()
         _, min_val, max_val = get_heatmap_data(
-            self.image_viewer.df_squares, self.image_viewer.df_all_squares, self.image_viewer.heatmap_option.get(),
-            self.global_min_max.get())
+            self.image_viewer.df_squares, self.image_viewer.df_all_squares,
+            self.image_viewer.heatmap_option.get(), self.image_viewer.heatmap_global_min_max.get())
 
         self.lbl_min.config(text=str(min_val))
         self.lbl_max.config(text=str(max_val))
         self.image_viewer.display_heatmap()
 
+    def on_heatmap_global_local_change(self):
+        """
+        """
 
+        var = self.image_viewer.heatmap_option.get()
+        _, min_val, max_val = get_heatmap_data(
+            self.image_viewer.df_squares, self.image_viewer.df_all_squares, var,
+            self.image_viewer.heatmap_global_min_max.get())
 
+        self.lbl_min.config(text=str(min_val))
+        self.lbl_max.config(text=str(max_val))
+        self.image_viewer.display_heatmap()

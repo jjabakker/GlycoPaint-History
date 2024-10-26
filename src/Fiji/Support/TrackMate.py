@@ -139,7 +139,7 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
         msd = cum_msd/ (len(track_spots) - 1)
         diffusion_coefficient = msd / (2 * 2 * 0.05)
 
-        nice_diffusion_coefficient = round(diffusion_coefficient * 1000000, 0)
+        nice_diffusion_coefficient = round(diffusion_coefficient * 1000, 0)
         diffusion_coefficient_list.append(nice_diffusion_coefficient)
 
     # ----------------

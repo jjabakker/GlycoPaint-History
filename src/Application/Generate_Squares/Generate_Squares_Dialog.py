@@ -174,9 +174,9 @@ class GenerateSquaresDialog:
         df_dc = df_dc.round(0)
 
         df_dc.rename(columns={'DIFFUSION_COEFFICIENT_mean': 'Mean',
-                                'DIFFUSION_COEFFICIENT_median': 'Median',
-                                'DIFFUSION_COEFFICIENT_std': 'Std',
-                                'DIFFUSION_COEFFICIENT_count': 'Count'}, inplace=True)
+                              'DIFFUSION_COEFFICIENT_median': 'Median',
+                              'DIFFUSION_COEFFICIENT_std': 'Std',
+                              'DIFFUSION_COEFFICIENT_count': 'Count'}, inplace=True)
         df_dc.index_name = 'ext_recording_name'
 
         # Determine which processing function to use

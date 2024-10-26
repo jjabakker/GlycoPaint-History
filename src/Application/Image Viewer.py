@@ -62,7 +62,6 @@ class ImageViewer:
         self.setup_ui()
         self.load_images_and_config()
         self.setup_exclude_button()
-        self.setup_exclude_button()
         self.setup_heatmap()
 
         # Bind keys for navigation
@@ -1296,11 +1295,10 @@ class ImageViewer:
         heatmap_global_min_max = self.heatmap_global_min_max.get()
 
 
-        heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode, heatmap_global_min_max)
-        i = 1
-        for square_number, value in enumerate(heatmap_data):
-            draw_heatmap_square(self.cn_left_image, square_number, self.nr_of_squares_in_row, value, min_val, max_val,
-                                colors)
+        df_heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode, heatmap_global_min_max)
+        for index, row in df_heatmap_data.iterrows():
+            draw_heatmap_square(self.cn_left_image, index, self.nr_of_squares_in_row, row['Value'],
+                                min_val, max_val, colors)
 
         # Update the min/max labels   @@@@@
         # self.heatmap_control_dialog.on_heatmap_variable_change()
