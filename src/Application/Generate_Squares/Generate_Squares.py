@@ -138,11 +138,10 @@ def process_experiment_directory(
                 paint_logger.debug(ext_recording_name)
 
             df_squares, tau, r_squared, density = process_single_image_in_experiment_directory(
-                experiment_path,
-                ext_image_path, ext_recording_name, nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
-                min_density_ratio, max_variability, concentration, row["Nr Spots"], row['Recording Sequence Nr'],
-                row['Condition Nr'], row['Replicate Nr'], row['Experiment Date'], row['Experiment Name'],
-                process_single, process_traditional, verbose)
+                experiment_path, ext_image_path, ext_recording_name, nr_of_squares_in_row,
+                min_r_squared, min_tracks_for_tau, min_density_ratio, max_variability, concentration, row["Nr Spots"],
+                row['Recording Sequence Nr'], row['Condition Nr'], row['Replicate Nr'], row['Experiment Date'],
+                row['Experiment Name'], process_single, process_traditional, df_dc, verbose)
             if df_squares is None:
                 paint_logger.error("Aborted with error")
                 return None
@@ -207,6 +206,7 @@ def process_single_image_in_experiment_directory(
         experiment_name: str,
         process_single: bool,
         process_traditional: bool,
+        df_dc: pd.DataFrame,
         verbose: bool = False) -> tuple:
     """
     This function processes a single image in a paint directory. It reads the full-track file from the 'tracks'

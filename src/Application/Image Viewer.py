@@ -74,8 +74,13 @@ class ImageViewer:
 
     def setup_heatmap(self):
         self.slider_value = tk.DoubleVar()
+
         self.heatmap_option = tk.IntVar()
         self.heatmap_option.set(1)  # Default selection is the first option
+
+        self.heatmap_global_min_max = tk.IntVar()
+        self.heatmap_global_min_max.set(1)  # Default selection is the first option
+
         # The heatmap_type_selection_changed function is called by the UI when a radio button is clicked
         self.heatmap_option.trace_add("write", self.heatmap_type_selection_changed)
 
@@ -117,6 +122,9 @@ class ImageViewer:
         self.square_info_popup = None
 
         self.squares_in_rectangle = []
+
+
+
 
         msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "EXPERIMENT_LEVEL" else self.user_specified_level}'
         msg += f'{" - NO SAVING" if self.user_specified_mode == "PROJECT_LEVEL" else ""}'
@@ -331,6 +339,7 @@ class ImageViewer:
         else:
             self.set_dialog_buttons(tk.DISABLED)
             self.heatmap_control_dialog = HeatMapDialog(self)
+            # self.heatmap_control_dialog.on_heatmap_variable_change()
             self.img_no -= 1
             self.on_forward_backward('FORWARD')
 
@@ -964,7 +973,7 @@ class ImageViewer:
         if self.square_info_popup is None:
             self.square_info_popup = Toplevel(root)
             self.square_info_popup.title("Square Info")
-            self.square_info_popup.geometry("220x180")
+            self.square_info_popup.geometry("280x200")
 
             # Position the popup relative to the main window and the event
             x = root.winfo_x()
@@ -984,12 +993,13 @@ class ImageViewer:
                 ("Density Ratio", square_data['Density Ratio']),
                 ("Variability", square_data['Variability']),
                 ("Max Track Duration", square_data['Max Track Duration']),
+                ("Mean Diffusion Coefficient", square_data['Mean DC'])
             ]
 
             # Fill the popup with labels using a loop
             padx_value = 10
             pady_value = 1
-            lbl_width = 15
+            lbl_width = 20
 
             for idx, (label, value) in enumerate(fields, start=1):
                 ttk.Label(self.square_info_popup, text=label, anchor=W, width=lbl_width).grid(row=idx, column=1,
@@ -1283,12 +1293,17 @@ class ImageViewer:
 
         colors = get_colormap_colors('Blues', 20)
         heatmap_mode = self.heatmap_option.get()
+        heatmap_global_min_max = self.heatmap_global_min_max.get()
 
-        heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode)
 
+        heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode, heatmap_global_min_max)
+        i = 1
         for square_number, value in enumerate(heatmap_data):
             draw_heatmap_square(self.cn_left_image, square_number, self.nr_of_squares_in_row, value, min_val, max_val,
                                 colors)
+
+        # Update the min/max labels   @@@@@
+        # self.heatmap_control_dialog.on_heatmap_variable_change()
 
 
 def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):
@@ -1298,6 +1313,8 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
     height = 512 / nr_of_squares_in_row
 
     color_index = get_color_index(value, max_value, min_value, 20)
+    if color_index  >= 20:
+        i = 1
     color = colors[color_index]
 
     canvas_to_draw_on.create_rectangle(

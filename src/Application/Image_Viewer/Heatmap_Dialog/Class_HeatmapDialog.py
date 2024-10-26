@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors,
-    get_heatmap_min_max)
+    get_heatmap_data)
 
 
 class HeatMapDialog:
@@ -21,7 +21,7 @@ class HeatMapDialog:
         self.control_window = tk.Toplevel(self.image_viewer.parent)
         self.control_window.title("Heatmap Control Window")
         self.control_window.resizable(False, False)
-        self.control_window.geometry("310x350")
+        self.control_window.geometry("400x400")
         self.control_window.resizable(False, False)
         self.control_window.attributes('-topmost', True)
         self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -70,8 +70,9 @@ class HeatMapDialog:
         # Add radio buttons for the provided option names
         self.option_names = ["Tau", "Density", "Mean DC", "Track Duration", "Cum Track Duration"]
         for idx, name in enumerate(self.option_names, start=1):
-            radio_btn = tk.Radiobutton(self.frame_mode_buttons, text=name, command=self.on_heatmap_variable_change,
-                                       variable=self.image_viewer.heatmap_option, value=idx)
+            radio_btn = tk.Radiobutton(
+                self.frame_mode_buttons, text=name, command=self.on_heatmap_variable_change,
+                variable=self.image_viewer.heatmap_option, value=idx)
             radio_btn.grid(row=2 + idx, column=0, padx=5, pady=2, sticky=tk.W)
         self.image_viewer.heatmap_option.set(1)
 
@@ -83,15 +84,26 @@ class HeatMapDialog:
         There are also two labels that show the min and max values of the heatmap.
         """
 
-        canvas = tk.Canvas(self.frame_legend, width=30)
+        self.canvas = tk.Canvas(self.frame_legend, width=30)
 
+        # Add rectangles with the colors of the heatmap
         colors = get_colormap_colors('Blues', 10)
         for i, color in enumerate(colors):
-            canvas.create_rectangle(10, 10 + i * 20, 30, 80 + i * 20, fill=color, outline=color)
+            self.canvas.create_rectangle(10, 10 + i * 20, 30, 80 + i * 20, fill=color, outline=color)
+
+        # Add labels for the min and max values of the heatmap
         self.lbl_min = tk.Label(self.frame_legend, text="", font=("Arial", 12))
         self.lbl_max = tk.Label(self.frame_legend, text="", font=("Arial", 12))
 
-        canvas.grid(row=0, column=0, rowspan=11, padx=5, pady=10)
+        # Add a checkbox to toggle between recording or experiment min and max values
+        self.global_min_max = tk.IntVar()
+        self.global_min_max.set(1)
+        self.cb_global_min_max = tk.Checkbutton(
+            self.frame_legend, text="Global Min/Max", variable=self.image_viewer.heatmap_global_min_max,
+            command=self.on_heatmap_variable_change)
+
+        self.cb_global_min_max.grid(row=0, column=0, padx=5, pady=10)
+        self.canvas.grid(row=1, column=0, rowspan=11, padx=5, pady=10)
         self.lbl_min.grid(row=1, column=6, padx=5, pady=10)
         self.lbl_max.grid(row=10, column=6, padx=5, pady=10)
 
@@ -137,9 +149,14 @@ class HeatMapDialog:
         When that happens, the min and max values of the new heatmap are updated
         """
 
-        min_val, max_val = get_heatmap_min_max(self.image_viewer.df_all_squares, self.image_viewer.heatmap_option.get())
+        var = self.image_viewer.heatmap_option.get()
+        _, min_val, max_val = get_heatmap_data(
+            self.image_viewer.df_squares, self.image_viewer.df_all_squares, self.image_viewer.heatmap_option.get(),
+            self.global_min_max.get())
+
         self.lbl_min.config(text=str(min_val))
         self.lbl_max.config(text=str(max_val))
+        self.image_viewer.display_heatmap()
 
 
 
