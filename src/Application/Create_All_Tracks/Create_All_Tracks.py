@@ -23,7 +23,7 @@ def create_all_tracks(root_dir):
                 if any(keyword in file for keyword in ['tracks', 'threshold']) and file.endswith(
                         '.csv') and 'label' not in file:
                     csv_files.append(os.path.join(root, file))
-                    paint_logger.info(f"Process file: {file}")
+                    paint_logger.debug(f"Process Tracks file: {file}")
 
 
     # Read and concatenate all CSV files found

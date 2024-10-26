@@ -172,8 +172,14 @@ def process_experiment_directory(
 
             df_experiment.loc[index, 'Exclude'] = df_experiment.loc[index, 'Squares Ratio'] >= max_square_coverage
 
+            # Then assign the mean DC value to the experiment file
+            name = row['Ext Recording Name']
+            mean_dc1  = df_dc.loc[name]['Mean']
+            df_experiment.loc[index, 'Mean DC'] = mean_dc1
+
             current_image_nr += 1
             processed += 1
+
 
         else:
             paint_logger.debug(f"Squares file already up to date: {ext_recording_name}")

@@ -177,7 +177,7 @@ class GenerateSquaresDialog:
                                 'DIFFUSION_COEFFICIENT_median': 'Median',
                                 'DIFFUSION_COEFFICIENT_std': 'Std',
                                 'DIFFUSION_COEFFICIENT_count': 'Count'}, inplace=True)
-
+        df_dc.index_name = 'ext_recording_name'
 
         # Determine which processing function to use
         generate_function = self.determine_process_function()
