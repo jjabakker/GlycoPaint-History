@@ -228,25 +228,6 @@ def process_single_image_in_experiment_directory(
     directory and creates a grid of squares. For each square the Tau and Density ratio is calculated. The squares
     are then filtered on visibility. For each square a squares.csv id written to the 'grid' directory.
 
-    :param experiment_path:
-    :param recording_path:
-    :param recording_name:
-    :param nr_of_squares_in_row:
-    :param min_r_squared:
-    :param min_tracks_for_tau:
-    :param min_density_ratio:
-    :param max_variability:
-    :param concentration:
-    :param nr_spots:
-    :param recording_seq_nr:
-    :param condition_nr:
-    :param replicate_nr:
-    :param experiment_date:
-    :param experiment_name:
-    :param process_recording_tau: bool,
-    :param process_square_tau: bool,
-    :param verbose:
-    :return:
     """
 
     tau = r_squared = density = 0
