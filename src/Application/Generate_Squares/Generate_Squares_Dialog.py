@@ -160,10 +160,17 @@ class GenerateSquaresDialog:
         generate_function = self.determine_process_function()
         if generate_function:  # If a function was found, call it
             generate_function(
-                self.paint_directory, self.nr_of_squares_in_row.get(), self.min_r_squared.get(),
-                self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
-                self.max_square_coverage.get(), self.process_average_tau.get(), self.process_square_specific_tau.get(),
-                df_dc
+                root_directory=self.paint_directory,
+                nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
+                min_r_squared=self.min_r_squared.get(),
+                min_tracks_for_tau=self.min_tracks_for_tau.get(),
+                min_density_ratio=self.min_density_ratio.get(),
+                max_variability=self.max_variability.get(),
+                max_square_coverage=self.max_square_coverage.get(),
+                process_recording_tau=self.process_average_tau.get(),
+                process_square_tau=self.process_square_specific_tau.get(),
+                generate_all_tracks= self.generate_all_tracks.get(),
+                verbose = False
             )
             self.log_processing_time(time.time() - start_time)
             self.save_parameters()
@@ -185,10 +192,16 @@ class GenerateSquaresDialog:
         return None
 
     def save_parameters(self):
+        generate_all_tracks = True
         save_grid_defaults_to_file(
-            self.nr_of_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
-            self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
-            self.process_average_tau.get(), self.process_square_specific_tau.get()
+            nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
+            min_tracks_for_tau=self.min_tracks_for_tau.get(),
+            min_r_squared=self.min_r_squared.get(),
+            min_density_ratio=self.min_density_ratio.get(),
+            max_variability=self.max_variability.get(),
+            max_square_coverage=self.max_square_coverage.get(),
+            process_recording_tau=self.process_average_tau.get(),
+            process_square_tau=self.process_square_specific_tau.get()
         )
         save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
 
@@ -196,7 +209,6 @@ class GenerateSquaresDialog:
 
         time_str = format_time_nicely(run_time)
         paint_logger.info(f"Total processing time is {time_str}")
-
 
 
 if __name__ == "__main__":

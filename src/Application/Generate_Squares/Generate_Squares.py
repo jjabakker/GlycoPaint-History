@@ -67,15 +67,13 @@ def process_project_directory(root_directory: str,
     """
 
     # Start with compiling the All Tracks file if required
-    generate_tracks = True
-    if generate_tracks == True:
+
+    if generate_all_tracks:
         # Read all tracks files in the directory tree and concatenate them into a single All Tracks
         df_tracks = create_all_tracks(root_directory)
         if df_tracks is None:
             paint_logger.error('All Tracks not generated')
             return
-        else:
-            generate_tracks = False
         # Then add the diffusion coefficient to the squares file
         add_dc_to_squares_file(df_tracks, nr_of_squares_in_row, root_directory)
 
