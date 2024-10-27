@@ -1,13 +1,13 @@
 import os
 import time
-import pandas as pd
 import tkinter as tk
 from tkinter import ttk, filedialog
 
-from src.Application.Create_All_Tracks.Create_All_Tracks import create_all_tracks
+from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_all_tracks
 from src.Application.Generate_Squares.Generate_Squares  import (
     process_project_directory,
     process_experiment_directory)
+from src.Application.Generate_Squares.Utilities.Create_Diff_Coeff import create_diffusion_coefficient
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
     save_grid_defaults_to_file,
@@ -161,23 +161,9 @@ class GenerateSquaresDialog:
             paint_logger.error('No tracks found')
             paint_messagebox(self.root, 'Error GS:002', "No tracks found in the selected directory.")
             return
-        else:
-            paint_logger.info(f"Combined {len(df_tracks)} tracks.")
-            df_tracks.to_csv(os.path.join(self.paint_directory, 'Output', 'All Tracks.csv'), index=False)
 
-        df_dc = df_tracks.groupby('RECORDING NAME').agg({
-            'DIFFUSION_COEFFICIENT': ['mean', 'median', 'std', 'count']
-        })
-        # Convert tuple column names to strings
-        df_dc.columns = ['_'.join(col) for col in df_dc.columns]
-
-        df_dc = df_dc.round(0)
-
-        df_dc.rename(columns={'DIFFUSION_COEFFICIENT_mean': 'Mean',
-                              'DIFFUSION_COEFFICIENT_median': 'Median',
-                              'DIFFUSION_COEFFICIENT_std': 'Std',
-                              'DIFFUSION_COEFFICIENT_count': 'Count'}, inplace=True)
-        df_dc.index_name = 'ext_recording_name'
+        # Then add the DC data DC
+        df_dc = create_diffusion_coefficient(df_tracks)
 
         # Determine which processing function to use
         generate_function = self.determine_process_function()

@@ -24,8 +24,8 @@ PAINT_FORCE = True
 if PAINT_PRODUCTION:
     PROJECT_LEVEL = '/Users/hans/Paint Source/Generation Files/paint data generation.json'
     PAINT_SOURCE = '/Users/hans/Paint Source'
-    PAINT_DATA = '/Users/Hans/Paint Data - v7'
-    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v7'
+    PAINT_DATA = '/Users/Hans/Paint Data - v8'
+    R_DATA_DEST = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data - v8'
     time_stamp = None # '%Y-%m-%d %H:%M:%S
 else:
     PROJECT_LEVEL = '/Users/hans/Paint Source/Generation Files/paint data generation.json'

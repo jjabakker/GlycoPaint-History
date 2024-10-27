@@ -2,7 +2,7 @@ import logging
 from tkinter import *
 from tkinter import ttk, filedialog
 
-from src.Application.Create_All_Tracks.Create_All_Tracks import create_all_tracks
+from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_all_tracks
 from src.Common.Support.DirectoriesAndLocations import (
     get_default_locations,
     save_default_locations)
