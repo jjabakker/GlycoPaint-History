@@ -2,7 +2,10 @@ import logging
 from tkinter import *
 from tkinter import ttk, filedialog
 
-from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_all_tracks
+from src.Application.Generate_Squares.Utilities.Create_All_Tracks import (
+    create_all_tracks)
+from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
+    is_likely_root_directory)
 from src.Common.Support.DirectoriesAndLocations import (
     get_default_locations,
     save_default_locations)
@@ -51,7 +54,12 @@ class CreateAllTracksDialog:
 
     def process(self):
         if self.root_directory:
-            create_all_tracks(root_dir=self.root_directory)
+            if is_likely_root_directory(self.root_directory):
+                create_all_tracks(root_dir=self.root_directory)
+            else:
+                msg = f"Directory {self.root_directory} is not a root directory"
+                paint_messagebox(self.root, "Error", "Directory is not a root directory")
+                logging.error(msg)
         else:
             logging.error("No root directory selected.")
         root.destroy()

@@ -304,7 +304,7 @@ def get_area_of_square(nr_of_squares_in_row):
     return area
 
 
-def count_experiment_files_sub_directories(current_dir):
+def is_likely_root_directory(current_dir):
 
     # Initialize a counter for directories with the file
     count = 0
@@ -321,4 +321,4 @@ def count_experiment_files_sub_directories(current_dir):
             if os.path.isfile(file_path):
                 count += 1
 
-    return count
+    return count > 0

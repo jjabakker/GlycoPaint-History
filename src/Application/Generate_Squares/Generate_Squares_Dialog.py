@@ -12,7 +12,7 @@ from src.Application.Generate_Squares.Utilities.Create_Diff_Coeff import create_
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
     save_grid_defaults_to_file,
-    count_experiment_files_sub_directories)
+    is_likely_root_directory)
 from src.Application.Utilities.Config import load_paint_config
 
 from src.Application.Utilities.General_Support_Functions import (
@@ -196,7 +196,7 @@ class GenerateSquaresDialog:
         """
         if os.path.isfile(os.path.join(self.paint_directory, 'experiment_tm.csv')):
             return process_experiment_directory
-        elif count_experiment_files_sub_directories(self.paint_directory) > 0:
+        elif is_likely_root_directory(self.paint_directory):
             return process_project_directory
         return None
 
