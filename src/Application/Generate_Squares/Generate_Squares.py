@@ -56,8 +56,9 @@ def process_project_directory(root_directory: str,
                               min_density_ratio: float,
                               max_variability: float,
                               max_square_coverage: float,
-                              process_single: bool,
-                              process_traditional: bool,
+                              process_recording_tau: bool,
+                              process_square_tau: bool,
+                              generate_all_tracks: bool,
                               verbose: bool = False,
                               ):
     """
@@ -88,7 +89,7 @@ def process_project_directory(root_directory: str,
             continue
         process_experiment_directory(
             os.path.join(root_directory, experiment_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
-            min_density_ratio, max_variability, max_square_coverage, process_single, process_traditional, verbose)
+            min_density_ratio, max_variability, max_square_coverage, process_recording_tau, process_square_tau, verbose)
 
 
 def process_experiment_directory(
@@ -99,8 +100,8 @@ def process_experiment_directory(
         min_density_ratio: float,
         max_variability: float,
         max_square_coverage: float,
-        process_single: bool,
-        process_traditional: bool,
+        process_recording_tau: bool,
+        process_square_tau: bool,
         verbose: bool = False
         ):
     """
@@ -160,7 +161,7 @@ def process_experiment_directory(
                 experiment_path, ext_image_path, ext_recording_name, nr_of_squares_in_row,
                 min_r_squared, min_tracks_for_tau, min_density_ratio, max_variability, concentration, row["Nr Spots"],
                 row['Recording Sequence Nr'], row['Condition Nr'], row['Replicate Nr'], row['Experiment Date'],
-                row['Experiment Name'], process_single, process_traditional, verbose)
+                row['Experiment Name'], process_recording_tau, process_square_tau, verbose)
             if df_squares is None:
                 paint_logger.error("Aborted with error")
                 return None
@@ -221,8 +222,8 @@ def process_single_image_in_experiment_directory(
         replicate_nr: int,
         experiment_date: str,
         experiment_name: str,
-        process_single: bool,
-        process_traditional: bool,
+        process_recording_tau: bool,
+        process_square_tau: bool,
         verbose: bool = False) -> tuple:
     """
     This function processes a single image in a paint directory. It reads the full-track file from the 'tracks'
@@ -244,8 +245,8 @@ def process_single_image_in_experiment_directory(
     :param replicate_nr:
     :param experiment_date:
     :param experiment_name:
-    :param process_single: bool,
-    :param process_traditional: bool,
+    :param process_recording_tau: bool,
+    :param process_square_tau: bool,
     :param verbose:
     :return:
     """
@@ -266,7 +267,7 @@ def process_single_image_in_experiment_directory(
     df_squares, tau_matrix = create_df_squares(
         experiment_path, df_tracks, recording_path, recording_name, nr_of_squares_in_row, concentration, nr_spots,
         min_r_squared, min_tracks_for_tau, recording_seq_nr, condition_nr, replicate_nr, experiment_date,
-        experiment_name, process_traditional, verbose)
+        experiment_name, process_square_tau, verbose)
 
     # Do the filtering, eliminate all squares for which no valid Tau exists
     df_squares = identify_invalid_squares(
@@ -311,7 +312,7 @@ def process_single_image_in_experiment_directory(
 
     # Now do the single mode processing: determine a single Tau and Density per image, i.e. for all squares and return
     # those values
-    if process_single:
+    if process_recording_tau:
         tau, r_squared, density = calc_single_tau_and_density_for_image(
             experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, recording_path, recording_name,
             nr_of_squares_in_row, concentration)
@@ -372,7 +373,7 @@ def create_df_squares(experiment_directory: str,
                       experiment_seq_nr: int,
                       experiment_date: str,
                       experiment_name: str,
-                      process_traditional: bool,
+                      process_square_tau: bool,
                       verbose: bool) -> pd.DataFrame:
     # Create the tau_matrix (and other matrices if verbose is True)
     tau_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
@@ -435,7 +436,7 @@ def create_df_squares(experiment_directory: str,
         max_track_duration = df_tracks_square['TRACK_DURATION'].max()
 
         # Calculate the Tau for the square
-        if process_traditional:
+        if process_square_tau:
             if nr_tracks < min_tracks_for_tau:  # Too few points to curve fit
                 tau = -1
                 r_squared = 0

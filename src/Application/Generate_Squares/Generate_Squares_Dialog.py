@@ -46,8 +46,9 @@ class GenerateSquaresDialog:
         self.min_density_ratio = tk.DoubleVar(value=values.get('min_density_ratio', 0.5))
         self.max_variability = tk.DoubleVar(value=values.get('max_variability', 0.5))
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
-        self.process_average_tau = tk.IntVar(value=values.get('process_single', 0))
-        self.process_square_specific_tau = tk.IntVar(value=values.get('process_traditional', 1))
+        self.process_average_tau = tk.IntVar(value=values.get('process_recording_tau', 0))
+        self.generate_all_tracks  = tk.IntVar(value=False)
+        self.process_square_specific_tau = tk.IntVar(value=values.get('process_square_tau', 1))
         self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
     def create_ui(self, _root):
@@ -109,8 +110,9 @@ class GenerateSquaresDialog:
 
     def create_processing_controls(self, frame):
         """Create the processing checkboxes."""
-        self.create_checkbox(frame, "Square-Specific Tau", self.process_square_specific_tau, 0)
-        self.create_checkbox(frame, "Averaged Tau", self.process_average_tau, 1)
+        self.create_checkbox(frame, "Square Tau", self.process_square_specific_tau, 0)
+        self.create_checkbox(frame, "Recording Tau", self.process_average_tau, 1)
+        self.create_checkbox(frame, "Generate All Tracks", self.generate_all_tracks, 4)
 
     def create_checkbox(self, frame, text, var, row):
         """Helper method to create a labeled checkbox."""

@@ -48,8 +48,8 @@ def process_directory(paint_source_dir,
                       min_tracks_for_tau: int,
                       max_variability: float,
                       max_square_coverage: float,
-                      process_single: bool,
-                      process_traditional: bool,
+                      process_recording_tau: bool,
+                      process_square_tau: bool,
                       paint_force: bool) -> bool:
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} - Processing {process_directory}"
@@ -59,8 +59,8 @@ def process_directory(paint_source_dir,
     paint_logger.info(msg)
     paint_logger.info("")
     paint_logger.info(f"Probe Series                : {probe}")
-    paint_logger.info(f"Traditional mode            : {process_traditional}")
-    paint_logger.info(f"Single                      : {process_single}")
+    paint_logger.info(f"Process Square Tau          : {process_square_tau}")
+    paint_logger.info(f"Process Recoding Tau        : {process_recording_tau}")
     paint_logger.info(f"Number of squares           : {nr_of_squares}")
     paint_logger.info(f"Min Required Density Ratio  : {min_density_ratio}")
     paint_logger.info(f"Min R squared               : {min_r_squared}")
@@ -106,8 +106,8 @@ def process_directory(paint_source_dir,
         min_density_ratio=min_density_ratio,
         max_variability=max_variability,
         max_square_coverage=max_square_coverage,
-        process_single=process_single,
-        process_traditional=process_traditional,
+        process_recording_tau=process_recording_tau,
+        process_square_tau=process_square_tau,
         verbose=False)
 
     # Compile the squares file
@@ -190,8 +190,8 @@ def main():
                     min_tracks_for_tau=entry['min_tracks_for_tau'],
                     max_variability=entry['max_variability'],
                     max_square_coverage=entry['max_square_coverage'],
-                    process_single=entry['process_single'],
-                    process_traditional=entry['process_traditional'],
+                    process_recording_tau=entry['process_recording_tau'],
+                    process_square_tau=entry['process_square_tau'],
                     paint_force=PAINT_FORCE):
                 error_count += 1
 
