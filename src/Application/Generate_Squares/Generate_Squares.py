@@ -5,6 +5,17 @@ import time
 import numpy as np
 import pandas as pd
 
+from src.Common.Support.LoggerConfig import (
+    paint_logger,
+    paint_logger_change_file_handler_name,
+    paint_logger_file_name_assigned)
+
+if not paint_logger_file_name_assigned:
+    paint_logger_change_file_handler_name('Generate Squares.log')
+
+from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_all_tracks
+from src.Application.Generate_Squares.Utilities.Add_DC_to_Squares_Files import add_dc_to_squares_file
+
 from src.Application.Generate_Squares.Utilities.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot)
@@ -33,32 +44,41 @@ from src.Common.Support.DirectoriesAndLocations import (
     get_squares_file_path,
     get_tracks_file_path)
 
-from src.Common.Support.LoggerConfig import (
-    paint_logger,
-    paint_logger_change_file_handler_name,
-    paint_logger_file_name_assigned)
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
 
 
 def process_project_directory(root_directory: str,
-                                         nr_of_squares_in_row: int,
-                                         min_r_squared: float,
-                                         min_tracks_for_tau: int,
-                                         min_density_ratio: float,
-                                         max_variability: float,
-                                         max_square_coverage: float,
-                                         process_single: bool,
-                                         process_traditional: bool,
-                                         df_dc: pd.DataFrame,
-                                         verbose: bool = False,
-                                         ):
+                              nr_of_squares_in_row: int,
+                              min_r_squared: float,
+                              min_tracks_for_tau: int,
+                              min_density_ratio: float,
+                              max_variability: float,
+                              max_square_coverage: float,
+                              process_single: bool,
+                              process_traditional: bool,
+                              verbose: bool = False,
+                              ):
     """
     This function processes all images in a root directory. It calls the function
     'process_all_images_in_paint_directory' for each directory in the root directory.
     """
 
+    # Start with compiling the All Tracks file if required
+    generate_tracks = True
+    if generate_tracks == True:
+        # Read all tracks files in the directory tree and concatenate them into a single All Tracks
+        df_tracks = create_all_tracks(root_directory)
+        if df_tracks is None:
+            paint_logger.error('All Tracks not generated')
+            return
+        else:
+            generate_tracks = False
+        # Then add the diffusion coefficient to the squares file
+        add_dc_to_squares_file(df_tracks, nr_of_squares_in_row, root_directory)
+
+    paint_logger.info(f"Starting generating squares for all images in {root_directory}")
     experiment_dirs = os.listdir(root_directory)
     experiment_dirs.sort()
     for experiment_dir in experiment_dirs:
@@ -68,7 +88,7 @@ def process_project_directory(root_directory: str,
             continue
         process_experiment_directory(
             os.path.join(root_directory, experiment_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
-            min_density_ratio, max_variability, max_square_coverage, process_single, process_traditional, df_dc, verbose)
+            min_density_ratio, max_variability, max_square_coverage, process_single, process_traditional, verbose)
 
 
 def process_experiment_directory(
@@ -81,7 +101,6 @@ def process_experiment_directory(
         max_square_coverage: float,
         process_single: bool,
         process_traditional: bool,
-        df_dc: pd.DataFrame,
         verbose: bool = False
         ):
     """
@@ -141,7 +160,7 @@ def process_experiment_directory(
                 experiment_path, ext_image_path, ext_recording_name, nr_of_squares_in_row,
                 min_r_squared, min_tracks_for_tau, min_density_ratio, max_variability, concentration, row["Nr Spots"],
                 row['Recording Sequence Nr'], row['Condition Nr'], row['Replicate Nr'], row['Experiment Date'],
-                row['Experiment Name'], process_single, process_traditional, df_dc, verbose)
+                row['Experiment Name'], process_single, process_traditional, verbose)
             if df_squares is None:
                 paint_logger.error("Aborted with error")
                 return None
@@ -173,8 +192,6 @@ def process_experiment_directory(
 
             # Then assign the mean DC value to the experiment file
             name = row['Ext Recording Name']
-            mean_dc1  = df_dc.loc[name]['Mean']
-            df_experiment.loc[index, 'Mean DC'] = mean_dc1
 
             current_image_nr += 1
             processed += 1
@@ -206,7 +223,6 @@ def process_single_image_in_experiment_directory(
         experiment_name: str,
         process_single: bool,
         process_traditional: bool,
-        df_dc: pd.DataFrame,
         verbose: bool = False) -> tuple:
     """
     This function processes a single image in a paint directory. It reads the full-track file from the 'tracks'

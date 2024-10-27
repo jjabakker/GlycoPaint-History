@@ -1,4 +1,5 @@
 import os
+import time
 
 import pandas as pd
 
@@ -6,7 +7,9 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
     get_square_coordinates)
 from src.Common.Support.LoggerConfig import (
     paint_logger_change_file_handler_name,
-    paint_logger_file_name_assigned)
+    paint_logger_file_name_assigned, paint_logger)
+from src.Application.Utilities.General_Support_Functions import (
+    format_time_nicely)
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
@@ -14,52 +17,54 @@ if not paint_logger_file_name_assigned:
 
 def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, project_directory: str):
     """
-    Add the diffusion coefficient to the squares file. The squares file is assumed to be in the project directory.
+    Add the diffusion coefficient to the squares file. The squares file are assumed to be in the project directory tree.
     """
+
+    time_stamp = time.time()
+
     nr_squares = nr_of_squares_in_row ** 2
 
     # Find out which unique Recordings there are
     recording_names = df_tracks['RECORDING NAME'].unique().tolist()
 
+    paint_logger.info(
+        f"Updating {len(recording_names)} squares file in {project_directory} with calculated Diffusion Coefficient")
+
+    line_count = 0
+    image_count = 0
     for recording_name in recording_names:
 
         # For each recording get the tracks
         df_tracks_in_recording = df_tracks[df_tracks['RECORDING NAME'] == recording_name]
 
         # Find the squares file associated with this recording
-        path = find_squares_file(project_directory, recording_name + '-squares.csv')
-        if path:
-            df_squares = pd.read_csv(path)
-
-        df_squares = df_squares.sort_values(by='Square Nr', ascending=True)
-
-        # Add the new DC column or just initialise it. Get the column numbetr
-        df_squares['DC'] = 0
-        dc_col_index = df_squares.columns.get_loc('DC')
-        square_nr_col_index = df_squares.columns.get_loc('Square Nr')
+        squares_file_path = find_squares_file(project_directory, recording_name + '-squares.csv')
+        if squares_file_path:
+            df_squares = pd.read_csv(squares_file_path)
+            df_squares['DC'] = 0
 
         # Now determine for each square which tracks fit in, start
-        count = 0
-        for i in range(nr_squares):
-            square_nr = df_squares.iloc(i, square_nr_col_index)
-            x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, i)
+        for index, row in df_squares.iterrows():
+            square_nr = row['Square Nr']
+            x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_nr)
             df_tracks_in_square = df_tracks_in_recording[
                 (df_tracks_in_recording['TRACK_X_LOCATION'] >= x0) & (
                             df_tracks_in_recording['TRACK_X_LOCATION'] <= x1) &
                 (df_tracks_in_recording['TRACK_Y_LOCATION'] >= y0) & (df_tracks_in_recording['TRACK_Y_LOCATION'] <= y1)]
             if len(df_tracks_in_square) > 0:
                 dc_mean = df_tracks_in_square['DIFFUSION_COEFFICIENT'].mean()
-                count += 1
             else:
                 dc_mean = -1
+            df_squares.loc[index, 'DC'] = int(dc_mean)
+            line_count += 1
 
-            df_squares.iloc[square_nr, dc_col_index] = int(dc_mean)
+        df_squares.to_csv(squares_file_path, index=False)
+        paint_logger.debug(f"File {squares_file_path} was updated: {line_count} squares with a valid DC")
+        image_count += 1
 
-        df_squares = df_squares.sort_values(by='Nr Tracks', ascending=False)
-        df_squares.to_csv(path, index=False)
-
-        print(f"File {recording_name} has {count} squares with a valid DC")
-
+    run_time = round(time.time() - time_stamp, 1)
+    paint_logger.info(f"Updated {line_count:2d} lines in {image_count} images in {project_directory} in {format_time_nicely(run_time)}")
+    paint_logger.info("")
 
 def find_squares_file(root_directory, target_filename):
     for dirpath, dirnames, filenames in os.walk(root_directory):

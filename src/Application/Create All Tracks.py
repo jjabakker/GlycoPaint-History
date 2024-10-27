@@ -12,6 +12,7 @@ from src.Common.Support.DirectoriesAndLocations import (
 from src.Common.Support.LoggerConfig import (
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
+from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Create All Tracks.log')
@@ -22,6 +23,7 @@ class CreateAllTracksDialog:
     def __init__(self, _root):
         _root.title('Create All Tracks')
         self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
+        self.root = _root
 
         # Set up the UI layout
         content = ttk.Frame(_root)
@@ -34,8 +36,8 @@ class CreateAllTracksDialog:
         frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
         # Fill the button frame
-        btn_process = ttk.Button(frame_buttons, text='Process', command=self.process)
-        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.exit_dialog)
+        btn_process = ttk.Button(frame_buttons, text='Process', command=self.on_create)
+        btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.on_exit)
         btn_process.grid(column=0, row=1)
         btn_exit.grid(column=0, row=2)
 
@@ -52,7 +54,7 @@ class CreateAllTracksDialog:
             save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
             self.lbl_root_dir.config(text=self.root_directory)
 
-    def process(self):
+    def on_create(self):
         if self.root_directory:
             if is_likely_root_directory(self.root_directory):
                 create_all_tracks(root_dir=self.root_directory)
@@ -62,10 +64,9 @@ class CreateAllTracksDialog:
                 logging.error(msg)
         else:
             logging.error("No root directory selected.")
-        root.destroy()
 
-    def exit_dialog(self):
-        root.destroy()
+    def on_exit(self):
+        self.root.destroy()
 
 
 if __name__ == '__main__':
