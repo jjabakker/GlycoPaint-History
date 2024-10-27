@@ -60,16 +60,14 @@ def _paint_messagebox(_root, title, message, icon_path):
 
 
 def paint_messagebox(_root, title, message):
-    _paint_messagebox(_root, title, message,
-                      "/Users/hans/Downloads/Paint.jpg")  # TODO: Change the path to the actual icon
+    _paint_messagebox(_root, title, message, 'paint.jpg')  # TODO: Change the path to the actual icon
 
+    if __name__ == "__main__":
+        # Create the main window
+        root = tk.Tk()
+        root.withdraw()  # Hide the main window
 
-if __name__ == "__main__":
-    # Create the main window
-    root = tk.Tk()
-    root.withdraw()  # Hide the main window
+        # Call the custom messagebox with a user-defined icon
+        paint_messagebox(root, "Paint Message", "This is a custom message with a user-defined icon.")
 
-    # Call the custom messagebox with a user-defined icon
-    paint_messagebox(root, "Paint Message", "This is a custom message with a user-defined icon.")
-
-    root.mainloop()
+        root.mainloop()
