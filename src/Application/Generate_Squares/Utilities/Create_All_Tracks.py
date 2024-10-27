@@ -12,7 +12,11 @@ if not paint_logger_file_name_assigned:
 
 
 def create_all_tracks(root_dir):
-    # Initialize an empty list to collect file paths
+    """
+    Read all tracks files in the directory tree and concatenate them into a single DataFrame.
+    The file is then saved as 'All Tracks.csv' in the root directory.
+    """
+
     csv_files = []
 
     # Traverse the directory tree, to find all the files
@@ -24,7 +28,6 @@ def create_all_tracks(root_dir):
                         '.csv') and 'label' not in file:
                     csv_files.append(os.path.join(root, file))
                     paint_logger.debug(f"Read Tracks file: {file}")
-
 
     # Read and concatenate all CSV files found
     df_tracks = pd.concat((pd.read_csv(f, header=0, skiprows=[1, 2, 3]) for f in csv_files), ignore_index=True)

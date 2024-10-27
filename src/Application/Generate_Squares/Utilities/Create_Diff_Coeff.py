@@ -1,6 +1,9 @@
 import pandas as pd
 
 def create_diffusion_coefficient(df_tracks: pd.DataFrame) -> pd.DataFrame:
+    """
+    Create a DataFrame with the mean, median, standard deviation and count of the diffusion coefficient
+    """
 
     df_dc = df_tracks.groupby('RECORDING NAME').agg({
         'DIFFUSION_COEFFICIENT': ['mean', 'median', 'std', 'count']

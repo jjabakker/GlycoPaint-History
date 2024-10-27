@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 
 from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_all_tracks
+from src.Application.Generate_Squares.Utilities.Add_DC_to_Squares_Files import add_dc_to_squares_file
 from src.Application.Generate_Squares.Generate_Squares  import (
     process_project_directory,
     process_experiment_directory)
@@ -162,8 +163,14 @@ class GenerateSquaresDialog:
             paint_messagebox(self.root, 'Error GS:002', "No tracks found in the selected directory.")
             return
 
-        # Then add the DC data DC
+        # Then add the diffusion coefficient to the squares file
+        add_dc_to_squares_file(df_tracks, 20, '/Users/hans/Paint Work/New Probes')
+
+        # Then create the diffusion coefficient information
         df_dc = create_diffusion_coefficient(df_tracks)
+
+
+
 
         # Determine which processing function to use
         generate_function = self.determine_process_function()
