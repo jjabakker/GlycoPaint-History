@@ -325,7 +325,7 @@ def calc_single_tau_and_density_for_image(
         plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name), recording_name + ".png")
         tau, r_squared = curve_fit_and_plot(
             plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
-            file=plt_file, plot_to_screen=False, plot=False, verbose=False)          # TODO plot=False now hard coded
+            file=plt_file, plot_to_screen=False, plot_to_file=False, verbose=False)          # TODO plot=False now hard coded
         if tau == -2:  # Tau calculation failed
             r_squared = 0
         tau = int(tau)
@@ -412,7 +412,8 @@ def create_df_squares(experiment_directory: str,
         # Find the maximum track duration
         # ----------------------------------------
 
-        max_track_duration = df_tracks_square['TRACK_DURATION'].max()
+        # If there are no tracks then set the value to 0
+        max_track_duration = max(df_tracks_square['TRACK_DURATION'].max(), 0)
 
         # Calculate the Tau for the square
         if process_square_tau:
@@ -425,7 +426,7 @@ def create_df_squares(experiment_directory: str,
                                         recording_name + "-square-" + str(square_seq_nr) + ".png")
                 tau, r_squared = curve_fit_and_plot(
                     plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
-                    file=plt_file, plot_to_screen=False, plot=False, verbose=False)
+                    file=plt_file, plot_to_screen=False, plot_to_file=False, verbose=False)
                 if tau == -2:  # Tau calculation failed
                     r_squared = 0
                 if r_squared < min_r_squared:  # Tau was calculated, but not reliable

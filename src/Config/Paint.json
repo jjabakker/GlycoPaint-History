@@ -2,13 +2,13 @@
     "App Name": "Paint",
     "Version": "1.0",
     "Directory_Locations": {
-        "root": "~/Paint",
+        "Root": "~/Paint",
         "Logger": "Logger",
         "Profile": "Profile",
         "Defaults": "Defaults"
     },
     "Generate Squares": {
-        "Plot Files": false,
+        "Plot to File": false,
         "logging": {
             "level": "INFO",
             "file": "Generate Squares.log"
@@ -27,6 +27,9 @@
         }
     },
     "TrackMate": {
+        "logging": {
+            "level": "INFO",
+            "file": "Run Trackmate Batch.log",
         "MAX_FRAME_GAP": 3,
         "LINKING_MAX_DISTANCE": 0.6,
         "GAP_CLOSING_MAX_DISTANCE": 1.2,

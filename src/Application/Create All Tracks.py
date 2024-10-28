@@ -11,7 +11,7 @@ from src.Common.Support.DirectoriesAndLocations import (
     save_default_locations)
 from src.Common.Support.LoggerConfig import (
     paint_logger_change_file_handler_name,
-    paint_logger_file_name_assigned)
+    paint_logger_file_name_assigned, paint_logger)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 
 if not paint_logger_file_name_assigned:
@@ -58,6 +58,8 @@ class CreateAllTracksDialog:
         if self.root_directory:
             if is_likely_root_directory(self.root_directory):
                 create_all_tracks(root_dir=self.root_directory)
+                paint_logger.info('')
+                paint_logger.info(f"Created all tracks for directory '{self.root_directory}' successfully.")
             else:
                 msg = f"Directory {self.root_directory} is not a root directory"
                 paint_messagebox(self.root, "Error", "Directory is not a root directory")

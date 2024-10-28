@@ -173,8 +173,10 @@ class GenerateSquaresDialog:
                 generate_all_tracks= self.generate_all_tracks.get(),
                 verbose = False
             )
-            self.log_processing_time(time.time() - start_time)
+            run_time = time.time() - start_time
+            paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
             self.save_parameters()
+            self.on_exit_pressed()
         else:
             paint_logger.error('Invalid directory selected')
             paint_messagebox(self.root, 'Error GS:001', "The directory does not contain an 'experiment_tm.csv' file.'")
@@ -205,11 +207,6 @@ class GenerateSquaresDialog:
             process_square_tau=self.process_square_specific_tau.get()
         )
         save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
-
-    def log_processing_time(self, run_time):
-
-        time_str = format_time_nicely(run_time)
-        paint_logger.info(f"Total processing time is {time_str}")
 
 
 if __name__ == "__main__":
