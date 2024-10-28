@@ -31,6 +31,7 @@ from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,
     save_squares_to_file)
+from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.DirectoriesAndLocations import (
     get_squares_file_path)
 from src.Common.Support.LoggerConfig import (
@@ -1291,8 +1292,11 @@ class ImageViewer:
         heatmap_mode = self.heatmap_option.get()
         heatmap_global_min_max = self.heatmap_global_min_max.get()
 
-
         df_heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode, heatmap_global_min_max)
+        if df_heatmap_data is None:
+            paint_messagebox(self.parent, "No data for heatmap", "There is no data for the heatmap")
+            return
+
         for index, row in df_heatmap_data.iterrows():
             draw_heatmap_square(self.cn_left_image, index, self.nr_of_squares_in_row, row['Value'],
                                 min_val, max_val, colors)

@@ -51,6 +51,13 @@ def get_heatmap_data(df_squares, df_all_squares, heatmap_mode, experiment_min_ma
     if heatmap_mode in heatmap_modes:
         column_name = heatmap_modes[heatmap_mode]
 
+        if not column_name in df_squares.columns:
+            paint_logger.error(f"No data vailable for {column_name} - possibly Generate All tracks was not run")
+            min_val = 0
+            max_val = 0
+            df_heatmap_data = None
+            return df_heatmap_data, min_val, max_val
+
         if experiment_min_max:
             min_val = df_all_squares[column_name].min()
             max_val = df_all_squares[column_name].max()
@@ -68,7 +75,7 @@ def get_heatmap_data(df_squares, df_all_squares, heatmap_mode, experiment_min_ma
         df_heatmap_data = df_heatmap_data.fillna(0)
 
     else:
-        paint_logger.error("Function 'display_heatmap' failed - Unknown heatmap mode")
+        paint_logger.error("Function 'get_heatmap_data' failed - Unknown heatmap mode")
         sys.exit()
 
     return df_heatmap_data, min_val, max_val
