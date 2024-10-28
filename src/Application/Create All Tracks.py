@@ -60,6 +60,7 @@ class CreateAllTracksDialog:
                 create_all_tracks(root_dir=self.root_directory)
                 paint_logger.info('')
                 paint_logger.info(f"Created all tracks for directory '{self.root_directory}' successfully.")
+                self.on_exit()
             else:
                 msg = f"Directory {self.root_directory} is not a root directory"
                 paint_messagebox(self.root, "Error", "Directory is not a root directory")
