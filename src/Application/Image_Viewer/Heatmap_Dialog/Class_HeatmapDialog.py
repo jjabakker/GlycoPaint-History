@@ -61,6 +61,8 @@ class HeatMapDialog:
         self.content.rowconfigure(0, weight=1)  # Top row with frames
         self.content.rowconfigure(1, weight=0)  # Control frame row does not expand
 
+        self.control_window.bind('<Key>', self.on_key_pressed)
+
     def setup_heatmap_variable_buttons(self):
         """
         Add radio buttons for the provided option names, by cycling through the option names
@@ -106,7 +108,6 @@ class HeatMapDialog:
         self.cb_global_min_max = tk.Checkbutton(
             self.frame_legend, text="Global Min/Max", variable=self.image_viewer.heatmap_global_min_max,
             command=self.on_heatmap_global_local_change)
-
 
         self.canvas.grid(row=1, column=0, rowspan=11, padx=5, pady=0)
         self.lbl_min.grid(row=0, column=0, padx=2, pady=5)
@@ -187,3 +188,11 @@ class HeatMapDialog:
         self.lbl_min.config(text=str(min_val))
         self.lbl_max.config(text=str(max_val))
         self.image_viewer.display_heatmap()
+
+    def on_key_pressed(self, event):
+        """
+        If the user presses the 't' key the toggle button is pressed
+        """
+
+        if event.char == 't':
+            self.on_toggle()
