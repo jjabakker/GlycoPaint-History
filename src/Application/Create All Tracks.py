@@ -36,7 +36,7 @@ class CreateAllTracksDialog:
         frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
         # Fill the button frame
-        btn_process = ttk.Button(frame_buttons, text='Process', command=self.on_create)
+        btn_process = ttk.Button(frame_buttons, text='Create', command=self.on_create)
         btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.on_exit)
         btn_process.grid(column=0, row=1)
         btn_exit.grid(column=0, row=2)
