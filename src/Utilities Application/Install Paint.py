@@ -6,7 +6,7 @@ import subprocess
 # import winreg
 
 from src.Common.Support.DirectoriesAndLocations import delete_files_in_directory
-from src.Common.Support.Config import load_paint_config
+from src.Common.Support.PaintConfig import load_paint_config
 
 # def find_app_path_windows():
 #     reg_paths = [
@@ -159,7 +159,7 @@ def install():
         copy_file_from_source_to_dest(fiji_support_source, library_dest, file)
 
     print(f"\n\nCopy from {common_support_source} to {library_dest}: ")
-    fiji_files = ["LoggerConfig.py", "DirectoriesAndLocations.py", "Config.py"]
+    fiji_files = ["LoggerConfig.py", "DirectoriesAndLocations.py", "PaintConfig.py"]
     for file in fiji_files:
         copy_file_from_source_to_dest(common_support_source, library_dest, file)
 

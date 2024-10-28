@@ -117,7 +117,7 @@ def run_trackmate(experiment_directory, recording_source_directory):
             return 0
 
         except KeyError as e:
-            paint_logger.error("Run_Trackmate: Missing expected column in row: {e}")
+            paint_logger.error("Run_Trackmate: Missing expected column in row: {}.format(e)")
             suppress_fiji_output()
             sys.exit(0)
 

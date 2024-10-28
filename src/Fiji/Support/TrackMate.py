@@ -33,17 +33,27 @@ sys.path.append(paint_dir)
 
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
 from LoggerConfig import paint_logger
-from Config import load_paint_config
-from DirectoriesAndLocations import get_paint_defaults_directory
+from PaintConfig import load_paint_config
+
 
 
 def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
 
-    config = load_paint_config(get_paint_defaults_directory() + os.sep + 'paint.json')
-    config = config['TrackMate']
-    print config['MAX_FRAME_GAP']
-    print config['LINKING_MAX_DISTANCE']
+    paint_config = load_paint_config(os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'paint.json'))
+    trackmate_config = paint_config['TrackMate']
+
+    max_frame_gap = trackmate_config['MAX_FRAME_GAP']
+    linking_max_distance = trackmate_config['LINKING_MAX_DISTANCE']
+    gap_closing_max_distance = trackmate_config['GAP_CLOSING_MAX_DISTANCE']
+
+    alternative_linking_cost_factor = trackmate_config['ALTERNATIVE_LINKING_COST_FACTOR']
+    splitting_max_distance = trackmate_config['SPLITTING_MAX_DISTANCE']
+    allow_gap_closing = trackmate_config['ALLOW_GAP_CLOSING']
+    allow_track_merging = trackmate_config['ALLOW_TRACK_MERGING']
+    allow_track_splitting = trackmate_config['ALLOW_TRACK_SPLITTING']
+    merging_max_distance = trackmate_config['MERGING_MAX_DISTANCE']
+    cutoff_percentile = trackmate_config['CUTOFF_PERCENTILE']
 
     # We have to do the following to avoid errors with UTF8 chars generated in
     # TrackMate that will mess with our Fiji Jython.
@@ -86,18 +96,18 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     settings.trackerSettings = settings.trackerFactory.getDefaultSettings()
 
     # These are the important parameters
-    settings.trackerSettings['MAX_FRAME_GAP'] = 3
-    settings.trackerSettings['LINKING_MAX_DISTANCE'] = 0.6
-    settings.trackerSettings['GAP_CLOSING_MAX_DISTANCE'] = 1.2
+    settings.trackerSettings['MAX_FRAME_GAP'] = max_frame_gap # 3
+    settings.trackerSettings['LINKING_MAX_DISTANCE'] = linking_max_distance # 0.6
+    settings.trackerSettings['GAP_CLOSING_MAX_DISTANCE'] = gap_closing_max_distance  # 1.2
 
     # These are default values made explicit
-    settings.trackerSettings['ALTERNATIVE_LINKING_COST_FACTOR'] = 1.05
-    settings.trackerSettings['SPLITTING_MAX_DISTANCE'] = 15.0
-    settings.trackerSettings['ALLOW_GAP_CLOSING'] = True
-    settings.trackerSettings['ALLOW_TRACK_SPLITTING'] = False
-    settings.trackerSettings['ALLOW_TRACK_MERGING'] = False
-    settings.trackerSettings['MERGING_MAX_DISTANCE'] = 15.0
-    settings.trackerSettings['CUTOFF_PERCENTILE'] = 0.9
+    settings.trackerSettings['ALTERNATIVE_LINKING_COST_FACTOR'] = alternative_linking_cost_factor # 1.05
+    settings.trackerSettings['SPLITTING_MAX_DISTANCE'] = splitting_max_distance # 15.0
+    settings.trackerSettings['ALLOW_GAP_CLOSING'] =  allow_gap_closing # True
+    settings.trackerSettings['ALLOW_TRACK_SPLITTING'] = allow_track_splitting # False
+    settings.trackerSettings['ALLOW_TRACK_MERGING'] = allow_track_merging # False
+    settings.trackerSettings['MERGING_MAX_DISTANCE'] = merging_max_distance #15 .0
+    settings.trackerSettings['CUTOFF_PERCENTILE'] = cutoff_percentile # 0.9
 
     # Add ALL the feature analyzers known to TrackMate.
     # They will yield numerical features for the results, such as speed, mean intensity etc.
