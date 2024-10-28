@@ -122,9 +122,6 @@ class ImageViewer:
 
         self.squares_in_rectangle = []
 
-
-
-
         msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "EXPERIMENT_LEVEL" else self.user_specified_level}'
         msg += f'{" - NO SAVING" if self.user_specified_mode == "PROJECT_LEVEL" else ""}'
         self.parent.title(msg)
@@ -1300,9 +1297,6 @@ class ImageViewer:
             draw_heatmap_square(self.cn_left_image, index, self.nr_of_squares_in_row, row['Value'],
                                 min_val, max_val, colors)
 
-        # Update the min/max labels   @@@@@
-        # self.heatmap_control_dialog.on_heatmap_variable_change()
-
 
 def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):
     col_nr = square_nr % nr_of_squares_in_row
@@ -1328,7 +1322,7 @@ if __name__ == '__main__':
     root.withdraw()
     root.eval('tk::PlaceWindow . center')
     dialog_result = SelectViewerDataDialog(root)
-    proceed, root_directory, level, mode = dialog_result.get_result()
+    proceed, experiment_directory, project_file, mode = dialog_result.get_result()
 
     if proceed:
         root = tk.Tk()
@@ -1336,10 +1330,10 @@ if __name__ == '__main__':
         root.eval('tk::PlaceWindow . center')
         paint_logger.debug(f'Mode: {mode}')
         if mode == 'EXPERIMENT_LEVEL':
-            paint_logger.info(f'Root directory: {root_directory}')
+            paint_logger.info(f'Root directory: {experiment_directory}')
         else:
-            paint_logger.debug(f'Project file: {level}')
+            paint_logger.debug(f'Project file: {project_file}')
 
-        image_viewer = ImageViewer(root, root_directory, level, mode)
+        image_viewer = ImageViewer(root, experiment_directory, project_file, mode)
 
     root.mainloop()
