@@ -118,6 +118,8 @@ def format_time_nicely(seconds):
     minutes = int(minutes)
     seconds = int(seconds)
 
+    if hours == 0 and minutes == 0 and seconds == 0:
+        return "0 seconds"
     parts = []
     if hours:
         parts.append(f"{hours} hour{'s' if hours > 1 else ''}")

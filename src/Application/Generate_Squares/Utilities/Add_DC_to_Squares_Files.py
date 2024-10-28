@@ -1,3 +1,4 @@
+import sys
 import os
 import time
 
@@ -25,7 +26,9 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
     nr_squares = nr_of_squares_in_row ** 2
 
     # Find out which unique Recordings there are
-    recording_names = df_tracks['RECORDING NAME'].unique().tolist()
+    #recording_names = df_tracks['RECORDING NAME'].unique().tolist()
+
+    recording_names = find_ext_recording_names(project_directory)
 
     paint_logger.info(
         f"Updating {len(recording_names)} squares file in {project_directory} with calculated Diffusion Coefficient")
@@ -42,6 +45,9 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
         if squares_file_path:
             df_squares = pd.read_csv(squares_file_path)
             df_squares['DC'] = 0
+        else:
+            paint_logger.error(f"Could not find squares file {recording_name + '-squares.csv'} for recording {recording_name}")
+            sys.exit()
 
         # Now determine for each square which tracks fit in, start
         for index, row in df_squares.iterrows():
@@ -73,6 +79,32 @@ def find_squares_file(root_directory, target_filename):
             return os.path.join(dirpath, target_filename)
     return None  # Return None if the file is not found
 
+
+def find_ext_recording_names(directory):
+    ext_recording_names = []
+
+    # Walk through the directory tree
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file == "experiment_squares.csv":
+                file_path = os.path.join(root, file)
+
+                # Read the CSV file
+                try:
+                    df = pd.read_csv(file_path)
+
+                    # Check if required columns are in the file
+                    if 'Ext Recording Name' in df.columns and 'Process' in df.columns:
+                        # Filter rows where 'Process' is 'yes' and collect 'Ext Recording Name' values
+                        names = df.loc[df['Process'].str.lower() == 'yes', 'Ext Recording Name']
+                        ext_recording_names.extend(names.tolist())
+                    else:
+                        print(f"Warning: Required columns missing in {file_path}")
+
+                except Exception as e:
+                    print(f"Error reading {file_path}: {e}")
+
+    return ext_recording_names
 
 if __name__ == '__main__':
     df_tracks = pd.read_csv('/Users/hans/Paint Work/New Probes/Output/All Tracks.csv')
