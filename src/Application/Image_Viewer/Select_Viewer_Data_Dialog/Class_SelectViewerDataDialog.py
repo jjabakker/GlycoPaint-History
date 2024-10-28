@@ -91,8 +91,9 @@ class SelectViewerDataDialog:
 
         if self.mode_var.get() == "EXPERIMENT_LEVEL":
             if not os.path.exists(os.path.join(self.experiment_directory, 'experiment_squares.csv')):
-                msg = "The experiment directory does not exist or does not contain the required 'experiment squares.csv' file!"
+                msg = "The Experiment directory does not exist or does not contain the required 'experiment squares.csv' file (and is likely not a valid Experiment directory)"
                 paint_logger.error(msg)
+                paint_logger.error(f"Experiment directory: {self.experiment_directory}")
                 paint_messagebox(self.parent, title='Warning', message=msg)
                 error = True
         elif self.mode_var.get() == "PROJECT_LEVEL":
