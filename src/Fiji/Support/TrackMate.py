@@ -33,10 +33,33 @@ sys.path.append(paint_dir)
 
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
 from LoggerConfig import paint_logger
+from PaintConfig import load_paint_config
 
 
 def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
+
+    paint_config = load_paint_config(os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'paint.json'))
+    trackmate_config = paint_config['TrackMate']
+
+    max_frame_gap = trackmate_config['MAX_FRAME_GAP']
+    linking_max_distance = trackmate_config['LINKING_MAX_DISTANCE']
+    gap_closing_max_distance = trackmate_config['GAP_CLOSING_MAX_DISTANCE']
+
+    alternative_linking_cost_factor = trackmate_config['ALTERNATIVE_LINKING_COST_FACTOR']
+    splitting_max_distance = trackmate_config['SPLITTING_MAX_DISTANCE']
+    allow_gap_closing = trackmate_config['ALLOW_GAP_CLOSING']
+    allow_track_merging = trackmate_config['ALLOW_TRACK_MERGING']
+    allow_track_splitting = trackmate_config['ALLOW_TRACK_SPLITTING']
+    merging_max_distance = trackmate_config['MERGING_MAX_DISTANCE']
+    cutoff_percentile = trackmate_config['CUTOFF_PERCENTILE']
+
+    do_subpixel_localization = trackmate_config['DO_SUBPIXEL_LOCALIZATION']
+    radius = trackmate_config['RADIUS']
+    target_channel = trackmate_config['TARGET_CHANNEL']
+    do_median_filtering = trackmate_config['DO_MEDIAN_FILTERING']
+
+    min_number_of_spots = trackmate_config['MIN_NUMBER_OF_SPOTS']
 
     # We have to do the following to avoid errors with UTF8 chars generated in
     # TrackMate that will mess with our Fiji Jython.
@@ -63,11 +86,11 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     # Configure detector - all important parameters
     settings.detectorFactory = LogDetectorFactory()
     settings.detectorSettings = {
-        'DO_SUBPIXEL_LOCALIZATION': False,
-        'RADIUS': 0.5,
-        'TARGET_CHANNEL': 1,
+        'DO_SUBPIXEL_LOCALIZATION': do_subpixel_localization,   # False
+        'RADIUS': radius, # 0.5
+        'TARGET_CHANNEL': target_channel, # 1
         'THRESHOLD': threshold,
-        'DO_MEDIAN_FILTERING': False,
+        'DO_MEDIAN_FILTERING': do_median_filtering, # False
     }
 
     # Configure spot filters - Do not filter out any spots
@@ -79,25 +102,25 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     settings.trackerSettings = settings.trackerFactory.getDefaultSettings()
 
     # These are the important parameters
-    settings.trackerSettings['MAX_FRAME_GAP'] = 3
-    settings.trackerSettings['LINKING_MAX_DISTANCE'] = 0.6
-    settings.trackerSettings['GAP_CLOSING_MAX_DISTANCE'] = 1.2
+    settings.trackerSettings['MAX_FRAME_GAP'] = max_frame_gap # 3
+    settings.trackerSettings['LINKING_MAX_DISTANCE'] = linking_max_distance # 0.6
+    settings.trackerSettings['GAP_CLOSING_MAX_DISTANCE'] = gap_closing_max_distance  # 1.2
 
     # These are default values made explicit
-    settings.trackerSettings['ALTERNATIVE_LINKING_COST_FACTOR'] = 1.05
-    settings.trackerSettings['SPLITTING_MAX_DISTANCE'] = 15.0
-    settings.trackerSettings['ALLOW_GAP_CLOSING'] = True
-    settings.trackerSettings['ALLOW_TRACK_SPLITTING'] = False
-    settings.trackerSettings['ALLOW_TRACK_MERGING'] = False
-    settings.trackerSettings['MERGING_MAX_DISTANCE'] = 15.0
-    settings.trackerSettings['CUTOFF_PERCENTILE'] = 0.9
+    settings.trackerSettings['ALTERNATIVE_LINKING_COST_FACTOR'] = alternative_linking_cost_factor # 1.05
+    settings.trackerSettings['SPLITTING_MAX_DISTANCE'] = splitting_max_distance # 15.0
+    settings.trackerSettings['ALLOW_GAP_CLOSING'] =  allow_gap_closing # True
+    settings.trackerSettings['ALLOW_TRACK_SPLITTING'] = allow_track_splitting # False
+    settings.trackerSettings['ALLOW_TRACK_MERGING'] = allow_track_merging # False
+    settings.trackerSettings['MERGING_MAX_DISTANCE'] = merging_max_distance #15 .0
+    settings.trackerSettings['CUTOFF_PERCENTILE'] = cutoff_percentile # 0.9
 
     # Add ALL the feature analyzers known to TrackMate.
     # They will yield numerical features for the results, such as speed, mean intensity etc.
     settings.addAllAnalyzers()
 
     # Configure track filters - Only consider tracks of 3 and longer.
-    filter2 = FeatureFilter('NUMBER_SPOTS', 3, True)
+    filter2 = FeatureFilter('NUMBER_SPOTS', min_number_of_spots, True)
     settings.addTrackFilter(filter2)
 
     # Instantiate plugin

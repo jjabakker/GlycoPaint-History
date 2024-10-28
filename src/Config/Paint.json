@@ -41,7 +41,13 @@
         "ALLOW_TRACK_MERGING": false,
         "MERGING_MAX_DISTANCE": 15.0,
         "CUTOFF_PERCENTILE": 0.9,
-        "MIN_NR_SPOTS_IN_TRACK": 3
+        "MIN_NR_SPOTS_IN_TRACK": 3,
+        "DO_SUBPIXEL_LOCALIZATION": false,
+        "RADIUS": 0.5,
+        "TARGET_CHANNEL": 1,
+        "DO_MEDIAN_FILTERING": false,
+        "MIN_NUMBER_OF_SPOTS": 3
+
     }
 }
 
