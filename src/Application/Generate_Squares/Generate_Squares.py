@@ -78,6 +78,7 @@ def process_project_directory(root_directory: str,
         add_dc_to_squares_file(df_tracks, nr_of_squares_in_row, root_directory)
 
     paint_logger.info(f"Starting generating squares for all images in {root_directory}")
+    paint_logger.info('')
     experiment_dirs = os.listdir(root_directory)
     experiment_dirs.sort()
     for experiment_dir in experiment_dirs:
@@ -202,7 +203,6 @@ def process_experiment_directory(
     save_experiment_to_file(df_experiment, os.path.join(experiment_path, "experiment_squares.csv"))
     run_time = round(time.time() - time_stamp, 1)
     paint_logger.info(f"Processed  {nr_files:2d} images in {experiment_path} in {format_time_nicely(run_time)}")
-
 
 def process_single_image_in_experiment_directory(
         experiment_path: str,

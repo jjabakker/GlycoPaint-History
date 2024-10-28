@@ -11,6 +11,7 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
     get_grid_defaults_from_file,
     save_grid_defaults_to_file,
     is_likely_root_directory)
+
 from src.Application.Utilities.Config import load_paint_config
 
 from src.Application.Utilities.General_Support_Functions import (

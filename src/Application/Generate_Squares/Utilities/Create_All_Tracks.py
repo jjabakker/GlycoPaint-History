@@ -23,9 +23,8 @@ def create_all_tracks(root_dir):
     time_stamp = time.time()
 
     csv_files = []
-    paint_logger.info("")
-    paint_logger.info(f"Creating the All Tracks file by concatenating all tracks files.")
-    paint_logger.info(f"Searching for tracks files in {root_dir}")
+    # paint_logger.info(f"Creating the All Tracks file by concatenating all tracks files.")
+    # paint_logger.info(f"Searching for tracks files in {root_dir}")
 
     # Traverse the directory tree, to find all the files
     for root, dirs, files in os.walk(root_dir):
@@ -54,5 +53,5 @@ def create_all_tracks(root_dir):
         run_time = time.time() - time_stamp
         paint_logger.info(f"Combined {len(csv_files)} tracks files and saved as {all_tracks_file_path} in {format_time_nicely(run_time)}.")
         paint_logger.info("")
-        paint_logger.info("")
+
     return df_tracks

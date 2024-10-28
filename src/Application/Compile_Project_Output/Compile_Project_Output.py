@@ -35,6 +35,8 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 
 def compile_project_output(project_dir: str, verbose: bool):
+
+    paint_logger.info("")
     paint_logger.info(f"Compiling output for {project_dir}")
     time_stamp = time.time()
 
