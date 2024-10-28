@@ -30,17 +30,18 @@
         "logging": {
             "level": "INFO",
             "file": "Run Trackmate Batch.log",
-        "MAX_FRAME_GAP": 3,
-        "LINKING_MAX_DISTANCE": 0.6,
-        "GAP_CLOSING_MAX_DISTANCE": 1.2,
-        "ALTERNATIVE_LINKING_COST_FACTOR": 1.05,
-        "SPLITTING_MAX_DISTANCE": 15.0,
-        "ALLOW_GAP_CLOSING": true,
-        "ALLOW_TRACK_SPLITTING": false,
-        "ALLOW_TRACK_MERGING": false,
-        "MERGING_MAX_DISTANCE": 15.0,
-        "CUTOFF_PERCENTILE": 0.9,
-        "MIN_NR_SPOTS_IN_TRACK": 3
+            "MAX_FRAME_GAP": 3,
+            "LINKING_MAX_DISTANCE": 0.6,
+            "GAP_CLOSING_MAX_DISTANCE": 1.2,
+            "ALTERNATIVE_LINKING_COST_FACTOR": 1.05,
+            "SPLITTING_MAX_DISTANCE": 15.0,
+            "ALLOW_GAP_CLOSING": true,
+            "ALLOW_TRACK_SPLITTING": false,
+            "ALLOW_TRACK_MERGING": false,
+            "MERGING_MAX_DISTANCE": 15.0,
+            "CUTOFF_PERCENTILE": 0.9,
+            "MIN_NR_SPOTS_IN_TRACK": 3
+        }
     }
 }
 

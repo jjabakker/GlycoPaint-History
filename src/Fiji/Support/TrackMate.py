@@ -33,10 +33,17 @@ sys.path.append(paint_dir)
 
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
 from LoggerConfig import paint_logger
+from Config import load_paint_config
+from DirectoriesAndLocations import get_paint_defaults_directory
 
 
 def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
+
+    config = load_paint_config(get_paint_defaults_directory() + os.sep + 'paint.json')
+    config = config['TrackMate']
+    print config['MAX_FRAME_GAP']
+    print config['LINKING_MAX_DISTANCE']
 
     # We have to do the following to avoid errors with UTF8 chars generated in
     # TrackMate that will mess with our Fiji Jython.
