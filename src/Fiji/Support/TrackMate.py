@@ -36,7 +36,6 @@ from LoggerConfig import paint_logger
 from PaintConfig import load_paint_config
 
 
-
 def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
 
@@ -54,6 +53,13 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     allow_track_splitting = trackmate_config['ALLOW_TRACK_SPLITTING']
     merging_max_distance = trackmate_config['MERGING_MAX_DISTANCE']
     cutoff_percentile = trackmate_config['CUTOFF_PERCENTILE']
+
+    do_subpixel_localization = trackmate_config['DO_SUBPIXEL_LOCALIZATION']
+    radius = trackmate_config['RADIUS']
+    target_channel = trackmate_config['TARGET_CHANNEL']
+    do_median_filtering = trackmate_config['DO_MEDIAN_FILTERING']
+
+    min_number_of_spots = trackmate_config['MIN_NUMBER_OF_SPOTS']
 
     # We have to do the following to avoid errors with UTF8 chars generated in
     # TrackMate that will mess with our Fiji Jython.
@@ -80,11 +86,11 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     # Configure detector - all important parameters
     settings.detectorFactory = LogDetectorFactory()
     settings.detectorSettings = {
-        'DO_SUBPIXEL_LOCALIZATION': False,
-        'RADIUS': 0.5,
-        'TARGET_CHANNEL': 1,
+        'DO_SUBPIXEL_LOCALIZATION': do_subpixel_localization,   # False
+        'RADIUS': radius, # 0.5
+        'TARGET_CHANNEL': target_channel, # 1
         'THRESHOLD': threshold,
-        'DO_MEDIAN_FILTERING': False,
+        'DO_MEDIAN_FILTERING': do_median_filtering, # False
     }
 
     # Configure spot filters - Do not filter out any spots
@@ -114,7 +120,7 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     settings.addAllAnalyzers()
 
     # Configure track filters - Only consider tracks of 3 and longer.
-    filter2 = FeatureFilter('NUMBER_SPOTS', 3, True)
+    filter2 = FeatureFilter('NUMBER_SPOTS', min_number_of_spots, True)
     settings.addTrackFilter(filter2)
 
     # Instantiate plugin
