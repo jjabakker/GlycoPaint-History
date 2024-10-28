@@ -3,27 +3,25 @@ import time
 import tkinter as tk
 from tkinter import ttk, filedialog
 
-from src.Application.Generate_Squares.Generate_Squares  import (
+from src.Application.Generate_Squares.Generate_Squares import (
     process_project_directory,
     process_experiment_directory)
-
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
     save_grid_defaults_to_file,
     is_likely_root_directory)
-
-from src.Common.Support.PaintConfig import load_paint_config
-
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
     format_time_nicely
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
+from src.Application.Utilities.ToolTips import ToolTip
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
+from src.Common.Support.PaintConfig import load_paint_config
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
@@ -48,7 +46,7 @@ class GenerateSquaresDialog:
         self.max_variability = tk.DoubleVar(value=values.get('max_variability', 0.5))
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_average_tau = tk.IntVar(value=values.get('process_recording_tau', 0))
-        self.generate_all_tracks  = tk.IntVar(value=False)
+        self.generate_all_tracks = tk.IntVar(value=False)
         self.process_square_specific_tau = tk.IntVar(value=values.get('process_square_tau', 1))
         self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
@@ -111,15 +109,22 @@ class GenerateSquaresDialog:
 
     def create_processing_controls(self, frame):
         """Create the processing checkboxes."""
-        self.create_checkbox(frame, "Square Tau", self.process_square_specific_tau, 0)
-        self.create_checkbox(frame, "Recording Tau", self.process_average_tau, 1)
-        self.create_checkbox(frame, "Generate All Tracks", self.generate_all_tracks, 4)
 
-    def create_checkbox(self, frame, text, var, row):
+        msg_square_tau = "If checked, the program will calculate a Tau for each square individually."
+        msg_recording_tau = "If checked, the program will calculate one Tau for all visible squares combined."
+        msg_all_tracks = "If checked, the program will generate an All Tracks file and calculate an average Diffusion Coefficient for each square (necessary if you wish to see a heatmap"
+
+        self.create_checkbox(frame, "Square Tau", self.process_square_specific_tau, 0, tooltip=msg_square_tau)
+        self.create_checkbox(frame, "Recording Tau", self.process_average_tau, 1, tooltip=msg_recording_tau)
+        self.create_checkbox(frame, "Generate All Tracks", self.generate_all_tracks, 2, tooltip=msg_all_tracks)
+
+    def create_checkbox(self, frame, text, var, row, tooltip=None):
         """Helper method to create a labeled checkbox."""
         checkbox = ttk.Checkbutton(frame, text=text, variable=var)
         checkbox.grid(column=0, row=row, padx=5, pady=10, sticky=tk.W)
         checkbox.config(padding=(10, 0, 0, 0))
+        if tooltip:
+            ToolTip(checkbox, tooltip, wraplength=400)
 
     def create_directory_controls(self, frame):
         """Create controls for directory management."""
@@ -170,8 +175,8 @@ class GenerateSquaresDialog:
                 max_square_coverage=self.max_square_coverage.get(),
                 process_recording_tau=self.process_average_tau.get(),
                 process_square_tau=self.process_square_specific_tau.get(),
-                generate_all_tracks= self.generate_all_tracks.get(),
-                verbose = False
+                generate_all_tracks=self.generate_all_tracks.get(),
+                verbose=False
             )
             run_time = time.time() - start_time
             paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
