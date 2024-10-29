@@ -295,9 +295,10 @@ class ImageViewer:
             anchor=tk.W)
 
         # Place the radio buttons and button in the grid
-        self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+        if self.user_specified_mode == 'EXPERIMENT_LEVEL':
+            self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+            self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+            self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
 
     def load_images_and_config(self):
 
