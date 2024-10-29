@@ -103,8 +103,8 @@ class HeatMapDialog:
         self.lbl_max = tk.Label(self.frame_legend, text="", font=("Arial", 12))
 
         # Add a checkbox to toggle between recording or experiment min and max values
-        self.global_min_max = tk.IntVar()
-        self.global_min_max.set(1)
+        # Note the variable is defined in the image_viewer class
+        self.image_viewer.heatmap_global_min_max.set(0)
         self.cb_global_min_max = tk.Checkbutton(
             self.frame_legend, text="Global Min/Max", variable=self.image_viewer.heatmap_global_min_max,
             command=self.on_heatmap_global_local_change)
