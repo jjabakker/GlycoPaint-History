@@ -74,8 +74,6 @@ def process_project_directory(root_directory: str,
         if df_tracks is None:
             paint_logger.error('All Tracks not generated')
             return
-        # Then add the diffusion coefficient to the squares file
-        add_dc_to_squares_file(df_tracks, nr_of_squares_in_row, root_directory)
 
     paint_logger.info(f"Starting generating squares for all images in {root_directory}")
     paint_logger.info('')
@@ -504,6 +502,23 @@ def create_df_squares(experiment_directory: str,
         write_matrices(recording_path, recording_name, tau_matrix, density_matrix, count_matrix, variability_matrix, verbose)
 
     df_squares.set_index('Square Nr', inplace=True, drop=False)
+
+    # Then add the diffusion coefficient to the squares file
+
+    df_squares['DC'] = 0
+    for index, row in df_squares.iterrows():
+        square_nr = row['Square Nr']
+        x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_nr)
+        df_tracks_in_square = df_tracks[
+            (df_tracks['TRACK_X_LOCATION'] >= x0) & (
+                    df_tracks['TRACK_X_LOCATION'] <= x1) &
+            (df_tracks['TRACK_Y_LOCATION'] >= y0) & (df_tracks['TRACK_Y_LOCATION'] <= y1)]
+        if len(df_tracks_in_square) > 0:
+            dc_mean = df_tracks_in_square['DIFFUSION_COEFFICIENT'].mean()
+        else:
+            dc_mean = -1
+        df_squares.loc[index, 'DC'] = int(dc_mean)
+
     return df_squares, tau_matrix
 
 
