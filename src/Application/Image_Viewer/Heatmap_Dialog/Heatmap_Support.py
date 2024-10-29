@@ -8,7 +8,7 @@ from src.Common.Support.LoggerConfig import paint_logger
 heatmap_modes = {
     1: 'Tau',
     2: 'Density',
-    3: 'Mean DC',
+    3: 'DC',
     4: 'Max Track Duration',
     5: 'Total Track Duration'
 }
@@ -36,13 +36,8 @@ def get_color_index(var, var_max, var_min, nr_levels):
 
 
 def get_heatmap_data(df_squares, df_all_squares, heatmap_mode, experiment_min_max=True):
-    heatmap_modes = {
-        1: 'Tau',
-        2: 'Density',
-        3: 'DC',
-        4: 'Max Track Duration',
-        5: 'Total Track Duration'
-    }
+
+    global heatmap_modes
 
     if df_all_squares.empty or df_squares.empty:
         paint_logger.error("Function 'display_heatmap' failed - No data available")
