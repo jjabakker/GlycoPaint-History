@@ -145,7 +145,7 @@ def compile_project_output(project_dir: str, verbose: bool):
     correct_all_images_column_types(df_all_images)
 
     # Drop irrelevant columns in df_all_squares
-    df_all_squares = df_all_squares.drop(['Neighbour Visible', 'Variability Visible', 'Density Ratio Visible'], axis=1)
+    # df_all_squares = df_all_squares.drop(['Neighbour Visible', 'Variability Visible', 'Density Ratio Visible'], axis=1)
 
     # Drop the squares that have no tracks
     df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
