@@ -91,6 +91,9 @@ class SelectViewerDataDialog:
     def on_view(self) -> None:
         error = False
 
+        self.experiment_directory = self.lbl_experiment_dir.cget('text')
+        self.project_file = self.lbl_project_file.cget('text')
+
         if self.mode_var.get() == "EXPERIMENT_LEVEL":
             if not os.path.exists(os.path.join(self.experiment_directory, 'experiment_squares.csv')):
                 msg = "The Experiment directory does not exist or does not contain the required 'experiment squares.csv' file (and is likely not a valid Experiment directory)"
@@ -109,8 +112,6 @@ class SelectViewerDataDialog:
             sys.exit()
 
         if not error:
-            self.experiment_directory = self.lbl_experiment_dir.cget('text')
-            self.project_file = self.lbl_project_file.cget('text')
             self.proceed = True
             self.parent.destroy()
 
