@@ -46,7 +46,7 @@ class GenerateSquaresDialog:
         self.max_variability = tk.DoubleVar(value=values.get('max_variability', 0.5))
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_average_tau = tk.IntVar(value=values.get('process_recording_tau', 0))
-        self.generate_all_tracks = tk.IntVar(value=False)
+        self.generate_all_tracks = tk.IntVar(value=True)
         self.process_square_specific_tau = tk.IntVar(value=values.get('process_square_tau', 1))
         self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
