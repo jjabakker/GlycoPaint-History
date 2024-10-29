@@ -472,19 +472,36 @@ class ImageViewer:
             self.display_selected_squares()
 
         # Displaying square numbers is toggled by pressing 'n'
-        if event.keysym == 'n':
+        elif event.keysym == 'n':
             self.show_squares_numbers = not self.show_squares_numbers
             if self.show_squares:
                 self.show_numbers = True
             self.display_selected_squares()
 
         # Pressing 'o' will generate a pdf file containing all the images
-        if event.keysym == 'o':
+        elif event.keysym == 'o':
             self.output_pictures_to_pdf()
 
-        if event.keysym == 't':
+        elif event.keysym == 't':
             self.show_squares = not self.show_squares
             self.display_selected_squares()
+
+        elif event.keysym == 'h':
+            self.on_histogram()
+
+        elif event.keysym == 'Right':
+            if event.state & 0x0001:  # 0x0001 is the bit mask for Shift
+                self.on_forward_backward('END')
+            else:
+                self.on_forward_backward('FORWARD')
+
+
+        elif event.keysym == 'Left':
+            if event.state & 0x0001:  # 0x0001 is the bit mask for Shift
+                self.on_forward_backward('START')
+            else:
+                self.on_forward_backward('BACKWARD')
+
 
     def output_pictures_to_pdf(self):
         """
@@ -990,9 +1007,8 @@ class ImageViewer:
                 ("Density Ratio", square_data['Density Ratio']),
                 ("Variability", square_data['Variability']),
                 ("Max Track Duration", square_data['Max Track Duration']),
-                ("Mean Diffusion Coefficient", square_data['Mean DC'])
+                ("Mean Diffusion Coefficient", square_data['DC'])
             ]
-
             # Fill the popup with labels using a loop
             padx_value = 10
             pady_value = 1
@@ -1080,7 +1096,7 @@ class ImageViewer:
             self.img_no = 0
         elif direction == 'END':
             self.img_no = len(self.list_images) - 1
-        if direction == 'FORWARD':
+        elif direction == 'FORWARD':
             if self.img_no != len(self.list_images) - 1:
                 self.img_no += 1
         elif direction == 'BACKWARD':
@@ -1093,12 +1109,17 @@ class ImageViewer:
         # Set correct state of Forward and back buttons
         if self.img_no == len(self.list_images) - 1:
             self.bn_forward.configure(state=DISABLED)
+            self.bn_end.configure(state=DISABLED)
         else:
             self.bn_forward.configure(state=NORMAL)
+            self.bn_end.configure(state=NORMAL)
+
         if self.img_no == 0:
             self.bn_backward.configure(state=DISABLED)
+            self.bn_start.configure(state=DISABLED)
         else:
             self.bn_backward.configure(state=NORMAL)
+            self.bn_start.configure(state=NORMAL)
 
         # image_name = self.list_images[self.img_no]['Left Image Name']
         self.cb_image_names.set(self.image_name)
