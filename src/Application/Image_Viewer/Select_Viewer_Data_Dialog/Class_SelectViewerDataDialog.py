@@ -1,4 +1,5 @@
 import os
+import sys
 
 import tkinter as tk
 from tkinter import *
@@ -47,8 +48,9 @@ class SelectViewerDataDialog:
 
     def setup_frame_directory(self, frame_directory):
 
-        btn_root_dir = ttk.Button(frame_directory, text='Experiment Directory', width=15, command=self.change_root_dir)
-        btn_conf_file = ttk.Button(frame_directory, text='Project file', width=15, command=self.change_level)
+        btn_root_dir = ttk.Button(
+            frame_directory, text='Experiment Directory', width=15, command=self.on_change_project_dir)
+        btn_conf_file = ttk.Button(frame_directory, text='Project file', width=15, command=self.on_change_project_file)
 
         self.lbl_experiment_dir = ttk.Label(frame_directory, text=self.experiment_directory, width=80)
         self.lbl_project_file = ttk.Label(frame_directory, text=self.project_file, width=80)
@@ -68,7 +70,7 @@ class SelectViewerDataDialog:
         self.lbl_experiment_dir.grid(column=2, row=0, padx=5, pady=5)
         self.lbl_project_file.grid(column=2, row=1, padx=5, pady=5)
 
-    def change_root_dir(self) -> None:
+    def on_change_project_dir(self) -> None:
         self.project_directory = filedialog.askdirectory(initialdir=self.project_directory)
         if self.project_directory:
             self.mode_var.set('EXPERIMENT_LEVEL')
@@ -76,7 +78,7 @@ class SelectViewerDataDialog:
             save_default_locations(self.project_directory, self.experiment_directory, self.images_directory,
                                    self.project_file)
 
-    def change_level(self) -> None:
+    def on_change_project_file(self) -> None:
         self.level = filedialog.askopenfilename(initialdir=self.experiment_directory,
                                                 filetypes=[('CSV files', '*.csv')],
                                                 title='Select a configuration file')
@@ -102,8 +104,13 @@ class SelectViewerDataDialog:
                 paint_logger.error(msg)
                 paint_messagebox(self.parent, title='Warning', message=msg)
                 error = True
+        else:
+            paint_logger.error("Invalid mode=")
+            sys.exit()
 
         if not error:
+            self.experiment_directory = self.lbl_experiment_dir.cget('text')
+            self.project_file = self.lbl_project_file.cget('text')
             self.proceed = True
             self.parent.destroy()
 
