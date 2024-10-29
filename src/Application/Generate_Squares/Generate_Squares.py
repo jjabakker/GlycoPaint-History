@@ -489,7 +489,7 @@ def create_df_squares(experiment_directory: str,
 
     # Write the Density Ratio
     if background_tracks == 0:
-        df_squares['Density Ratio'] = 999  # Special code
+        df_squares['Density Ratio'] = 999.9 # Special code
     else:
         # The density RATIO can be calculated simply by dividing the tracks in the square by the average tracks
         # because everything else stays the same (no need to calculate the background density itself)

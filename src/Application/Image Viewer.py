@@ -856,8 +856,7 @@ class ImageViewer:
         # All squares are invisible, unless the density ratio is sufficiently large
         self.df_squares['Density Ratio Visible'] = False
         self.df_squares.loc[
-            self.df_squares['Density Ratio'] >= round(self.min_required_density_ratio,
-                                                      1), 'Density Ratio Visible'] = True
+            self.df_squares['Density Ratio'] >=self.min_required_density_ratio, 'Density Ratio Visible'] = True
 
         # All squares are invisible, unless the max track duration is within the min and max limits
         self.df_squares['Duration Visible'] = False
