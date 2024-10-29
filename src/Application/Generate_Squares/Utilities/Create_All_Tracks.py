@@ -23,8 +23,6 @@ def create_all_tracks(root_dir):
     time_stamp = time.time()
 
     csv_files = []
-    # paint_logger.info(f"Creating the All Tracks file by concatenating all tracks files.")
-    # paint_logger.info(f"Searching for tracks files in {root_dir}")
 
     # Traverse the directory tree, to find all the files
     for root, dirs, files in os.walk(root_dir):
