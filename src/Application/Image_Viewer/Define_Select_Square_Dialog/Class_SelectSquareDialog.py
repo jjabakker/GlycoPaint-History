@@ -143,7 +143,7 @@ class SelectSquareDialog:
         self.lbl_density_ratio_text = ttk.Label(
             self.frame_density_ratio, text='Min Required Density Ratio', width=20)
         self.sc_density_ratio = tk.Scale(
-            self.frame_density_ratio, from_=2, to=40, variable=self.density_ratio, orient='vertical', resolution=0.1)
+            self.frame_density_ratio, from_=1, to=100, variable=self.density_ratio, orient='vertical', resolution=0.5)
         self.sc_density_ratio.bind("<ButtonRelease-1>", lambda event: self.filter_changed('Min Required Density Ratio'))
         self.lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
