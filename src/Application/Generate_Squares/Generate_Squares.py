@@ -14,11 +14,12 @@ if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
 
 from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_all_tracks
-from src.Application.Generate_Squares.Utilities.Add_DC_to_Squares_Files import add_dc_to_squares_file
+#from src.Application.Generate_Squares.Utilities.Add_DC_to_Squares_Files import add_dc_to_squares_file
 
 from src.Application.Generate_Squares.Utilities.Curvefit_and_Plot import (
     compile_duration,
-    curve_fit_and_plot)
+    curve_fit_and_plot,
+)
 
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     check_experiment_integrity,
@@ -28,7 +29,9 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
     write_np_to_excel,
     get_df_from_file,
     get_area_of_square,
-    calc_average_track_count_of_lowest_squares)
+    calc_average_track_count_of_lowest_squares,
+    order_squares_columns
+)
 
 from src.Application.Utilities.General_Support_Functions import (
     save_squares_to_file,
@@ -193,14 +196,13 @@ def process_experiment_directory(
 
             current_image_nr += 1
             processed += 1
-
-
         else:
             paint_logger.debug(f"Squares file already up to date: {ext_recording_name}")
 
     save_experiment_to_file(df_experiment, os.path.join(experiment_path, "experiment_squares.csv"))
     run_time = round(time.time() - time_stamp, 1)
     paint_logger.info(f"Processed  {nr_files:2d} images in {experiment_path} in {format_time_nicely(run_time)}")
+
 
 def process_single_image_in_experiment_directory(
         experiment_path: str,
@@ -282,6 +284,9 @@ def process_single_image_in_experiment_directory(
         if row['Valid Tau']:
             df_squares.at[idx, 'Label Nr'] = label_nr
             label_nr += 1
+
+    # Reorder column sequence
+    df_squares = order_squares_columns(df_squares)
 
     # Write the filtered squares results
     squares_file_name = get_squares_file_path(experiment_path, recording_name)

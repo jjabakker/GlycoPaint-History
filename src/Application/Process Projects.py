@@ -112,7 +112,7 @@ def process_json_configuration_block(paint_source_dir,
             paint_logger.error('All Tracks not generated')
             return
         # Then add the diffusion coefficient to the squares file
-        add_dc_to_squares_file(df_tracks, nr_of_squares_in_row, paint_data_dir)
+        # add_dc_to_squares_file(df_tracks, nr_of_squares_in_row, paint_data_dir)
 
     # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine)
     output_source = os.path.join(paint_data_dir, 'Output')
@@ -154,7 +154,7 @@ def main():
 
     process_project_params = process_project_params_list[0]
 
-    conf_file = process_project_params['Config File']
+    conf_file ='../Config/Paint Data Generation.json'
     try:
         with open(conf_file, 'r') as file:
             config = json.load(file)

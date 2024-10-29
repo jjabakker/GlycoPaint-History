@@ -322,3 +322,43 @@ def is_likely_root_directory(current_dir):
                 count += 1
 
     return count > 0
+
+
+def order_squares_columns(df):
+    df = df.reindex(columns=[
+        'Recording Sequence Nr',
+        'Ext Recording Name',
+        'Experiment Date',
+        'Experiment Name',
+        'Condition Nr',
+        'Replicate Nr',
+        'Square Nr',
+        'Col Nr',
+        'Row Nr',
+        'Label Nr',
+        'Cell Id',
+        'Nr Spots',
+        'Nr Tracks',
+        'X0',
+        'Y0',
+        'X1',
+        'Y1',
+        #'Threshold',
+        'R2',
+        #'Neighbour Mode',  # Should this be here?
+        'Visible',
+        'Neighbour Visible',
+        'Variability Visible',
+        'Density Ratio Visible',
+        'Duration Visible',
+        'Variability',
+        'Density',
+        'Density Ratio',
+        'Valid Tau',
+        'Tau',
+        'DC',
+        'Average Long Track Duration',
+        'Max Track Duration',
+        'Total Track Duration'
+    ])
+    return df
