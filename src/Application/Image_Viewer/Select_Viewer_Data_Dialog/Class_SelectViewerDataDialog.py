@@ -82,7 +82,7 @@ class SelectViewerDataDialog:
                                                 title='Select a configuration file')
         if self.level:
             self.mode_var.set('PROJECT_LEVEL')
-            self.lbl_level.config(text=self.level)
+            self.lbl_project_file.config(text=self.level)
             save_default_locations(self.project_directory, self.experiment_directory, self.images_directory,
                                    self.level)
 
