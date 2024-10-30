@@ -263,7 +263,7 @@ def check_experiment_integrity(df_experiment):
         return False
 
 
-def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_squares):
+def calc_average_track_count_in_background_squares(df_squares, nr_of_average_count_squares):
     """
     The function calculates the average track count of the lowest average_count_squares squares with a track count > 0.
     The df_squares df is already sorted on track number.
@@ -292,12 +292,11 @@ def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_s
     return average
 
 
-def get_area_of_square(nr_of_squares_in_row):
+def calc_area_of_square(nr_of_squares_in_row):
+
     micrometer_per_pixel = 0.1602804  # Referenced from Fiji
     pixel_per_image = 512  # Referenced from Fiji
-
     micrometer_per_image = micrometer_per_pixel * pixel_per_image
-
     micrometer_per_square = micrometer_per_image / nr_of_squares_in_row
     area = micrometer_per_square * micrometer_per_square
 
@@ -325,7 +324,8 @@ def is_likely_root_directory(current_dir):
 
 
 def order_squares_columns(df):
-    df = df.reindex(columns=[
+    df = df.reindex(columns=
+    [
         'Recording Sequence Nr',
         'Ext Recording Name',
         'Experiment Date',
@@ -333,8 +333,8 @@ def order_squares_columns(df):
         'Condition Nr',
         'Replicate Nr',
         'Square Nr',
-        'Col Nr',
         'Row Nr',
+        'Col Nr',
         'Label Nr',
         'Cell Id',
         'Nr Spots',
@@ -343,9 +343,6 @@ def order_squares_columns(df):
         'Y0',
         'X1',
         'Y1',
-        #'Threshold',
-        'R2',
-        #'Neighbour Mode',  # Should this be here?
         'Visible',
         'Neighbour Visible',
         'Variability Visible',
@@ -356,6 +353,7 @@ def order_squares_columns(df):
         'Density Ratio',
         'Valid Tau',
         'Tau',
+        'R2',
         'DC',
         'Average Long Track Duration',
         'Max Track Duration',
