@@ -30,7 +30,7 @@ def load_paint_config(file_path):
     #     return None
     except:
         print("Error: Problem with configuration file {}.".format(file_path))
-        paint_logger.error("Error: Configuration file {} not found.".format(file_path))
+        # paint_logger.error("Error: Configuration file {} not found.".format(file_path))
         return None
 
 def get_paint_attribute(application,  attribute_name):
