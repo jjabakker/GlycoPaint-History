@@ -89,23 +89,32 @@ class GenerateSquaresDialog:
 
     def create_parameter_controls(self, frame):
         """Create parameter controls for the UI."""
+
+        msg_nr_of_squares = "The number of squares in a row for the grid. The total number of squares will be this value squared."
+        msg_min_tracks = "The minimum number of tracks required to calculate Tau. With too few tracks, curvefitting is unreliable."
+        msg_min_r_squared = "The minimum allowable R-squared value for the tracks. Tau values with lower R-squared values are discarded."
+        msg_min_density_ratio = "The minimum required density ratio for the tracks. Used to distinguish 'cell' squares from background"
+        msg_max_variability = "The maximum allowable variability for the tracks. Used to filter out squares with high variability."
+
         params = [
-            ("Nr of Squares in Row", self.nr_of_squares_in_row, 1),
-            ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2),
-            ("Min allowable R-squared", self.min_r_squared, 3),
-            ("Min Required Density Ratio", self.min_density_ratio, 4),
-            ("Max Allowable Variability", self.max_variability, 5),
+            ("Nr of Squares in Row", self.nr_of_squares_in_row, 1, msg_nr_of_squares),
+            ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2, msg_min_tracks),
+            ("Min allowable R-squared", self.min_r_squared, 3, msg_min_r_squared),
+            ("Min Required Density Ratio", self.min_density_ratio, 4, msg_min_density_ratio),
+            ("Max Allowable Variability", self.max_variability, 5, msg_max_variability),
         ]
 
-        for label_text, var, row in params:
-            self.create_labeled_entry(frame, label_text, var, row)
+        for label_text, var, row, tooltip in params:
+            self.create_labeled_entry(frame, label_text, var, row, tooltip)
 
-    def create_labeled_entry(self, frame, label_text, var, row):
+    def create_labeled_entry(self, frame, label_text, var, row, tooltip):
         """Helper method to create a label and corresponding entry."""
         label = ttk.Label(frame, text=label_text, width=30, anchor=tk.W)
         label.grid(column=0, row=row, padx=5, pady=5)
         entry = ttk.Entry(frame, textvariable=var, width=10)
         entry.grid(column=1, row=row)
+        if tooltip:
+            ToolTip(label, tooltip, wraplength=400)
 
     def create_processing_controls(self, frame):
         """Create the processing checkboxes."""
