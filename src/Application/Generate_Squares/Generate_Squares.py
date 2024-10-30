@@ -374,7 +374,17 @@ def calc_single_tau_and_density_for_image(
     """
 
     # Identify the squares that contribute to the Tau calculation
-    df_squares_for_single_tau = df_squares[df_squares['Visible']]
+
+    df_squares_for_single_tau = df_squares[
+        (df_squares['Nr Tracks'] > 0) &
+        (df_squares['Neighbour Visible']) &
+        (df_squares['Duration Visible']) &
+        (df_squares['Density Ratio Visible'])]
+
+    # For these squares select from the tracks only those that fall within the squares
+    # The following line of code filter the `df_tracks` DataFrame to include only the rows where the
+    # `Square Nr` column values are present in the `Square Nr` column of the `df_squares_for_single_tau` DataFrame.
+
     df_tracks_for_tau = df_tracks[df_tracks['Square Nr'].isin(df_squares_for_single_tau['Square Nr'])]
     nr_tracks = df_tracks_for_tau.shape[0]
 
