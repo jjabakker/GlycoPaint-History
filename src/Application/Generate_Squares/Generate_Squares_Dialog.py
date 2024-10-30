@@ -166,7 +166,7 @@ class GenerateSquaresDialog:
         generate_function = self.determine_process_function()
         if generate_function:  # If a function was found, call it
             generate_function(
-                root_directory=self.paint_directory,
+                paint_directory=self.paint_directory,
                 nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
                 min_r_squared=self.min_r_squared.get(),
                 min_tracks_for_tau=self.min_tracks_for_tau.get(),

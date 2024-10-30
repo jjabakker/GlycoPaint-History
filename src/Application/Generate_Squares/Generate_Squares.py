@@ -45,30 +45,32 @@ from src.Common.Support.DirectoriesAndLocations import (
     get_tracks_dir_path,
     get_squares_dir_path,
     get_squares_file_path,
-    get_tracks_file_path)
+    get_tracks_file_path,
+    get_paint_defaults_file_path)
 
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
 
 
-def process_project_directory(root_directory: str,
-                              nr_of_squares_in_row: int,
-                              min_r_squared: float,
-                              min_tracks_for_tau: int,
-                              min_density_ratio: float,
-                              max_variability: float,
-                              max_square_coverage: float,
-                              process_recording_tau: bool,
-                              process_square_tau: bool,
-                              generate_all_tracks: bool,
-                              verbose: bool = False,
-                              ):
+def process_project_directory(
+        paint_directory: str,
+        nr_of_squares_in_row: int,
+        min_r_squared: float,
+        min_tracks_for_tau: int,
+        min_density_ratio: float,
+        max_variability: float,
+        max_square_coverage: float,
+        process_recording_tau: bool,
+        process_square_tau: bool,
+        generate_all_tracks: bool,
+        verbose: bool = False) -> None:
     """
     This function processes all images in a root directory. It calls the function
     'process_all_images_in_paint_directory' for each directory in the root directory.
     """
 
+    root_directory = paint_directory
     # --------------------------------------------------------------------------------------------
     # Start with compiling the All Tracks file if required
     # --------------------------------------------------------------------------------------------
@@ -95,11 +97,12 @@ def process_project_directory(root_directory: str,
             continue
         process_experiment_directory(
             os.path.join(root_directory, experiment_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
-            min_density_ratio, max_variability, max_square_coverage, process_recording_tau, process_square_tau, verbose)
+            min_density_ratio, max_variability, max_square_coverage, process_recording_tau, process_square_tau,
+            generate_all_tracks, verbose)
 
 
 def process_experiment_directory(
-        experiment_path: str,
+        paint_directory: str,
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
@@ -108,13 +111,14 @@ def process_experiment_directory(
         max_square_coverage: float,
         process_recording_tau: bool,
         process_square_tau: bool,
-        verbose: bool = False
-        ):
+        generate_all_tracks: bool,
+        verbose: bool = False) -> None:
     """
     This function processes all images in a paint directory. It reads the experiment file, to find out what
     images need processing
     """
 
+    experiment_path = paint_directory
 
     # --------------------------------------------------------------------------------------------
     # Load from the paint configuration file
