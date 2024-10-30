@@ -62,7 +62,6 @@ def paint_logger_console_handle_set_level(level):
         console_handler.setLevel(level)
 
 
-
 # Add handlers to the logger
 paint_logger.addHandler(console_handler)
 paint_logger.addHandler(file_handler)
