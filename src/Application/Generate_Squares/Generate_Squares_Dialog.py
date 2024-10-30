@@ -128,7 +128,7 @@ class GenerateSquaresDialog:
 
     def create_directory_controls(self, frame):
         """Create controls for directory management."""
-        btn_change_dir = ttk.Button(frame, text='Change Directory', width=15, command=self.change_dir)
+        btn_change_dir = ttk.Button(frame, text='Change Directory', width=15, command=self.on_change_dir)
         self.lbl_directory = ttk.Label(frame, text=self.paint_directory, width=80)
         btn_change_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_directory.grid(column=1, row=0, padx=20, pady=5)
@@ -147,7 +147,7 @@ class GenerateSquaresDialog:
         btn_generate.grid(column=1, row=0, padx=10, pady=0, sticky="ew")  # Center Process button
         btn_exit.grid(column=1, row=1, padx=10, pady=0, sticky="ew")  # Center Exit button
 
-    def change_dir(self):
+    def on_change_dir(self):
         """Change the paint directory through a dialog."""
         paint_directory = filedialog.askdirectory(initialdir=self.paint_directory)
         if paint_directory:
