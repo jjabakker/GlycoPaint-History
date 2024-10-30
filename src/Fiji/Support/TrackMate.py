@@ -34,12 +34,13 @@ sys.path.append(paint_dir)
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
 from LoggerConfig import paint_logger
 from PaintConfig import load_paint_config
+from DirectoriesAndLocations import get_paint_defaults_file_path
 
 
 def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
 
-    paint_config = load_paint_config(os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'paint.json'))
+    paint_config = load_paint_config(get_paint_defaults_file_path())
     trackmate_config = paint_config['TrackMate']
 
     max_frame_gap = trackmate_config['MAX_FRAME_GAP']
