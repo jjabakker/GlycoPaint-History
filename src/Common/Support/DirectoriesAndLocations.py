@@ -137,9 +137,11 @@ def get_paint_defaults_directory():
 
 
 def get_paint_defaults_file_path():
-    # sub_dir = 'Defaults'
-    # return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir, 'Paint.json')
-    return '../Config/Paint.json'
+    sub_dir = 'Defaults'
+    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir, 'Paint.json')
+    # path = os.path.expanduser('~')
+    # path = os.path.join(path, 'Paint', 'Defaults', 'Paint.json')
+    return path
 
 
 
