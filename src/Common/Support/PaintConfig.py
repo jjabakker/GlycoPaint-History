@@ -2,7 +2,7 @@ import os
 import json
 
 def get_paint_defaults_file_path():     #ToDo
-    return os.path.join(os.path.expanduser('~'), 'Paint', 'Config', 'Paint.json')
+    return os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'Paint.json')
 
 paint_configuration = None
 
