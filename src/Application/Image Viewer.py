@@ -17,9 +17,11 @@ from PIL import Image
 from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
 from src.Application.Image_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
 from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
-from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import get_colormap_colors, get_color_index, \
-    get_heatmap_data
+from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
+    get_colormap_colors, get_color_index,
+    get_heatmap_data)
 from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
+from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
 from src.Application.Image_Viewer.Utilities.Get_Images import get_images
 from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import (
     eliminate_isolated_squares_relaxed,
@@ -46,10 +48,11 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 # ImageViewer Class
 # ----------------------------------------------------------------------------------------
 
-class ImageViewer:
+class ImageViewer(tk.Tk):
 
     def __init__(self, parent, user_specified_directory, user_specified_level, user_specified_mode):
 
+        super().__init__()
         self.parent = tk.Toplevel(parent)
         self.parent.resizable(False, False)
 
@@ -257,6 +260,9 @@ class ImageViewer:
 
         button_width = 12
 
+        self.bn_select_recording = ttk.Button(
+            self.frame_commands, text='Select Recording', command=lambda: self.on_select_recording(),
+            width=button_width)
         self.bn_show_heatmap = ttk.Button(
             self.frame_commands, text='Heatmap', command=lambda: self.on_show_heatmap(), width=button_width)
         self.bn_show_select_squares = ttk.Button(
@@ -273,12 +279,13 @@ class ImageViewer:
         self.bn_reset = ttk.Button(
             self.frame_commands, text='Reset', command=lambda: self.on_reset_image(), width=button_width)
 
-        self.bn_show_heatmap.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_show_define_cells.grid(column=0, row=2, padx=5, pady=5)
-        self.bn_output.grid(column=0, row=3, padx=5, pady=5)
-        self.bn_reset.grid(column=0, row=4, padx=5, pady=5)
-        self.bn_excel.grid(column=0, row=5, padx=5, pady=5)
+        self.bn_select_recording.grid(column=0, row=0, padx=5, pady=5)
+        self.bn_show_heatmap.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_show_select_squares.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_show_define_cells.grid(column=0, row=3, padx=5, pady=5)
+        self.bn_output.grid(column=0, row=4, padx=5, pady=5)
+        self.bn_reset.grid(column=0, row=5, padx=5, pady=5)
+        self.bn_excel.grid(column=0, row=6, padx=5, pady=5)
 
     def setup_frame_save_commands(self):
 
@@ -327,6 +334,10 @@ class ImageViewer:
         self.initialise_image_display()
         self.img_no = -1
         self.on_forward_backward('FORWARD')
+
+    def on_select_recording(self):
+        self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
+        i = 1
 
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
@@ -1322,6 +1333,16 @@ class ImageViewer:
             draw_heatmap_square(self.cn_left_image, index, self.nr_of_squares_in_row, row['Value'],
                                 min_val, max_val, colors)
 
+    # ---------------------------------------------------------------------------------------
+    # Recording Selection Dialog Interaction
+    # ---------------------------------------------------------------------------------------
+
+    def on_recording_selection(self, selected_filters):
+        # Callback to receive the filtered data from the dialog
+        # Update the label with the selected filter criteria
+        filter_text = ", ".join(f"{k}: {v}" for k, v in selected_filters.items())
+        print(filter_text)
+        #self.result_label.config(text=f"Filtered Data: {filter_text}")
 
 def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):
     col_nr = square_nr % nr_of_squares_in_row
@@ -1337,6 +1358,9 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
     canvas_to_draw_on.create_rectangle(
         col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
         fill=color, outline=color)
+
+
+
 
 # ---------------------------------------------------------------------------------------
 # Main
