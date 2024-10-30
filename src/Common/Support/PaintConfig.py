@@ -1,6 +1,7 @@
 import os
 import json
 
+from src.Common.Support.DirectoriesAndLocations import get_paint_defaults_file_path
 
 paint_configuration = None
 
@@ -28,6 +29,14 @@ def load_paint_config(file_path):
         return None
 
 
+def get_paint_attribute(application,  attribute_name):
+    config = load_paint_config(get_paint_defaults_file_path())
+    if config is None:
+        return None
+    else:
+        application = config.get(application)
+        value = application.get(attribute_name, None)
+        return value
 
 if __name__ == '__main__':
 
