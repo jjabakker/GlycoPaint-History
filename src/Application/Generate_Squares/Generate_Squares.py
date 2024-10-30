@@ -69,7 +69,9 @@ def process_project_directory(root_directory: str,
     'process_all_images_in_paint_directory' for each directory in the root directory.
     """
 
+    # --------------------------------------------------------------------------------------------
     # Start with compiling the All Tracks file if required
+    # --------------------------------------------------------------------------------------------
 
     if generate_all_tracks:
         # Read all tracks files in the directory tree and concatenate them into a single All Tracks
@@ -77,6 +79,10 @@ def process_project_directory(root_directory: str,
         if df_tracks is None:
             paint_logger.error('All Tracks not generated')
             return
+
+    # --------------------------------------------------------------------------------------------
+    # Process all experiments in the project directory
+    # --------------------------------------------------------------------------------------------
 
     paint_logger.info(f"Starting generating squares for all images in {root_directory}")
     paint_logger.info('')
@@ -117,7 +123,10 @@ def process_experiment_directory(
 
     time_stamp = time.time()
 
-    # Read the experiment  file
+    # --------------------------------------------------------------------------------------------
+    # Read the experiment file, check if it is in the correct format and add the required columns
+    # --------------------------------------------------------------------------------------------
+
     df_experiment = read_experiment_tm_file(experiment_path)
     if df_experiment is None:
         paint_logger.error(
@@ -137,13 +146,20 @@ def process_experiment_directory(
     df_experiment = add_columns_to_experiment_file(
         df_experiment, nr_of_squares_in_row, min_tracks_for_tau, min_r_squared, min_density_ratio, max_variability)
 
+
+    # --------------------------------------------------------------------------------------------
     # Determine how many images need processing from the experiment file
+    # --------------------------------------------------------------------------------------------
+
     nr_files = len(df_experiment)
     if nr_files <= 0:
         paint_logger.info("No files selected for processing")
         return
 
+    # --------------------------------------------------------------------------------------------
     # Loop though selected images to produce the individual grid_results files
+    # --------------------------------------------------------------------------------------------
+
     current_image_nr = 1
     processed = 0
 
@@ -156,6 +172,10 @@ def process_experiment_directory(
 
         process = True
         if process or image_needs_processing(ext_image_path, ext_recording_name):
+
+            # --------------------------------------------------------------------------------------------
+            # Process the image
+            # --------------------------------------------------------------------------------------------
 
             if verbose:
                 paint_logger.debug(
@@ -172,7 +192,10 @@ def process_experiment_directory(
                 paint_logger.error("Aborted with error")
                 return None
 
+            # --------------------------------------------------------------------------------------------
             # Now update the experiment_squares file with the results
+            # --------------------------------------------------------------------------------------------
+
 
             nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
             nr_visible_squares = len(df_squares[df_squares['Visible']])
@@ -205,6 +228,10 @@ def process_experiment_directory(
         else:
             paint_logger.debug(f"Squares file already up to date: {ext_recording_name}")
 
+    # --------------------------------------------------------------------------------------------
+    # Save the experiment file
+    # --------------------------------------------------------------------------------------------
+
     save_experiment_to_file(df_experiment, os.path.join(experiment_path, "experiment_squares.csv"))
     run_time = round(time.time() - time_stamp, 1)
     paint_logger.info(f"Processed  {nr_files:2d} images in {experiment_path} in {format_time_nicely(run_time)}")
@@ -234,7 +261,6 @@ def process_single_image_in_experiment_directory(
     This function processes a single image in a paint directory. It reads the full-track file from the 'tracks'
     directory and creates a grid of squares. For each square the Tau and Density ratio is calculated. The squares
     are then filtered on visibility. For each square a squares.csv id written to the 'grid' directory.
-
     """
 
     tau = r_squared = density = 0
@@ -249,7 +275,11 @@ def process_single_image_in_experiment_directory(
         paint_logger.error(f"Process Single Image in Paint directory - Tracks file {tracks_file_path} cannot be opened")
         return None, tau, r_squared, density
 
-    # A df_squares dataframe is generated and for every square the Tau and Density ratio is calculated
+    # -----------------------------------------------------------------------------------------------------
+    # A df_squares dataframe is generated and, if the process_square_tau flag is set, for every square the
+    # Tau and Density are calculated. The results are written to a squares file.
+    # -----------------------------------------------------------------------------------------------------
+
     df_squares, tau_matrix = create_df_squares(
         experiment_path, df_tracks, recording_path, recording_name, nr_of_squares_in_row, concentration, nr_spots,
         min_r_squared, min_tracks_for_tau, recording_seq_nr, condition_nr, replicate_nr, experiment_date,
@@ -259,7 +289,10 @@ def process_single_image_in_experiment_directory(
     df_squares = identify_invalid_squares(
         df_squares, min_r_squared, min_tracks_for_tau, verbose)
 
+    # ----------------------------------------------------------------------------------------------------
     # Assign the label numbers to the squares
+    # ----------------------------------------------------------------------------------------------------
+
     df_with_label = df_tracks.copy()
     df_temp = df_squares[df_squares['Label Nr'] != 0]
     for index, row in df_temp.iterrows():
@@ -271,7 +304,7 @@ def process_single_image_in_experiment_directory(
     new_tracks_file_name = tracks_file_path[:tracks_file_path.find('.csv')] + '-label.csv'
     df_with_label.to_csv(new_tracks_file_name, index=False)
 
-    # -------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------
     # Set the visibility in the df_squares
     # -------------------------------------------------------------------------------
 
@@ -286,21 +319,29 @@ def process_single_image_in_experiment_directory(
                              df_squares['Variability Visible'] &
                              df_squares['Neighbour Visible'])
 
+    # ----------------------------------------------------------------------------------------------------
+    # Label the squares
+    # ----------------------------------------------------------------------------------------------------
+
     label_nr = 1
     for idx, row in df_squares.iterrows():
         if row['Valid Tau']:
             df_squares.at[idx, 'Label Nr'] = label_nr
             label_nr += 1
 
-    # Reorder column sequence
-    df_squares = order_squares_columns(df_squares)
+    # ----------------------------------------------------------------------------------------------------
+    # Save the squares file
+    # ----------------------------------------------------------------------------------------------------
 
     # Write the filtered squares results
     squares_file_name = get_squares_file_path(experiment_path, recording_name)
     save_squares_to_file(df_squares, squares_file_name)
 
+    # ----------------------------------------------------------------------------------------------------
     # Now do the single mode processing: determine a single Tau and Density per image, i.e. for all squares and return
     # those values
+    # ----------------------------------------------------------------------------------------------------
+
     if process_recording_tau:
         tau, r_squared, density = calc_single_tau_and_density_for_image(
             experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, recording_name,
@@ -333,7 +374,10 @@ def calc_single_tau_and_density_for_image(
     df_tracks_for_tau = df_tracks[df_tracks['Square Nr'].isin(df_squares_for_single_tau['Square Nr'])]
     nr_tracks = df_tracks_for_tau.shape[0]
 
+    # --------------------------------------------------------------------------------------------
     # Calculate the Tau
+    # --------------------------------------------------------------------------------------------
+
     if nr_tracks < min_tracks_for_tau:
         tau = -1
         r_squared = 0
@@ -371,6 +415,10 @@ def create_df_squares(experiment_directory: str,
                       experiment_name: str,
                       process_square_tau: bool,
                       verbose: bool) -> pd.DataFrame:
+    # --------------------------------------------------------------------------------------------
+    # Set up for processing
+    # --------------------------------------------------------------------------------------------
+
     # Create the tau_matrix (and other matrices if verbose is True)
     tau_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
     if verbose:
@@ -393,8 +441,11 @@ def create_df_squares(experiment_directory: str,
         col_nr = square_seq_nr % nr_of_squares_in_row
         row_nr = square_seq_nr // nr_of_squares_in_row
 
-        # Find the tracks that are within the square defined by boundaries x0, y0, x1, y1
+        # --------------------------------------------------------------------------------------------
+        # Determine which tracks fall within the square defined by boundaries x0, y0, x1, y1
         # Create a new dataframe df_tracks_square that contains just those tracks
+        # --------------------------------------------------------------------------------------------
+
         x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_seq_nr)
         mask = ((df_tracks['TRACK_X_LOCATION'] >= x0) &
                 (df_tracks['TRACK_X_LOCATION'] < x1) &
@@ -408,12 +459,18 @@ def create_df_squares(experiment_directory: str,
         if nr_tracks > 0:
             df_tracks.loc[mask, 'Square Nr'] = square_seq_nr
 
+        # --------------------------------------------------------------------------------------------
         # Calculate the sum of track durations for the square
+        # --------------------------------------------------------------------------------------------
+
         total_track_duration = sum(df_tracks_square['TRACK_DURATION'])
 
+        # --------------------------------------------------------------------------------------------
         # Calculate the average of the long tracks for the square
         # The long tracks are defined as the longest 10% of the tracks
         # If the number of tracks is less than 10, the average long track is set on the full set
+        # --------------------------------------------------------------------------------------------
+
         if nr_tracks > 0:
             df_tracks_square.sort_values(by=['TRACK_DURATION'], inplace=True)
 
@@ -425,14 +482,20 @@ def create_df_squares(experiment_directory: str,
             nr_tracks_to_average = round(0.10 * nr_tracks)  # TODO 0.10 is a magic number
             average_long_track = df_tracks_square.tail(nr_tracks_to_average)['TRACK_DURATION'].mean()
 
-        # ----------------------------------------
-        # Find the maximum track duration
-        # ----------------------------------------
+        # --------------------------------------------------------------------------------------------
+        # Find the maximum track duration. If there are no tracks then set the value to 0
+        # --------------------------------------------------------------------------------------------
 
         # If there are no tracks then set the value to 0
         max_track_duration = max(df_tracks_square['TRACK_DURATION'].max(), 0)
 
-        # Calculate the Tau for the square
+        # --------------------------------------------------------------------------------------------
+        # Calculate the Tau for the square if requested. Use error codes:
+        #   -1: too few points to try to fit
+        #   -2: curve fitttng tries, but failed
+        #   -3: curve fitting succeeded, but R2 is too low
+        # --------------------------------------------------------------------------------------------
+
         if process_square_tau:
             if nr_tracks < min_tracks_for_tau:  # Too few points to curve fit
                 tau = -1
@@ -453,7 +516,11 @@ def create_df_squares(experiment_directory: str,
             tau = 0
             r_squared = 0
 
-        area = get_area_of_square(nr_of_squares_in_row)
+        # --------------------------------------------------------------------------------------------
+        # Calculate the density for the square
+        # Note: magnification is hard coded to 1000, just to get an easier to read number
+        # --------------------------------------------------------------------------------------------
+
         density = calculate_density(
             nr_tracks=nr_tracks, area=area, time=100, concentration=concentration, magnification=1000)
 
@@ -466,8 +533,11 @@ def create_df_squares(experiment_directory: str,
             variability_matrix[row_nr, col_nr] = int(variability * 100)
             count_matrix[row_nr, col_nr] = nr_tracks
 
+        # --------------------------------------------------------------------------------------------
         # Create the new squares record to add all the data for this square
-        squares_row = {'Experiment Date': experiment_date,
+        # --------------------------------------------------------------------------------------------
+
+        squares_row = {'Recording Sequence Nr': int(seq_nr),
                        'Ext Recording Name': recording_name,
                        'Experiment Name': experiment_name,
                        'Condition Nr': experiment_nr,
@@ -503,8 +573,15 @@ def create_df_squares(experiment_directory: str,
         # And add it to the squares dataframe
         df_squares = pd.concat([df_squares, pd.DataFrame.from_records([squares_row])])
 
-    background_tracks = calc_average_track_count_of_lowest_squares(
-        df_squares, int(0.1 * nr_of_squares_in_row * nr_of_squares_in_row))
+    # --------------------------------------------------------------------------------------------
+    # At this point, the full df_square dataframe exists. Now sone post processing is done
+    # --------------------------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------------------------
+    # Determine the background tracks count and calculate the density ratio calculation
+    # The density ratio can be calculated simply by dividing the tracks in the square by the average tracks
+    # because everything else stays the same (no need to calculate the background density itself)
+    # --------------------------------------------------------------------------------------------
 
     # Write the Density Ratio
     if background_tracks == 0:
@@ -514,15 +591,9 @@ def create_df_squares(experiment_directory: str,
         # because everything else stays the same (no need to calculate the background density itself)
         df_squares['Density Ratio'] = round(df_squares['Nr Tracks'] / background_tracks, 1)
 
-    # Polish up the table and sort
-    df_squares = df_squares.sort_values(by=['Nr Tracks'], ascending=False)
-
-    if verbose:
-        write_matrices(recording_path, recording_name, tau_matrix, density_matrix, count_matrix, variability_matrix, verbose)
-
-    df_squares.set_index('Square Nr', inplace=True, drop=False)
-
+    # --------------------------------------------------------------------------------------------
     # Then add the diffusion coefficient to the squares file
+    # --------------------------------------------------------------------------------------------
 
     df_squares['DC'] = 0
     for index, row in df_squares.iterrows():
@@ -613,6 +684,7 @@ def identify_invalid_squares(
     :param min_tracks_for_tau:
     :param verbose:
     :return:
+
     """
 
     # Eliminate the squares for which no Tau was calculated, because there were insufficient tracks (tau code as -1)
