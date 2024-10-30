@@ -109,6 +109,12 @@ def process_experiment_directory(
     images need processing
     """
 
+
+    # --------------------------------------------------------------------------------------------
+    # Load from the paint configuration file
+    # --------------------------------------------------------------------------------------------
+    plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File')
+
     time_stamp = time.time()
 
     # Read the experiment  file
@@ -161,7 +167,7 @@ def process_experiment_directory(
                 experiment_path, ext_image_path, ext_recording_name, nr_of_squares_in_row,
                 min_r_squared, min_tracks_for_tau, min_density_ratio, max_variability, concentration, row["Nr Spots"],
                 row['Recording Sequence Nr'], row['Condition Nr'], row['Replicate Nr'], row['Experiment Date'],
-                row['Experiment Name'], process_recording_tau, process_square_tau, verbose)
+                row['Experiment Name'], process_recording_tau, process_square_tau, plot_to_file, verbose)
             if df_squares is None:
                 paint_logger.error("Aborted with error")
                 return None
@@ -222,6 +228,7 @@ def process_single_image_in_experiment_directory(
         experiment_name: str,
         process_recording_tau: bool,
         process_square_tau: bool,
+        plot_to_file: False,
         verbose: bool = False) -> tuple:
     """
     This function processes a single image in a paint directory. It reads the full-track file from the 'tracks'
@@ -296,8 +303,8 @@ def process_single_image_in_experiment_directory(
     # those values
     if process_recording_tau:
         tau, r_squared, density = calc_single_tau_and_density_for_image(
-            experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, recording_path, recording_name,
-            nr_of_squares_in_row, concentration)
+            experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, recording_name,
+            nr_of_squares_in_row, concentration, plot_to_file=plot_to_file)
     else:
         tau = r_squared = density = 0
 
@@ -313,7 +320,14 @@ def calc_single_tau_and_density_for_image(
         recording_path: str,
         recording_name: str,
         nr_of_squares_in_row: int,
-        concentration: float) -> tuple:
+        concentration: float,
+        plot_to_file: bool) -> tuple:
+
+    """
+    This function calculates a single Tau and Density for an image. It does this by considering only the tracks
+    in the image
+    """
+
     # Identify the squares that contribute to the Tau calculation
     df_squares_for_single_tau = df_squares[df_squares['Visible']]
     df_tracks_for_tau = df_tracks[df_tracks['Square Nr'].isin(df_squares_for_single_tau['Square Nr'])]
@@ -328,7 +342,7 @@ def calc_single_tau_and_density_for_image(
         plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name), recording_name + ".png")
         tau, r_squared = curve_fit_and_plot(
             plot_data=duration_data, nr_tracks=nr_tracks, plot_max_x=5, plot_title=" ",
-            file=plt_file, plot_to_screen=False, plot_to_file=False, verbose=False)          # TODO plot=False now hard coded
+            file=plt_file, plot_to_screen=False, plot_to_file=plot_to_file, verbose=False)
         if tau == -2:  # Tau calculation failed
             r_squared = 0
         tau = int(tau)
