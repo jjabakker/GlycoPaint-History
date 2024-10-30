@@ -26,7 +26,7 @@ def create_all_tracks(root_dir):
 
     # Traverse the directory tree, to find all the files
     for root, dirs, files in os.walk(root_dir):
-        if os.path.basename(root) == 'TrackMate Tracks':
+        if os.path.basename(root).lower() == 'trackmate tracks':
             for file in files:
                 # Check if it's a CSV file that contains 'tracks', threshold, but not 'label' in the name
                 if any(keyword in file for keyword in ['tracks', 'threshold']) and file.endswith(
