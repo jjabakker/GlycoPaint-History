@@ -48,10 +48,10 @@ def get_images(self):
             trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
         self.squares_file_name = squares_file_path
 
-        # If there is no 'Trackmate Images' directory below the image directory, skip it
+        # If there is no 'TrackMate Images' directory below the image directory, skip it
         if not os.path.isdir(trackmate_images_dir):
             paint_logger.error(
-                f"Function 'get_images' failed - The directory for trackmate images does not exist: {trackmate_images_dir}")
+                f"Function 'get_images' failed - The directory for TrackMate images does not exist: {trackmate_images_dir}")
             continue
 
         # Then get all the files in  the 'img' directory
