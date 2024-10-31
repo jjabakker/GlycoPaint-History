@@ -106,6 +106,7 @@ def get_images(self, initial=False):
             "Adjuvant": self.df_experiment.iloc[index]['Adjuvant'],
             "Probe": self.df_experiment.iloc[index]['Probe'],
             "Probe Type": self.df_experiment.iloc[index]['Probe Type'],
+            "Concentration": str(self.df_experiment.iloc[index]['Concentration']),
 
             "Threshold": self.df_experiment.iloc[index]['Threshold'],
             "Nr Spots": int(self.df_experiment.iloc[index]['Nr Spots']),
