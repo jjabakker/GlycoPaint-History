@@ -47,15 +47,15 @@ class SelectRecordingDialog(tk.Toplevel):
 
         # Button to reset all listboxes
         reset_all_button = ttk.Button(frame, text="Reset All", command=self.reset_all_filters)
-        reset_all_button.grid(row=3, column=0, columnspan=len(self.filter_columns), pady=10)
+        reset_all_button.grid(row=4, column=0, columnspan=len(self.filter_columns), pady=10)
 
         # Button to confirm and return the filtered DataFrame
         confirm_button = ttk.Button(frame, text="Apply All Filters", command=self.apply_all_filters)
-        confirm_button.grid(row=4, column=0, columnspan=len(self.filter_columns), pady=10)
+        confirm_button.grid(row=4, column=1, columnspan=len(self.filter_columns), pady=10)
 
         # Cancel button to close the dialog
         cancel_button = ttk.Button(frame, text="Cancel", command=self.cancel)
-        cancel_button.grid(row=4, column=len(self.filter_columns) // 2, columnspan=len(self.filter_columns) // 2,
+        cancel_button.grid(row=4, column=2,
                            pady=10)
 
     def populate_listbox(self, col):
