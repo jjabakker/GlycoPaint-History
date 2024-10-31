@@ -736,6 +736,7 @@ def mark_squares_with_invalid_tau(
     else:
         updated_count = 0
 
+
     # Then eliminate the squares for which Tau was calculated but where it failed
     original_count = updated_count
     if original_count != 0:

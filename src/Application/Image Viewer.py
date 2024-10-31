@@ -1360,22 +1360,22 @@ class ImageViewer(tk.Tk):
         self.list_images = []
 
         for image in self.saved_list_images:
+            choose = True
             for key, value in selection.items():
-                choose = True
-                if image[key] != value:
+                if image[key] not in value:
                     choose = False
                     break
-                if choose:
-                    print(f"Key: {key}, Value: {value}")
-                    self.list_images.append(image)
+            if choose:
+                # print(f"Key: {key}, Value: {value}")
+                self.list_images.append(image)
 
         # Update the combobox with the new list of images
         self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
         self.cb_image_names['values'] = self.list_of_image_names
+        self.cb_image_names.set(self.cb_image_names['values'][0])   #@@@
 
         # Start at 0
-        self.img_nr = -1
-        self.on_forward_backward('FORWARD')
+        self.on_forward_backward('START')
 
 
 def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):
