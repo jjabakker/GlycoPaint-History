@@ -260,10 +260,10 @@ class ImageViewer(tk.Tk):
     def setup_frame_commands(self):
         # This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
 
-        button_width = 12
+        button_width = 13
 
         self.bn_select_recording = ttk.Button(
-            self.frame_commands, text='Select Recording', command=lambda: self.on_select_recording(),
+            self.frame_commands, text='Select Recordings', command=lambda: self.on_select_recording(),
             width=button_width)
         self.bn_show_heatmap = ttk.Button(
             self.frame_commands, text='Heatmap', command=lambda: self.on_show_heatmap(), width=button_width)

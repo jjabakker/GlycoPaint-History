@@ -20,7 +20,7 @@ class HeatMapDialog:
 
         # Set windows properties
         self.control_window = tk.Toplevel(self.image_viewer.parent)
-        self.control_window.title("Heatmap Control Window")
+        self.control_window.title("Heatmap")
         self.control_window.resizable(False, False)
         self.control_window.geometry("370x420")
         self.control_window.resizable(False, False)
