@@ -126,6 +126,8 @@ class ImageViewer(tk.Tk):
 
         self.squares_in_rectangle = []
 
+        self.saved_list_images = []
+
         msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "EXPERIMENT_LEVEL" else self.user_specified_level}'
         msg += f'{" - NO SAVING" if self.user_specified_mode == "PROJECT_LEVEL" else ""}'
         self.parent.title(msg)
@@ -324,7 +326,7 @@ class ImageViewer(tk.Tk):
 
         self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
-        self.list_images = get_images(self)
+        self.list_images = get_images(self, initial=True)
         if not self.list_images:
             self.show_error_and_exit(f"No images were found in directory {self.experiment_directory_path}.")
 
@@ -1337,12 +1339,33 @@ class ImageViewer(tk.Tk):
     # Recording Selection Dialog Interaction
     # ---------------------------------------------------------------------------------------
 
-    def on_recording_selection(self, selected_filters):
+    def on_recording_selection(self, selection):
         # Callback to receive the filtered data from the dialog
         # Update the label with the selected filter criteria
-        filter_text = ", ".join(f"{k}: {v}" for k, v in selected_filters.items())
-        print(filter_text)
-        #self.result_label.config(text=f"Filtered Data: {filter_text}")
+
+        filter_text = ", ".join(f"{k}: {v}" for k, v in selection.items())
+
+        # Build up the list of images from the saved list of images
+        self.list_images = []
+
+        for image in self.saved_list_images:
+            for key, value in selection.items():
+                choose = True
+                if image[key] != value:
+                    choose = False
+                    break
+                if choose:
+                    print(f"Key: {key}, Value: {value}")
+                    self.list_images.append(image)
+
+        # Update the combobox with the new list of images
+        self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
+        self.cb_image_names['values'] = self.list_of_image_names
+
+        # Start at 0
+        self.img_nr = -1
+        self.on_forward_backward('FORWARD')
+
 
 def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):
     col_nr = square_nr % nr_of_squares_in_row
