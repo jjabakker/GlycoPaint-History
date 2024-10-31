@@ -1,9 +1,10 @@
 import os
 import sys
+import pandas as pd
 
 import tkinter as tk
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from tkinter import ttk
 
 from src.Application.Utilities.General_Support_Functions import (
@@ -107,11 +108,19 @@ class SelectViewerDataDialog:
                 paint_logger.error(msg)
                 paint_messagebox(self.parent, title='Warning', message=msg)
                 error = True
+            else:
+                df = pd.read_csv(self.project_file)
+                if df & len(df) > 100:
+                    msg = f"You are viewing {len(df)} recordings. Opening the viewer may take some time."
+                    # paint_messagebox(self.parent, title='Info', message=msg)
+                    paint_logger.debug(msg)
         else:
             paint_logger.error("Invalid mode=")
             sys.exit()
 
         if not error:
+
+            # The dialog will simply exit and the main programs will pick up the return values
             self.proceed = True
             self.parent.destroy()
 
