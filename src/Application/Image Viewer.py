@@ -20,8 +20,8 @@ from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import Heat
 from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors, get_color_index,
     get_heatmap_data)
-from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
 from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
+from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
 from src.Application.Image_Viewer.Utilities.Get_Images import get_images
 from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import (
     eliminate_isolated_squares_relaxed,
@@ -123,6 +123,7 @@ class ImageViewer(tk.Tk):
         self.heatmap_control_dialog = None
         self.define_cells_dialog = None
         self.square_info_popup = None
+        self.select_recording_dialog = None
 
         self.squares_in_rectangle = []
 
@@ -338,14 +339,19 @@ class ImageViewer(tk.Tk):
         self.on_forward_backward('FORWARD')
 
     def on_select_recording(self):
-        self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
-        i = 1
+        if any(dialog is not None for dialog in
+               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
+                self.select_recording_dialog]):
+            return
+        else:
+            self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
 
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
 
         if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
+               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
+                self.select_recording_dialog]):
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
@@ -363,7 +369,8 @@ class ImageViewer(tk.Tk):
         # If the select square dialog is not already active, then we need to run the select square dialog
 
         if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
+               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
+                self.select_recording_dialog]):
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
@@ -383,12 +390,13 @@ class ImageViewer(tk.Tk):
     def on_show_define_cells(self):
 
         if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
+               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
+                self.select_recording_dialog]):
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
             self.define_cells_dialog = DefineCellDialog(
-                self, self.callback_to_assign_squares_to_cell_cell_id, self.callback_to_reset_square_selection,
+                self, self.callback_to_assign_squares_to_cell_id, self.callback_to_reset_square_selection,
                 self.callback_to_close_define_cells)
 
     def callback_to_close_define_cells(self):
@@ -403,7 +411,7 @@ class ImageViewer(tk.Tk):
         self.squares_in_rectangle = []
         self.display_selected_squares()
 
-    def callback_to_assign_squares_to_cell_cell_id(self, cell_id):
+    def callback_to_assign_squares_to_cell_id(self, cell_id):
         """
         This function is called by the DefineCellsDialog when a cell id has been selected to is assigned to a square
         See if there are any squares selected and if so update the cell id, then update the display
@@ -415,7 +423,6 @@ class ImageViewer(tk.Tk):
         self.squares_changed = True
         self.squares_in_rectangle = []
         self.display_selected_squares()
-
 
     def setup_exclude_button(self):
         # Set up the exclude/include button state
@@ -509,13 +516,11 @@ class ImageViewer(tk.Tk):
             else:
                 self.on_forward_backward('FORWARD')
 
-
         elif event.keysym == 'Left':
             if event.state & 0x0001:  # 0x0001 is the bit mask for Shift
                 self.on_forward_backward('START')
             else:
                 self.on_forward_backward('BACKWARD')
-
 
     def output_pictures_to_pdf(self):
         """
@@ -869,7 +874,7 @@ class ImageViewer(tk.Tk):
         # All squares are invisible, unless the density ratio is sufficiently large
         self.df_squares['Density Ratio Visible'] = False
         self.df_squares.loc[
-            self.df_squares['Density Ratio'] >=self.min_required_density_ratio, 'Density Ratio Visible'] = True
+            self.df_squares['Density Ratio'] >= self.min_required_density_ratio, 'Density Ratio Visible'] = True
 
         # All squares are invisible, unless the max track duration is within the min and max limits
         self.df_squares['Duration Visible'] = False
@@ -947,7 +952,7 @@ class ImageViewer(tk.Tk):
         if cell_id == -1:  # The square is deleted (for good), stop processing
             return
 
-        if cell_id != 0:   # The square is assigned to a cell
+        if cell_id != 0:  # The square is assigned to a cell
             col = colour_table[self.df_squares.loc[square_nr]['Cell Id']][0]
             self.cn_left_image.create_rectangle(
                 col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
@@ -965,7 +970,7 @@ class ImageViewer(tk.Tk):
             outline="white", fill="", width=1, tags=square_tag)
 
         if self.show_squares_numbers:
-            if cell_id == 0: # The number of a square assigned to a cell should not be overwritten
+            if cell_id == 0:  # The number of a square assigned to a cell should not be overwritten
                 self.cn_left_image.create_text(
                     col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
                     font=('Arial', -10), fill='white', tags=text_tag)
@@ -1326,7 +1331,8 @@ class ImageViewer(tk.Tk):
         heatmap_mode = self.heatmap_option.get()
         heatmap_global_min_max = self.heatmap_global_min_max.get()
 
-        df_heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode, heatmap_global_min_max)
+        df_heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode,
+                                                             heatmap_global_min_max)
         if df_heatmap_data is None:
             paint_messagebox(self.parent, "No data for heatmap", "There is no data for the heatmap")
             return
@@ -1343,9 +1349,14 @@ class ImageViewer(tk.Tk):
         # Callback to receive the filtered data from the dialog
         # Update the label with the selected filter criteria
 
-        filter_text = ", ".join(f"{k}: {v}" for k, v in selection.items())
+        # filter_text = ", ".join(f"{k}: {v}" for k, v in selection.items())
 
-        # Build up the list of images from the saved list of images
+        self.select_recording_dialog = None
+        # If nothing has been selected, do nothing
+        if len(selection) == 0:
+            return
+
+        # Otherwise, build up the list of images from the saved list of images
         self.list_images = []
 
         for image in self.saved_list_images:
@@ -1374,15 +1385,13 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
     height = 512 / nr_of_squares_in_row
 
     color_index = get_color_index(value, max_value, min_value, 20)
-    if color_index  >= 20:
+    if color_index >= 20:
         i = 1
     color = colors[color_index]
 
     canvas_to_draw_on.create_rectangle(
         col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
         fill=color, outline=color)
-
-
 
 
 # ---------------------------------------------------------------------------------------
