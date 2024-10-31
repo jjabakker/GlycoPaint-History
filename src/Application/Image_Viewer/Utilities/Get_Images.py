@@ -12,7 +12,7 @@ from src.Common.Support.DirectoriesAndLocations import (
 from src.Common.Support.LoggerConfig import paint_logger
 
 
-def get_images(self):
+def get_images(self, initial=False):
     """
     Retrieve the images to be displayed (for the left and right frame) from disk.
     A list with all necessary attributes for each image is created.
@@ -127,6 +127,9 @@ def get_images(self):
     if error_count > 0:
         paint_logger.error(
             f"There were {error_count} out of {len(self.df_experiment)} images for which no picture was available")
+
+    if initial:
+        self.saved_list_images = list_images
 
     return list_images
 
