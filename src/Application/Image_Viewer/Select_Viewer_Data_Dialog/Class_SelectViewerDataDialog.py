@@ -109,11 +109,14 @@ class SelectViewerDataDialog:
                 paint_messagebox(self.parent, title='Warning', message=msg)
                 error = True
             else:
-                df = pd.read_csv(self.project_file)
-                if df & len(df) > 100:
-                    msg = f"You are viewing {len(df)} recordings. Opening the viewer may take some time."
-                    # paint_messagebox(self.parent, title='Info', message=msg)
-                    paint_logger.debug(msg)
+                try:
+                    df = pd.read_csv(self.project_file)
+                    if len(df) > 100:
+                        msg = f"You are viewing {len(df)} recordings. Opening the viewer may take some time."
+                        # paint_messagebox(self.parent, title='Info', message=msg)
+                        paint_logger.debug(msg)
+                except:
+                    pass
         else:
             paint_logger.error("Invalid mode=")
             sys.exit()
