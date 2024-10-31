@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 import pandas as pd
 
-
 class SelectRecordingDialog(tk.Toplevel):
 
     def __init__(self, parent, dataframe, callback):
@@ -45,18 +44,18 @@ class SelectRecordingDialog(tk.Toplevel):
             filter_button = ttk.Button(frame, text="Filter", command=lambda c=col: self.apply_filter(c))
             filter_button.grid(row=2, column=i, padx=(5, 2), pady=5, sticky="EW")
 
-        # Button to reset all listboxes
-        reset_all_button = ttk.Button(frame, text="Reset All", command=self.reset_all_filters)
-        reset_all_button.grid(row=4, column=0, columnspan=len(self.filter_columns), pady=10)
+        # Buttons to reset, apply, and cancel at the bottom center
+        button_frame = ttk.Frame(frame)  # Frame for the buttons
+        button_frame.grid(row=3, column=0, columnspan=len(self.filter_columns), pady=10)
 
-        # Button to confirm and return the filtered DataFrame
-        confirm_button = ttk.Button(frame, text="Apply All Filters", command=self.apply_all_filters)
-        confirm_button.grid(row=4, column=1, columnspan=len(self.filter_columns), pady=10)
+        reset_all_button = ttk.Button(button_frame, text="Reset All", command=self.reset_all_filters)
+        reset_all_button.pack(side=tk.LEFT, padx=5)
 
-        # Cancel button to close the dialog
-        cancel_button = ttk.Button(frame, text="Cancel", command=self.cancel)
-        cancel_button.grid(row=4, column=2,
-                           pady=10)
+        confirm_button = ttk.Button(button_frame, text="Apply All Filters", command=self.apply_all_filters)
+        confirm_button.pack(side=tk.LEFT, padx=5)
+
+        cancel_button = ttk.Button(button_frame, text="Cancel", command=self.cancel)
+        cancel_button.pack(side=tk.LEFT, padx=5)
 
     def populate_listbox(self, col):
         """ Populate the listbox with original unique values from the column. """
@@ -98,22 +97,18 @@ class SelectRecordingDialog(tk.Toplevel):
         for col, listbox in self.listboxes.items():
             count = listbox.size()
             current_values = [listbox.get(i) for i in range(count)]
-
-
-
-            # selected_values = [listbox.get(i) for i in listbox.curselection()]
             if current_values:
                 selected_filters[col] = current_values
 
         # Pass the selected filters to the main window through the callback
-        print(selected_filters)
-        self.callback(selected_filters)
+        self.callback(selected_filters, True)
 
         # Close the dialog
         self.destroy()
 
     def cancel(self):
         """ Close the dialog without applying any filters. """
+        self.callback(None, False)
         self.destroy()
 
 

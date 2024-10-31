@@ -1345,13 +1345,15 @@ class ImageViewer(tk.Tk):
     # Recording Selection Dialog Interaction
     # ---------------------------------------------------------------------------------------
 
-    def on_recording_selection(self, selection):
+    def on_recording_selection(self, selection, selected):
         # Callback to receive the filtered data from the dialog
         # Update the label with the selected filter criteria
 
-        # filter_text = ", ".join(f"{k}: {v}" for k, v in selection.items())
-
         self.select_recording_dialog = None
+
+        if selected == False:
+            return
+
         # If nothing has been selected, do nothing
         if len(selection) == 0:
             return
