@@ -1,5 +1,7 @@
 import os
+
 import pandas as pd
+
 
 def process_experiment_info_files(root_directory):
     # Traverse the directory tree
@@ -41,6 +43,7 @@ def process_experiment_info_files(root_directory):
             new_file_path = os.path.join(dirpath, 'experiment_tm.csv')
             new_df.to_csv(new_file_path, index=False)
             print(f"Processed and saved new file: {new_file_path}")
+
 
 # Example usage: Provide the root directory where the traversal should start
 root_dir = '/Users/hans/Paint Source'

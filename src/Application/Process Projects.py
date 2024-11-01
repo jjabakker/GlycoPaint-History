@@ -1,20 +1,22 @@
 import json
 import os
+import shutil
 import sys
 import time
-import shutil
-
 from datetime import datetime
+
 from src.Application.Compile_Project_Output.Compile_Project_Output import compile_project_output
-from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
 from src.Application.Generate_Squares.Generate_Squares import process_project_directory
-from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
-    set_directory_tree_timestamp,
-    get_timestamp_from_string)
+from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_all_tracks
+from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import \
+    copy_data_from_paint_source_to_paint_data
 from src.Application.Utilities.General_Support_Functions import (
     copy_directory,
     format_time_nicely
 )
+from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
+    set_directory_tree_timestamp,
+    get_timestamp_from_string)
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -23,13 +25,11 @@ from src.Common.Support.LoggerConfig import (
     DEBUG as PAINT_DEBUG
 )
 
-from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_all_tracks
-from src.Application.Generate_Squares.Utilities.Add_DC_to_Squares_Files import add_dc_to_squares_file
-
 paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
 
 PAINT_FORCE = True
+
 
 def process_json_configuration_block(paint_source_dir,
                                      project_directory: str,
@@ -49,7 +49,6 @@ def process_json_configuration_block(paint_source_dir,
                                      time_string: str,
                                      paint_force: bool,
                                      generate_all_tracks) -> bool:
-
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} - Processing {project_directory}"
     paint_logger.info("")
@@ -152,7 +151,7 @@ def main():
 
     process_project_params = process_project_params_list[0]
 
-    conf_file ='../Config/Paint Data Generation.json'
+    conf_file = '../Config/Paint Data Generation.json'
     try:
         with open(conf_file, 'r') as file:
             config = json.load(file)
@@ -246,6 +245,7 @@ def main():
     logger_dir = get_paint_logger_directory()
     shutil.copyfile(os.path.join(logger_dir, 'Process All Projects.log'),
                     os.path.join(logger_dir, f'Process All Projects - v{data_version}.log'))
+
 
 if __name__ == '__main__':
     main()

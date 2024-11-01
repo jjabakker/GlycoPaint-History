@@ -36,7 +36,6 @@ def get_color_index(var, var_max, var_min, nr_levels):
 
 
 def get_heatmap_data(df_squares, df_all_squares, heatmap_mode, experiment_min_max=True):
-
     global heatmap_modes
 
     if df_all_squares.empty or df_squares.empty:

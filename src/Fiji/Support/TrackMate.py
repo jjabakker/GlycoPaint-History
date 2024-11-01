@@ -17,7 +17,6 @@ from fiji.plugin.trackmate import (
     SelectionModel,
     Settings,
     TrackMate)
-
 from fiji.plugin.trackmate.action import CaptureOverlayAction
 from fiji.plugin.trackmate.detection import LogDetectorFactory
 from fiji.plugin.trackmate.gui.displaysettings import DisplaySettingsIO
@@ -87,11 +86,11 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     # Configure detector - all important parameters
     settings.detectorFactory = LogDetectorFactory()
     settings.detectorSettings = {
-        'DO_SUBPIXEL_LOCALIZATION': do_subpixel_localization,   # False
-        'RADIUS': radius, # 0.5
-        'TARGET_CHANNEL': target_channel, # 1
+        'DO_SUBPIXEL_LOCALIZATION': do_subpixel_localization,  # False
+        'RADIUS': radius,  # 0.5
+        'TARGET_CHANNEL': target_channel,  # 1
         'THRESHOLD': threshold,
-        'DO_MEDIAN_FILTERING': do_median_filtering, # False
+        'DO_MEDIAN_FILTERING': do_median_filtering,  # False
     }
 
     # Configure spot filters - Do not filter out any spots
@@ -103,18 +102,18 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     settings.trackerSettings = settings.trackerFactory.getDefaultSettings()
 
     # These are the important parameters
-    settings.trackerSettings['MAX_FRAME_GAP'] = max_frame_gap # 3
-    settings.trackerSettings['LINKING_MAX_DISTANCE'] = linking_max_distance # 0.6
+    settings.trackerSettings['MAX_FRAME_GAP'] = max_frame_gap  # 3
+    settings.trackerSettings['LINKING_MAX_DISTANCE'] = linking_max_distance  # 0.6
     settings.trackerSettings['GAP_CLOSING_MAX_DISTANCE'] = gap_closing_max_distance  # 1.2
 
     # These are default values made explicit
-    settings.trackerSettings['ALTERNATIVE_LINKING_COST_FACTOR'] = alternative_linking_cost_factor # 1.05
-    settings.trackerSettings['SPLITTING_MAX_DISTANCE'] = splitting_max_distance # 15.0
-    settings.trackerSettings['ALLOW_GAP_CLOSING'] =  allow_gap_closing # True
-    settings.trackerSettings['ALLOW_TRACK_SPLITTING'] = allow_track_splitting # False
-    settings.trackerSettings['ALLOW_TRACK_MERGING'] = allow_track_merging # False
-    settings.trackerSettings['MERGING_MAX_DISTANCE'] = merging_max_distance #15 .0
-    settings.trackerSettings['CUTOFF_PERCENTILE'] = cutoff_percentile # 0.9
+    settings.trackerSettings['ALTERNATIVE_LINKING_COST_FACTOR'] = alternative_linking_cost_factor  # 1.05
+    settings.trackerSettings['SPLITTING_MAX_DISTANCE'] = splitting_max_distance  # 15.0
+    settings.trackerSettings['ALLOW_GAP_CLOSING'] = allow_gap_closing  # True
+    settings.trackerSettings['ALLOW_TRACK_SPLITTING'] = allow_track_splitting  # False
+    settings.trackerSettings['ALLOW_TRACK_MERGING'] = allow_track_merging  # False
+    settings.trackerSettings['MERGING_MAX_DISTANCE'] = merging_max_distance  # 15 .0
+    settings.trackerSettings['CUTOFF_PERCENTILE'] = cutoff_percentile  # 0.9
 
     # Add ALL the feature analyzers known to TrackMate.
     # They will yield numerical features for the results, such as speed, mean intensity etc.
@@ -138,7 +137,6 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
         paint_logger.error('Routine paint_trackmate - process failed')
         return -1, -1, -1
 
-
     # Get spots data, iterate through each track to calculate the mean square displacement
 
     track_ids = model.getTrackModel().trackIDs(True)  # True means only return visible tracks
@@ -160,7 +158,7 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
                 x = spot.getFeature('POSITION_X')
                 y = spot.getFeature('POSITION_Y')
                 cum_msd += (x - x0) ** 2 + (y - y0) ** 2
-        msd = cum_msd/ (len(track_spots) - 1)
+        msd = cum_msd / (len(track_spots) - 1)
         diffusion_coefficient = msd / (2 * 2 * 0.05)
 
         nice_diffusion_coefficient = round(diffusion_coefficient * 1000, 0)
@@ -197,7 +195,8 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     # Write the Tracks file
     # ----------------
 
-    fields = ["RECORDING NAME", "LABEL", "NUMBER_SPOTS", "TRACK_DURATION", 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION', 'DIFFUSION_COEFFICIENT']
+    fields = ["RECORDING NAME", "LABEL", "NUMBER_SPOTS", "TRACK_DURATION", 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION',
+              'DIFFUSION_COEFFICIENT']
 
     # Determine write attributes
     open_attribute = fiji_get_file_open_write_attribute()
@@ -215,7 +214,7 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
         track_index = 0
         for track_id in model.getTrackModel().trackIDs(True):
             # Fetch the track feature from the feature model.
-            label = 'Track_' + str(track_id )
+            label = 'Track_' + str(track_id)
             duration = round(feature_model.getTrackFeature(track_id, 'TRACK_DURATION'), 3)
             spots = feature_model.getTrackFeature(track_id, 'NUMBER_SPOTS')
             x = round(feature_model.getTrackFeature(track_id, 'TRACK_X_LOCATION'), 2)

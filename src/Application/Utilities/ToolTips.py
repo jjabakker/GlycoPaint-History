@@ -57,6 +57,7 @@ if __name__ == '__main__':
     button.grid(row=0, column=0, padx=20, pady=20)
 
     # Add a tooltip to the button
-    ToolTip(button, wraplength=400, text="Shortcut: Command+M on macOS or Alt+M on other OS. Or maybe you can add a lot of text. Or maybe you can add a lot of text.Or maybe you can add a lot of text.")
+    ToolTip(button, wraplength=400,
+            text="Shortcut: Command+M on macOS or Alt+M on other OS. Or maybe you can add a lot of text. Or maybe you can add a lot of text.Or maybe you can add a lot of text.")
 
     root.mainloop()

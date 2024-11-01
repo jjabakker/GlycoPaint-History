@@ -101,10 +101,3 @@ if __name__ == "__main__":
             paint_logger.error("run_trackmate_batch: Error reading CSV file: {}".format(e))
         except Exception as e:
             paint_logger.error("run_trackmate_batch: An unexpected error occurred: {}".format(e))
-
-
-
-
-
-
-

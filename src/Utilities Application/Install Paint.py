@@ -3,10 +3,12 @@ import platform
 import shutil
 import subprocess
 
-# import winreg
-
 from src.Common.Support.DirectoriesAndLocations import delete_files_in_directory
 from src.Common.Support.PaintConfig import load_paint_config
+
+
+# import winreg
+
 
 # def find_app_path_windows():
 #     reg_paths = [
@@ -174,7 +176,6 @@ def install():
             print("\nCreated directory {dir}")
             os.makedirs(directory)
 
-
     config_file = os.path.join(source_root, 'Config', 'Paint.json')
 
     config = load_paint_config(config_file)
@@ -184,6 +185,7 @@ def install():
 
     shutil.copyfile(config_file, os.path.join(config_dir, 'Paint.json'))
     print(f'\nCopied config Paint.json to {config_dir}')
+
 
 if __name__ == '__main__':
     install()

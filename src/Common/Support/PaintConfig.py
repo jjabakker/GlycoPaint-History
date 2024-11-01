@@ -1,14 +1,16 @@
-import os
 import json
+import os
 
-def get_paint_defaults_file_path():     #ToDo
+
+def get_paint_defaults_file_path():  # ToDo
     return os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'Paint.json')
+
 
 paint_configuration = None
 
+
 # Load configuration from a JSON file
 def load_paint_config(file_path):
-
     global paint_configuration
 
     if paint_configuration is not None:
@@ -33,7 +35,8 @@ def load_paint_config(file_path):
         # paint_logger.error("Error: Configuration file {} not found.".format(file_path))
         return None
 
-def get_paint_attribute(application,  attribute_name):
+
+def get_paint_attribute(application, attribute_name):
     config = load_paint_config(get_paint_defaults_file_path())
     if config is None:
         return None
@@ -42,9 +45,8 @@ def get_paint_attribute(application,  attribute_name):
         value = application.get(attribute_name, None)
         return value
 
+
 if __name__ == '__main__':
-
-
     config = load_paint_config(os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'paint.json'))
     trackmate_config = config['TrackMate']
     max_gap1 = trackmate_config['MAX_FRAME_GAP']

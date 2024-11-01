@@ -126,6 +126,7 @@ def get_paint_profile_directory():
     sub_dir = 'Profile'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
 
+
 def get_paint_logger_directory():
     sub_dir = 'Logger'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
@@ -142,7 +143,6 @@ def get_paint_defaults_file_path():
     # path = os.path.expanduser('~')
     # path = os.path.join(path, 'Paint', 'Defaults', 'Paint.json')
     return path
-
 
 
 def get_default_locations():

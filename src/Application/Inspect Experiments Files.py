@@ -5,13 +5,12 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Common.Support.DirectoriesAndLocations import (
-    get_default_locations,
-    save_default_locations)
-
 from src.Application.Utilities.General_Support_Functions import (
     read_experiment_file
 )
+from src.Common.Support.DirectoriesAndLocations import (
+    get_default_locations,
+    save_default_locations)
 
 # -------------------------------------------------------------------------------------
 # Configure logging

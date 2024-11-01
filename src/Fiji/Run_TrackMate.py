@@ -1,14 +1,14 @@
 import csv
 import os
 import sys
-import time
 import threading
+import time
 
 from ij import IJ
+from java.awt import GridLayout, Dimension, FlowLayout
 from java.io import File
 from java.lang.System import getProperty
 from javax.swing import JFrame, JPanel, JButton, JTextField, JFileChooser, JOptionPane, BorderFactory
-from java.awt import GridLayout, Dimension, FlowLayout
 
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
@@ -17,7 +17,6 @@ from DirectoriesAndLocations import (
     get_tracks_file_path,
     get_experiment_info_file_path,
     get_experiment_tm_file_path,
-    get_tracks_dir_path,
     get_image_file_path,
     create_directories,
     get_default_locations,
@@ -29,8 +28,7 @@ from FijiSupportFunctions import (
     fiji_get_file_open_write_attribute,
     fiji_get_file_open_append_attribute,
     ask_user_for_image_directory,
-    suppress_fiji_output,
-    restore_fiji_output)
+    suppress_fiji_output)
 
 from LoggerConfig import (
     paint_logger,
@@ -78,7 +76,8 @@ def run_trackmate(experiment_directory, recording_source_directory):
             paint_logger.info(message)
 
             # Initialise the experiment_tm file with the column headers
-            col_names = csv_reader.fieldnames + ['Nr Spots', 'Nr Tracks', 'Run Time', 'Ext Recording Name', 'Recording Size', 'Time Stamp']
+            col_names = csv_reader.fieldnames + ['Nr Spots', 'Nr Tracks', 'Run Time', 'Ext Recording Name',
+                                                 'Recording Size', 'Time Stamp']
             experiment_tm_file_path = initialise_experiment_tm_file(experiment_directory, col_names)
 
             # And now cycle through the experiment file
@@ -94,7 +93,8 @@ def run_trackmate(experiment_directory, recording_source_directory):
                 if 'y' in row['Process'].lower():
                     file_count += 1
                     paint_logger.info(
-                        "Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Recording Name'])
+                        "Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row[
+                            'Recording Name'])
 
                     status, row = process_recording(row, recording_source_directory, experiment_directory)
                     if status == 'OK':
@@ -218,7 +218,6 @@ def write_row_to_temp_file(row, temp_file_path, column_names):
 
 # Function to process directories after the window is closed
 def run_trackmate_with_supplied_directories(recordings_directory, experiment_directory):
-
     def run_fiji_code():
         time_stamp = time.time()
         run_trackmate(experiment_directory, recordings_directory)
@@ -229,6 +228,7 @@ def run_trackmate_with_supplied_directories(recordings_directory, experiment_dir
     # Run Fiji code on a new thread to avoid conflicts with the Swing EDT
     fiji_thread = threading.Thread(target=run_fiji_code)
     fiji_thread.start()
+
 
 # Function to create the GUI
 def create_gui():
@@ -330,6 +330,7 @@ def create_gui():
     # Show the frame
     frame.setVisible(True)
 
+
 if __name__ == "__main__":
     # Call the function to create the GUI
 
@@ -356,6 +357,3 @@ if __name__ == "__main__":
         run_time = time.time() - time_stamp
         run_time = round(run_time, 1)
         paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")
-
-
-

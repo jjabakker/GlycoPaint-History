@@ -1374,7 +1374,7 @@ class ImageViewer(tk.Tk):
         # Update the combobox with the new list of images
         self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
         self.cb_image_names['values'] = self.list_of_image_names
-        self.cb_image_names.set(self.cb_image_names['values'][0])   #@@@
+        self.cb_image_names.set(self.cb_image_names['values'][0])  # @@@
 
         # Start at 0
         self.on_forward_backward('START')

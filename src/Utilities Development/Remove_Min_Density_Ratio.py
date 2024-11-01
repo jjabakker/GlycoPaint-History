@@ -1,7 +1,7 @@
-
+import os
 from tkinter import *
 from tkinter import ttk, filedialog
-import os
+
 import pandas as pd
 
 
@@ -35,7 +35,7 @@ def remove_min_density(root_directory):
                     # Print the path where the file was modified
                     print(f"Deleted column in file: {output_path}")
 
-    print ('Exited normally')
+    print('Exited normally')
 
 
 class Dialog:

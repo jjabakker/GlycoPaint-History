@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def create_diffusion_coefficient(df_tracks: pd.DataFrame) -> pd.DataFrame:
     """
     Create a DataFrame with the mean, median, standard deviation and count of the diffusion coefficient
