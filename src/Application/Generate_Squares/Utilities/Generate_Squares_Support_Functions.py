@@ -293,7 +293,6 @@ def calc_average_track_count_in_background_squares(df_squares, nr_of_average_cou
 
 
 def calc_area_of_square(nr_of_squares_in_row):
-
     micrometer_per_pixel = 0.1602804  # Referenced from Fiji
     pixel_per_image = 512  # Referenced from Fiji
     micrometer_per_image = micrometer_per_pixel * pixel_per_image
@@ -304,7 +303,6 @@ def calc_area_of_square(nr_of_squares_in_row):
 
 
 def is_likely_root_directory(current_dir):
-
     # Initialize a counter for directories with the file
     count = 0
 
@@ -323,40 +321,11 @@ def is_likely_root_directory(current_dir):
     return count > 0
 
 
-def order_squares_columns(df):
-    df = df.reindex(columns=
-    [
-        'Recording Sequence Nr',
-        'Ext Recording Name',
-        'Experiment Date',
-        'Experiment Name',
-        'Condition Nr',
-        'Replicate Nr',
-        'Square Nr',
-        'Row Nr',
-        'Col Nr',
-        'Label Nr',
-        'Cell Id',
-        'Nr Spots',
-        'Nr Tracks',
-        'X0',
-        'Y0',
-        'X1',
-        'Y1',
-        'Visible',
-        'Neighbour Visible',
-        'Variability Visible',
-        'Density Ratio Visible',
-        'Duration Visible',
-        'Variability',
-        'Density',
-        'Density Ratio',
-        'Valid Tau',
-        'Tau',
-        'R2',
-        'DC',
-        'Average Long Track Duration',
-        'Max Track Duration',
-        'Total Track Duration'
-    ])
-    return df
+def label_visible_squares(df_squares):
+    df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
+    label_nr = 1
+    for idx, row in df_squares.iterrows():
+        if row['Visible']:
+            df_squares.at[idx, 'Label Nr'] = label_nr
+            label_nr += 1
+    df_squares.sort_index(inplace=True)
