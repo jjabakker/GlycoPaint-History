@@ -27,7 +27,7 @@ def get_experiment_squares_file_path(experiment_directory):
 # TrackMate Tracks
 # ----------------------------------------------------------------------------------------------------------------------
 
-TRACKMATE_TRACKS = "Trackmate Tracks"
+TRACKMATE_TRACKS = "TrackMate Tracks"
 
 
 def get_tracks_dir_path(experiment_directory, image_name):
@@ -42,7 +42,7 @@ def get_tracks_file_path(experiment_directory, image_name):
 # Trackmate Images
 # ----------------------------------------------------------------------------------------------------------------------
 
-TRACKMATE_IMAGES = "Trackmate Images"
+TRACKMATE_IMAGES = "TrackMate Images"
 
 
 def get_trackmate_image_dir_path(experiment_directory, image_name):
@@ -126,7 +126,6 @@ def get_paint_profile_directory():
     sub_dir = 'Profile'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
 
-
 def get_paint_logger_directory():
     sub_dir = 'Logger'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
@@ -135,6 +134,15 @@ def get_paint_logger_directory():
 def get_paint_defaults_directory():
     sub_dir = 'Defaults'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
+
+
+def get_paint_defaults_file_path():
+    sub_dir = 'Defaults'
+    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir, 'Paint.json')
+    # path = os.path.expanduser('~')
+    # path = os.path.join(path, 'Paint', 'Defaults', 'Paint.json')
+    return path
+
 
 
 def get_default_locations():

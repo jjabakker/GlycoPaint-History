@@ -12,7 +12,7 @@ from src.Common.Support.DirectoriesAndLocations import (
 from src.Common.Support.LoggerConfig import paint_logger
 
 
-def get_images(self):
+def get_images(self, initial=False):
     """
     Retrieve the images to be displayed (for the left and right frame) from disk.
     A list with all necessary attributes for each image is created.
@@ -48,10 +48,10 @@ def get_images(self):
             trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
         self.squares_file_name = squares_file_path
 
-        # If there is no 'Trackmate Images' directory below the image directory, skip it
+        # If there is no 'TrackMate Images' directory below the image directory, skip it
         if not os.path.isdir(trackmate_images_dir):
             paint_logger.error(
-                f"Function 'get_images' failed - The directory for trackmate images does not exist: {trackmate_images_dir}")
+                f"Function 'get_images' failed - The directory for TrackMate images does not exist: {trackmate_images_dir}")
             continue
 
         # Then get all the files in  the 'img' directory
@@ -70,10 +70,10 @@ def get_images(self):
                 # Try reading the file
                 left_img = ImageTk.PhotoImage(Image.open(os.path.join(trackmate_images_dir, img)))
 
-                # Try Retrieve the square numbers for this image
+                # Retrieve the square numbers for this image
                 df_squares = read_squares_from_file(squares_file_path)
                 square_nrs = list(df_squares['Square Nr'])
-                self.df_experiment.loc[index, 'Nr Spots'] = len(square_nrs)
+                # self.df_experiment.loc[image_name, 'Nr Spots'] = len(square_nrs)    # ToDo what were we tryuing to do here?
 
                 # Check if self.df_all_squares is empty
                 if not self.df_all_squares.empty:  # Correct way to check for an empty DataFrame
@@ -127,6 +127,9 @@ def get_images(self):
     if error_count > 0:
         paint_logger.error(
             f"There were {error_count} out of {len(self.df_experiment)} images for which no picture was available")
+
+    if initial:
+        self.saved_list_images = list_images
 
     return list_images
 

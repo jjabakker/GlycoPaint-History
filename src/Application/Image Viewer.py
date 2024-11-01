@@ -17,8 +17,10 @@ from PIL import Image
 from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
 from src.Application.Image_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
 from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
-from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import get_colormap_colors, get_color_index, \
-    get_heatmap_data
+from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
+    get_colormap_colors, get_color_index,
+    get_heatmap_data)
+from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
 from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
 from src.Application.Image_Viewer.Utilities.Get_Images import get_images
 from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import (
@@ -31,6 +33,7 @@ from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,
     save_squares_to_file)
+from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.DirectoriesAndLocations import (
     get_squares_file_path)
 from src.Common.Support.LoggerConfig import (
@@ -45,10 +48,11 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 # ImageViewer Class
 # ----------------------------------------------------------------------------------------
 
-class ImageViewer:
+class ImageViewer(tk.Tk):
 
     def __init__(self, parent, user_specified_directory, user_specified_level, user_specified_mode):
 
+        super().__init__()
         self.parent = tk.Toplevel(parent)
         self.parent.resizable(False, False)
 
@@ -119,11 +123,11 @@ class ImageViewer:
         self.heatmap_control_dialog = None
         self.define_cells_dialog = None
         self.square_info_popup = None
+        self.select_recording_dialog = None
 
         self.squares_in_rectangle = []
 
-
-
+        self.saved_list_images = []
 
         msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "EXPERIMENT_LEVEL" else self.user_specified_level}'
         msg += f'{" - NO SAVING" if self.user_specified_mode == "PROJECT_LEVEL" else ""}'
@@ -257,8 +261,11 @@ class ImageViewer:
     def setup_frame_commands(self):
         # This frame is part of frame_controls and contains the following buttons: bn_output, bn_reset, bn_excel, bn_histogram
 
-        button_width = 12
+        button_width = 13
 
+        self.bn_select_recording = ttk.Button(
+            self.frame_commands, text='Select Recordings', command=lambda: self.on_select_recording(),
+            width=button_width)
         self.bn_show_heatmap = ttk.Button(
             self.frame_commands, text='Heatmap', command=lambda: self.on_show_heatmap(), width=button_width)
         self.bn_show_select_squares = ttk.Button(
@@ -275,12 +282,13 @@ class ImageViewer:
         self.bn_reset = ttk.Button(
             self.frame_commands, text='Reset', command=lambda: self.on_reset_image(), width=button_width)
 
-        self.bn_show_heatmap.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_show_define_cells.grid(column=0, row=2, padx=5, pady=5)
-        self.bn_output.grid(column=0, row=3, padx=5, pady=5)
-        self.bn_reset.grid(column=0, row=4, padx=5, pady=5)
-        self.bn_excel.grid(column=0, row=5, padx=5, pady=5)
+        self.bn_select_recording.grid(column=0, row=0, padx=5, pady=5)
+        self.bn_show_heatmap.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_show_select_squares.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_show_define_cells.grid(column=0, row=3, padx=5, pady=5)
+        self.bn_output.grid(column=0, row=4, padx=5, pady=5)
+        self.bn_reset.grid(column=0, row=5, padx=5, pady=5)
+        self.bn_excel.grid(column=0, row=6, padx=5, pady=5)
 
     def setup_frame_save_commands(self):
 
@@ -297,9 +305,10 @@ class ImageViewer:
             anchor=tk.W)
 
         # Place the radio buttons and button in the grid
-        self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+        if self.user_specified_mode == 'EXPERIMENT_LEVEL':
+            self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+            self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+            self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
 
     def load_images_and_config(self):
 
@@ -318,7 +327,7 @@ class ImageViewer:
 
         self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
-        self.list_images = get_images(self)
+        self.list_images = get_images(self, initial=True)
         if not self.list_images:
             self.show_error_and_exit(f"No images were found in directory {self.experiment_directory_path}.")
 
@@ -329,11 +338,20 @@ class ImageViewer:
         self.img_no = -1
         self.on_forward_backward('FORWARD')
 
+    def on_select_recording(self):
+        if any(dialog is not None for dialog in
+               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
+                self.select_recording_dialog]):
+            return
+        else:
+            self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
+
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
 
         if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
+               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
+                self.select_recording_dialog]):
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
@@ -351,7 +369,8 @@ class ImageViewer:
         # If the select square dialog is not already active, then we need to run the select square dialog
 
         if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
+               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
+                self.select_recording_dialog]):
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
@@ -371,12 +390,13 @@ class ImageViewer:
     def on_show_define_cells(self):
 
         if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog]):
+               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
+                self.select_recording_dialog]):
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
             self.define_cells_dialog = DefineCellDialog(
-                self, self.callback_to_assign_squares_to_cell_cell_id, self.callback_to_reset_square_selection,
+                self, self.callback_to_assign_squares_to_cell_id, self.callback_to_reset_square_selection,
                 self.callback_to_close_define_cells)
 
     def callback_to_close_define_cells(self):
@@ -391,7 +411,7 @@ class ImageViewer:
         self.squares_in_rectangle = []
         self.display_selected_squares()
 
-    def callback_to_assign_squares_to_cell_cell_id(self, cell_id):
+    def callback_to_assign_squares_to_cell_id(self, cell_id):
         """
         This function is called by the DefineCellsDialog when a cell id has been selected to is assigned to a square
         See if there are any squares selected and if so update the cell id, then update the display
@@ -403,7 +423,6 @@ class ImageViewer:
         self.squares_changed = True
         self.squares_in_rectangle = []
         self.display_selected_squares()
-
 
     def setup_exclude_button(self):
         # Set up the exclude/include button state
@@ -474,19 +493,34 @@ class ImageViewer:
             self.display_selected_squares()
 
         # Displaying square numbers is toggled by pressing 'n'
-        if event.keysym == 'n':
+        elif event.keysym == 'n':
             self.show_squares_numbers = not self.show_squares_numbers
             if self.show_squares:
                 self.show_numbers = True
             self.display_selected_squares()
 
         # Pressing 'o' will generate a pdf file containing all the images
-        if event.keysym == 'o':
+        elif event.keysym == 'o':
             self.output_pictures_to_pdf()
 
-        if event.keysym == 't':
+        elif event.keysym == 't':
             self.show_squares = not self.show_squares
             self.display_selected_squares()
+
+        elif event.keysym == 'h':
+            self.on_histogram()
+
+        elif event.keysym == 'Right':
+            if event.state & 0x0001:  # 0x0001 is the bit mask for Shift
+                self.on_forward_backward('END')
+            else:
+                self.on_forward_backward('FORWARD')
+
+        elif event.keysym == 'Left':
+            if event.state & 0x0001:  # 0x0001 is the bit mask for Shift
+                self.on_forward_backward('START')
+            else:
+                self.on_forward_backward('BACKWARD')
 
     def output_pictures_to_pdf(self):
         """
@@ -840,8 +874,7 @@ class ImageViewer:
         # All squares are invisible, unless the density ratio is sufficiently large
         self.df_squares['Density Ratio Visible'] = False
         self.df_squares.loc[
-            self.df_squares['Density Ratio'] >= round(self.min_required_density_ratio,
-                                                      1), 'Density Ratio Visible'] = True
+            self.df_squares['Density Ratio'] >= self.min_required_density_ratio, 'Density Ratio Visible'] = True
 
         # All squares are invisible, unless the max track duration is within the min and max limits
         self.df_squares['Duration Visible'] = False
@@ -919,7 +952,7 @@ class ImageViewer:
         if cell_id == -1:  # The square is deleted (for good), stop processing
             return
 
-        if cell_id != 0:   # The square is assigned to a cell
+        if cell_id != 0:  # The square is assigned to a cell
             col = colour_table[self.df_squares.loc[square_nr]['Cell Id']][0]
             self.cn_left_image.create_rectangle(
                 col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
@@ -937,7 +970,7 @@ class ImageViewer:
             outline="white", fill="", width=1, tags=square_tag)
 
         if self.show_squares_numbers:
-            if cell_id == 0: # The number of a square assigned to a cell should not be overwritten
+            if cell_id == 0:  # The number of a square assigned to a cell should not be overwritten
                 self.cn_left_image.create_text(
                     col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
                     font=('Arial', -10), fill='white', tags=text_tag)
@@ -992,9 +1025,8 @@ class ImageViewer:
                 ("Density Ratio", square_data['Density Ratio']),
                 ("Variability", square_data['Variability']),
                 ("Max Track Duration", square_data['Max Track Duration']),
-                ("Mean Diffusion Coefficient", square_data['Mean DC'])
+                ("Mean Diffusion Coefficient", square_data['DC'])
             ]
-
             # Fill the popup with labels using a loop
             padx_value = 10
             pady_value = 1
@@ -1082,7 +1114,7 @@ class ImageViewer:
             self.img_no = 0
         elif direction == 'END':
             self.img_no = len(self.list_images) - 1
-        if direction == 'FORWARD':
+        elif direction == 'FORWARD':
             if self.img_no != len(self.list_images) - 1:
                 self.img_no += 1
         elif direction == 'BACKWARD':
@@ -1095,12 +1127,17 @@ class ImageViewer:
         # Set correct state of Forward and back buttons
         if self.img_no == len(self.list_images) - 1:
             self.bn_forward.configure(state=DISABLED)
+            self.bn_end.configure(state=DISABLED)
         else:
             self.bn_forward.configure(state=NORMAL)
+            self.bn_end.configure(state=NORMAL)
+
         if self.img_no == 0:
             self.bn_backward.configure(state=DISABLED)
+            self.bn_start.configure(state=DISABLED)
         else:
             self.bn_backward.configure(state=NORMAL)
+            self.bn_start.configure(state=NORMAL)
 
         # image_name = self.list_images[self.img_no]['Left Image Name']
         self.cb_image_names.set(self.image_name)
@@ -1294,14 +1331,51 @@ class ImageViewer:
         heatmap_mode = self.heatmap_option.get()
         heatmap_global_min_max = self.heatmap_global_min_max.get()
 
+        df_heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode,
+                                                             heatmap_global_min_max)
+        if df_heatmap_data is None:
+            paint_messagebox(self.parent, "No data for heatmap", "There is no data for the heatmap")
+            return
 
-        df_heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode, heatmap_global_min_max)
         for index, row in df_heatmap_data.iterrows():
             draw_heatmap_square(self.cn_left_image, index, self.nr_of_squares_in_row, row['Value'],
                                 min_val, max_val, colors)
 
-        # Update the min/max labels   @@@@@
-        # self.heatmap_control_dialog.on_heatmap_variable_change()
+    # ---------------------------------------------------------------------------------------
+    # Recording Selection Dialog Interaction
+    # ---------------------------------------------------------------------------------------
+
+    def on_recording_selection(self, selection):
+        # Callback to receive the filtered data from the dialog
+        # Update the label with the selected filter criteria
+
+        # filter_text = ", ".join(f"{k}: {v}" for k, v in selection.items())
+
+        self.select_recording_dialog = None
+        # If nothing has been selected, do nothing
+        if len(selection) == 0:
+            return
+
+        # Otherwise, build up the list of images from the saved list of images
+        self.list_images = []
+
+        for image in self.saved_list_images:
+            for key, value in selection.items():
+                choose = True
+                if image[key] != value:
+                    choose = False
+                    break
+                if choose:
+                    print(f"Key: {key}, Value: {value}")
+                    self.list_images.append(image)
+
+        # Update the combobox with the new list of images
+        self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
+        self.cb_image_names['values'] = self.list_of_image_names
+
+        # Start at 0
+        self.img_nr = -1
+        self.on_forward_backward('FORWARD')
 
 
 def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):
@@ -1311,13 +1385,14 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
     height = 512 / nr_of_squares_in_row
 
     color_index = get_color_index(value, max_value, min_value, 20)
-    if color_index  >= 20:
+    if color_index >= 20:
         i = 1
     color = colors[color_index]
 
     canvas_to_draw_on.create_rectangle(
         col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
         fill=color, outline=color)
+
 
 # ---------------------------------------------------------------------------------------
 # Main
@@ -1328,7 +1403,7 @@ if __name__ == '__main__':
     root.withdraw()
     root.eval('tk::PlaceWindow . center')
     dialog_result = SelectViewerDataDialog(root)
-    proceed, root_directory, level, mode = dialog_result.get_result()
+    proceed, experiment_directory, project_file, mode = dialog_result.get_result()
 
     if proceed:
         root = tk.Tk()
@@ -1336,10 +1411,10 @@ if __name__ == '__main__':
         root.eval('tk::PlaceWindow . center')
         paint_logger.debug(f'Mode: {mode}')
         if mode == 'EXPERIMENT_LEVEL':
-            paint_logger.info(f'Root directory: {root_directory}')
+            paint_logger.info(f'Root directory: {experiment_directory}')
         else:
-            paint_logger.debug(f'Project file: {level}')
+            paint_logger.debug(f'Project file: {project_file}')
 
-        image_viewer = ImageViewer(root, root_directory, level, mode)
+        image_viewer = ImageViewer(root, experiment_directory, project_file, mode)
 
     root.mainloop()

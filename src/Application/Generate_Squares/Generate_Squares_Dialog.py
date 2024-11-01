@@ -1,29 +1,27 @@
 import os
 import time
-import pandas as pd
 import tkinter as tk
 from tkinter import ttk, filedialog
 
-from src.Application.Create_All_Tracks.Create_All_Tracks import create_all_tracks
-from src.Application.Generate_Squares.Generate_Squares  import (
+from src.Application.Generate_Squares.Generate_Squares import (
     process_project_directory,
     process_experiment_directory)
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
     save_grid_defaults_to_file,
-    count_experiment_files_sub_directories)
-from src.Application.Utilities.Config import load_paint_config
-
+    is_likely_root_directory)
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
     format_time_nicely
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
+from src.Application.Utilities.ToolTips import ToolTip
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
+from src.Common.Support.PaintConfig import load_paint_config
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
@@ -47,8 +45,9 @@ class GenerateSquaresDialog:
         self.min_density_ratio = tk.DoubleVar(value=values.get('min_density_ratio', 0.5))
         self.max_variability = tk.DoubleVar(value=values.get('max_variability', 0.5))
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
-        self.process_average_tau = tk.IntVar(value=values.get('process_single', 0))
-        self.process_square_specific_tau = tk.IntVar(value=values.get('process_traditional', 1))
+        self.process_average_tau = tk.IntVar(value=values.get('process_recording_tau', 0))
+        self.generate_all_tracks = tk.IntVar(value=True)
+        self.process_square_specific_tau = tk.IntVar(value=values.get('process_square_tau', 1))
         self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
     def create_ui(self, _root):
@@ -90,38 +89,55 @@ class GenerateSquaresDialog:
 
     def create_parameter_controls(self, frame):
         """Create parameter controls for the UI."""
+
+        msg_nr_of_squares = "The number of squares in a row for the grid. The total number of squares will be this value squared."
+        msg_min_tracks = "The minimum number of tracks required to calculate Tau. With too few tracks, curvefitting is unreliable."
+        msg_min_r_squared = "The minimum allowable R-squared value for the tracks. Tau values with lower R-squared values are discarded."
+        msg_min_density_ratio = "The minimum required density ratio for the tracks. Used to distinguish 'cell' squares from background"
+        msg_max_variability = "The maximum allowable variability for the tracks. Used to filter out squares with high variability."
+
         params = [
-            ("Nr of Squares in Row", self.nr_of_squares_in_row, 1),
-            ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2),
-            ("Min allowable R-squared", self.min_r_squared, 3),
-            ("Min Required Density Ratio", self.min_density_ratio, 4),
-            ("Max Allowable Variability", self.max_variability, 5),
+            ("Nr of Squares in Row", self.nr_of_squares_in_row, 1, msg_nr_of_squares),
+            ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2, msg_min_tracks),
+            ("Min allowable R-squared", self.min_r_squared, 3, msg_min_r_squared),
+            ("Min Required Density Ratio", self.min_density_ratio, 4, msg_min_density_ratio),
+            ("Max Allowable Variability", self.max_variability, 5, msg_max_variability),
         ]
 
-        for label_text, var, row in params:
-            self.create_labeled_entry(frame, label_text, var, row)
+        for label_text, var, row, tooltip in params:
+            self.create_labeled_entry(frame, label_text, var, row, tooltip)
 
-    def create_labeled_entry(self, frame, label_text, var, row):
+    def create_labeled_entry(self, frame, label_text, var, row, tooltip):
         """Helper method to create a label and corresponding entry."""
         label = ttk.Label(frame, text=label_text, width=30, anchor=tk.W)
         label.grid(column=0, row=row, padx=5, pady=5)
         entry = ttk.Entry(frame, textvariable=var, width=10)
         entry.grid(column=1, row=row)
+        if tooltip:
+            ToolTip(label, tooltip, wraplength=400)
 
     def create_processing_controls(self, frame):
         """Create the processing checkboxes."""
-        self.create_checkbox(frame, "Square-Specific Tau", self.process_square_specific_tau, 0)
-        self.create_checkbox(frame, "Averaged Tau", self.process_average_tau, 1)
 
-    def create_checkbox(self, frame, text, var, row):
+        msg_square_tau = "If checked, the program will calculate a Tau for each square individually."
+        msg_recording_tau = "If checked, the program will calculate one Tau for all visible squares combined."
+        msg_all_tracks = "If checked, the program will generate an All Tracks file and calculate an average Diffusion Coefficient for each square (necessary if you wish to see a heatmap"
+
+        self.create_checkbox(frame, "Square Tau", self.process_square_specific_tau, 0, tooltip=msg_square_tau)
+        self.create_checkbox(frame, "Recording Tau", self.process_average_tau, 1, tooltip=msg_recording_tau)
+        self.create_checkbox(frame, "Generate All Tracks", self.generate_all_tracks, 2, tooltip=msg_all_tracks)
+
+    def create_checkbox(self, frame, text, var, row, tooltip=None):
         """Helper method to create a labeled checkbox."""
         checkbox = ttk.Checkbutton(frame, text=text, variable=var)
         checkbox.grid(column=0, row=row, padx=5, pady=10, sticky=tk.W)
         checkbox.config(padding=(10, 0, 0, 0))
+        if tooltip:
+            ToolTip(checkbox, tooltip, wraplength=400)
 
     def create_directory_controls(self, frame):
         """Create controls for directory management."""
-        btn_change_dir = ttk.Button(frame, text='Change Directory', width=15, command=self.change_dir)
+        btn_change_dir = ttk.Button(frame, text='Change Directory', width=15, command=self.on_change_dir)
         self.lbl_directory = ttk.Label(frame, text=self.paint_directory, width=80)
         btn_change_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_directory.grid(column=1, row=0, padx=20, pady=5)
@@ -140,7 +156,7 @@ class GenerateSquaresDialog:
         btn_generate.grid(column=1, row=0, padx=10, pady=0, sticky="ew")  # Center Process button
         btn_exit.grid(column=1, row=1, padx=10, pady=0, sticky="ew")  # Center Exit button
 
-    def change_dir(self):
+    def on_change_dir(self):
         """Change the paint directory through a dialog."""
         paint_directory = filedialog.askdirectory(initialdir=self.paint_directory)
         if paint_directory:
@@ -155,41 +171,26 @@ class GenerateSquaresDialog:
         """Generate the squares and save the parameters."""
         start_time = time.time()
 
-        # Start with compiling the All Tracks file
-        df_tracks = create_all_tracks(self.paint_directory)
-        if df_tracks is None:
-            paint_logger.error('No tracks found')
-            paint_messagebox(self.root, 'Error GS:002', "No tracks found in the selected directory.")
-            return
-        else:
-            paint_logger.info(f"Combined {len(df_tracks)} tracks.")
-            df_tracks.to_csv(os.path.join(self.paint_directory, 'Output', 'All Tracks.csv'), index=False)
-
-        df_dc = df_tracks.groupby('RECORDING NAME').agg({
-            'DIFFUSION_COEFFICIENT': ['mean', 'median', 'std', 'count']
-        })
-        # Convert tuple column names to strings
-        df_dc.columns = ['_'.join(col) for col in df_dc.columns]
-
-        df_dc = df_dc.round(0)
-
-        df_dc.rename(columns={'DIFFUSION_COEFFICIENT_mean': 'Mean',
-                              'DIFFUSION_COEFFICIENT_median': 'Median',
-                              'DIFFUSION_COEFFICIENT_std': 'Std',
-                              'DIFFUSION_COEFFICIENT_count': 'Count'}, inplace=True)
-        df_dc.index_name = 'ext_recording_name'
-
         # Determine which processing function to use
         generate_function = self.determine_process_function()
         if generate_function:  # If a function was found, call it
             generate_function(
-                self.paint_directory, self.nr_of_squares_in_row.get(), self.min_r_squared.get(),
-                self.min_tracks_for_tau.get(), self.min_density_ratio.get(), self.max_variability.get(),
-                self.max_square_coverage.get(), self.process_average_tau.get(), self.process_square_specific_tau.get(),
-                df_dc
+                paint_directory=self.paint_directory,
+                nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
+                min_r_squared=self.min_r_squared.get(),
+                min_tracks_for_tau=self.min_tracks_for_tau.get(),
+                min_density_ratio=self.min_density_ratio.get(),
+                max_variability=self.max_variability.get(),
+                max_square_coverage=self.max_square_coverage.get(),
+                process_recording_tau=self.process_average_tau.get(),
+                process_square_tau=self.process_square_specific_tau.get(),
+                generate_all_tracks=self.generate_all_tracks.get(),
+                verbose=False
             )
-            self.log_processing_time(time.time() - start_time)
+            run_time = time.time() - start_time
+            paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
             self.save_parameters()
+            self.on_exit_pressed()
         else:
             paint_logger.error('Invalid directory selected')
             paint_messagebox(self.root, 'Error GS:001', "The directory does not contain an 'experiment_tm.csv' file.'")
@@ -203,23 +204,23 @@ class GenerateSquaresDialog:
         """
         if os.path.isfile(os.path.join(self.paint_directory, 'experiment_tm.csv')):
             return process_experiment_directory
-        elif count_experiment_files_sub_directories(self.paint_directory) > 0:
+        elif is_likely_root_directory(self.paint_directory):
             return process_project_directory
         return None
 
     def save_parameters(self):
+        generate_all_tracks = True
         save_grid_defaults_to_file(
-            self.nr_of_squares_in_row.get(), self.min_tracks_for_tau.get(), self.min_r_squared.get(),
-            self.min_density_ratio.get(), self.max_variability.get(), self.max_square_coverage.get(),
-            self.process_average_tau.get(), self.process_square_specific_tau.get()
+            nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
+            min_tracks_for_tau=self.min_tracks_for_tau.get(),
+            min_r_squared=self.min_r_squared.get(),
+            min_density_ratio=self.min_density_ratio.get(),
+            max_variability=self.max_variability.get(),
+            max_square_coverage=self.max_square_coverage.get(),
+            process_recording_tau=self.process_average_tau.get(),
+            process_square_tau=self.process_square_specific_tau.get()
         )
         save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
-
-    def log_processing_time(self, run_time):
-
-        time_str = format_time_nicely(run_time)
-        paint_logger.info(f"Total processing time is {time_str}")
-
 
 
 if __name__ == "__main__":

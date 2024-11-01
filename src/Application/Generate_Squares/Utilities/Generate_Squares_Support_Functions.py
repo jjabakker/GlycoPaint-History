@@ -152,8 +152,8 @@ def get_grid_defaults_from_file() -> dict:
                       'min_density_ratio': 2,
                       'max_variability': 10,
                       'max_square_coverage': 100,
-                      'process_single': True,
-                      'process_traditional': True}
+                      'process_recording_tau': True,
+                      'process_square_tau': True}
 
     try:
         # Check if the file exists
@@ -166,7 +166,7 @@ def get_grid_defaults_from_file() -> dict:
 
             # Ensure required columns are present
             required_columns = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
-                                'max_variability', 'max_square_coverage', 'process_single', 'process_traditional']
+                                'max_variability', 'max_square_coverage', 'process_recording_tau', 'process_square_tau']
             for col in required_columns:
                 if col not in reader.fieldnames:
                     # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
@@ -198,14 +198,14 @@ def save_grid_defaults_to_file(
         min_density_ratio: float,
         max_variability: float,
         max_square_coverage: int,
-        process_single: bool,
-        process_traditional: bool):
+        process_recording_tau: bool,
+        process_square_tau: bool):
     grid_parameter_file_path = os.path.join(get_paint_profile_directory(), 'grid_parameters.csv')
 
     try:
 
         fieldnames = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
-                      'max_variability', 'max_square_coverage', 'process_single', 'process_traditional']
+                      'max_variability', 'max_square_coverage', 'process_recording_tau', 'process_square_tau']
 
         # Open the file in write mode ('w') and overwrite any existing content
         with open(grid_parameter_file_path, mode='w') as file:
@@ -222,8 +222,8 @@ def save_grid_defaults_to_file(
                 'min_density_ratio': min_density_ratio,
                 'max_variability': max_variability,
                 'max_square_coverage': max_square_coverage,
-                'process_single': process_single,
-                'process_traditional': process_traditional})
+                'process_recording_tau': process_recording_tau,
+                'process_square_tau': process_square_tau})
 
     except Exception as e:
         paint_logger.error(f"An error occurred while writing to the file: {e}")
@@ -263,7 +263,7 @@ def check_experiment_integrity(df_experiment):
         return False
 
 
-def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_squares):
+def calc_average_track_count_in_background_squares(df_squares, nr_of_average_count_squares):
     """
     The function calculates the average track count of the lowest average_count_squares squares with a track count > 0.
     The df_squares df is already sorted on track number.
@@ -292,19 +292,18 @@ def calc_average_track_count_of_lowest_squares(df_squares, nr_of_average_count_s
     return average
 
 
-def get_area_of_square(nr_of_squares_in_row):
+def calc_area_of_square(nr_of_squares_in_row):
+
     micrometer_per_pixel = 0.1602804  # Referenced from Fiji
     pixel_per_image = 512  # Referenced from Fiji
-
     micrometer_per_image = micrometer_per_pixel * pixel_per_image
-
     micrometer_per_square = micrometer_per_image / nr_of_squares_in_row
     area = micrometer_per_square * micrometer_per_square
 
     return area
 
 
-def count_experiment_files_sub_directories(current_dir):
+def is_likely_root_directory(current_dir):
 
     # Initialize a counter for directories with the file
     count = 0
@@ -321,4 +320,43 @@ def count_experiment_files_sub_directories(current_dir):
             if os.path.isfile(file_path):
                 count += 1
 
-    return count
+    return count > 0
+
+
+def order_squares_columns(df):
+    df = df.reindex(columns=
+    [
+        'Recording Sequence Nr',
+        'Ext Recording Name',
+        'Experiment Date',
+        'Experiment Name',
+        'Condition Nr',
+        'Replicate Nr',
+        'Square Nr',
+        'Row Nr',
+        'Col Nr',
+        'Label Nr',
+        'Cell Id',
+        'Nr Spots',
+        'Nr Tracks',
+        'X0',
+        'Y0',
+        'X1',
+        'Y1',
+        'Visible',
+        'Neighbour Visible',
+        'Variability Visible',
+        'Density Ratio Visible',
+        'Duration Visible',
+        'Variability',
+        'Density',
+        'Density Ratio',
+        'Valid Tau',
+        'Tau',
+        'R2',
+        'DC',
+        'Average Long Track Duration',
+        'Max Track Duration',
+        'Total Track Duration'
+    ])
+    return df

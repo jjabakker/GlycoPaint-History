@@ -20,7 +20,7 @@ class HeatMapDialog:
 
         # Set windows properties
         self.control_window = tk.Toplevel(self.image_viewer.parent)
-        self.control_window.title("Heatmap Control Window")
+        self.control_window.title("Heatmap")
         self.control_window.resizable(False, False)
         self.control_window.geometry("370x420")
         self.control_window.resizable(False, False)
@@ -61,6 +61,8 @@ class HeatMapDialog:
         self.content.rowconfigure(0, weight=1)  # Top row with frames
         self.content.rowconfigure(1, weight=0)  # Control frame row does not expand
 
+        self.control_window.bind('<Key>', self.on_key_pressed)
+
     def setup_heatmap_variable_buttons(self):
         """
         Add radio buttons for the provided option names, by cycling through the option names
@@ -73,7 +75,7 @@ class HeatMapDialog:
         lbl_radio.grid(row=2, column=0, padx=5, pady=5)
 
         # Add radio buttons for the provided option names
-        self.option_names = ["Tau", "Density", "Mean DC", "Track Duration", "Cum Track Duration"]
+        self.option_names = ["Tau", "Density", "DC", "Track Duration", "Cum Track Duration"]
         for idx, name in enumerate(self.option_names, start=1):
             radio_btn = tk.Radiobutton(
                 self.frame_mode_buttons, text=name, command=self.on_heatmap_variable_change,
@@ -101,12 +103,11 @@ class HeatMapDialog:
         self.lbl_max = tk.Label(self.frame_legend, text="", font=("Arial", 12))
 
         # Add a checkbox to toggle between recording or experiment min and max values
-        self.global_min_max = tk.IntVar()
-        self.global_min_max.set(1)
+        # Note the variable is defined in the image_viewer class
+        self.image_viewer.heatmap_global_min_max.set(0)
         self.cb_global_min_max = tk.Checkbutton(
             self.frame_legend, text="Global Min/Max", variable=self.image_viewer.heatmap_global_min_max,
             command=self.on_heatmap_global_local_change)
-
 
         self.canvas.grid(row=1, column=0, rowspan=11, padx=5, pady=0)
         self.lbl_min.grid(row=0, column=0, padx=2, pady=5)
@@ -187,3 +188,11 @@ class HeatMapDialog:
         self.lbl_min.config(text=str(min_val))
         self.lbl_max.config(text=str(max_val))
         self.image_viewer.display_heatmap()
+
+    def on_key_pressed(self, event):
+        """
+        If the user presses the 't' key the toggle button is pressed
+        """
+
+        if event.char == 't':
+            self.on_toggle()

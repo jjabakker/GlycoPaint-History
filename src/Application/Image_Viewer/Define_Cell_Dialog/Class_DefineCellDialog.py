@@ -19,11 +19,13 @@ class DefineCellDialog:
         # Set windows properties
         self.control_window = tk.Toplevel(self.image_viewer.parent)
         self.control_window.resizable(False, False)
-        self.control_window.title("Define Cell")
+        self.control_window.title("Define Cells")
         self.control_window.geometry("280x350")
         self.control_window.resizable(False, False)
         self.control_window.attributes('-topmost', True)
         self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        self.control_window.bind('<Key>', self.on_key_pressed)
 
         self.setup_userinterface()
 
@@ -120,6 +122,12 @@ class DefineCellDialog:
     def on_reset(self):
         self.callback_to_reset_square_selection()
         pass
+
+    def on_key_pressed(self, event):
+        if event.char == 'a':
+            self.on_assign()
+        elif event.char == 'r':
+            self.on_reset()
 
 
 

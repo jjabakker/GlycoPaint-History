@@ -9,6 +9,7 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
+from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import is_likely_root_directory
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
@@ -16,6 +17,7 @@ from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file,
     format_time_nicely,
     correct_all_images_column_types)
+from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.DirectoriesAndLocations import (
     get_experiment_squares_file_path,
     get_squares_file_path)
@@ -35,6 +37,8 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 
 def compile_project_output(project_dir: str, verbose: bool):
+
+    paint_logger.info("")
     paint_logger.info(f"Compiling output for {project_dir}")
     time_stamp = time.time()
 
@@ -141,7 +145,7 @@ def compile_project_output(project_dir: str, verbose: bool):
     correct_all_images_column_types(df_all_images)
 
     # Drop irrelevant columns in df_all_squares
-    df_all_squares = df_all_squares.drop(['Neighbour Visible', 'Variability Visible', 'Density Ratio Visible'], axis=1)
+    # df_all_squares = df_all_squares.drop(['Neighbour Visible', 'Variability Visible', 'Density Ratio Visible'], axis=1)
 
     # Drop the squares that have no tracks
     df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
@@ -210,8 +214,13 @@ class CompileDialog:
             self.lbl_root_dir.config(text=self.root_directory)
 
     def on_compile_pressed(self) -> None:
-        compile_project_output(project_dir=self.root_directory, verbose=True)
-        self.root.destroy()
+        # Check if the directory is a likely project directory
+        if is_likely_root_directory(self.root_directory):
+            compile_project_output(project_dir=self.root_directory, verbose=True)
+            self.root.destroy()
+        else:
+            paint_logger.error("The selected directory does not seem to be a project directory")
+            paint_messagebox(self.root, title='Warning', message="The selected directory does not seem to be a project directory")
 
     def on_exit_pressed(self) -> None:
         self.root.destroy()

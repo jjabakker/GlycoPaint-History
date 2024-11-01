@@ -8,7 +8,7 @@ from src.Common.Support.LoggerConfig import paint_logger
 heatmap_modes = {
     1: 'Tau',
     2: 'Density',
-    3: 'Mean DC',
+    3: 'DC',
     4: 'Max Track Duration',
     5: 'Total Track Duration'
 }
@@ -36,13 +36,8 @@ def get_color_index(var, var_max, var_min, nr_levels):
 
 
 def get_heatmap_data(df_squares, df_all_squares, heatmap_mode, experiment_min_max=True):
-    heatmap_modes = {
-        1: 'Tau',
-        2: 'Density',
-        3: 'DC',
-        4: 'Max Track Duration',
-        5: 'Total Track Duration'
-    }
+
+    global heatmap_modes
 
     if df_all_squares.empty or df_squares.empty:
         paint_logger.error("Function 'display_heatmap' failed - No data available")
@@ -50,6 +45,13 @@ def get_heatmap_data(df_squares, df_all_squares, heatmap_mode, experiment_min_ma
 
     if heatmap_mode in heatmap_modes:
         column_name = heatmap_modes[heatmap_mode]
+
+        if not column_name in df_squares.columns:
+            paint_logger.error(f"No data vailable for {column_name} - possibly Generate All tracks was not run")
+            min_val = 0
+            max_val = 0
+            df_heatmap_data = None
+            return df_heatmap_data, min_val, max_val
 
         if experiment_min_max:
             min_val = df_all_squares[column_name].min()
@@ -68,7 +70,7 @@ def get_heatmap_data(df_squares, df_all_squares, heatmap_mode, experiment_min_ma
         df_heatmap_data = df_heatmap_data.fillna(0)
 
     else:
-        paint_logger.error("Function 'display_heatmap' failed - Unknown heatmap mode")
+        paint_logger.error("Function 'get_heatmap_data' failed - Unknown heatmap mode")
         sys.exit()
 
     return df_heatmap_data, min_val, max_val

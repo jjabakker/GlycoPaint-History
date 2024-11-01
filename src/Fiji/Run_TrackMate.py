@@ -2,10 +2,12 @@ import csv
 import os
 import sys
 import time
+import threading
 
 from ij import IJ
 from java.lang.System import getProperty
-from javax.swing import JOptionPane
+from javax.swing import JFrame, JPanel, JButton, JTextField, JFileChooser, JOptionPane, BorderFactory
+from java.awt import GridLayout, Dimension, FlowLayout
 
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
@@ -117,7 +119,7 @@ def run_trackmate(experiment_directory, recording_source_directory):
             return 0
 
         except KeyError as e:
-            paint_logger.error("Run_Trackmate: Missing expected column in row: {e}")
+            paint_logger.error("Run_Trackmate: Missing expected column in row: {}.format(e)")
             suppress_fiji_output()
             sys.exit(0)
 
@@ -211,23 +213,134 @@ def write_row_to_temp_file(row, temp_file_path, column_names):
         sys.exit()
 
 
+# Function to process directories after the window is closed
+def run_trackmate_with_supplied_directories(recordings_directory, experiment_directory):
+
+    def run_fiji_code():
+        time_stamp = time.time()
+        run_trackmate(experiment_directory, recordings_directory)
+        run_time = time.time() - time_stamp
+        run_time = round(run_time, 1)
+        paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")
+
+    # Run Fiji code on a new thread to avoid conflicts with the Swing EDT
+    fiji_thread = threading.Thread(target=run_fiji_code)
+    fiji_thread.start()
+
+# Function to create the GUI
+def create_gui():
+
+    # Set up the frame
+    frame = JFrame("Run TrackMate")
+    frame.setSize(700, 200)
+    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE)
+    frame.setLayout(GridLayout(3, 1))
+
+    # Add padding around the frame content
+    frame.getRootPane().setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20))
+
+    # Panel for directory 1
+    panel1 = JPanel(FlowLayout(FlowLayout.LEFT))
+    browseButton1 = JButton("Recordings  Directory")
+    browseButton1.setPreferredSize(Dimension(180, 20))
+    textField1 = JTextField(40)
+    textField1.setEditable(False)
+
+    # Action to open JFileChooser for directory 1
+    def browse_action1(event):
+        chooser = JFileChooser()
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
+        chooser.rescanCurrentDirectory()  # Ensures the directory tree is refreshed
+        result = chooser.showOpenDialog(frame)
+        if result == JFileChooser.APPROVE_OPTION:
+            selected_dir = chooser.getSelectedFile().getAbsolutePath()
+            textField1.setText(selected_dir)
+
+    browseButton1.addActionListener(browse_action1)
+    panel1.add(browseButton1)
+    panel1.add(textField1)
+
+    # Panel for directory 2
+    panel2 = JPanel(FlowLayout(FlowLayout.LEFT))
+    browseButton2 = JButton("Experiment Directory")
+    browseButton2.setPreferredSize(Dimension(180, 20))
+    textField2 = JTextField(40)
+    textField2.setEditable(False)
+
+    # Action to open JFileChooser for directory 2
+    def browse_action2(event):
+        chooser = JFileChooser()
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
+        chooser.rescanCurrentDirectory()  # Ensures the directory tree is refreshed
+        result = chooser.showOpenDialog(frame)
+        if result == JFileChooser.APPROVE_OPTION:
+            selected_dir = chooser.getSelectedFile().getAbsolutePath()
+            textField2.setText(selected_dir)
+
+    browseButton2.addActionListener(browse_action2)
+    panel2.add(browseButton2)
+    panel2.add(textField2)
+
+    # Panel for OK and Cancel buttons
+    buttonPanel = JPanel()
+    okButton = JButton("OK")
+    cancelButton = JButton("Cancel")
+
+    # Define actions for the OK and Cancel buttons
+    def ok_action(event):
+
+        recordings_directory = textField1.getText()
+        experiment_directory = textField2.getText()
+        frame.dispose()
+
+        # Process directories
+        run_trackmate_with_supplied_directories(recordings_directory, experiment_directory)
+
+    def cancel_action(event):
+        print("Operation cancelled.")
+
+        frame.dispose()  # Close the window
+
+    # Assign actions to buttons
+    okButton.addActionListener(ok_action)
+    cancelButton.addActionListener(cancel_action)
+
+    # Add components to the frame
+    buttonPanel.add(okButton)
+    buttonPanel.add(cancelButton)
+    frame.add(panel1)
+    frame.add(panel2)
+    frame.add(buttonPanel)
+
+    # Show the frame
+    frame.setVisible(True)
+
 if __name__ == "__main__":
+    # Call the function to create the GUI
 
-    experiment_directory = ask_user_for_image_directory("Specify the Experiment directory", 'Paint')
-    if len(experiment_directory) == 0:
-        paint_logger.warning("User aborted the batch processing.")
-        suppress_fiji_output()
-        exit(0)
+    new_method = True
 
-    # Get the directory where the recordings are located
-    recordings_directory = ask_user_for_image_directory("Specify the Image Source directory", 'Images')
-    if len(recordings_directory) == 0:
-        paint_logger.warning("User aborted the batch processing.")
-        suppress_fiji_output()
-        exit(0)
+    if new_method:
+        create_gui()
+    else:
+        experiment_directory = ask_user_for_image_directory("Specify the Experiment directory", 'Paint')
+        if len(experiment_directory) == 0:
+            paint_logger.warning("User aborted the batch processing.")
+            suppress_fiji_output()
+            exit(0)
 
-    time_stamp = time.time()
-    run_trackmate(experiment_directory, recordings_directory)
-    run_time = time.time() - time_stamp
-    run_time = round(run_time, 1)
-    paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")
+        # Get the directory where the recordings are located
+        recordings_directory = ask_user_for_image_directory("Specify the Image Source directory", 'Images')
+        if len(recordings_directory) == 0:
+            paint_logger.warning("User aborted the batch processing.")
+            suppress_fiji_output()
+            exit(0)
+
+        time_stamp = time.time()
+        run_trackmate(recordings_directory, experiment_directory, )
+        run_time = time.time() - time_stamp
+        run_time = round(run_time, 1)
+        paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")
+
+
+
