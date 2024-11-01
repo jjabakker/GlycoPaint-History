@@ -1,17 +1,18 @@
 import os
 import sys
-import pandas as pd
-
 import tkinter as tk
 from tkinter import *
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 from tkinter import ttk
+
+import pandas as pd
 
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.LoggerConfig import paint_logger
+
 
 class SelectViewerDataDialog:
 
@@ -122,7 +123,6 @@ class SelectViewerDataDialog:
             sys.exit()
 
         if not error:
-
             # The dialog will simply exit and the main programs will pick up the return values
             self.proceed = True
             self.parent.destroy()

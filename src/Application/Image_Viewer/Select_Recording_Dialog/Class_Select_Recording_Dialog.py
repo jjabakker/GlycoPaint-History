@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
+
 import pandas as pd
+
 
 class SelectRecordingDialog(tk.Toplevel):
 
@@ -145,7 +147,6 @@ if __name__ == "__main__":
             # Display the selected filters
             filter_text = ", ".join(f"{k}: {v}" for k, v in selected_filters.items())
             self.result_label.config(text=f"Filtered Data: {filter_text}")
-
 
 # Run the main window
 if __name__ == "__main__":

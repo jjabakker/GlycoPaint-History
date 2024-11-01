@@ -1,16 +1,16 @@
-import sys
 import os
+import sys
 import time
 
 import pandas as pd
 
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_square_coordinates)
+from src.Application.Utilities.General_Support_Functions import (
+    format_time_nicely)
 from src.Common.Support.LoggerConfig import (
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned, paint_logger)
-from src.Application.Utilities.General_Support_Functions import (
-    format_time_nicely)
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
@@ -26,7 +26,7 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
     nr_squares = nr_of_squares_in_row ** 2
 
     # Find out which unique Recordings there are
-    #recording_names = df_tracks['RECORDING NAME'].unique().tolist()
+    # recording_names = df_tracks['RECORDING NAME'].unique().tolist()
 
     recording_names = find_ext_recording_names(project_directory)
 
@@ -46,7 +46,8 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
             df_squares = pd.read_csv(squares_file_path)
             df_squares['DC'] = 0
         else:
-            paint_logger.error(f"Could not find squares file {recording_name + '-squares.csv'} for recording {recording_name}")
+            paint_logger.error(
+                f"Could not find squares file {recording_name + '-squares.csv'} for recording {recording_name}")
             sys.exit()
 
         # Now determine for each square which tracks fit in, start
@@ -55,7 +56,7 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
             x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_nr)
             df_tracks_in_square = df_tracks_in_recording[
                 (df_tracks_in_recording['TRACK_X_LOCATION'] >= x0) & (
-                            df_tracks_in_recording['TRACK_X_LOCATION'] <= x1) &
+                        df_tracks_in_recording['TRACK_X_LOCATION'] <= x1) &
                 (df_tracks_in_recording['TRACK_Y_LOCATION'] >= y0) & (df_tracks_in_recording['TRACK_Y_LOCATION'] <= y1)]
             if len(df_tracks_in_square) > 0:
                 dc_mean = df_tracks_in_square['DIFFUSION_COEFFICIENT'].mean()
@@ -71,6 +72,7 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
     run_time = round(time.time() - time_stamp, 1)
     paint_logger.info(f"Updated {line_count:2d} lines in {image_count} images in {project_directory} in {format_time_nicely(run_time)}")
     paint_logger.info("")
+
 
 def find_squares_file(root_directory, target_filename):
     for dirpath, dirnames, filenames in os.walk(root_directory):
@@ -105,6 +107,7 @@ def find_ext_recording_names(directory):
                     print(f"Error reading {file_path}: {e}")
 
     return ext_recording_names
+
 
 if __name__ == '__main__':
     df_tracks = pd.read_csv('/Users/hans/Paint Work/New Probes/Output/All Tracks.csv')

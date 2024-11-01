@@ -1,7 +1,9 @@
+from tkinter import *
 from tkinter import filedialog, messagebox
 from tkinter import ttk
-from tkinter import *
+
 from src.Application.Process_Projects.Utilities.Convert_BF_from_nd2_to_jpg import convert_bf_images
+
 
 class ConvertDialog:
 

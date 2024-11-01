@@ -4,11 +4,12 @@ from tkinter import ttk
 
 class DefineCellDialog:
 
-    #--------------------------------------------------------------
+    # --------------------------------------------------------------
     # Setting up
-    #--------------------------------------------------------------
+    # --------------------------------------------------------------
 
-    def __init__(self, image_viewer, callback_to_assign_squares_to_cell, callback_to_reset_square_selection, callback_to_close):
+    def __init__(self, image_viewer, callback_to_assign_squares_to_cell, callback_to_reset_square_selection,
+                 callback_to_close):
 
         # Create a new top-level window for the controls
         self.image_viewer = image_viewer
@@ -80,13 +81,13 @@ class DefineCellDialog:
             color_square.grid(row=i, column=1, padx=10, pady=5)
 
     # Bind the right mouse click
-        # self.rb_cell1.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 1))
-        # self.rb_cell2.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 2))
-        # self.rb_cell3.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 3))
-        # self.rb_cell4.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 4))
-        # self.rb_cell5.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 5))
-        # self.rb_cell6.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 6))
-        # self.rb_cell0.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 0))
+    # self.rb_cell1.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 1))
+    # self.rb_cell2.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 2))
+    # self.rb_cell3.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 3))
+    # self.rb_cell4.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 4))
+    # self.rb_cell5.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 5))
+    # self.rb_cell6.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 6))
+    # self.rb_cell0.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 0))
 
     def setup_frame_controls(self):
         """
@@ -101,9 +102,9 @@ class DefineCellDialog:
         assign_button.grid(row=0, column=1, padx=5, pady=10)
         reset_button.grid(row=0, column=2, padx=5, pady=10)
 
-    #--------------------------------------------------------------
+    # --------------------------------------------------------------
     # Event Handlers
-    #--------------------------------------------------------------
+    # --------------------------------------------------------------
 
     def on_close(self):
         """
@@ -128,8 +129,3 @@ class DefineCellDialog:
             self.on_assign()
         elif event.char == 'r':
             self.on_reset()
-
-
-
-
-

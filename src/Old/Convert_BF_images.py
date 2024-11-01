@@ -72,7 +72,8 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
                     paint_logger.info("Image %s does not require updating.", display_name)
 
     # Log the conversion summary
-    paint_logger.info("\nConverted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found, count)
+    paint_logger.info("\nConverted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found,
+                      count)
 
     # Copy the entire 'Converted BF Images' directory to the paint directory
     dest_dir = os.path.join(paint_directory, "Converted BF Images")

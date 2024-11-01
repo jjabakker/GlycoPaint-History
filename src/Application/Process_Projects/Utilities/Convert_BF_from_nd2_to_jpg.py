@@ -9,7 +9,6 @@ from src.Common.Support.LoggerConfig import paint_logger
 
 
 def _convert_nd2_to_jpg(nd2_file_path, output_file):
-
     with ND2Reader(nd2_file_path) as images:
 
         frame = images[0]
@@ -95,4 +94,3 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
         paint_logger.info("Copied the entire 'Converted BF Images' directory to %s", dest_dir)
     except Exception as e:
         paint_logger.error("Error copying the directory %s to %s: %s", bf_jpeg_dir, dest_dir, str(e))
-

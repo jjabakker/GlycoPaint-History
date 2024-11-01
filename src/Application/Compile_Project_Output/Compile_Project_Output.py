@@ -37,7 +37,6 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 
 def compile_project_output(project_dir: str, verbose: bool):
-
     paint_logger.info("")
     paint_logger.info(f"Compiling output for {project_dir}")
     time_stamp = time.time()
@@ -220,7 +219,8 @@ class CompileDialog:
             self.root.destroy()
         else:
             paint_logger.error("The selected directory does not seem to be a project directory")
-            paint_messagebox(self.root, title='Warning', message="The selected directory does not seem to be a project directory")
+            paint_messagebox(self.root, title='Warning',
+                             message="The selected directory does not seem to be a project directory")
 
     def on_exit_pressed(self) -> None:
         self.root.destroy()

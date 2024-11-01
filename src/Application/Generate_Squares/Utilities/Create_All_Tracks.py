@@ -3,12 +3,12 @@ import time
 
 import pandas as pd
 
+from src.Application.Utilities.General_Support_Functions import (
+    format_time_nicely)
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
-from src.Application.Utilities.General_Support_Functions import (
-    format_time_nicely)
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Create All Tracks.log')
@@ -32,7 +32,7 @@ def create_all_tracks(root_dir):
                 if any(keyword in file for keyword in ['tracks', 'threshold']) and file.endswith(
                         '.csv') and 'label' not in file:
                     csv_files.append(os.path.join(root, file))
-                    #paint_logger.debug(f"Read Tracks file: {os.path.join(root, file)}")
+                    # paint_logger.debug(f"Read Tracks file: {os.path.join(root, file)}")
     paint_logger.info(f"Located {len(csv_files)} tracks files in {root_dir}")
     csv_files.sort()
     for file in csv_files:

@@ -34,7 +34,6 @@ def rename_plt_directories(root_dir):
                 except Exception as e:
                     print(f"Error renaming {old_dir}: {e}")
 
-
             if dirname == 'tracks':
                 old_dir = os.path.join(dirpath, dirname)  # Full path to the current 'plt' directory
                 new_dir = os.path.join(dirpath, 'TrackMate Tracks')  # Full path for the renamed directory
@@ -43,6 +42,7 @@ def rename_plt_directories(root_dir):
                     print(f"Renamed directory: {old_dir} -> {new_dir}")
                 except Exception as e:
                     print(f"Error renaming {old_dir}: {e}")
+
 
 # Example usage
 root_directory = '/Users/hans/Paint Source New/'  # Replace with the path to your root directory
