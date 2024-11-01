@@ -172,7 +172,7 @@ class GenerateSquaresDialog:
         start_time = time.time()
 
         # Determine which processing function to use
-        generate_function = self.determine_process_function()
+        called_from_project, generate_function = self.determine_process_function()
         if generate_function:  # If a function was found, call it
             generate_function(
                 paint_directory=self.paint_directory,
@@ -185,6 +185,7 @@ class GenerateSquaresDialog:
                 process_recording_tau=self.process_average_tau.get(),
                 process_square_tau=self.process_square_specific_tau.get(),
                 generate_all_tracks=self.generate_all_tracks.get(),
+                called_from_project=called_from_project,
                 verbose=False
             )
             run_time = time.time() - start_time
@@ -203,9 +204,9 @@ class GenerateSquaresDialog:
         function.
         """
         if os.path.isfile(os.path.join(self.paint_directory, 'experiment_tm.csv')):
-            return process_experiment_directory
+            return False, process_experiment_directory
         elif is_likely_root_directory(self.paint_directory):
-            return process_project_directory
+            return True, process_project_directory
         return None
 
     def save_parameters(self):

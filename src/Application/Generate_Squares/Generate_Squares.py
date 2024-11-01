@@ -60,9 +60,10 @@ def process_project_directory(
         min_density_ratio: float,
         max_variability: float,
         max_square_coverage: float,
-        process_recording_tau: bool,
-        process_square_tau: bool,
-        generate_all_tracks: bool,
+        process_recording_tau: bool = True,
+        process_square_tau: bool = True,
+        generate_all_tracks: bool = True,
+        called_from_project: bool = True,
         verbose: bool = False) -> None:
     """
     This function processes all images in a root directory. It calls the function
@@ -96,8 +97,14 @@ def process_project_directory(
             continue
         process_experiment_directory(
             os.path.join(root_directory, experiment_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
-            min_density_ratio, max_variability, max_square_coverage, process_recording_tau, process_square_tau,
-            generate_all_tracks, verbose)
+            min_density_ratio,
+            max_variability,
+            max_square_coverage,
+            process_recording_tau=process_recording_tau,
+            process_square_tau=process_square_tau,
+            generate_all_tracks=generate_all_tracks,
+            called_from_project=called_from_project,
+            verbose=False)
 
 
 def process_experiment_directory(
@@ -108,9 +115,10 @@ def process_experiment_directory(
         min_density_ratio: float,
         max_variability: float,
         max_square_coverage: float,
-        process_recording_tau: bool,
-        process_square_tau: bool,
-        generate_all_tracks: bool,
+        process_recording_tau: bool = True,
+        process_square_tau: bool = True,
+        generate_all_tracks: bool = True,
+        called_from_project: bool = True,
         verbose: bool = False) -> None:
     """
     This function processes all images in a paint directory. It reads the experiment file, to find out what
@@ -118,6 +126,17 @@ def process_experiment_directory(
     """
 
     experiment_path = paint_directory
+
+    # --------------------------------------------------------------------------------------------
+    # Start with compiling the All Tracks file if required
+    # --------------------------------------------------------------------------------------------
+
+    if generate_all_tracks and not called_from_project:
+        # Read all tracks files in the directory tree and concatenate them into a single All Tracks
+        df_tracks = create_all_tracks(experiment_path)
+        if df_tracks is None:
+            paint_logger.error('All Tracks not generated')
+            return
 
     # --------------------------------------------------------------------------------------------
     # Load from the paint configuration file
