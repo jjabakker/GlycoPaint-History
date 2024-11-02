@@ -39,7 +39,7 @@ from src.Common.Support.DirectoriesAndLocations import (
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
-
+from src.Application.Image_Viewer.Utilities.New_Select_Squares import select_squares1
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Image Viewer.log')
 
@@ -337,6 +337,11 @@ class ImageViewer(tk.Tk):
         self.initialise_image_display()
         self.img_no = -1
         self.on_forward_backward('FORWARD')
+
+        self.select_squares()                   # ToDo Experimentation
+
+    def select_squares(self):
+        select_squares1(self)
 
     def on_select_recording(self):
         if any(dialog is not None for dialog in
