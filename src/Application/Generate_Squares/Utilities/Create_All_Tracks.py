@@ -14,7 +14,7 @@ if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Create All Tracks.log')
 
 
-def create_all_tracks(root_dir):
+def create_and_save_all_tracks(root_dir):
     """
     Read all tracks files in the directory tree and concatenate them into a single DataFrame.
     The file is then saved as 'All Tracks.csv' in the root directory.
@@ -29,11 +29,12 @@ def create_all_tracks(root_dir):
         if os.path.basename(root).lower() == 'trackmate tracks':
             for file in files:
                 # Check if it's a CSV file that contains 'tracks', threshold, but not 'label' in the name
-                if any(keyword in file for keyword in ['tracks', 'threshold']) and file.endswith(
-                        '.csv') and 'label' not in file:
+                if (any(keyword in file for keyword in ['tracks', 'threshold']) and
+                        file.endswith('.csv') and 'label' not in file):
                     csv_files.append(os.path.join(root, file))
                     # paint_logger.debug(f"Read Tracks file: {os.path.join(root, file)}")
     paint_logger.info(f"Located {len(csv_files)} tracks files in {root_dir}")
+
     csv_files.sort()
     for file in csv_files:
         paint_logger.debug(f"Found Tracks file: {file}")
@@ -45,6 +46,7 @@ def create_all_tracks(root_dir):
         return None
     else:
         # Save the file in the Output directory
+
         os.makedirs(os.path.join(root_dir, 'Output'), exist_ok=True)
         all_tracks_file_path = os.path.join(root_dir, 'Output', 'All Tracks.csv')
         df_tracks.to_csv(all_tracks_file_path, index=False)
