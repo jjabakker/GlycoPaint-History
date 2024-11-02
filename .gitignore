@@ -2,9 +2,13 @@
 src/Old/
 
 src/Config/Process\ Project.json
-src/Config/Process\ Paint\ Data\ Generation.json
+src/Config/Paint\ Data\ Generation.json
 .DS_Store
 *.xml
+*.iml
+*.csv
+src/Demo/
+
 
 
 # Byte-compiled / optimized / DLL files
@@ -248,3 +252,4 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+/src/Config/Paint Data Generation.json
