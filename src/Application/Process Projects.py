@@ -39,10 +39,10 @@ def process_json_configuration_block(paint_source_dir,
                                      nr_of_squares_in_row: int,
                                      nr_to_process: int,
                                      current_process: int,
-                                     min_density_ratio: float,
+                                     min_required_density_ratio: float,
                                      min_r_squared: float,
                                      min_tracks_for_tau: int,
-                                     max_variability: float,
+                                     max_allowable_variability: float,
                                      max_square_coverage: float,
                                      process_recording_tau: bool,
                                      process_square_tau: bool,
@@ -60,10 +60,10 @@ def process_json_configuration_block(paint_source_dir,
     paint_logger.info(f"Process Square Tau          : {process_square_tau}")
     paint_logger.info(f"Process Recording Tau       : {process_recording_tau}")
     paint_logger.info(f"Number of squares           : {nr_of_squares_in_row}")
-    paint_logger.info(f"Min Required Density Ratio  : {min_density_ratio}")
+    paint_logger.info(f"Min Required Density Ratio  : {min_required_density_ratio}")
     paint_logger.info(f"Min R squared               : {min_r_squared}")
     paint_logger.info(f"Min tracks for tau          : {min_tracks_for_tau}")
-    paint_logger.info(f"Max Allowable Variability   : {max_variability}")
+    paint_logger.info(f"Max Allowable Variability   : {max_allowable_variability}")
     paint_logger.info(f"Max square coverage         : {max_square_coverage}")
     paint_logger.info(f"Paint Force                 : {paint_force}")
 
@@ -93,8 +93,8 @@ def process_json_configuration_block(paint_source_dir,
         nr_of_squares_in_row=nr_of_squares_in_row,
         min_r_squared=min_r_squared,
         min_tracks_for_tau=min_tracks_for_tau,
-        min_density_ratio=min_density_ratio,
-        max_variability=max_variability,
+        min_required_density_ratio=min_required_density_ratio,
+        max_allowable_variability=max_allowable_variability,
         max_square_coverage=max_square_coverage,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
@@ -215,10 +215,10 @@ def main():
                     nr_of_squares_in_row=entry['nr_of_squares'],
                     nr_to_process=nr_to_process,
                     current_process=current_process_seq_nr,
-                    min_density_ratio=entry['min_density_ratio'],
+                    min_required_density_ratio=entry['min_required_density_ratio'],
                     min_r_squared=entry['min_r_squared'],
                     min_tracks_for_tau=entry['min_tracks_for_tau'],
-                    max_variability=entry['max_variability'],
+                    max_allowable_variability=entry['max_allowable_variability'],
                     max_square_coverage=entry['max_square_coverage'],
                     process_recording_tau=entry['process_recording_tau'],
                     process_square_tau=entry['process_square_tau'],

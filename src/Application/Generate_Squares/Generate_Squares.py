@@ -58,8 +58,8 @@ def process_project_directory(
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
-        min_density_ratio: float,
-        max_variability: float,
+        min_required_density_ratio: float,
+        max_allowable_variability: float,
         max_square_coverage: float,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
@@ -98,8 +98,8 @@ def process_project_directory(
             continue
         process_experiment_directory(
             os.path.join(root_directory, experiment_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
-            min_density_ratio,
-            max_variability,
+            min_required_density_ratio,
+            max_allowable_variability,
             max_square_coverage,
             process_recording_tau=process_recording_tau,
             process_square_tau=process_square_tau,
@@ -113,8 +113,8 @@ def process_experiment_directory(
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
-        min_density_ratio: float,
-        max_variability: float,
+        min_required_density_ratio: float,
+        max_allowable_variability: float,
         max_square_coverage: float,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
@@ -167,7 +167,7 @@ def process_experiment_directory(
         sys.exit(1)
 
     df_experiment = add_columns_to_experiment_file(
-        df_experiment, nr_of_squares_in_row, min_tracks_for_tau, min_r_squared, min_density_ratio, max_variability)
+        df_experiment, nr_of_squares_in_row, min_tracks_for_tau, min_r_squared, min_required_density_ratio, max_allowable_variability)
 
     # --------------------------------------------------------------------------------------------
     # Determine how many images need processing from the experiment file
@@ -207,7 +207,7 @@ def process_experiment_directory(
 
             df_squares, tau, r_squared, density = process_single_image_in_experiment_directory(
                 experiment_path, ext_image_path, ext_recording_name, nr_of_squares_in_row,
-                min_r_squared, min_tracks_for_tau, min_density_ratio, max_variability, concentration, row["Nr Spots"],
+                min_r_squared, min_tracks_for_tau, min_required_density_ratio, max_allowable_variability, concentration, row["Nr Spots"],
                 row['Recording Sequence Nr'], row['Condition Nr'], row['Replicate Nr'], row['Experiment Date'],
                 row['Experiment Name'], process_recording_tau, process_square_tau, plot_to_file, verbose)
             if df_squares is None:
@@ -265,8 +265,8 @@ def process_single_image_in_experiment_directory(
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
-        min_density_ratio: float,
-        max_variability: float,
+        min_required_density_ratio: float,
+        max_allwable_variability: float,
         concentration: float,
         nr_spots: int,
         recording_seq_nr: int,
@@ -356,12 +356,12 @@ def process_single_image_in_experiment_directory(
     # those values
     # ----------------------------------------------------------------------------------------------------
 
-    min_track_duration =0
+    min_track_duration = 0
     max_track_duration = 10000
     if process_recording_tau:
         tau, r_squared, density = calc_single_tau_and_density_for_image(
-            experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, min_density_ratio,
-            max_variability, min_track_duration, max_track_duration,recording_name, nr_of_squares_in_row,
+            experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, min_required_density_ratio,
+            max_allwable_variability, min_track_duration, max_track_duration,recording_name, nr_of_squares_in_row,
             concentration, plot_to_file=plot_to_file)
     else:
         tau = r_squared = density = 0
@@ -627,10 +627,6 @@ def create_df_squares(experiment_directory: str,
                        'X1': round(x1, 2),
                        'Y1': round(y1, 2),
                        'Visible': True,
-                       # 'Neighbour Visible': True,
-                       # 'Variability Visible': True,
-                       # 'Density Ratio Visible': True,
-                       # 'Duration Visible': True,
                        'Variability': round(variability, 2),
                        'Density': round(density, 1),
                        'Density Ratio': 0.0,
@@ -830,8 +826,8 @@ def add_columns_to_experiment_file(
         nr_of_squares_in_row: int,
         min_tracks_for_tau: int,
         min_r_squared: float,
-        min_density_ratio: float,
-        max_variability: float):
+        min_required_density_ratio: float,
+        max_allowable_variability: float):
     """
     This function adds columns to the experiment file that are needed for the grid processing.
     Only images for which the 'Process' column is set to 'Yes' are processed.
@@ -840,8 +836,8 @@ def add_columns_to_experiment_file(
     :param nr_of_squares_in_row:
     :param min_tracks_for_tau:
     :param min_r_squared:
-    :param min_density_ratio:
-    :param max_variability:
+    :param min_required_density_ratio:
+    :param max_allowable_variability:
     :return:
     """
 
@@ -854,8 +850,8 @@ def add_columns_to_experiment_file(
     df_experiment.loc[mask, 'Min Tracks for Tau'] = int(min_tracks_for_tau)
     df_experiment.loc[mask, 'Min R Squared'] = min_r_squared
     df_experiment.loc[mask, 'Nr of Squares in Row'] = int(nr_of_squares_in_row)
-    df_experiment.loc[mask, 'Max Allowable Variability'] = max_variability
-    df_experiment.loc[mask, 'Min Required Density Ratio'] = min_density_ratio
+    df_experiment.loc[mask, 'Max Allowable Variability'] = max_allowable_variability
+    df_experiment.loc[mask, 'Min Required Density Ratio'] = min_required_density_ratio
 
     # Default values
     df_experiment.loc[mask, 'Exclude'] = False
