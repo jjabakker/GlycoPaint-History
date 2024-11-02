@@ -39,7 +39,11 @@ from src.Common.Support.DirectoriesAndLocations import (
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
-from src.Application.Image_Viewer.Utilities.New_Select_Squares import select_squares1
+from src.Application.Image_Viewer.Utilities.Select_Squares_For_Display import select_squares_for_display_do_the_work
+from src.Application.Image_Viewer.Utilities.Display_Selected_Squares  import (
+    display_selected_squares_do_the_work,
+    mark_selected_squares_do_the_work)
+
 
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Image Viewer.log')
@@ -339,9 +343,6 @@ class ImageViewer(tk.Tk):
         self.img_no = -1
         self.on_forward_backward('FORWARD')
 
-
-    def select_squares(self):
-        select_squares1(self)
 
     def on_select_recording(self):
         if any(dialog is not None for dialog in
@@ -693,14 +694,10 @@ class ImageViewer(tk.Tk):
         :return:
         """
 
-        self.df_squares['Visible'] = True
-        self.df_squares['Neighbour Visible'] = True
-        self.df_squares['Variability Visible'] = True
-        self.df_squares['Duration Visible'] = True
-        # self.df_squares['Density Ratio Selected'] = True
+        self.df_squares['Visible'] = True   # ToDo i9s this ok?
         self.df_squares['Cell Id'] = 0
 
-        self.select_squares()
+        self.select_squares_for_display()
         self.display_selected_squares()
 
     def update_select_squares(self,
@@ -756,7 +753,7 @@ class ImageViewer(tk.Tk):
         else:
             paint_logger.error(f"Unknown setting type: {setting_type}")
 
-        self.select_squares()
+        self.select_squares_for_display()
         self.display_selected_squares()
 
         # Update the info line
@@ -777,52 +774,6 @@ class ImageViewer(tk.Tk):
         # df_stats = analyse_all_images(self.experiment_directory)
         # create_summary_graphpad(self.experiment_directory, df_stats)
 
-    # def provide_report_on_all_squares(self, _):
-    #
-    #     cell_ids = self.df_squares['Cell Id'].unique()
-    #     cell_ids.sort()
-    #     nr_cells = len(cell_ids)
-    #     nr_squares = len(self.df_squares)
-    #
-    #     print("All squares report")
-    #     print('------------------')
-    #     print("Number of squares: ", nr_squares)
-    #     print("Number of cells: ", nr_cells)
-    #
-    #     print(f'Cell Id |----------Tau--------------|--------Density------------|-------Variability--------|')
-    #     print(f'         Mean     Sd    Max    Min   Mean     Sd    Max   Min    Mean    Sd     Max    Min  ')
-    #
-    #     for cell_id in cell_ids:
-    #         df_cells = self.df_squares[self.df_squares['Cell Id'] == cell_id]
-    #         df_cells = df_cells[['Square Nr', 'Label Nr', 'Tau', 'Density', 'Variability', 'Density Ratio']]
-    #
-    #         mean_tau = round(df_cells['Tau'].mean(), 0)
-    #         sd_tau = round(df_cells['Tau'].std(), 0)
-    #         max_tau = round(df_cells['Tau'].max(), 0)
-    #         min_tau = round(df_cells['Tau'].min(), 0)
-    #
-    #         mean_density = round(df_cells['Density'].mean(), 0)
-    #         sd_density = round(df_cells['Density'].std(), 0)
-    #         max_density = round(df_cells['Density'].max(), 0)
-    #         min_density = round(df_cells['Density'].min(), 0)
-    #
-    #         mean_variability = round(df_cells['Variability'].mean(), 2)
-    #         sd_variability = round(df_cells['Variability'].std(), 2)
-    #         max_variability = round(df_cells['Variability'].max(), 2)
-    #         min_variability = round(df_cells['Variability'].min(), 2)
-    #
-    #         print(
-    #             f'{cell_id:6} {mean_tau:6} {sd_tau:6} {max_tau:6} {min_tau:6} {mean_density:6} {sd_density:6} {max_density:6} {min_density:6} {mean_variability:6} {sd_variability:6} {max_variability:6} {min_variability:6}')
-    #
-    #     print('\n\n')
-    #
-    #     for cell_id in cell_ids:
-    #         df_cells = self.df_squares[self.df_squares['Cell Id'] == cell_id]
-    #         df_cells = df_cells[['Square Nr', 'Label Nr', 'Tau', 'Density', 'Variability', 'Density Ratio']]
-    #
-    #         print(f'\n\nCell Id: {cell_id:6} \n')
-    #         print(df_cells)
-    #         print('\n')
 
     def provide_report_on_cell(self, _, cell_nr):
         """
@@ -866,131 +817,10 @@ class ImageViewer(tk.Tk):
         return
 
     def select_squares_for_display(self):
-        """
-        Determine which squares are visible and set the 'Visible' column in the df_squares DataFrame
-        :return:
-        """
-
-        # All squares are invisible, unless the variability is sufficiently small
-        self.df_squares['Variability Visible'] = False
-        self.df_squares.loc[
-            self.df_squares['Variability'] <= round(self.max_allowable_variability, 1), 'Variability Visible'] = True
-
-        # All squares are invisible, unless the density ratio is sufficiently large
-        self.df_squares['Density Ratio Visible'] = False
-        self.df_squares.loc[
-            self.df_squares['Density Ratio'] >= self.min_required_density_ratio, 'Density Ratio Visible'] = True
-
-        # All squares are invisible, unless the max track duration is within the min and max limits
-        self.df_squares['Duration Visible'] = False
-        mask = (self.df_squares['Max Track Duration'] > self.min_track_duration) & \
-               (self.df_squares['Max Track Duration'] < self.max_track_duration)
-        self.df_squares.loc[mask, 'Duration Visible'] = True
-
-        # All squares are visible, unless the Relaxed or Strict Neighbour Mode is not satisfied
-        self.df_squares['Neighbour Visible'] = True
-
-        if self.neighbour_state == "Relaxed":
-            eliminate_isolated_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
-        elif self.neighbour_state == "Strict":
-            eliminate_isolated_squares_strict(self.df_squares, self.nr_of_squares_in_row)
-
-        # Squares are visible if they are visible based on the sliders and the Neighbour Mode and if there is a valid Tau
-        self.df_squares['Visible'] = (self.df_squares['Valid Tau'] &
-                                      self.df_squares['Density Ratio Visible'] &
-                                      self.df_squares['Variability Visible'] &
-                                      self.df_squares['Neighbour Visible'] &
-                                      self.df_squares['Duration Visible'])
+        select_squares_for_display_do_the_work(self)
 
     def display_selected_squares(self):
-        """
-        Display the squares on the left image canvas, that have the Visible flag set
-        :return:
-        """
-
-        # Clear the screen and reshow the picture
-        self.cn_left_image.delete("all")
-        self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-
-        # Bind left buttons for canvas
-        self.cn_left_image.bind('<Button-1>', lambda e: self.start_rectangle(e))
-        self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.close_rectangle(e))
-        self.cn_left_image.bind('<B1-Motion>', lambda e: self.expand_rectangle_size(e))
-
-        if self.show_squares:
-            # If there are no squares you can stop here
-            if len(self.df_squares) > 0:
-
-                # Then draw the of squares that are assigned to a cell
-                for index, squares_row in self.df_squares.iterrows():
-                    if squares_row['Visible']:
-                        if squares_row['Cell Id'] != 0:
-                            self.draw_single_square(squares_row)
-                # Then draw the thin lines of squares that are not assigned to a cell
-                for index, squares_row in self.df_squares.iterrows():
-                    if squares_row['Visible']:
-                        self.draw_single_square(squares_row)
-                # Then draw the thick lines of squares that are marked
-                self.mark_selected_squares(self.squares_in_rectangle)
-
-    def draw_single_square(self, squares_row, color='white'):
-
-        colour_table = {1: ('red', 'white'),
-                        2: ('yellow', 'black'),
-                        3: ('green', 'white'),
-                        4: ('magenta', 'white'),
-                        5: ('cyan', 'black'),
-                        6: ('black', 'white')}
-
-        square_nr = squares_row['Square Nr']
-        cell_id = squares_row['Cell Id']
-        label_nr = squares_row['Label Nr']
-
-        col_nr = square_nr % self.nr_of_squares_in_row
-        row_nr = square_nr // self.nr_of_squares_in_row
-        width = 512 / self.nr_of_squares_in_row
-        height = 512 / self.nr_of_squares_in_row
-
-        square_tag = f'square-{square_nr}'
-        text_tag = f'text-{square_nr}'
-
-        if cell_id == -1:  # The square is deleted (for good), stop processing
-            return
-
-        if cell_id != 0:  # The square is assigned to a cell
-            col = colour_table[self.df_squares.loc[square_nr]['Cell Id']][0]
-            self.cn_left_image.create_rectangle(
-                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-                outline=col, fill=col, width=0, tags=square_tag)
-
-            if self.show_squares_numbers:
-                self.cn_left_image.create_text(
-                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
-                    text=str(self.df_squares.loc[square_nr]['Label Nr']), font=('Arial', -10),
-                    fill=colour_table[self.df_squares.loc[square_nr]['Cell Id']][1], tags=text_tag)
-
-        # for all the squares draw the outline without filling the rectangle
-        self.cn_left_image.create_rectangle(
-            col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-            outline="white", fill="", width=1, tags=square_tag)
-
-        if self.show_squares_numbers:
-            if cell_id == 0:  # The number of a square assigned to a cell should not be overwritten
-                self.cn_left_image.create_text(
-                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
-                    font=('Arial', -10), fill='white', tags=text_tag)
-
-        # Create a transparent rectangle (clickable area)
-        invisible_rect = self.cn_left_image.create_rectangle(
-            col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-            outline="", fill="", tags=f"invisible-{square_nr}")
-
-        # Bind events to the invisible rectangle (transparent clickable area)
-        self.cn_left_image.tag_bind(
-            invisible_rect, '<Button-1>', lambda e: self.square_assigned_to_cell(square_nr))
-        self.cn_left_image.tag_bind(
-            invisible_rect, '<Button-2>', lambda e: self.provide_information_on_square(
-                e, self.df_squares.loc[square_nr]['Label Nr'], square_nr))
+        display_selected_squares_do_the_work(self)
 
     def square_assigned_to_cell(self, square_nr):
 
@@ -1085,16 +915,8 @@ class ImageViewer(tk.Tk):
 
     def mark_selected_squares(self, list_of_squares):
 
-        for square_nr in list_of_squares:
-            col_nr = square_nr % self.nr_of_squares_in_row
-            row_nr = square_nr // self.nr_of_squares_in_row
-            width = 512 / self.nr_of_squares_in_row
-            height = 512 / self.nr_of_squares_in_row
+        mark_selected_squares_do_the_work(list_of_squares, self.nr_of_squares_in_row, self.cn_left_image)
 
-            # Draw the outline without filling the rectangle
-            self.cn_left_image.create_rectangle(
-                col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-                outline='white', fill="", width=3)
 
     def on_forward_backward(self, direction):
         """
@@ -1222,7 +1044,7 @@ class ImageViewer(tk.Tk):
         if self.heatmap_control_dialog:
             self.display_heatmap()
         else:
-            self.select_squares()
+            self.select_squares_for_display()
             self.display_selected_squares()
 
         # Reset user change

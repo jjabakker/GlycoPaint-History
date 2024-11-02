@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+from token import MINUS
 
 import numpy as np
 import pandas as pd
@@ -311,20 +312,20 @@ def process_single_image_in_experiment_directory(
     df_squares.loc[df_squares['Tau'] < 0, 'Valid Tau'] = False
 
     # ----------------------------------------------------------------------------------------------------
-    # Set the visibility in the df_squares and label the sqaures that visible (starting with the highest
+    # Set the visibility in the df_squares and label the squares that visible (starting with the highest
     # density squares
     # ----------------------------------------------------------------------------------------------------
 
-    df_squares['Variability Visible'] = False
-    df_squares.loc[df_squares['Variability'] <= round(max_variability, 1), 'Variability Visible'] = True
-
-    df_squares['Density Ratio Visible'] = False
-    df_squares.loc[df_squares['Density Ratio'] >= round(min_density_ratio, 1), 'Density Ratio Visible'] = True
-
-    df_squares['Visible'] = (df_squares['Valid Tau'] &
-                             df_squares['Density Ratio Visible'] &
-                             df_squares['Variability Visible'] &
-                             df_squares['Neighbour Visible'])
+    # df_squares['Variability Visible'] = False
+    # df_squares.loc[df_squares['Variability'] <= round(max_variability, 1), 'Variability Visible'] = True
+    #
+    # df_squares['Density Ratio Visible'] = False
+    # df_squares.loc[df_squares['Density Ratio'] >= round(min_density_ratio, 1), 'Density Ratio Visible'] = True
+    #
+    # df_squares['Visible'] = (df_squares['Valid Tau'] &
+    #                          df_squares['Density Ratio Visible'] &
+    #                          df_squares['Variability Visible'] &
+    #                          df_squares['Neighbour Visible'])
 
     # ----------------------------------------------------------------------------------------------------
     # Label the squares and assign labels to fnr_trthe tracks file
@@ -355,10 +356,13 @@ def process_single_image_in_experiment_directory(
     # those values
     # ----------------------------------------------------------------------------------------------------
 
+    min_track_duration =0
+    max_track_duration = 10000
     if process_recording_tau:
         tau, r_squared, density = calc_single_tau_and_density_for_image(
-            experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, recording_name,
-            nr_of_squares_in_row, concentration, plot_to_file=plot_to_file)
+            experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, min_density_ratio,
+            max_variability, min_track_duration, max_track_duration,recording_name, nr_of_squares_in_row,
+            concentration, plot_to_file=plot_to_file)
     else:
         tau = r_squared = density = 0
 
@@ -371,6 +375,10 @@ def calc_single_tau_and_density_for_image(
         df_tracks: pd.DataFrame,
         min_tracks_for_tau: int,
         min_r_squared: float,
+        min_required_density_ratio,
+        max_allowable_variability,
+        min_track_duration,
+        max_track_duration,
         recording_name: str,
         nr_of_squares_in_row: int,
         concentration: float,
@@ -382,11 +390,28 @@ def calc_single_tau_and_density_for_image(
 
     # Identify the squares that contribute to the Tau calculation
 
+    # df_squares_for_single_tau = df_squares[
+    #     (df_squares['Nr Tracks'] > 0) &
+    #     (df_squares['Neighbour Visible']) &
+    #     (df_squares['Duration Visible']) &
+    #     (df_squares['Density Ratio Visible'])]
+
     df_squares_for_single_tau = df_squares[
-        (df_squares['Nr Tracks'] > 0) &
-        (df_squares['Neighbour Visible']) &
-        (df_squares['Duration Visible']) &
-        (df_squares['Density Ratio Visible'])]
+        (df_squares['Density Ratio'] >= min_required_density_ratio) &
+        (df_squares['Variability'] <= max_allowable_variability) &
+        (df_squares['Max Track Duration'] >= min_track_duration) &
+        (df_squares['Max Track Duration'] <= max_track_duration)
+    ]
+
+
+    # self.min_required_density_ratio, self.max_allowable_variability, self.min_track_duration, self.min_track_duration,
+    # self. max_track_duration
+    #
+    # min_required_density_ratio,
+    # max_allowable_variability,
+    # min_track_duration,
+    # min_track_duration,
+    # max_track_duration,
 
     # For these squares select from the tracks only those that fall within the squares
     # The following line of code filter the `df_tracks` DataFrame to include only the rows where the
@@ -602,10 +627,10 @@ def create_df_squares(experiment_directory: str,
                        'X1': round(x1, 2),
                        'Y1': round(y1, 2),
                        'Visible': True,
-                       'Neighbour Visible': True,
-                       'Variability Visible': True,
-                       'Density Ratio Visible': True,
-                       'Duration Visible': True,
+                       # 'Neighbour Visible': True,
+                       # 'Variability Visible': True,
+                       # 'Density Ratio Visible': True,
+                       # 'Duration Visible': True,
                        'Variability': round(variability, 2),
                        'Density': round(density, 1),
                        'Density Ratio': 0.0,

@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def select_squares1(self):
+def select_squares_for_display_do_the_work(self):
     """
     Select squares based on defined conditions for density, variability, and track duration,
     and apply visibility rules based on neighborhood states.
@@ -20,13 +20,13 @@ def select_squares1(self):
     )
 
     # Eliminate isolated squares based on neighborhood rules
-    if self.neighbour_state == 'STRICT':
-        eliminate_isolated_squares_strict(self.df_squares, self.nr_of_squares_in_row)
-    elif self.neighbour_state == 'RELAXED':
-        eliminate_isolated_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
+    if self.neighbour_state == 'Strict':
+        select_squares_strict(self.df_squares, self.nr_of_squares_in_row)
+    elif self.neighbour_state == 'Relaxed':
+        select_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
 
 
-def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
+def select_squares_strict(df_squares, nr_of_squares_in_row):
     """
     Identifies squares with visible neighbors in a strict manner and updates their visibility status.
     """
@@ -61,7 +61,7 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
     return df_squares, list_of_squares
 
 
-def eliminate_isolated_squares_relaxed(df_squares, nr_of_squares_in_row):
+def select_squares_relaxed(df_squares, nr_of_squares_in_row):
     """
     Updates visibility of squares based on relaxed neighborhood conditions.
     """
