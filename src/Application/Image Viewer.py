@@ -40,6 +40,7 @@ from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
 from src.Application.Image_Viewer.Utilities.New_Select_Squares import select_squares1
+
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Image Viewer.log')
 
@@ -338,7 +339,6 @@ class ImageViewer(tk.Tk):
         self.img_no = -1
         self.on_forward_backward('FORWARD')
 
-        self.select_squares()                   # ToDo Experimentation
 
     def select_squares(self):
         select_squares1(self)
@@ -552,7 +552,7 @@ class ImageViewer(tk.Tk):
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
             # Add the squares and write the canvas complete with squares
-            self.select_squares_for_display()
+            self.select_squares_display()
             self.display_selected_squares()
             image_name = image_name + '-squares'
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
@@ -700,7 +700,7 @@ class ImageViewer(tk.Tk):
         # self.df_squares['Density Ratio Selected'] = True
         self.df_squares['Cell Id'] = 0
 
-        self.select_squares_for_display()
+        self.select_squares()
         self.display_selected_squares()
 
     def update_select_squares(self,
@@ -756,7 +756,7 @@ class ImageViewer(tk.Tk):
         else:
             paint_logger.error(f"Unknown setting type: {setting_type}")
 
-        self.select_squares_for_display()
+        self.select_squares()
         self.display_selected_squares()
 
         # Update the info line
@@ -1222,7 +1222,7 @@ class ImageViewer(tk.Tk):
         if self.heatmap_control_dialog:
             self.display_heatmap()
         else:
-            self.select_squares_for_display()
+            self.select_squares()
             self.display_selected_squares()
 
         # Reset user change
