@@ -60,7 +60,7 @@ def _paint_messagebox(_root, title, message, icon_path):
 
 
 def paint_messagebox(_root, title, message):
-    _paint_messagebox(_root, title, message, 'paint1.png')
+    _paint_messagebox(_root, title, message, '../Images/paint1.png')
 
     if __name__ == "__main__":
         # Create the main window
