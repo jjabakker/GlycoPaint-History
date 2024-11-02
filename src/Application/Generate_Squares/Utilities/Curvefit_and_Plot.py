@@ -74,7 +74,7 @@ def compile_duration(tracks):
     :return: a dataframe containing the histogram
     """
 
-    duration_data = tracks.groupby('TRACK_DURATION')['TRACK_DURATION'].size()
+    duration_data = tracks.groupby('Track Duration')['Track Duration'].size()
 
     # histdata is returned as a Pandas Series, make histdata into a dataframe
     # The index values are the duration and the first (and only) column is 'Frequency'

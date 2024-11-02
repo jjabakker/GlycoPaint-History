@@ -83,8 +83,8 @@ def calc_variability(tracks_df, square_nr, nr_of_squares_in_row, granularity):
     # Loop over all the tracks in the square and determine where they sit in the grid
     for i in range(len(tracks_df)):
         # Retrieve the x and y values expressed in micrometers
-        x = float(tracks_df.at[i, "TRACK_X_LOCATION"])
-        y = float(tracks_df.at[i, "TRACK_Y_LOCATION"])
+        x = float(tracks_df.at[i, "Track X Location"])
+        y = float(tracks_df.at[i, "Track Y Location"])
 
         # The width of the image is 82.0864 micrometer. The width and height of a square can be calculated
         width = 82.0864 / nr_of_squares_in_row
@@ -165,8 +165,8 @@ def get_grid_defaults_from_file() -> dict:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
-            required_columns = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
-                                'max_variability', 'max_square_coverage', 'process_recording_tau', 'process_square_tau']
+            required_columns = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_required_density_ratio',
+                                'max_allowable_variability', 'max_square_coverage', 'process_recording_tau', 'process_square_tau']
             for col in required_columns:
                 if col not in reader.fieldnames:
                     # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
@@ -195,8 +195,8 @@ def save_grid_defaults_to_file(
         nr_of_squares_in_row: int,
         min_tracks_for_tau: int,
         min_r_squared: float,
-        min_density_ratio: float,
-        max_variability: float,
+        min_required_density_ratio: float,
+        max_allowable_variability: float,
         max_square_coverage: int,
         process_recording_tau: bool,
         process_square_tau: bool):
@@ -204,8 +204,8 @@ def save_grid_defaults_to_file(
 
     try:
 
-        fieldnames = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_density_ratio',
-                      'max_variability', 'max_square_coverage', 'process_recording_tau', 'process_square_tau']
+        fieldnames = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_required_density_ratio',
+                      'max_allowable_variability', 'max_square_coverage', 'process_recording_tau', 'process_square_tau']
 
         # Open the file in write mode ('w') and overwrite any existing content
         with open(grid_parameter_file_path, mode='w') as file:
@@ -219,8 +219,8 @@ def save_grid_defaults_to_file(
                 'nr_of_squares_in_row': nr_of_squares_in_row,
                 'min_tracks_for_tau': min_tracks_for_tau,
                 'min_r_squared': min_r_squared,
-                'min_density_ratio': min_density_ratio,
-                'max_variability': max_variability,
+                'min_required_density_ratio': min_required_density_ratio,
+                'max_allowable_variability': max_allowable_variability,
                 'max_square_coverage': max_square_coverage,
                 'process_recording_tau': process_recording_tau,
                 'process_square_tau': process_square_tau})

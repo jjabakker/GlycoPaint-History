@@ -26,7 +26,7 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
     nr_squares = nr_of_squares_in_row ** 2
 
     # Find out which unique Recordings there are
-    # recording_names = df_tracks['RECORDING NAME'].unique().tolist()
+    # recording_names = df_tracks['Recording Name'].unique().tolist()
 
     recording_names = find_ext_recording_names(project_directory)
 
@@ -38,7 +38,7 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
     for recording_name in recording_names:
 
         # For each recording get the tracks
-        df_tracks_in_recording = df_tracks[df_tracks['RECORDING NAME'] == recording_name]
+        df_tracks_in_recording = df_tracks[df_tracks['Recording Name'] == recording_name]
 
         # Find the squares file associated with this recording
         squares_file_path = find_squares_file(project_directory, recording_name + '-squares.csv')
@@ -55,11 +55,11 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
             square_nr = row['Square Nr']
             x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_nr)
             df_tracks_in_square = df_tracks_in_recording[
-                (df_tracks_in_recording['TRACK_X_LOCATION'] >= x0) & (
-                        df_tracks_in_recording['TRACK_X_LOCATION'] <= x1) &
-                (df_tracks_in_recording['TRACK_Y_LOCATION'] >= y0) & (df_tracks_in_recording['TRACK_Y_LOCATION'] <= y1)]
+                (df_tracks_in_recording['Track X Location'] >= x0) & (
+                        df_tracks_in_recording['Track X Location'] <= x1) &
+                (df_tracks_in_recording['Track Y Location'] >= y0) & (df_tracks_in_recording['Track Y Location'] <= y1)]
             if len(df_tracks_in_square) > 0:
-                dc_mean = df_tracks_in_square['DIFFUSION_COEFFICIENT'].mean()
+                dc_mean = df_tracks_in_square['Diffusion Coefficient'].mean()
             else:
                 dc_mean = -1
             df_squares.loc[index, 'DC'] = int(dc_mean)

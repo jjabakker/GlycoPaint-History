@@ -42,8 +42,8 @@ class GenerateSquaresDialog:
         self.nr_of_squares_in_row = tk.IntVar(value=values.get('nr_of_squares_in_row', 10))
         self.min_tracks_for_tau = tk.IntVar(value=values.get('min_tracks_for_tau', 10))
         self.min_r_squared = tk.DoubleVar(value=values.get('min_r_squared', 0.5))
-        self.min_density_ratio = tk.DoubleVar(value=values.get('min_density_ratio', 0.5))
-        self.max_variability = tk.DoubleVar(value=values.get('max_variability', 0.5))
+        self.min_required_density_ratio = tk.DoubleVar(value=values.get('min_required_density_ratio', 0.5))
+        self.max_allowable_variability = tk.DoubleVar(value=values.get('max_allowable_variability', 0.5))
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_average_tau = tk.IntVar(value=values.get('process_recording_tau', 0))
         self.generate_all_tracks = tk.IntVar(value=True)
@@ -93,15 +93,15 @@ class GenerateSquaresDialog:
         msg_nr_of_squares = "The number of squares in a row for the grid. The total number of squares will be this value squared."
         msg_min_tracks = "The minimum number of tracks required to calculate Tau. With too few tracks, curvefitting is unreliable."
         msg_min_r_squared = "The minimum allowable R-squared value for the tracks. Tau values with lower R-squared values are discarded."
-        msg_min_density_ratio = "The minimum required density ratio for the tracks. Used to distinguish 'cell' squares from background"
-        msg_max_variability = "The maximum allowable variability for the tracks. Used to filter out squares with high variability."
+        msg_min_required_density_ratio = "The minimum required density ratio for the tracks. Used to distinguish 'cell' squares from background"
+        msg_max_allowable_variability = "The maximum allowable variability for the tracks. Used to filter out squares with high variability."
 
         params = [
             ("Nr of Squares in Row", self.nr_of_squares_in_row, 1, msg_nr_of_squares),
             ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2, msg_min_tracks),
             ("Min allowable R-squared", self.min_r_squared, 3, msg_min_r_squared),
-            ("Min Required Density Ratio", self.min_density_ratio, 4, msg_min_density_ratio),
-            ("Max Allowable Variability", self.max_variability, 5, msg_max_variability),
+            ("Min Required Density Ratio", self.min_required_density_ratio, 4, msg_min_required_density_ratio),
+            ("Max Allowable Variability", self.max_allowable_variability, 5, msg_max_allowable_variability),
         ]
 
         for label_text, var, row, tooltip in params:
@@ -179,8 +179,8 @@ class GenerateSquaresDialog:
                 nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
                 min_r_squared=self.min_r_squared.get(),
                 min_tracks_for_tau=self.min_tracks_for_tau.get(),
-                min_density_ratio=self.min_density_ratio.get(),
-                max_variability=self.max_variability.get(),
+                min_required_density_ratio=self.min_required_density_ratio.get(),
+                max_allowable_variability=self.max_allowable_variability.get(),
                 max_square_coverage=self.max_square_coverage.get(),
                 process_recording_tau=self.process_average_tau.get(),
                 process_square_tau=self.process_square_specific_tau.get(),
@@ -215,8 +215,8 @@ class GenerateSquaresDialog:
             nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
             min_tracks_for_tau=self.min_tracks_for_tau.get(),
             min_r_squared=self.min_r_squared.get(),
-            min_density_ratio=self.min_density_ratio.get(),
-            max_variability=self.max_variability.get(),
+            min_required_density_ratio=self.min_required_density_ratio.get(),
+            max_allowable_variability=self.max_allowable_variability.get(),
             max_square_coverage=self.max_square_coverage.get(),
             process_recording_tau=self.process_average_tau.get(),
             process_square_tau=self.process_square_specific_tau.get()

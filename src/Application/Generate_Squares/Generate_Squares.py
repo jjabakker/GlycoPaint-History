@@ -241,7 +241,7 @@ def process_experiment_directory(
 
             df_experiment.loc[index, 'Exclude'] = df_experiment.loc[index, 'Squares Ratio'] >= max_square_coverage
 
-            # Then assign the mean DC value to the experiment file
+            # Then assign the mean Diffusion Coefficient value to the experiment file    #ToDO - implement this
             name = row['Ext Recording Name']
 
             current_image_nr += 1
@@ -502,10 +502,10 @@ def create_df_squares(experiment_directory: str,
         # --------------------------------------------------------------------------------------------
 
         x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_seq_nr)
-        mask = ((df_tracks['TRACK_X_LOCATION'] >= x0) &
-                (df_tracks['TRACK_X_LOCATION'] < x1) &
-                (df_tracks['TRACK_Y_LOCATION'] >= y0) &
-                (df_tracks['TRACK_Y_LOCATION'] < y1))
+        mask = ((df_tracks['Track X Location'] >= x0) &
+                (df_tracks['Track X Location'] < x1) &
+                (df_tracks['Track Y Location'] >= y0) &
+                (df_tracks['Track Y Location'] < y1))
         df_tracks_in_square = df_tracks[mask]
         df_tracks_in_square.reset_index(drop=True, inplace=True)
         nr_of_tracks_in_square = len(df_tracks_in_square)
@@ -533,7 +533,7 @@ def create_df_squares(experiment_directory: str,
             # Calculate the sum of track durations for the square
             # --------------------------------------------------------------------------------------------
 
-            total_track_duration = sum(df_tracks_in_square['TRACK_DURATION'])
+            total_track_duration = sum(df_tracks_in_square['Track Duration'])
 
             # --------------------------------------------------------------------------------------------
             # Calculate the average of the long tracks for the square
@@ -541,21 +541,21 @@ def create_df_squares(experiment_directory: str,
             # If the number of tracks is less than 10, the average long track is set on the full set
             # --------------------------------------------------------------------------------------------
 
-            df_tracks_in_square.sort_values(by=['TRACK_DURATION'], inplace=True)
+            df_tracks_in_square.sort_values(by=['Track Duration'], inplace=True)
 
             if nr_of_tracks_in_square < 10:
-                average_long_track = df_tracks_in_square.iloc[nr_of_tracks_in_square - 1]['TRACK_DURATION']
+                average_long_track = df_tracks_in_square.iloc[nr_of_tracks_in_square - 1]['Track Duration']
             else:
                 percentage = get_paint_attribute('Generate Squares',
                                                  'Fraction of Squares to Determine Background')
                 nr_tracks_to_average = round(percentage * nr_of_tracks_in_square)
-                average_long_track = df_tracks_in_square.tail(nr_tracks_to_average)['TRACK_DURATION'].mean()
+                average_long_track = df_tracks_in_square.tail(nr_tracks_to_average)['Track Duration'].mean()
 
             # --------------------------------------------------------------------------------------------
             # Find the maximum track duration. If there are no tracks then set the value to 0
             # --------------------------------------------------------------------------------------------
 
-            max_track_duration = df_tracks_in_square['TRACK_DURATION'].max()
+            max_track_duration = df_tracks_in_square['Track Duration'].max()
 
             # --------------------------------------------------------------------------------------------
             # Calculate the Tau for the square if requested. Use error codes:
@@ -633,7 +633,7 @@ def create_df_squares(experiment_directory: str,
                        'Valid Tau': True,
                        'Tau': round(tau, 0),
                        'R2': round(r_squared, 2),
-                       'DC': 0,
+                       'Diffusion Coefficient': 0,
                        'Average Long Track Duration': round(average_long_track, 1),
                        'Max Track Duration': round(max_track_duration, 1),
                        'Total Track Duration': round(total_track_duration, 1),
@@ -662,20 +662,20 @@ def create_df_squares(experiment_directory: str,
     # Then add the diffusion coefficient to the squares file
     # --------------------------------------------------------------------------------------------
 
-    df_squares['DC'] = 0
+    df_squares['Diffusion Coefficient'] = 0
     for index, row in df_squares.iterrows():
         square_nr = row['Square Nr']
         x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_nr)
         df_tracks_in_square = df_tracks[
-            (df_tracks['TRACK_X_LOCATION'] >= x0) &
-            (df_tracks['TRACK_X_LOCATION'] <= x1) &
-            (df_tracks['TRACK_Y_LOCATION'] >= y0) &
-            (df_tracks['TRACK_Y_LOCATION'] <= y1)]
+            (df_tracks['Track X Location'] >= x0) &
+            (df_tracks['Track X Location'] <= x1) &
+            (df_tracks['Track Y Location'] >= y0) &
+            (df_tracks['Track Y Location'] <= y1)]
         if len(df_tracks_in_square) > 0:
-            dc_mean = df_tracks_in_square['DIFFUSION_COEFFICIENT'].mean()
+            dc_mean = df_tracks_in_square['Diffusion Coefficient'].mean()
         else:
             dc_mean = -1
-        df_squares.loc[index, 'DC'] = int(dc_mean)
+        df_squares.loc[index, 'Diffusion Coefficient'] = int(dc_mean)
 
     # --------------------------------------------------------------------------------------------
     # Important! Set Square Nr as index, but leave the column

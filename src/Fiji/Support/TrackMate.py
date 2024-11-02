@@ -195,8 +195,8 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     # Write the Tracks file
     # ----------------
 
-    fields = ["RECORDING NAME", "LABEL", "NUMBER_SPOTS", "TRACK_DURATION", 'TRACK_X_LOCATION', 'TRACK_Y_LOCATION',
-              'DIFFUSION_COEFFICIENT']
+    fields = ["Recording Name", "Track Label", "Nr Spots", "Track Duration", 'Track X Location', 'Track Y Location',
+              'Diffusion Coefficient']
 
     # Determine write attributes
     open_attribute = fiji_get_file_open_write_attribute()
