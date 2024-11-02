@@ -218,6 +218,16 @@ def process_experiment_directory(
             # Now update the experiment_squares file with the results
             # --------------------------------------------------------------------------------------------
 
+            min_track_duration = 0         #ToDo Correct this
+            max_track_duration = 10000
+
+            df_squares['Visible'] = (
+                    (df_squares['Density Ratio'] >= min_required_density_ratio) &
+                    (df_squares['Variability'] <= max_allowable_variability) &
+                    (df_squares['Max Track Duration'] >= min_track_duration) &
+                    (df_squares['Max Track Duration'] <= max_track_duration)
+            )
+
             nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
             nr_visible_squares = len(df_squares[df_squares['Visible']])
             nr_invisible_squares = nr_total_squares - nr_visible_squares
