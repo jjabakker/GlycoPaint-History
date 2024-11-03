@@ -74,7 +74,7 @@ def compile_duration(tracks):
     :return: a dataframe containing the histogram
     """
 
-    duration_data = tracks.groupby('TRACK_DURATION')['TRACK_DURATION'].size()
+    duration_data = tracks.groupby('Track Duration')['Track Duration'].size()
 
     # histdata is returned as a Pandas Series, make histdata into a dataframe
     # The index values are the duration and the first (and only) column is 'Frequency'
@@ -109,7 +109,7 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
     p0 = (2000, 4, 10)  # this is more what we see
 
     try:
-        params, cv = curve_fit(mono_exp, x, y, p0)   # noinspection PyTupleAssignment
+        params, cv = curve_fit(mono_exp, x, y, p0)  # noinspection PyTupleAssignment
         m, t, b = params
     except ValueError:
         if verbose:

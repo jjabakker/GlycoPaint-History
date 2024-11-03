@@ -1,12 +1,13 @@
 import pandas as pd
 
+
 def create_diffusion_coefficient(df_tracks: pd.DataFrame) -> pd.DataFrame:
     """
     Create a DataFrame with the mean, median, standard deviation and count of the diffusion coefficient
     """
 
-    df_dc = df_tracks.groupby('RECORDING NAME').agg({
-        'DIFFUSION_COEFFICIENT': ['mean', 'median', 'std', 'count']
+    df_dc = df_tracks.groupby('Recording Name').agg({
+        'Diffusion Coefficient': ['mean', 'median', 'std', 'count']
     })
 
     # Rename columns and round values
@@ -15,9 +16,9 @@ def create_diffusion_coefficient(df_tracks: pd.DataFrame) -> pd.DataFrame:
 
     df_dc = df_dc.round(0)
 
-    df_dc.rename(columns={'DIFFUSION_COEFFICIENT_mean': 'Mean',
-                          'DIFFUSION_COEFFICIENT_median': 'Median',
-                          'DIFFUSION_COEFFICIENT_std': 'Std',
-                          'DIFFUSION_COEFFICIENT_count': 'Count'}, inplace=True)
+    df_dc.rename(columns={'Diffusion Coefficient_mean': 'Mean',
+                          'Diffusion Coefficient_median': 'Median',
+                          'Diffusion Coefficient_std': 'Std',
+                          'Diffusion Coefficient_count': 'Count'}, inplace=True)
     df_dc.index_name = 'ext_recording_name'
     return df_dc

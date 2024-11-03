@@ -27,11 +27,8 @@ def get_experiment_squares_file_path(experiment_directory):
 # TrackMate Tracks
 # ----------------------------------------------------------------------------------------------------------------------
 
-TRACKMATE_TRACKS = "TrackMate Tracks"
-
-
 def get_tracks_dir_path(experiment_directory, image_name):
-    return os.path.join(experiment_directory, image_name, TRACKMATE_TRACKS)
+    return os.path.join(experiment_directory, image_name)
 
 
 def get_tracks_file_path(experiment_directory, image_name):
@@ -42,11 +39,8 @@ def get_tracks_file_path(experiment_directory, image_name):
 # Trackmate Images
 # ----------------------------------------------------------------------------------------------------------------------
 
-TRACKMATE_IMAGES = "TrackMate Images"
-
-
 def get_trackmate_image_dir_path(experiment_directory, image_name):
-    return os.path.join(experiment_directory, image_name, TRACKMATE_IMAGES)
+    return os.path.join(experiment_directory, image_name)
 
 
 def get_image_file_path(experiment_directory, image_name):
@@ -97,22 +91,7 @@ def create_directories(image_directory, delete_existing=True):
     else:
         if delete_existing:
             delete_files_in_directory(image_directory)
-
-    tracks_dir = os.path.join(image_directory, TRACKMATE_TRACKS)  # Where all cells track files will be stored
-    plt_dir = os.path.join(image_directory, TAU_PLOTS)  # Where all cells plt files will be stored
-    grid_dir = os.path.join(image_directory, SQUARES)  # Where th squares files will be stored
-    img_dir = os.path.join(image_directory, TRACKMATE_IMAGES)  # Where all cells img files will be stored
-
-    dirs_to_create = [tracks_dir, plt_dir, grid_dir, img_dir]
-
-    for directory in dirs_to_create:
-        if not os.path.isdir(directory):  # Create the roi directory if it does not exist
-            os.makedirs(directory)
-        else:
-            if delete_existing:
-                delete_files_in_directory(directory)
-
-    return tracks_dir, plt_dir, img_dir
+    return
 
 
 def _get_paint_configuration_directory(sub_dir):
@@ -125,6 +104,7 @@ def _get_paint_configuration_directory(sub_dir):
 def get_paint_profile_directory():
     sub_dir = 'Profile'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
+
 
 def get_paint_logger_directory():
     sub_dir = 'Logger'
@@ -142,7 +122,6 @@ def get_paint_defaults_file_path():
     # path = os.path.expanduser('~')
     # path = os.path.join(path, 'Paint', 'Defaults', 'Paint.json')
     return path
-
 
 
 def get_default_locations():

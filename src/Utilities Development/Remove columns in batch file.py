@@ -1,5 +1,6 @@
-import os
 import csv
+import os
+
 
 def clean_experiment_info_csv(file_path):
     try:
@@ -31,6 +32,7 @@ def clean_experiment_info_csv(file_path):
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
 
+
 def traverse_and_clean(root_dir):
     # Walk the directory tree starting from root_dir
     for dirpath, dirnames, filenames in os.walk(root_dir):
@@ -38,6 +40,7 @@ def traverse_and_clean(root_dir):
             if filename == 'experiment_info.csv':
                 file_path = os.path.join(dirpath, filename)
                 clean_experiment_info_csv(file_path)
+
 
 # Example usage
 root_directory = '/Users/Hans/Paint Source New'  # Replace with your root directory path

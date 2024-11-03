@@ -1,20 +1,22 @@
 import json
 import os
+import shutil
 import sys
 import time
-import shutil
-
 from datetime import datetime
+
 from src.Application.Compile_Project_Output.Compile_Project_Output import compile_project_output
-from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import copy_data_from_paint_source_to_paint_data
 from src.Application.Generate_Squares.Generate_Squares import process_project_directory
-from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
-    set_directory_tree_timestamp,
-    get_timestamp_from_string)
+from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_and_save_all_tracks
+from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import \
+    copy_data_from_paint_source_to_paint_data
 from src.Application.Utilities.General_Support_Functions import (
     copy_directory,
     format_time_nicely
 )
+from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
+    set_directory_tree_timestamp,
+    get_timestamp_from_string)
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -23,13 +25,11 @@ from src.Common.Support.LoggerConfig import (
     DEBUG as PAINT_DEBUG
 )
 
-from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_all_tracks
-from src.Application.Generate_Squares.Utilities.Add_DC_to_Squares_Files import add_dc_to_squares_file
-
 paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
 
 PAINT_FORCE = True
+
 
 def process_json_configuration_block(paint_source_dir,
                                      project_directory: str,
@@ -39,17 +39,16 @@ def process_json_configuration_block(paint_source_dir,
                                      nr_of_squares_in_row: int,
                                      nr_to_process: int,
                                      current_process: int,
-                                     min_density_ratio: float,
+                                     min_required_density_ratio: float,
                                      min_r_squared: float,
                                      min_tracks_for_tau: int,
-                                     max_variability: float,
+                                     max_allowable_variability: float,
                                      max_square_coverage: float,
                                      process_recording_tau: bool,
                                      process_square_tau: bool,
                                      time_string: str,
                                      paint_force: bool,
                                      generate_all_tracks) -> bool:
-
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} - Processing {project_directory}"
     paint_logger.info("")
@@ -61,10 +60,10 @@ def process_json_configuration_block(paint_source_dir,
     paint_logger.info(f"Process Square Tau          : {process_square_tau}")
     paint_logger.info(f"Process Recording Tau       : {process_recording_tau}")
     paint_logger.info(f"Number of squares           : {nr_of_squares_in_row}")
-    paint_logger.info(f"Min Required Density Ratio  : {min_density_ratio}")
+    paint_logger.info(f"Min Required Density Ratio  : {min_required_density_ratio}")
     paint_logger.info(f"Min R squared               : {min_r_squared}")
     paint_logger.info(f"Min tracks for tau          : {min_tracks_for_tau}")
-    paint_logger.info(f"Max Allowable Variability   : {max_variability}")
+    paint_logger.info(f"Max Allowable Variability   : {max_allowable_variability}")
     paint_logger.info(f"Max square coverage         : {max_square_coverage}")
     paint_logger.info(f"Paint Force                 : {paint_force}")
 
@@ -90,12 +89,12 @@ def process_json_configuration_block(paint_source_dir,
         os.makedirs(r_dest_dir)
 
     process_project_directory(
-        root_directory=paint_data_dir,
+        paint_directory=paint_data_dir,
         nr_of_squares_in_row=nr_of_squares_in_row,
         min_r_squared=min_r_squared,
         min_tracks_for_tau=min_tracks_for_tau,
-        min_density_ratio=min_density_ratio,
-        max_variability=max_variability,
+        min_required_density_ratio=min_required_density_ratio,
+        max_allowable_variability=max_allowable_variability,
         max_square_coverage=max_square_coverage,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
@@ -107,7 +106,7 @@ def process_json_configuration_block(paint_source_dir,
 
     if generate_all_tracks:
         # Read all tracks files in the directory tree and concatenate them into a single All Tracks
-        df_tracks = create_all_tracks(paint_data_dir)
+        df_tracks = create_and_save_all_tracks(paint_data_dir)
         if df_tracks is None:
             paint_logger.error('All Tracks not generated')
             return
@@ -152,7 +151,7 @@ def main():
 
     process_project_params = process_project_params_list[0]
 
-    conf_file ='../Config/Paint Data Generation.json'
+    conf_file = '../Config/Paint Data Generation.json'
     try:
         with open(conf_file, 'r') as file:
             config = json.load(file)
@@ -216,10 +215,10 @@ def main():
                     nr_of_squares_in_row=entry['nr_of_squares'],
                     nr_to_process=nr_to_process,
                     current_process=current_process_seq_nr,
-                    min_density_ratio=entry['min_density_ratio'],
+                    min_required_density_ratio=entry['min_required_density_ratio'],
                     min_r_squared=entry['min_r_squared'],
                     min_tracks_for_tau=entry['min_tracks_for_tau'],
-                    max_variability=entry['max_variability'],
+                    max_allowable_variability=entry['max_allowable_variability'],
                     max_square_coverage=entry['max_square_coverage'],
                     process_recording_tau=entry['process_recording_tau'],
                     process_square_tau=entry['process_square_tau'],
@@ -246,6 +245,7 @@ def main():
     logger_dir = get_paint_logger_directory()
     shutil.copyfile(os.path.join(logger_dir, 'Process All Projects.log'),
                     os.path.join(logger_dir, f'Process All Projects - v{data_version}.log'))
+
 
 if __name__ == '__main__':
     main()

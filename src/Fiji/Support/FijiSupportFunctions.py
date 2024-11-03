@@ -3,10 +3,8 @@ import sys
 import time
 
 import java.lang
-
-from java.lang import System
 from java.io import PrintStream, ByteArrayOutputStream
-
+from java.lang import System
 from java.lang.System import getProperty
 from javax.swing import JFileChooser
 
@@ -144,6 +142,7 @@ def set_directory_timestamp(dir_path, timestamp=None):
     os.utime(dir_path, (timestamp, timestamp))
     print("Updated timestamps for directory '{0}' to {1} successfully.".format(dir_path, time.ctime(timestamp)))
 
+
 def suppress_fiji_output():
     # Redirect system output streams
     sys_out_stream = ByteArrayOutputStream()
@@ -152,6 +151,7 @@ def suppress_fiji_output():
     # Set dummy output streams
     System.setOut(PrintStream(sys_out_stream))
     System.setErr(PrintStream(sys_err_stream))
+
 
 def restore_fiji_output():
     # Restore default system output streams

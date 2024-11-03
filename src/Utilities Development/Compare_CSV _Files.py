@@ -11,7 +11,7 @@ def csv_file_identical(file1, file2):
             result = False
 
         if df1.equals(df2):
-            result =  True
+            result = True
         else:
             result = False
 
@@ -27,7 +27,6 @@ def csv_file_identical(file1, file2):
 
 
 if __name__ == '__main__':
-
     file1a = '/Users/hans/Paint Data/Regular Probes/Single/Paint Regular Probes - Single - 30 Squares - 5 DR/Output/All Images.csv'
     file1b = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data New/Paint Regular Probes - Single - 30 Squares - 5 DR/Output/All Images.csv'
     file2 = '/Users/hans/Documents/LST/Master Results/PAINT Pipeline/Python and R Code/Paint-R/Data New/Paint Regular Probes - Single - 30 Squares - 5 DR/Output/squares_master.csv'
@@ -35,4 +34,3 @@ if __name__ == '__main__':
     csv_file_identical(file1a, file1a)
     csv_file_identical(file1a, file1b)
     csv_file_identical(file1a, file2)
-

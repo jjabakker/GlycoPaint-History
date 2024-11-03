@@ -43,7 +43,7 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
     for index, square in df_squares.iterrows():
 
         # If the square itself is not visible you do not need to look for neighbours
-        if not (square['Valid Tau'] and
+        if not (square['Tau'] >= 0 and
                 square['Variability Visible'] and
                 square['Density Ratio Visible']):
             df_squares.loc[index, 'Neighbour Visible'] = False
@@ -88,7 +88,7 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
             if neighbour_square_nr in df_squares.index:
                 if (df_squares.loc[neighbour_square_nr, 'Variability Visible'] and
                         df_squares.loc[neighbour_square_nr, 'Density Ratio Visible'] and
-                        df_squares.loc[neighbour_square_nr, 'Valid Tau']):
+                        df_squares.loc[neighbour_square_nr, 'Tau'] >= 0):
                     nr_of_neighbours += 1
 
         # Record the results
@@ -101,7 +101,7 @@ def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
         df_squares['Visible'] = (df_squares['Density Ratio Visible'] &
                                  df_squares['Neighbour Visible'] &
                                  df_squares['Variability Visible'] &
-                                 df_squares['Valid Tau'])
+                                 df_squares['Tau'] >= 0)
 
     return list_of_squares
 
@@ -113,7 +113,7 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_of_squares_in_row):
     for index, square in df_squares.iterrows():
 
         # If the square itself is not valid you do not need to look for neighbours
-        if not (square['Valid Tau'] and
+        if not (square['Tau'] >= 0 and
                 square['Variability Visible'] and
                 square['Density Ratio Visible']):
             df_squares.loc[index, 'Neighbour Visible'] = False
@@ -163,7 +163,7 @@ def eliminate_isolated_squares_relaxed(df_squares, nr_of_squares_in_row):
             if neighbour_seqnr in df_squares.index:
                 if (df_squares.loc[neighbour_seqnr, 'Variability Visible'] and
                         df_squares.loc[neighbour_seqnr, 'Density Ratio Visible'] and
-                        df_squares.loc[neighbour_seqnr, 'Valid Tau']):
+                        df_squares.loc[neighbour_seqnr, 'Tau'] > 0):
                     # df_squares.loc[neighbour_seqnr, 'Neighbour Visible'] = True
                     nr_of_neighbours += 1
 

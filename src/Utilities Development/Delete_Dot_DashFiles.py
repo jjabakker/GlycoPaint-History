@@ -1,5 +1,6 @@
 import os
 
+
 def delete_dot_dash_files(directory):
     # Traverse the directory tree
     deleted = 0
@@ -35,6 +36,7 @@ def delete_dot_dash_files(directory):
                     except OSError as e:
                         print(f"Error deleting {dot_dash_file_path}: {e}")
     print(f"Deleted {deleted}: files.")
+
 
 # Specify the directory you want to process
 directory_path = '/Volumes/Extreme Pro/Paint Data'

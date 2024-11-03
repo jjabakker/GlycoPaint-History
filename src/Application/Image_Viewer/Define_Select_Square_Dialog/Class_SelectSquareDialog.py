@@ -16,7 +16,7 @@ class SelectSquareDialog:
 
         # Create a new top-level window
         self.image_viewer = image_viewer
-        self.callback = callback   # This is the callback function the UI calls when the sliders are changed
+        self.callback = callback  # This is the callback function the UI calls when the sliders are changed
 
         self.min_required_density_ratio = None
         self.max_allowable_variability = None
@@ -41,7 +41,6 @@ class SelectSquareDialog:
             max_track_duration, neighbour_mode)
 
     def setup_userinterface(self):
-
         # Set up the content frame
         self.content = ttk.Frame(self.select_dialog, padding=(5, 5, 5, 5))
         self.content.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
@@ -59,7 +58,6 @@ class SelectSquareDialog:
         self.frame_exit_buttons.grid(row=1, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
 
     def setup_frame_exit_buttons(self):
-
         # Create a button to close the window
         close_button = tk.Button(self.frame_exit_buttons, text="Ok", command=self.on_close, width=10)
         close_button.grid(row=0, column=0, padx=5, pady=5, columnspan=2)
@@ -68,7 +66,6 @@ class SelectSquareDialog:
         self.frame_exit_buttons.columnconfigure(0, weight=1)
 
     def setup_frame_filter(self):
-
         # Create frames for the different filters
         self.frame_neighbours = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_variability = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
@@ -90,16 +87,12 @@ class SelectSquareDialog:
         self.frame_duration.grid(column=0, row=3, padx=5, pady=5, sticky=tk.N)
         self.frame_buttons.grid(column=0, row=4, padx=5, pady=1, sticky=(tk.N, tk.S, tk.E, tk.W))
 
-
-
     def setup_frame_buttons(self):
-
         bn_set_neighbours_all = tk.Button(self.frame_buttons, text="Set for All", command=self.set_for_all, width=10)
         bn_set_neighbours_all.grid(column=0, row=0, padx=5, pady=5)
         self.frame_buttons.columnconfigure(0, weight=1)
 
     def setup_frame_neighbours(self):
-
         # Create three radio buttons for the neighbour mode
         self.neighbour_var = tk.StringVar(value="")
         self.rb_neighbour_free = tk.Radiobutton(
@@ -210,7 +203,6 @@ class SelectSquareDialog:
         self.callback(changed_slider, self.sc_density_ratio.get(), self.sc_variability.get(),
                       self.track_min_duration.get(), self.track_max_duration.get(), self.neighbour_var.get())
 
-
     def set_for_all(self):
         self.callback("Set for All", self.sc_density_ratio.get(), self.sc_variability.get(),
                       self.track_min_duration.get(), self.track_max_duration.get(), self.neighbour_var.get())
@@ -222,8 +214,9 @@ class SelectSquareDialog:
         The callback function (update_select_squares) is called in the ImageViewer dialog
         """
 
-        self.image_viewer.update_select_squares("Exit", self.sc_density_ratio.get(), self.sc_variability.get(),
-                      self.track_min_duration.get(), self.track_max_duration.get(), self.neighbour_var.get())
+        self.image_viewer.update_select_squares(
+            "Exit", self.sc_density_ratio.get(), self.sc_variability.get(), self.track_min_duration.get(),
+            self.track_max_duration.get(), self.neighbour_var.get())
         self.image_viewer.set_dialog_buttons(tk.NORMAL)
         self.select_dialog.destroy()
 
@@ -233,7 +226,6 @@ class SelectSquareDialog:
 
     def initialise_controls(self, min_required_density_ratio, max_allowable_variability, min_track_duration,
                             max_track_duration, neighbour_mode):
-
         # Set the initial values for the sliders and radio buttons as advised by the Image Viewer
         self.min_required_density_ratio = min_required_density_ratio
         self.max_allowable_variability = max_allowable_variability

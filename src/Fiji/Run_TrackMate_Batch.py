@@ -71,12 +71,15 @@ if __name__ == "__main__":
                 for row in csv_reader:
                     if 'y' in row['Process'].lower():
 
-                        if not os.path.exists(os.path.join(row['Source'], row['Image'])):
-                            paint_logger.error("Error: The source '{}' does not exist.".format(row['Source']))
+                        source = os.path.join(row['Source'], row['Image'])
+                        if not os.path.exists(source):
+                            paint_logger.error("Error: The source '{}' does not exist.".format(source))
                             error = True
                             continue
-                        if not os.path.exists(os.path.join(row['Destination'], row['Image'])):
-                            paint_logger.error("Error: The destination '{}' does not exist.".format(row['Destination']))
+
+                        destination = os.path.join(row['Destination'], row['Image'])
+                        if not os.path.exists(destination):
+                            paint_logger.error("Error: The destination '{}' does not exist.".format(destination))
                             error = True
                             continue
 
@@ -101,10 +104,3 @@ if __name__ == "__main__":
             paint_logger.error("run_trackmate_batch: Error reading CSV file: {}".format(e))
         except Exception as e:
             paint_logger.error("run_trackmate_batch: An unexpected error occurred: {}".format(e))
-
-
-
-
-
-
-

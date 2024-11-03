@@ -3,6 +3,7 @@ This function takes as input the directory under which the various experiments a
 It will create an Output directory with three files: All Squares, All Images, and Images Summary.
 """
 import os
+import sys
 import time
 from tkinter import *
 from tkinter import ttk, filedialog
@@ -37,7 +38,6 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 
 def compile_project_output(project_dir: str, verbose: bool):
-
     paint_logger.info("")
     paint_logger.info(f"Compiling output for {project_dir}")
     time_stamp = time.time()
@@ -102,6 +102,15 @@ def compile_project_output(project_dir: str, verbose: bool):
     # It is a matter of fine tuning now
     # -----------------------------------------------------------------------------
 
+    if len(df_all_squares) == 0:
+        paint_logger.error(f"No squares found in {experiment_dir_path}")
+        sys.exit()
+    if len(df_all_images) == 0:
+        paint_logger.error(f"No images found in {experiment_dir_path}")
+        sys.exit()
+    if len(df_image_summary) == 0:
+        paint_logger.error(f"No image summary found in {experiment_dir_path}")
+        sys.exit()
     # ----------------------------------------
     # Add data from df_all_images to df_all_squares
     # ----------------------------------------
@@ -220,7 +229,8 @@ class CompileDialog:
             self.root.destroy()
         else:
             paint_logger.error("The selected directory does not seem to be a project directory")
-            paint_messagebox(self.root, title='Warning', message="The selected directory does not seem to be a project directory")
+            paint_messagebox(self.root, title='Warning',
+                             message="The selected directory does not seem to be a project directory")
 
     def on_exit_pressed(self) -> None:
         self.root.destroy()

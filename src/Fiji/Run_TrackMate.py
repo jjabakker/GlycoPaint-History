@@ -1,13 +1,14 @@
 import csv
 import os
 import sys
-import time
 import threading
+import time
 
 from ij import IJ
+from java.awt import GridLayout, Dimension, FlowLayout
+from java.io import File
 from java.lang.System import getProperty
 from javax.swing import JFrame, JPanel, JButton, JTextField, JFileChooser, JOptionPane, BorderFactory
-from java.awt import GridLayout, Dimension, FlowLayout
 
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
@@ -16,9 +17,10 @@ from DirectoriesAndLocations import (
     get_tracks_file_path,
     get_experiment_info_file_path,
     get_experiment_tm_file_path,
-    get_tracks_dir_path,
     get_image_file_path,
-    create_directories)
+    create_directories,
+    get_default_locations,
+    save_default_locations)
 
 from Trackmate import excute_trackmate_in_Fiji
 
@@ -27,11 +29,12 @@ from FijiSupportFunctions import (
     fiji_get_file_open_append_attribute,
     ask_user_for_image_directory,
     suppress_fiji_output,
-    restore_fiji_output)
+    format_time_nicely)
 
 from LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
+
 
 paint_logger_change_file_handler_name('Grid Process Batch.log')
 
@@ -75,7 +78,8 @@ def run_trackmate(experiment_directory, recording_source_directory):
             paint_logger.info(message)
 
             # Initialise the experiment_tm file with the column headers
-            col_names = csv_reader.fieldnames + ['Nr Spots', 'Nr Tracks', 'Run Time', 'Ext Recording Name', 'Recording Size', 'Time Stamp']
+            col_names = csv_reader.fieldnames + ['Nr Spots', 'Nr Tracks', 'Run Time', 'Ext Recording Name',
+                                                 'Recording Size', 'Time Stamp']
             experiment_tm_file_path = initialise_experiment_tm_file(experiment_directory, col_names)
 
             # And now cycle through the experiment file
@@ -91,7 +95,8 @@ def run_trackmate(experiment_directory, recording_source_directory):
                 if 'y' in row['Process'].lower():
                     file_count += 1
                     paint_logger.info(
-                        "Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row['Recording Name'])
+                        "Processing file nr " + str(file_count) + " of " + str(nr_to_process) + ": " + row[
+                            'Recording Name'])
 
                     status, row = process_recording(row, recording_source_directory, experiment_directory)
                     if status == 'OK':
@@ -215,26 +220,31 @@ def write_row_to_temp_file(row, temp_file_path, column_names):
 
 # Function to process directories after the window is closed
 def run_trackmate_with_supplied_directories(recordings_directory, experiment_directory):
-
     def run_fiji_code():
         time_stamp = time.time()
         run_trackmate(experiment_directory, recordings_directory)
         run_time = time.time() - time_stamp
         run_time = round(run_time, 1)
-        paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")
+        paint_logger.info("\nProcessing completed in {}.". format(format_time_nicely(run_time)))
 
     # Run Fiji code on a new thread to avoid conflicts with the Swing EDT
     fiji_thread = threading.Thread(target=run_fiji_code)
     fiji_thread.start()
 
+
 # Function to create the GUI
 def create_gui():
+    root_dir = None
+    level = None
 
     # Set up the frame
     frame = JFrame("Run TrackMate")
     frame.setSize(700, 200)
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE)
     frame.setLayout(GridLayout(3, 1))
+
+    # Get the default drectories
+    root_dir, paint_dir, images_dir, level = get_default_locations()
 
     # Add padding around the frame content
     frame.getRootPane().setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20))
@@ -250,7 +260,9 @@ def create_gui():
     def browse_action1(event):
         chooser = JFileChooser()
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
+        chooser.setCurrentDirectory(File(images_dir))
         chooser.rescanCurrentDirectory()  # Ensures the directory tree is refreshed
+        textField1.setText(images_dir)
         result = chooser.showOpenDialog(frame)
         if result == JFileChooser.APPROVE_OPTION:
             selected_dir = chooser.getSelectedFile().getAbsolutePath()
@@ -271,7 +283,9 @@ def create_gui():
     def browse_action2(event):
         chooser = JFileChooser()
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
+        chooser.setCurrentDirectory(File(paint_dir))
         chooser.rescanCurrentDirectory()  # Ensures the directory tree is refreshed
+        textField2.setText(paint_dir)
         result = chooser.showOpenDialog(frame)
         if result == JFileChooser.APPROVE_OPTION:
             selected_dir = chooser.getSelectedFile().getAbsolutePath()
@@ -291,6 +305,9 @@ def create_gui():
 
         recordings_directory = textField1.getText()
         experiment_directory = textField2.getText()
+
+        save_default_locations(root_dir, experiment_directory, recordings_directory, level)
+
         frame.dispose()
 
         # Process directories
@@ -314,6 +331,7 @@ def create_gui():
 
     # Show the frame
     frame.setVisible(True)
+
 
 if __name__ == "__main__":
     # Call the function to create the GUI
@@ -341,6 +359,3 @@ if __name__ == "__main__":
         run_time = time.time() - time_stamp
         run_time = round(run_time, 1)
         paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")
-
-
-
