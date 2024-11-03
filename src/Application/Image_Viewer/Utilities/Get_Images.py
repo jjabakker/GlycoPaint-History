@@ -38,51 +38,20 @@ def get_images(self, initial=False):
             experiment = str(self.df_experiment.iloc[index]['Experiment Date'])
             exp_dir = os.path.join(self.project_directory, experiment)
             bf_dir = os.path.join(exp_dir, 'Converted BF Images')
-            squares_file_path = get_squares_file_path(exp_dir, image_name)
             trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
-            # self.experiment_directory = exp_dir    # TODO: Check if this is correct
         else:
             exp_dir = self.experiment_directory_path
             bf_dir = self.experiment_bf_directory
-            squares_file_path = get_squares_file_path(exp_dir, image_name)
             trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
-        self.squares_file_name = squares_file_path
 
-        # If there is no 'TrackMate Images' directory below the image directory, skip it
-        if not os.path.isdir(trackmate_images_dir):
-            paint_logger.error(
-                f"Function 'get_images' failed - The directory for TrackMate images does not exist: {trackmate_images_dir}")
-            continue
-
-        # Then get all the files in  the 'img' directory
-        all_images_in_img_dir = os.listdir(trackmate_images_dir)
-
-        # Only consider images that contain the image_name
-        # TODO Can there ever be different files and can there be more than one file?
-        all_images_in_img_dir = [img for img in all_images_in_img_dir if image_name in img]
-        all_images_in_img_dir.sort()
-
-        valid = False
-
-        for img in all_images_in_img_dir:
-
-            try:
-                # Try reading the file
-                left_img = ImageTk.PhotoImage(Image.open(os.path.join(trackmate_images_dir, img)))
-
-                # Retrieve the square numbers for this image
-                # df_squares = read_squares_from_file(squares_file_path)
-
-                # square_nrs = list(df_squares['Square Nr'])
-                # self.df_experiment.loc[image_name, 'Nr Spots'] = len(square_nrs)    # ToDo what were we tryuing to do here?
-
-                # self.df_all_squares = pd.concat([self.df_all_squares, df_squares], ignore_index=True)
-
-            except:
-                left_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")
-                left_img = ImageTk.PhotoImage(left_img)
-                square_nrs = []
-                error_count += 1
+        try:
+            left_img = ImageTk.PhotoImage(Image.open(os.path.join(trackmate_images_dir, image_name + '.tiff')))
+            valid = True
+        except:
+            valid = False
+            left_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")
+            left_img = ImageTk.PhotoImage(left_img)
+            error_count += 1
 
         # Retrieve Tau from the experiments_squares file, if problem return 0
         tau = self.df_experiment['Tau'].iloc[index] if 'Tau' in self.df_experiment.columns else 0
@@ -107,10 +76,6 @@ def get_images(self, initial=False):
 
             "Threshold": self.df_experiment.iloc[index]['Threshold'],
             "Nr Spots": int(self.df_experiment.iloc[index]['Nr Spots']),
-
-            "Square Nrs": square_nrs,
-            "Squares File": self.squares_file_name,
-
             "Min Required Density Ratio": self.df_experiment.iloc[index]['Min Required Density Ratio'],
             "Max Allowable Variability": self.df_experiment.iloc[index]['Max Allowable Variability'],
             "Neighbour Mode": self.df_experiment.iloc[index]['Neighbour Mode'],

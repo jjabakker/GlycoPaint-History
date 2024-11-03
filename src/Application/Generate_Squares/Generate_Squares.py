@@ -43,7 +43,6 @@ from src.Common.Support.DirectoriesAndLocations import (
     get_tau_plots_dir_path,
     get_tracks_dir_path,
     get_squares_dir_path,
-    get_squares_file_path,
     get_tracks_file_path)
 
 from src.Common.Support.PaintConfig import get_paint_attribute
