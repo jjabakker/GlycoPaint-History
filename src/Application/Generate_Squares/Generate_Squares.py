@@ -267,6 +267,9 @@ def process_experiment_directory(
     run_time = round(time.time() - time_stamp, 1)
     paint_logger.info(f"Processed  {nr_files:2d} images in {experiment_path} in {format_time_nicely(run_time)}")
 
+    # --------------------------------------------------------------------------------------------
+    # Save the experiment_squares file
+    # --------------------------------------------------------------------------------------------
     df_experiment_squares.to_csv(os.path.join(experiment_path, "all_squares_in_experiment.csv"), index=False)
 
 
@@ -329,13 +332,6 @@ def process_single_image_in_experiment_directory(
     # The tracks dataframe has been updated with label info, so write a copy to file
     new_tracks_file_name = tracks_file_path[:tracks_file_path.find('.csv')] + '-label.csv'
     df_with_label.to_csv(new_tracks_file_name, index=False)
-
-    # ----------------------------------------------------------------------------------------------------
-    # Save the squares file
-    # ----------------------------------------------------------------------------------------------------
-
-    squares_file_name = get_squares_file_path(experiment_path, recording_name)
-    save_squares_to_file(df_squares, squares_file_name)
 
     # ----------------------------------------------------------------------------------------------------
     # Now do the single mode processing: determine a single Tau and Density per image, i.e. for all squares and return
@@ -576,7 +572,7 @@ def create_df_squares(row: pd.Series,
         # --------------------------------------------------------------------------------------------
 
         squares_row = {'Recording Sequence Nr': row['Recording Sequence Nr'],
-                       'Ext Recording Name': row['Recording Name'],
+                       'Ext Recording Name': row['Ext Recording Name'],
                        'Experiment Name': row['Experiment Name'],
                        'Experiment Date': row['Experiment Date'],
                        'Condition Nr': row['Condition Nr'],

@@ -100,11 +100,8 @@ def draw_single_square(
         outline="", fill="", tags=f"invisible-{square_nr}")
 
     # Bind events to the invisible rectangle (transparent clickable area)
-    canvas.tag_bind(
-        invisible_rect, '<Button-1>', lambda e: square_assigned_to_cell(square_nr))
-    canvas.tag_bind(
-        invisible_rect, '<Button-2>', lambda e: provide_information_on_square(
-            e, squares_row[square_nr]['Label Nr'], square_nr))
+    canvas.tag_bind(invisible_rect, '<Button-1>', lambda e: square_assigned_to_cell(square_nr))
+    canvas.tag_bind(invisible_rect, '<Button-2>', lambda e: provide_information_on_square(e, squares_row['Label Nr'], square_nr))
 
 
 def mark_selected_squares_do_the_work(list_of_squares, nr_of_squares_in_row, canvas):

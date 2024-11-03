@@ -100,10 +100,10 @@ def create_directories(image_directory, delete_existing=True):
 
     tracks_dir = os.path.join(image_directory, TRACKMATE_TRACKS)  # Where all cells track files will be stored
     plt_dir = os.path.join(image_directory, TAU_PLOTS)  # Where all cells plt files will be stored
-    grid_dir = os.path.join(image_directory, SQUARES)  # Where th squares files will be stored
+    # grid_dir = os.path.join(image_directory, SQUARES)  # Where th squares files will be stored
     img_dir = os.path.join(image_directory, TRACKMATE_IMAGES)  # Where all cells img files will be stored
 
-    dirs_to_create = [tracks_dir, plt_dir, grid_dir, img_dir]
+    dirs_to_create = [tracks_dir, plt_dir, img_dir]
 
     for directory in dirs_to_create:
         if not os.path.isdir(directory):  # Create the roi directory if it does not exist

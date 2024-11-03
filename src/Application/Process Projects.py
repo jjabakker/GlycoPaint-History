@@ -89,7 +89,7 @@ def process_json_configuration_block(paint_source_dir,
         os.makedirs(r_dest_dir)
 
     process_project_directory(
-        root_directory=paint_data_dir,
+        paint_directory=paint_data_dir,
         nr_of_squares_in_row=nr_of_squares_in_row,
         min_r_squared=min_r_squared,
         min_tracks_for_tau=min_tracks_for_tau,

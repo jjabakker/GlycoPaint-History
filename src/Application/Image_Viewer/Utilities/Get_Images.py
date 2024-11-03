@@ -71,15 +71,12 @@ def get_images(self, initial=False):
                 left_img = ImageTk.PhotoImage(Image.open(os.path.join(trackmate_images_dir, img)))
 
                 # Retrieve the square numbers for this image
-                df_squares = read_squares_from_file(squares_file_path)
-                square_nrs = list(df_squares['Square Nr'])
+                # df_squares = read_squares_from_file(squares_file_path)
+
+                # square_nrs = list(df_squares['Square Nr'])
                 # self.df_experiment.loc[image_name, 'Nr Spots'] = len(square_nrs)    # ToDo what were we tryuing to do here?
 
-                # Check if self.df_all_squares is empty
-                if not self.df_all_squares.empty:  # Correct way to check for an empty DataFrame
-                    self.df_all_squares = pd.concat([self.df_all_squares, df_squares], ignore_index=True)
-                else:
-                    self.df_all_squares = df_squares
+                # self.df_all_squares = pd.concat([self.df_all_squares, df_squares], ignore_index=True)
 
             except:
                 left_img = Image.new('RGB', (512, 512), "rgb(235,235,235)")

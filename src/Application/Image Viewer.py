@@ -133,6 +133,7 @@ class ImageViewer(tk.Tk):
         self.squares_in_rectangle = []
 
         self.saved_list_images = []
+        self.df_all_squares = None
 
         msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "EXPERIMENT_LEVEL" else self.user_specified_level}'
         msg += f'{" - NO SAVING" if self.user_specified_mode == "PROJECT_LEVEL" else ""}'
@@ -338,6 +339,8 @@ class ImageViewer(tk.Tk):
 
         self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
         self.cb_image_names['values'] = self.list_of_image_names
+
+        self.df_all_squares = read_squares_from_file(os.path.join(self.experiment_directory_path, 'all_squares_in_experiment.csv'))
 
         self.initialise_image_display()
         self.img_no = -1
@@ -860,7 +863,7 @@ class ImageViewer(tk.Tk):
                 ("Density Ratio", square_data['Density Ratio']),
                 ("Variability", square_data['Variability']),
                 ("Max Track Duration", square_data['Max Track Duration']),
-                ("Mean Diffusion Coefficient", square_data['DC'])
+                ("Mean Diffusion Coefficient", square_data['Diffusion Coefficient'])
             ]
             # Fill the popup with labels using a loop
             padx_value = 10
@@ -1012,8 +1015,10 @@ class ImageViewer(tk.Tk):
         # If the heatmap control dialog is up just display the heatmap
         if self.heatmap_control_dialog:
 
-            self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            self.df_squares = read_squares_from_file(self.squares_file_name)
+            # self.squares_file_name = self.list_images[self.img_no]['Squares File']
+            # self.df_squares = read_squares_from_file(self.squares_file_name)
+
+            self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
             self.display_heatmap()
             return
 
@@ -1021,8 +1026,9 @@ class ImageViewer(tk.Tk):
 
             self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
 
-            self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            self.df_squares = read_squares_from_file(self.squares_file_name)
+            # self.squares_file_name = self.list_images[self.img_no]['Squares File']
+            # self.df_squares = read_squares_from_file(self.squares_file_name)
+            self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
 
             # Set the filter parameters with values retrieved from the experiment file
             self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
