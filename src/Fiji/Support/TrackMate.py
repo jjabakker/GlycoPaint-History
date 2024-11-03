@@ -204,12 +204,8 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     # Iterate over all the tracks that are visible.
     with open(tracks_filename, open_attribute) as csvfile:
 
-        # Need to write three empty line to maintain compatability with the Trackmate generated CSV file
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(fields)
-        csvwriter.writerow('         ')
-        csvwriter.writerow('         ')
-        csvwriter.writerow('         ')
 
         track_index = 0
         for track_id in model.getTrackModel().trackIDs(True):
