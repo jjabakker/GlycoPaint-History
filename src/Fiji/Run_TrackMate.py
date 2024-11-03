@@ -28,11 +28,13 @@ from FijiSupportFunctions import (
     fiji_get_file_open_write_attribute,
     fiji_get_file_open_append_attribute,
     ask_user_for_image_directory,
-    suppress_fiji_output)
+    suppress_fiji_output,
+    format_time_nicely)
 
 from LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
+
 
 paint_logger_change_file_handler_name('Grid Process Batch.log')
 
@@ -223,7 +225,7 @@ def run_trackmate_with_supplied_directories(recordings_directory, experiment_dir
         run_trackmate(experiment_directory, recordings_directory)
         run_time = time.time() - time_stamp
         run_time = round(run_time, 1)
-        paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")
+        paint_logger.info("\nProcessing completed in {}.". format(format_time_nicely(run_time)))
 
     # Run Fiji code on a new thread to avoid conflicts with the Swing EDT
     fiji_thread = threading.Thread(target=run_fiji_code)
