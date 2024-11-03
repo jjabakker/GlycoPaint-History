@@ -26,13 +26,13 @@ def create_and_save_all_tracks(root_dir):
 
     # Traverse the directory tree, to find all the files
     for root, dirs, files in os.walk(root_dir):
-        if os.path.basename(root).lower() == 'trackmate tracks':
-            for file in files:
-                # Check if it's a CSV file that contains 'tracks', threshold, but not 'label' in the name
-                if (any(keyword in file for keyword in ['tracks', 'threshold']) and
-                        file.endswith('.csv') and 'label' not in file):
-                    csv_files.append(os.path.join(root, file))
-                    # paint_logger.debug(f"Read Tracks file: {os.path.join(root, file)}")
+
+        for file in files:
+            # Check if it's a CSV file that contains 'tracks', threshold, but not 'label' in the name
+            if (any(keyword in file for keyword in ['tracks', 'threshold']) and
+                    file.endswith('.csv') and 'label' not in file):
+                csv_files.append(os.path.join(root, file))
+                # paint_logger.debug(f"Read Tracks file: {os.path.join(root, file)}")
     paint_logger.info(f"Located {len(csv_files)} tracks files in {root_dir}")
 
     csv_files.sort()
