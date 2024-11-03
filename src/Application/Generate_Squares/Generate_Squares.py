@@ -191,7 +191,6 @@ def process_experiment_directory(
     for index, row in df_experiment.iterrows():
         ext_recording_name = row['Recording Name'] + '-threshold-' + str(row["Threshold"])
         ext_image_path = os.path.join(experiment_path, row['Ext Recording Name'])
-        concentration = row["Concentration"]
 
         process = True
         if process or image_needs_processing(ext_image_path, ext_recording_name):
@@ -302,7 +301,7 @@ def process_single_image_in_experiment_directory(
 
     # Read the full-track file from the 'tracks' directory
     tracks_file_path = get_tracks_file_path(experiment_path, recording_name)
-    df_tracks = get_df_from_file(tracks_file_path, header=0, skip_rows=[1, 2, 3])
+    df_tracks = get_df_from_file(tracks_file_path, header=0)
     if df_tracks is None:
         paint_logger.error(f"Process Single Image in Paint directory - Tracks file {tracks_file_path} cannot be opened")
         return None, tau, r_squared, density
@@ -329,9 +328,8 @@ def process_single_image_in_experiment_directory(
         label = row['Label Nr']
         df_with_label.loc[df_with_label['Square Nr'] == square, 'Label Nr'] = label
 
-    # The tracks dataframe has been updated with label info, so write a copy to file
-    new_tracks_file_name = tracks_file_path[:tracks_file_path.find('.csv')] + '-label.csv'
-    df_with_label.to_csv(new_tracks_file_name, index=False)
+    # The tracks dataframe has been updated with label info, so write to file
+    df_with_label.to_csv(tracks_file_path, index=False)
 
     # ----------------------------------------------------------------------------------------------------
     # Now do the single mode processing: determine a single Tau and Density per image, i.e. for all squares and return
@@ -775,7 +773,7 @@ def image_needs_processing(
     if not os.path.isfile(squares_file_name):  # If the squares file does not exist, force processing
         return True
 
-    squares_file_timestamp = os.path.getmtime(squares_file_name)
+    squares_file_timestamp = os.path.getmtime(squares_file_name)   # ToDo - This is not used?
     tracks_file_timestamp = os.path.getmtime(tracks_file_name)
 
     if squares_file_timestamp < tracks_file_timestamp:
