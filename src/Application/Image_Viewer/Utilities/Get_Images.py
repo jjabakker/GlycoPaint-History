@@ -16,12 +16,20 @@ def get_images(self, initial=False):
     list_images = []
     error_count = 0
 
-    recordings_in_all_squares = self.df_all_squares['Ext Recording Name'].unique().tolist()
+    #recordings_in_all_squares = self.df_all_squares['Ext Recording Name'].unique().tolist()
 
-    for index, recording in enumerate(recordings_in_all_squares):
+    #for index, recording in enumerate(recordings_in_all_squares):
+
+    for index, experiment_row in self.df_experiment.iterrows():
+        ext_recording_name = experiment_row['Ext Recording Name']
+        recording_name = experiment_row['Recording Name']
+        experiment = str(experiment_row['Experiment Name'])
 
         try:
-            left_img = ImageTk.PhotoImage(Image.open(os.path.join(self.user_specified_directory, 'TrackMate Images', recording + '.jpg')))
+            left_image_dir = os.path.join(
+                self.user_specified_directory,
+                'TrackMate Images' if self.user_specified_directory == 'Experiment' else experiment, 'TrackMate Images')
+            left_img = ImageTk.PhotoImage(Image.open(os.path.join(left_image_dir, ext_recording_name + '.jpg')))
             valid = True
         except:
             valid = False
@@ -30,32 +38,34 @@ def get_images(self, initial=False):
             error_count += 1
 
         # Retrieve Tau from the experiments_squares file, if problem return 0
-        tau = self.df_experiment.loc[recording]['Tau'] if 'Tau' in self.df_experiment.columns else 0
+        tau = experiment_row['Tau'] if 'Tau' in experiment_row else 0
 
         # Find the corresponding BF
-        bf_dir = os.path.join(self.user_specified_directory, 'Brightfield Images')
-        right_valid, right_img = get_corresponding_bf(bf_dir, recording)
+        bf_image_dir = os.path.join(
+            self.user_specified_directory,
+            'Brightfield Images' if self.user_specified_directory == 'Experiment' else experiment, 'Brightfield Images')
+        right_valid, right_img = get_corresponding_bf(bf_image_dir, ext_recording_name, recording_name)
 
         record = {
-            "Left Image Name": self.df_experiment.iloc[index]['Ext Recording Name'],
+            "Left Image Name": experiment_row['Ext Recording Name'],
             "Left Image": left_img,
             "Left Valid": valid,
 
-            "Right Image Name": recording,
+            "Right Image Name": ext_recording_name,
             "Right Image": right_img,
             "Right Valid": right_valid,
 
-            "Cell Type": self.df_experiment.iloc[index]['Cell Type'],
-            "Adjuvant": self.df_experiment.iloc[index]['Adjuvant'],
-            "Probe": self.df_experiment.iloc[index]['Probe'],
-            "Probe Type": self.df_experiment.iloc[index]['Probe Type'],
-            "Concentration": str(self.df_experiment.iloc[index]['Concentration']),
+            "Cell Type": experiment_row['Cell Type'],
+            "Adjuvant": experiment_row['Adjuvant'],
+            "Probe": experiment_row['Probe'],
+            "Probe Type": experiment_row['Probe Type'],
+            "Concentration": experiment_row['Concentration'],
 
-            "Threshold": self.df_experiment.iloc[index]['Threshold'],
-            "Nr Spots": int(self.df_experiment.iloc[index]['Nr Spots']),
-            "Min Required Density Ratio": self.df_experiment.iloc[index]['Min Required Density Ratio'],
-            "Max Allowable Variability": self.df_experiment.iloc[index]['Max Allowable Variability'],
-            "Neighbour Mode": self.df_experiment.iloc[index]['Neighbour Mode'],
+            "Threshold": experiment_row['Threshold'],
+            "Nr Spots": int(experiment_row['Nr Spots']),
+            "Min Required Density Ratio": experiment_row['Min Required Density Ratio'],
+            "Max Allowable Variability": experiment_row['Max Allowable Variability'],
+            "Neighbour Mode": experiment_row['Neighbour Mode'],
 
             "Tau": tau
         }
@@ -74,7 +84,7 @@ def get_images(self, initial=False):
     return list_images
 
 
-def get_corresponding_bf(bf_dir, recording_name):
+def get_corresponding_bf(bf_dir, ext_recording_name, recording_name):
     """
     Retrieve the corresponding BF image for the given image name
     """
@@ -83,9 +93,6 @@ def get_corresponding_bf(bf_dir, recording_name):
         paint_logger.error(
             "Function 'get_corresponding_bf' failed - The directory for jpg versions of BF images does not exist. Run 'Convert BF Images' first")
         sys.exit()
-
-    # Peel off the 'threshold' and add -BF*.jpg
-    recording_name = "-".join(recording_name.split("-")[:-2])
 
     # List of possible BF image names
     bf_images = [f"{recording_name}-BF.jpg", f"{recording_name}-BF1.jpg", f"{recording_name}-BF2.jpg"]
