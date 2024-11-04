@@ -12,6 +12,7 @@ from tkinter import messagebox
 from tkinter import ttk
 
 import matplotlib.pyplot as plt
+import pandas as pd
 from PIL import Image
 
 from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
@@ -324,26 +325,37 @@ class ImageViewer(tk.Tk):
             self.project_directory = os.path.split(self.user_specified_level)[0]
             self.experiment_squares_file_path = self.user_specified_level
 
+        # Read the All Squares file
+        self.df_all_squares = read_squares_from_file(
+            os.path.join(self.experiment_directory_path, 'All Squares.csv'))
+        if self.df_all_squares is None:
+            self.show_error_and_exit("No 'All Squares.csv.csv' file, Did you select an image directory?")
 
+        # Read the All Experiments file
         self.df_experiment = read_experiment_file(self.experiment_squares_file_path, True)
+        self.df_experiment = pd.read_csv(os.path.join(self.experiment_directory_path,'All Recordings.csv'))
         if self.df_experiment is None:
-            self.show_error_and_exit("No 'experiment_squares.csv.csv' file, Did you select an image directory?")
+            self.show_error_and_exit("No 'experiment_squares.csv' file, Did you select an image directory?")
+        self.df_experiment.set_index('Ext Recording Name', drop=False, inplace=True)
+
+        # Check that the two align
+        if set(self.df_all_squares['Ext Recording Name']) != set(self.df_experiment['Ext Recording Name']):
+            self.show_error_and_exit("The recordings in the 'All Squares' file do not align with the 'All Experiments' file")
 
         self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
+        # Load the images
         self.list_images = get_images(self, initial=True)
         if not self.list_images:
             self.show_error_and_exit(f"No images were found in directory {self.experiment_directory_path}.")
 
+        # Load the combobox with the image names
         self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
         self.cb_image_names['values'] = self.list_of_image_names
-
-        self.df_all_squares = read_squares_from_file(os.path.join(self.experiment_directory_path, 'all_squares_in_experiment.csv'))
 
         self.initialise_image_display()
         self.img_no = -1
         self.on_forward_backward('FORWARD')
-
 
     def on_select_recording(self):
         if any(dialog is not None for dialog in

@@ -13,32 +13,15 @@ def get_images(self, initial=False):
     A list with all necessary attributes for each image is created.
     """
 
-    # Create an empty lst that will hold the images
     list_images = []
-    self.df_all_squares = pd.DataFrame()
-
-    # Cycle through the experiments file (it can be at experiment level or at project level)
     error_count = 0
 
-    for index in range(len(self.df_experiment)):
+    recordings_in_all_squares = self.df_all_squares['Ext Recording Name'].unique().tolist()
 
-        # Skip images that do not require processing
-        if self.df_experiment.iloc[index]['Process'] in ['No', 'N']:
-            continue
-
-        image_name = self.df_experiment.iloc[index]['Ext Recording Name']
-        if self.user_specified_mode == "PROJECT_LEVEL":
-            experiment = str(self.df_experiment.iloc[index]['Experiment Date'])
-            exp_dir = os.path.join(self.project_directory, experiment)
-            bf_dir = os.path.join(exp_dir, 'Converted BF Images')
-            trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
-        else:
-            exp_dir = self.experiment_directory_path
-            bf_dir = self.experiment_bf_directory
-            trackmate_images_dir = get_trackmate_image_dir_path(exp_dir, image_name)
+    for index, recording in enumerate(recordings_in_all_squares):
 
         try:
-            left_img = ImageTk.PhotoImage(Image.open(os.path.join(trackmate_images_dir, image_name + '.tiff')))
+            left_img = ImageTk.PhotoImage(Image.open(os.path.join(self.user_specified_directory, 'TrackMate Images', recording + '.jpg')))
             valid = True
         except:
             valid = False
@@ -47,17 +30,18 @@ def get_images(self, initial=False):
             error_count += 1
 
         # Retrieve Tau from the experiments_squares file, if problem return 0
-        tau = self.df_experiment['Tau'].iloc[index] if 'Tau' in self.df_experiment.columns else 0
+        tau = self.df_experiment.loc[recording]['Tau'] if 'Tau' in self.df_experiment.columns else 0
 
         # Find the corresponding BF
-        right_valid, right_img = get_corresponding_bf(bf_dir, image_name)
+        bf_dir = os.path.join(self.user_specified_directory, 'Brightfield Images')
+        right_valid, right_img = get_corresponding_bf(bf_dir, recording)
 
         record = {
             "Left Image Name": self.df_experiment.iloc[index]['Ext Recording Name'],
             "Left Image": left_img,
             "Left Valid": valid,
 
-            "Right Image Name": image_name,
+            "Right Image Name": recording,
             "Right Image": right_img,
             "Right Valid": right_valid,
 
