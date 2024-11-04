@@ -36,7 +36,7 @@ from PaintConfig import load_paint_config
 from DirectoriesAndLocations import get_paint_defaults_file_path
 
 
-def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
+def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
     print("\nProcessing: " + tracks_filename)
 
     paint_config = load_paint_config(get_paint_defaults_file_path())
