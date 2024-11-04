@@ -13,7 +13,7 @@ def remove_min_density(root_directory):
             continue
 
         # Define the two files you're looking for
-        target_files = ['experiment_squares.csv', 'experiment_tm.csv']
+        target_files = ['experiment_squares.csv', 'Experiment TM.csv']
 
         # Check each target file if it exists in the current directory
         for target_file in target_files:

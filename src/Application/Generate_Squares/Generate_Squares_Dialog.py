@@ -170,6 +170,7 @@ class GenerateSquaresDialog:
 
         # Determine which processing function to use
         called_from_project, generate_function = self.determine_process_function()
+
         if generate_function:  # If a function was found, call it
             generate_function(
                 paint_directory=self.paint_directory,
@@ -190,7 +191,7 @@ class GenerateSquaresDialog:
             self.on_exit_pressed()
         else:
             paint_logger.error('Invalid directory selected')
-            paint_messagebox(self.root, 'Error GS:001', "The directory does not contain an 'experiment_tm.csv' file.'")
+            paint_messagebox(self.root, 'Error GS:001', "The directory does not contain an 'Experiment TM.csv' file.'")
 
     def determine_process_function(self):
         """
@@ -201,7 +202,7 @@ class GenerateSquaresDialog:
         """
 
         call_from_project = True if test_paint_directory_type(self.paint_directory) == 'Project' else False
-        if os.path.isfile(os.path.join(self.paint_directory, 'experiment_tm.csv')):
+        if os.path.isfile(os.path.join(self.paint_directory, 'Experiment TM.csv')):
             return call_from_project, process_experiment_directory
         else:
             return call_from_project, process_project_directory

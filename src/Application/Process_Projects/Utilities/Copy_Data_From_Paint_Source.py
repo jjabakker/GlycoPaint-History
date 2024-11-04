@@ -70,7 +70,7 @@ def copy_data_from_paint_source_to_paint_data(source_root, dest_root, include_ex
 
             if include_experiment_file:
                 # And copy the expert files
-                shutil.copy(os.path.join(source_root, exp, 'experiment_tm.csv'), os.path.join(dest_root, exp))
+                shutil.copy(os.path.join(source_root, exp, 'Experiment TM.csv'), os.path.join(dest_root, exp))
                 shutil.copy(os.path.join(source_root, exp, 'Experiment Info.csv'), os.path.join(dest_root, exp))
 
         return True
