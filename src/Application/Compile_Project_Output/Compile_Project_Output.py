@@ -50,56 +50,39 @@ def compile_project_output(project_dir: str, verbose: bool):
     experiment_dirs = os.listdir(project_dir)
     experiment_dirs.sort()
 
-    for experiment_names in experiment_dirs:
+    for experiment_name in experiment_dirs:
 
-        experiment_dir_path = os.path.join(project_dir, experiment_names)
-        if not os.path.isdir(experiment_dir_path) or 'Output' in experiment_names or experiment_names.startswith('-'):
+        experiment_dir_path = os.path.join(project_dir, experiment_name)
+        if not os.path.isdir(experiment_dir_path) or 'Output' in experiment_name or experiment_name.startswith('-'):
             continue
-
         if verbose:
             paint_logger.debug(f'Adding directory: {experiment_dir_path}')
 
-        # Read the experiment_squares file to determine which images there are
-        experiment_squares_file_path = get_experiment_squares_file_path(experiment_dir_path)
-        df_experiment_squares = read_experiment_file(experiment_squares_file_path, only_records_to_process=True)
-        if df_experiment_squares is None:
-            paint_logger.error(
-                f"Function 'compile_squares_file' failed: File {experiment_squares_file_path} does not exist")
-            exit()
+        # Read the experiment file
 
-        for index, row in df_experiment_squares.iterrows():
+        experiment_file_path = os.path.join(experiment_dir_path, 'experiment_squares.csv')
+        df_experiment = read_experiment_file(experiment_file_path)
 
-            recording_name = row['Ext Recording Name']
-            if row['Exclude']:  # Skip over images that are Excluded
-                continue
+        squares_file_path = os.path.join(experiment_dir_path, 'all_squares_in_experiment.csv')
+        df_squares = read_squares_from_file(squares_file_path)
 
-            squares_file_path = get_squares_file_path(experiment_dir_path, recording_name)
-            df_squares = read_squares_from_file(squares_file_path)
-
-            if df_squares is None:
-                paint_logger.error(
-                    f'Compile Squares: No squares file found for image {recording_name} in the directory {experiment_names}')
-                continue
-            if len(df_squares) == 0:  # Ignore it when it is empty
-                continue
-
-            df_all_squares = pd.concat([df_all_squares, df_squares])
 
         # Determine how many unique for cell type, probe type, adjuvant, and probe there are in the batch
         row = [
-            experiment_names,
-            df_experiment_squares['Cell Type'].nunique(),
-            df_experiment_squares['Probe Type'].nunique(),
-            df_experiment_squares['Adjuvant'].nunique(),
-            df_experiment_squares['Probe'].nunique()]
+            experiment_name,
+            df_squares['Cell Type'].nunique(),
+            df_squares['Probe Type'].nunique(),
+            df_squares['Adjuvant'].nunique(),
+            df_squares['Probe'].nunique()]
 
         # Add the data to the all_dataframes
         df_image_summary = pd.concat([df_image_summary, pd.DataFrame([row])])
-        df_all_images = pd.concat([df_all_images, df_experiment_squares])
+        df_all_images = pd.concat([df_all_images, df_experiment])
+        df_all_squares = pd.concat([df_all_squares, df_squares])
 
     # -----------------------------------------------------------------------------
     # At this point we have the df_all_images, df_all_squares and df_image_summary complete.
-    # It is a matter of fine tuning now
+    # Some small tidying up
     # -----------------------------------------------------------------------------
 
     if len(df_all_squares) == 0:
@@ -111,56 +94,16 @@ def compile_project_output(project_dir: str, verbose: bool):
     if len(df_image_summary) == 0:
         paint_logger.error(f"No image summary found in {experiment_dir_path}")
         sys.exit()
-    # ----------------------------------------
-    # Add data from df_all_images to df_all_squares
-    # ----------------------------------------
-
-    list_of_images = df_all_squares['Ext Recording Name'].unique().tolist()
-    for image in list_of_images:
-
-        # Get data from df_experiment_squares to add to df_all_squares
-        probe = df_all_images.loc[image]['Probe']
-        probe_type = df_all_images.loc[image]['Probe Type']
-        adjuvant = df_all_images.loc[image]['Adjuvant']
-        cell_type = df_all_images.loc[image]['Cell Type']
-        concentration = df_all_images.loc[image]['Concentration']
-        threshold = df_all_images.loc[image]['Threshold']
-        recording_size = df_all_images.loc[image]['Recording Size']
-        condition_nr = df_all_images.loc[image]['Condition Nr']
-        recording_sequence_nr = df_all_images.loc[image]['Recording Sequence Nr']
-        neighbour_setting = df_all_images.loc[image]['Neighbour Mode']
-
-        # It can happen that image size is not filled in, handle that event
-        # I don't think this can happen anymore, but leave for now
-        try:
-            recording_size = int(recording_size)
-        except (ValueError, TypeError):
-            # If the specified images size was not valid (not a number), set it to 0
-            df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Recording Size'] = 0
-            paint_logger.error(f"Invalid image size in {image}")
-
-        # Add the data that was obtained from df_all_images
-        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Probe'] = probe
-        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Probe Type'] = probe_type
-        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Adjuvant'] = adjuvant
-        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Cell Type'] = cell_type
-        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Concentration'] = concentration
-        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Threshold'] = threshold
-        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Condition Nr'] = int(condition_nr)
-        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Recording Sequence Nr'] = int(recording_sequence_nr)
-        df_all_squares.loc[df_all_squares['Ext Recording Name'] == image, 'Neighbour Mode'] = neighbour_setting
 
     # Ensure column types are correct
     correct_all_images_column_types(df_all_images)
 
-    # Drop irrelevant columns in df_all_squares
-    # df_all_squares = df_all_squares.drop(['Neighbour Visible', 'Variability Visible', 'Density Ratio Visible'], axis=1)
-
     # Drop the squares that have no tracks
-    df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
+    # df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
 
     # Change recording_name to recording_name
     df_all_squares.rename(columns={'Ext Recording Name': 'Recording Name'}, inplace=True)
+    #df_all_squares.insert(2, 'Recording Namne', df_all_squares['Ext Recording Name']0
 
     # Set the columns for df_image_summary
     df_image_summary.columns = ['Recording', 'Nr Cell Types', 'Nr Probe Types', 'Adjuvants', 'Nr Probes']

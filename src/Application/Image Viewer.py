@@ -24,8 +24,6 @@ from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording
 from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
 from src.Application.Image_Viewer.Utilities.Get_Images import get_images
 from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import (
-    eliminate_isolated_squares_relaxed,
-    eliminate_isolated_squares_strict,
     test_if_square_is_in_rectangle,
     save_as_png)
 from src.Application.Utilities.General_Support_Functions import (
@@ -34,8 +32,7 @@ from src.Application.Utilities.General_Support_Functions import (
     save_experiment_to_file,
     save_squares_to_file)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-from src.Common.Support.DirectoriesAndLocations import (
-    get_squares_file_path)
+
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
@@ -326,6 +323,7 @@ class ImageViewer(tk.Tk):
             # self.experiment_directory_path is not set in this case    TODO: Check when it is set
             self.project_directory = os.path.split(self.user_specified_level)[0]
             self.experiment_squares_file_path = self.user_specified_level
+
 
         self.df_experiment = read_experiment_file(self.experiment_squares_file_path, True)
         if self.df_experiment is None:
@@ -1014,10 +1012,6 @@ class ImageViewer(tk.Tk):
 
         # If the heatmap control dialog is up just display the heatmap
         if self.heatmap_control_dialog:
-
-            # self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            # self.df_squares = read_squares_from_file(self.squares_file_name)
-
             self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
             self.display_heatmap()
             return
@@ -1025,9 +1019,6 @@ class ImageViewer(tk.Tk):
         else:  # update the regular image
 
             self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-
-            # self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            # self.df_squares = read_squares_from_file(self.squares_file_name)
             self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
 
             # Set the filter parameters with values retrieved from the experiment file
@@ -1113,29 +1104,6 @@ class ImageViewer(tk.Tk):
         """
         answer = messagebox.askyesno("Save Changes", f"Do you want to save the {mode} changes?")
         return answer
-
-    def read_squares(self, image_name):
-        self.squares_file_name = os.path.join(self.experiment_directory_path, image_name, 'grid',
-                                              image_name + '-squares.csv')
-        self.df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
-        if self.df_squares is None:
-            paint_logger.error(f"Function 'read_squares' failed - Squares file {self.squares_file_name} was not found.")
-            sys.exit()
-        return self.df_squares
-
-    def update_squares_file(self):
-        # It is necessary to the squares file, because the user may have made changes
-        if self.user_specified_mode == 'EXPERIMENT_LEVEL':
-            squares_file_path = get_squares_file_path(self.experiment_directory_path, self.image_name)
-            squares_file_name = os.path.join(self.experiment_directory_path, self.image_name, 'grid',
-                                             self.image_name + '-squares.csv')
-        else:
-            squares_file_path = os.path.join(self.experiment_directory_path,
-                                             str(self.df_experiment.iloc[self.img_no]['Experiment Date']),
-                                             self.image_name,
-                                             'grid',
-                                             self.image_name + '-squares.csv')
-        save_squares_to_file(self.df_squares, squares_file_path)  # TODO
 
     # ---------------------------------------------------------------------------------------
     # Heatmap Dialog Interaction

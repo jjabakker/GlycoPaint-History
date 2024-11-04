@@ -5,10 +5,7 @@ from tkinter import *
 import pandas as pd
 from PIL import Image, ImageTk
 
-from src.Application.Utilities.General_Support_Functions import read_squares_from_file
-from src.Common.Support.DirectoriesAndLocations import (
-    get_trackmate_image_dir_path,
-    get_squares_file_path)
+from src.Common.Support.DirectoriesAndLocations import get_trackmate_image_dir_path
 from src.Common.Support.LoggerConfig import paint_logger
 
 
@@ -20,7 +17,6 @@ def get_images(self, initial=False):
 
     # Create an empty lst that will hold the images
     list_images = []
-    square_nrs = []
     self.df_all_squares = pd.DataFrame()
 
     # Cycle through the experiments file (it can be at experiment level or at project level)
@@ -34,7 +30,6 @@ def get_images(self, initial=False):
 
         image_name = self.df_experiment.iloc[index]['Ext Recording Name']
         if self.user_specified_mode == "PROJECT_LEVEL":
-
             experiment = str(self.df_experiment.iloc[index]['Experiment Date'])
             exp_dir = os.path.join(self.project_directory, experiment)
             bf_dir = os.path.join(exp_dir, 'Converted BF Images')
