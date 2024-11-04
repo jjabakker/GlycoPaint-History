@@ -46,7 +46,6 @@ class GenerateSquaresDialog:
         self.max_allowable_variability = tk.DoubleVar(value=values.get('max_allowable_variability', 0.5))
         self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_average_tau = tk.IntVar(value=values.get('process_recording_tau', 0))
-        self.generate_all_tracks = tk.IntVar(value=True)
         self.process_square_specific_tau = tk.IntVar(value=values.get('process_square_tau', 1))
         self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
@@ -125,7 +124,6 @@ class GenerateSquaresDialog:
 
         self.create_checkbox(frame, "Square Tau", self.process_square_specific_tau, 0, tooltip=msg_square_tau)
         self.create_checkbox(frame, "Recording Tau", self.process_average_tau, 1, tooltip=msg_recording_tau)
-        self.create_checkbox(frame, "Generate All Tracks", self.generate_all_tracks, 2, tooltip=msg_all_tracks)
 
     def create_checkbox(self, frame, text, var, row, tooltip=None):
         """Helper method to create a labeled checkbox."""
@@ -184,7 +182,6 @@ class GenerateSquaresDialog:
                 max_square_coverage=self.max_square_coverage.get(),
                 process_recording_tau=self.process_average_tau.get(),
                 process_square_tau=self.process_square_specific_tau.get(),
-                generate_all_tracks=self.generate_all_tracks.get(),
                 called_from_project=called_from_project,
                 verbose=False
             )
@@ -210,7 +207,6 @@ class GenerateSquaresDialog:
         return None
 
     def save_parameters(self):
-        generate_all_tracks = True
         save_grid_defaults_to_file(
             nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
             min_tracks_for_tau=self.min_tracks_for_tau.get(),

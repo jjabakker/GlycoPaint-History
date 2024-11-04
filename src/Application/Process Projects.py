@@ -7,7 +7,6 @@ from datetime import datetime
 
 from src.Application.Compile_Project_Output.Compile_Project_Output import compile_project_output
 from src.Application.Generate_Squares.Generate_Squares import process_project_directory
-from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_and_save_all_tracks
 from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import \
     copy_data_from_paint_source_to_paint_data
 from src.Application.Utilities.General_Support_Functions import (
@@ -47,8 +46,7 @@ def process_json_configuration_block(paint_source_dir,
                                      process_recording_tau: bool,
                                      process_square_tau: bool,
                                      time_string: str,
-                                     paint_force: bool,
-                                     generate_all_tracks) -> bool:
+                                     paint_force: bool) -> bool:
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} - Processing {project_directory}"
     paint_logger.info("")
@@ -98,18 +96,10 @@ def process_json_configuration_block(paint_source_dir,
         max_square_coverage=max_square_coverage,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
-        generate_all_tracks=False,
         verbose=False)
 
     # Compile the squares file
     compile_project_output(paint_data_dir, verbose=True)
-
-    if generate_all_tracks:
-        # Read all tracks files in the directory tree and concatenate them into a single All Tracks
-        df_tracks = create_and_save_all_tracks(paint_data_dir)
-        if df_tracks is None:
-            paint_logger.error('All Tracks not generated')
-            return
 
     # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine)
     output_source = os.path.join(paint_data_dir, 'Output')
@@ -223,8 +213,7 @@ def main():
                     process_recording_tau=entry['process_recording_tau'],
                     process_square_tau=entry['process_square_tau'],
                     time_string=time_string,
-                    paint_force=PAINT_FORCE,
-                    generate_all_tracks=generate_all_tracks):
+                    paint_force=PAINT_FORCE):
                 error_count += 1
 
     # Report the time it took in hours minutes seconds

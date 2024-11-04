@@ -13,8 +13,6 @@ from src.Common.Support.LoggerConfig import (
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
 
-from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_and_save_all_tracks
-
 from src.Application.Generate_Squares.Utilities.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot,
@@ -61,7 +59,6 @@ def process_project_directory(
         max_square_coverage: float,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
-        generate_all_tracks: bool = True,
         called_from_project: bool = True,
         verbose: bool = False) -> None:
     """
@@ -70,16 +67,6 @@ def process_project_directory(
     """
 
     root_directory = paint_directory
-    # --------------------------------------------------------------------------------------------
-    # Start with compiling the All Tracks file if required
-    # --------------------------------------------------------------------------------------------
-
-    if generate_all_tracks:
-        # Read all tracks files in the directory tree and concatenate them into a single All Tracks
-        df_tracks = create_and_save_all_tracks(root_directory)
-        if df_tracks is None:
-            paint_logger.error('All Tracks not generated')
-            return
 
     # --------------------------------------------------------------------------------------------
     # Process all experiments in the project directory
@@ -101,7 +88,6 @@ def process_project_directory(
             max_square_coverage,
             process_recording_tau=process_recording_tau,
             process_square_tau=process_square_tau,
-            generate_all_tracks=generate_all_tracks,
             called_from_project=called_from_project,
             verbose=False)
 
@@ -116,7 +102,6 @@ def process_experiment_directory(
         max_square_coverage: float,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
-        generate_all_tracks: bool = True,
         called_from_project: bool = True,
         verbose: bool = False) -> None:
     """
@@ -127,22 +112,16 @@ def process_experiment_directory(
     experiment_path = paint_directory
 
     # --------------------------------------------------------------------------------------------
-    # Start with compiling the All Tracks file if required
+    # Read the All Tracks  file and add two columns for the square and label numbers
     # --------------------------------------------------------------------------------------------
 
-    if generate_all_tracks and not called_from_project:
-        # Read all tracks files in the directory tree and concatenate them into a single All Tracks
-        df_all_tracks = create_and_save_all_tracks(experiment_path)
-        if df_all_tracks is None:
-            paint_logger.error('All Tracks not generated')
-            return
-
-    # --------------------------------------------------------------------------------------------
-    # Load from the paint configuration file
-    # --------------------------------------------------------------------------------------------
-    plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File')
-
-    time_stamp = time.time()
+    df_all_tracks = pd.read_csv(os.path.join(paint_directory, 'All Tracks.csv'))
+    if df_all_tracks is None:
+        paint_logger.error(f"Could not read the 'All Tracks.csv' file in {paint_directory}")
+        sys.exit(1)
+    df_all_tracks.set_index('Recording Name', drop=False, inplace=True)
+    df_all_tracks['Square Nr'] = 0
+    df_all_tracks['Label Nr'] = 0
 
     # --------------------------------------------------------------------------------------------
     # Read the experiment file, check if it is in the correct format and add the required columns
