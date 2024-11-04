@@ -91,10 +91,6 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
     if drop_empty:
         df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
 
-    # Change recording_name to recording_name
-    df_all_squares.rename(columns={'Ext Recording Name': 'Recording Name'}, inplace=True)
-    #df_all_squares.insert(2, 'Recording Namne', df_all_squares['Ext Recording Name']0
-
     # ------------------------------------
     # Save the files
     # -------------------------------------
