@@ -205,7 +205,7 @@ def process_recording(row, recording_source_directory, experiment_directory):
         time_stamp = time.time()
         tracks_file_path = get_tracks_file_path(experiment_directory, ext_recording_name)
         recording_file_path = get_image_file_path(experiment_directory, ext_recording_name)
-        recording_file_path = os.path.join(experiment_directory, 'Images', ext_recording_name + '.jpg')
+        recording_file_path = os.path.join(experiment_directory, 'TrackMate Images', ext_recording_name + '.jpg')
 
         # suppress_fiji_output()
         nr_spots, total_tracks, long_tracks = execute_trackmate_in_Fiji(
