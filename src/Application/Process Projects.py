@@ -80,8 +80,9 @@ def process_json_configuration_block(paint_source_dir,
         os.makedirs(paint_data_dir)
 
     # Copy the data from Paint Source to the appropriate directory in Paint Data
-    if not copy_data_from_paint_source_to_paint_data(paint_source_dir, paint_data_dir):
-        return False
+
+    shutil.copytree(paint_source_dir, paint_data_dir, dirs_exist_ok=True)
+
 
     if not os.path.exists(r_dest_dir):
         os.makedirs(r_dest_dir)
@@ -160,7 +161,6 @@ def main():
     data_version = process_project_params['Version']
     r_dest = process_project_params['R Destination']
     time_string = process_project_params['Time String']
-    generate_all_tracks = process_project_params['Generate All Tracks']
 
     paint_data = paint_data + ' - v' + data_version
     r_dest = r_dest + ' - v' + data_version
@@ -184,7 +184,6 @@ def main():
     paint_logger.info(f"The Version is                          : {data_version}")
     paint_logger.info(f"The R Output directory is               : {r_dest}")
     paint_logger.info(f"The number of directories to process is : {nr_to_process}")
-    paint_logger.info(f"All Tracks will {'' if generate_all_tracks else 'not'} be generated")
 
     nr_to_process = sum(1 for entry in config if entry['flag'])
 

@@ -17,7 +17,6 @@ from DirectoriesAndLocations import (
     get_tracks_file_path,
     get_experiment_info_file_path,
     get_experiment_tm_file_path,
-    get_image_file_path,
     create_directories,
     get_default_locations,
     save_default_locations)

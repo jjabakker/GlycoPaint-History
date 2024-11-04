@@ -316,24 +316,14 @@ class ImageViewer(tk.Tk):
 
     def load_images_and_config(self):
 
-        if self.user_specified_mode == "Experiment":
-            self.experiment_directory_path = self.user_specified_directory
-            self.experiment_bf_directory = os.path.join(self.experiment_directory_path, 'Converted BF Images')
-            self.experiment_squares_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
-        else:
-            # self.experiment_directory_path is not set in this case    TODO: Check when it is set
-            self.project_directory = os.path.split(self.user_specified_level)[0]
-            self.experiment_squares_file_path = self.user_specified_level
-
         # Read the All Squares file
         self.df_all_squares = read_squares_from_file(
-            os.path.join(self.experiment_directory_path, 'All Squares.csv'))
+            os.path.join(self.user_specified_directory, 'All Squares.csv'))
         if self.df_all_squares is None:
             self.show_error_and_exit("No 'All Squares.csv.csv' file, Did you select an image directory?")
 
         # Read the All Experiments file
-        self.df_experiment = read_experiment_file(self.experiment_squares_file_path, True)
-        self.df_experiment = pd.read_csv(os.path.join(self.experiment_directory_path,'All Recordings.csv'))
+        self.df_experiment = pd.read_csv(os.path.join(self.user_specified_directory, 'All Recordings.csv'))
         if self.df_experiment is None:
             self.show_error_and_exit("No 'experiment_squares.csv' file, Did you select an image directory?")
         self.df_experiment.set_index('Ext Recording Name', drop=False, inplace=True)
@@ -347,7 +337,7 @@ class ImageViewer(tk.Tk):
         # Load the images
         self.list_images = get_images(self, initial=True)
         if not self.list_images:
-            self.show_error_and_exit(f"No images were found in directory {self.experiment_directory_path}.")
+            self.show_error_and_exit(f"No images were found in directory {self.user_specified_directory}.")
 
         # Load the combobox with the image names
         self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
@@ -548,7 +538,7 @@ class ImageViewer(tk.Tk):
         """
 
         # Create the squares directory if it does not exist
-        squares_dir = os.path.join(self.experiment_directory_path, 'Output', 'Squares')
+        squares_dir = os.path.join(self.user_specified_directory, 'Output', 'Squares')
         os.makedirs(squares_dir, exist_ok=True)
 
         # Cycle through all images
