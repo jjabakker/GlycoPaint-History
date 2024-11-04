@@ -51,7 +51,7 @@ def run_trackmate(experiment_directory, recording_source_directory):
         suppress_fiji_output
         sys.exit()
 
-    image_dir = os.path.join(experiment_directory, 'Images')
+    image_dir = os.path.join(experiment_directory, 'TrackMate Images')
     if not os.path.exists(image_dir):
         os.mkdir(image_dir)
     else:
@@ -204,7 +204,6 @@ def process_recording(row, recording_source_directory, experiment_directory):
 
         time_stamp = time.time()
         tracks_file_path = get_tracks_file_path(experiment_directory, ext_recording_name)
-        recording_file_path = get_image_file_path(experiment_directory, ext_recording_name)
         recording_file_path = os.path.join(experiment_directory, 'TrackMate Images', ext_recording_name + '.jpg')
 
         # suppress_fiji_output()
