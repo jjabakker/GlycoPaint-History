@@ -52,14 +52,14 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 
 class ImageViewer(tk.Tk):
 
-    def __init__(self, parent, user_specified_directory, user_specified_level, user_specified_mode):
+    def __init__(self, parent, user_specified_directory, user_specified_mode):
 
         super().__init__()
         self.parent = tk.Toplevel(parent)
         self.parent.resizable(False, False)
 
         # Save the parameters
-        self.user_specified_level = user_specified_level
+        self.user_specified_level = None   # ToDO Remove this later
         self.user_specified_directory = user_specified_directory
         self.user_specified_mode = user_specified_mode
 
@@ -315,7 +315,7 @@ class ImageViewer(tk.Tk):
 
     def load_images_and_config(self):
 
-        if self.user_specified_mode == "EXPERIMENT_LEVEL":
+        if self.user_specified_mode == "Experiment":
             self.experiment_directory_path = self.user_specified_directory
             self.experiment_bf_directory = os.path.join(self.experiment_directory_path, 'Converted BF Images')
             self.experiment_squares_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
@@ -1206,18 +1206,14 @@ if __name__ == '__main__':
     root.withdraw()
     root.eval('tk::PlaceWindow . center')
     dialog_result = SelectViewerDataDialog(root)
-    proceed, experiment_directory, project_file, mode = dialog_result.get_result()
+    proceed, directory, mode = dialog_result.get_result()
 
     if proceed:
         root = tk.Tk()
         root.withdraw()
         root.eval('tk::PlaceWindow . center')
         paint_logger.debug(f'Mode: {mode}')
-        if mode == 'EXPERIMENT_LEVEL':
-            paint_logger.info(f'Root directory: {experiment_directory}')
-        else:
-            paint_logger.debug(f'Project file: {project_file}')
-
-        image_viewer = ImageViewer(root, experiment_directory, project_file, mode)
+        paint_logger.info(f'Mode is: {mode} - Directory: {directory}')
+        image_viewer = ImageViewer(root, directory, mode)
 
     root.mainloop()

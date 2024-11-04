@@ -1,15 +1,12 @@
 import os
-import sys
 import tkinter as tk
-from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 
-import pandas as pd
-
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
-    save_default_locations)
+    save_default_locations,
+    test_paint_directory_type)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.LoggerConfig import paint_logger
 
@@ -23,7 +20,8 @@ class SelectViewerDataDialog:
         self.parent.title('Select Viewer')
 
         self.proceed = False
-        self.experiment_directory, self.project_directory, self.images_directory, self.project_file = get_default_locations()
+        self.experiment_directory, self.directory, self.images_directory, self.project_file = get_default_locations()
+        self.mode = None
 
         # Main content frame
         content = ttk.Frame(parent)
@@ -50,80 +48,33 @@ class SelectViewerDataDialog:
 
     def setup_frame_directory(self, frame_directory):
 
-        btn_root_dir = ttk.Button(
-            frame_directory, text='Experiment Directory', width=15, command=self.on_change_project_dir)
-        btn_conf_file = ttk.Button(frame_directory, text='Project file', width=15, command=self.on_change_project_file)
-
+        btn_root_dir = ttk.Button(frame_directory, text='Experiment Directory', width=15, command=self.on_change_dir)
         self.lbl_experiment_dir = ttk.Label(frame_directory, text=self.experiment_directory, width=80)
-        self.lbl_project_file = ttk.Label(frame_directory, text=self.project_file, width=80)
 
-        self.mode_var = StringVar(value="EXPERIMENT_LEVEL")
-        self.rb_mode_directory = ttk.Radiobutton(
-            frame_directory, text="", variable=self.mode_var, width=3, value="EXPERIMENT_LEVEL")
-        self.rb_mode_conf_file = ttk.Radiobutton(
-            frame_directory, text="", variable=self.mode_var, width=3, value="PROJECT_LEVEL")
-
-        self.rb_mode_directory.grid(column=0, row=0, padx=(5, 2), pady=5)
-        self.rb_mode_conf_file.grid(column=0, row=1, padx=(5, 2), pady=5)
-
-        btn_root_dir.grid(column=1, row=0, padx=(0, 5), pady=5)
-        btn_conf_file.grid(column=1, row=1, padx=(0, 5), pady=5)
-
+        btn_root_dir.grid(column=1, row=0, padx=(5, 5), pady=5)
         self.lbl_experiment_dir.grid(column=2, row=0, padx=5, pady=5)
-        self.lbl_project_file.grid(column=2, row=1, padx=5, pady=5)
 
-    def on_change_project_dir(self) -> None:
-        self.project_directory = filedialog.askdirectory(initialdir=self.project_directory)
-        if self.project_directory:
-            self.mode_var.set('EXPERIMENT_LEVEL')
-            self.lbl_experiment_dir.config(text=self.project_directory)
-            save_default_locations(self.project_directory, self.experiment_directory, self.images_directory,
+    def on_change_dir(self) -> None:
+        self.directory = filedialog.askdirectory(initialdir=self.directory)
+        if self.directory:
+            self.lbl_experiment_dir.config(text=self.directory)
+            save_default_locations(self.directory, self.experiment_directory, self.images_directory,
                                    self.project_file)
 
-    def on_change_project_file(self) -> None:
-        self.level = filedialog.askopenfilename(initialdir=self.experiment_directory,
-                                                filetypes=[('CSV files', '*.csv')],
-                                                title='Select a configuration file')
-        if self.level:
-            self.mode_var.set('PROJECT_LEVEL')
-            self.lbl_project_file.config(text=self.level)
-            save_default_locations(self.project_directory, self.experiment_directory, self.images_directory,
-                                   self.level)
-
     def on_view(self) -> None:
-        error = False
 
-        self.experiment_directory = self.lbl_experiment_dir.cget('text')
-        self.project_file = self.lbl_project_file.cget('text')
+        self.directory = self.lbl_experiment_dir.cget('text')
 
-        if self.mode_var.get() == "EXPERIMENT_LEVEL":
-            if not os.path.exists(os.path.join(self.experiment_directory, 'experiment_squares.csv')):
-                msg = "The Experiment directory does not exist or does not contain the required 'experiment squares.csv' file (and is likely not a valid Experiment directory)"
-                paint_logger.error(msg)
-                paint_logger.error(f"Experiment directory: {self.experiment_directory}")
-                paint_messagebox(self.parent, title='Warning', message=msg)
-                error = True
-        elif self.mode_var.get() == "PROJECT_LEVEL":
-            if not os.path.isfile(self.project_file):
-                msg = "The project file does not exist!"
-                paint_logger.error(msg)
-                paint_messagebox(self.parent, title='Warning', message=msg)
-                error = True
-            else:
-                try:
-                    df = pd.read_csv(self.project_file)
-                    if len(df) > 100:
-                        msg = f"You are viewing {len(df)} recordings. Opening the viewer may take some time."
-                        # paint_messagebox(self.parent, title='Info', message=msg)
-                        paint_logger.debug(msg)
-                except:
-                    pass
+        dir_content = os.listdir(self.directory)
+        type = test_paint_directory_type(self.directory)
+        if type is None:
+            # Unlikely that this is Project or Experiment directory
+            paint_logger.error("The selected directory does not seem to be a project or experiment directory")
+            paint_messagebox(self.parent, title='Warning',
+                             message="The selected directory does not seem to be a project or experiment directory")
         else:
-            paint_logger.error("Invalid mode=")
-            sys.exit()
-
-        if not error:
             # The dialog will simply exit and the main programs will pick up the return values
+            self.mode = type
             self.proceed = True
             self.parent.destroy()
 
@@ -133,4 +84,6 @@ class SelectViewerDataDialog:
 
     def get_result(self):
         self.top.wait_window()
-        return self.proceed, self.experiment_directory, self.project_file, self.mode_var.get()
+        return self.proceed, self.directory, self.mode
+
+
