@@ -2,10 +2,8 @@ import os
 import sys
 from tkinter import *
 
-import pandas as pd
 from PIL import Image, ImageTk
 
-from src.Common.Support.DirectoriesAndLocations import get_trackmate_image_dir_path
 from src.Common.Support.LoggerConfig import paint_logger
 
 

@@ -19,32 +19,17 @@ def get_experiment_tm_file_path(experiment_directory):
     return os.path.join(experiment_directory, EXPERIMENT_TM)
 
 
-def get_experiment_squares_file_path(experiment_directory):
-    return os.path.join(experiment_directory, EXPERIMENT_SQUARES)
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # TrackMate Tracks
 # ----------------------------------------------------------------------------------------------------------------------
 
 def get_tracks_dir_path(experiment_directory, image_name):
-    return os.path.join(experiment_directory, image_name)
+    return os.path.join(experiment_directory)
+    # return os.path.join(experiment_directory, image_name)
 
 
 def get_tracks_file_path(experiment_directory, image_name):
     return os.path.join(get_tracks_dir_path(experiment_directory, image_name), image_name + "-tracks.csv")
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Trackmate Images
-# ----------------------------------------------------------------------------------------------------------------------
-
-def get_trackmate_image_dir_path(experiment_directory, image_name):
-    return os.path.join(experiment_directory, image_name)
-
-
-def get_image_file_path(experiment_directory, image_name):
-    return os.path.join(get_trackmate_image_dir_path(experiment_directory, image_name), image_name + ".tiff")
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -69,18 +54,12 @@ def get_squares_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, SQUARES)
 
 
-def get_squares_file_path(experiment_directory, image_name):
-    return os.path.join(get_squares_dir_path(experiment_directory, image_name), image_name + "-squares.csv")
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Miscellanea
 # ----------------------------------------------------------------------------------------------------------------------
 
 def create_directories(image_directory, delete_existing=True):
     """
-    The function creates a bunch of directories under the specified directory.
-    If there were already files in the specified directory they will be deleted
     :param image_directory:
     :param delete_existing:
     :return:
@@ -111,16 +90,14 @@ def get_paint_logger_directory():
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
 
 
-def get_paint_defaults_directory():
-    sub_dir = 'Defaults'
-    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
+# def get_paint_defaults_directory():
+#     sub_dir = 'Defaults'
+#     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
 
 
 def get_paint_defaults_file_path():
     sub_dir = 'Defaults'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir, 'Paint.json')
-    # path = os.path.expanduser('~')
-    # path = os.path.join(path, 'Paint', 'Defaults', 'Paint.json')
     return path
 
 

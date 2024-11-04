@@ -19,9 +19,7 @@ from src.Application.Utilities.General_Support_Functions import (
     format_time_nicely,
     correct_all_images_column_types)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-from src.Common.Support.DirectoriesAndLocations import (
-    get_experiment_squares_file_path,
-    get_squares_file_path)
+
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
