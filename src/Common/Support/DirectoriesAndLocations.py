@@ -7,8 +7,7 @@ from os import makedirs
 # Experiment
 # ----------------------------------------------------------------------------------------------------------------------
 EXPERIMENT_TM = "experiment_tm.csv"
-EXPERIMENT_INFO = "experiment_info.csv"
-EXPERIMENT_SQUARES = "experiment_squares.csv"
+EXPERIMENT_INFO = "Experiment Info.csv"
 
 
 def get_experiment_info_file_path(experiment_directory):
