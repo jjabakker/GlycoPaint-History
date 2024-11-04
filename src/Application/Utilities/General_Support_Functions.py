@@ -181,3 +181,20 @@ def copy_directory(src, dest):
         paint_logger.error(f"RecursionError: {e}")
     except Exception as e:
         paint_logger.error(f"An unexpected error occurred: {e}")
+
+
+def test_paint_directory_type(directory):
+
+    dir_content = os.listdir(directory)
+
+    if not all(item in dir_content for item in ['All Recordings.csv', 'All Squares.csv']):
+        # Unlikely that this is Project or Experiment directory
+        return None
+    else:
+        if all(item in dir_content for item in ['TrackMate Images', 'Brightfield Images']):
+            # Likely an Experiment directory
+            return 'Experiment'
+        else:
+            # Likely a Project directory
+            return 'Project'
+
