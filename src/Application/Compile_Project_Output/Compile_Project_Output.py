@@ -17,7 +17,8 @@ from src.Application.Utilities.General_Support_Functions import (
     read_experiment_file,
     read_squares_from_file,
     format_time_nicely,
-    correct_all_images_column_types)
+    correct_all_images_column_types,
+    test_paint_directory_type)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 
 from src.Common.Support.LoggerConfig import (
@@ -35,15 +36,15 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
 
-def compile_project_output(project_dir: str, verbose: bool):
+def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: bool = False):
+
     paint_logger.info("")
     paint_logger.info(f"Compiling output for {project_dir}")
     time_stamp = time.time()
 
     # Create the dataframes to be filled
-    df_all_images = pd.DataFrame()
+    df_all_recordings = pd.DataFrame()
     df_all_squares = pd.DataFrame()
-    df_image_summary = pd.DataFrame()
 
     experiment_dirs = os.listdir(project_dir)
     experiment_dirs.sort()
@@ -54,72 +55,54 @@ def compile_project_output(project_dir: str, verbose: bool):
         if not os.path.isdir(experiment_dir_path) or 'Output' in experiment_name or experiment_name.startswith('-'):
             continue
         if verbose:
-            paint_logger.debug(f'Adding directory: {experiment_dir_path}')
+            paint_logger.debug(f'Processing experiment: {experiment_dir_path}')
 
         # Read the experiment file
+        df_experiment = read_experiment_file(os.path.join(experiment_dir_path, 'All Recordings.csv'))
+        if df_experiment is None:
+            paint_logger.error(f"Error reading {os.path.join(experiment_dir_path, 'All Recordings.csv')}")
+            sys.exit()
+        df_all_recordings = pd.concat([df_all_recordings, df_experiment])
 
-        experiment_file_path = os.path.join(experiment_dir_path, 'experiment_squares.csv')
-        df_experiment = read_experiment_file(experiment_file_path)
-
-        squares_file_path = os.path.join(experiment_dir_path, 'all_squares_in_experiment.csv')
-        df_squares = read_squares_from_file(squares_file_path)
-
-
-        # Determine how many unique for cell type, probe type, adjuvant, and probe there are in the batch
-        row = [
-            experiment_name,
-            df_squares['Cell Type'].nunique(),
-            df_squares['Probe Type'].nunique(),
-            df_squares['Adjuvant'].nunique(),
-            df_squares['Probe'].nunique()]
-
-        # Add the data to the all_dataframes
-        df_image_summary = pd.concat([df_image_summary, pd.DataFrame([row])])
-        df_all_images = pd.concat([df_all_images, df_experiment])
+        df_squares = read_squares_from_file(os.path.join(experiment_dir_path, 'All Squares.csv'))
         df_all_squares = pd.concat([df_all_squares, df_squares])
 
+        if df_squares is None:
+            paint_logger.error(f"Error reading {os.path.join(experiment_dir_path, 'All Squares.csv')}")
+            sys.exit()
+        df_all_squares = pd.concat([df_all_squares, df_squares])
+
+
     # -----------------------------------------------------------------------------
-    # At this point we have the df_all_images, df_all_squares and df_image_summary complete.
+    # At this point we have the df_all_recordings, df_all_squares and df_image_summary complete.
     # Some small tidying up
     # -----------------------------------------------------------------------------
 
     if len(df_all_squares) == 0:
-        paint_logger.error(f"No squares found in {experiment_dir_path}")
+        paint_logger.error(f"No 'All Squares' generated.")
         sys.exit()
-    if len(df_all_images) == 0:
-        paint_logger.error(f"No images found in {experiment_dir_path}")
-        sys.exit()
-    if len(df_image_summary) == 0:
-        paint_logger.error(f"No image summary found in {experiment_dir_path}")
+    if len(df_all_recordings) == 0:
+        paint_logger.error(f"No 'All Recordings' generated.")
         sys.exit()
 
     # Ensure column types are correct
-    correct_all_images_column_types(df_all_images)
+    correct_all_images_column_types(df_all_recordings)
 
-    # Drop the squares that have no tracks
-    # df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
+    # Optionally drop the squares that have no tracks
+    if drop_empty:
+        df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
 
     # Change recording_name to recording_name
     df_all_squares.rename(columns={'Ext Recording Name': 'Recording Name'}, inplace=True)
     #df_all_squares.insert(2, 'Recording Namne', df_all_squares['Ext Recording Name']0
 
-    # Set the columns for df_image_summary
-    df_image_summary.columns = ['Recording', 'Nr Cell Types', 'Nr Probe Types', 'Adjuvants', 'Nr Probes']
-
     # ------------------------------------
     # Save the files
     # -------------------------------------
 
-    # Check if Output directory exists, create if necessary
-    os.makedirs(os.path.join(project_dir, "Output"), exist_ok=True)
-
     # Save the files,
-    df_all_squares.to_csv(os.path.join(project_dir, 'Output', 'All Squares.csv'), index=False)
-    df_all_images.to_csv(os.path.join(project_dir, 'Output', 'All Images.csv'), index=False)
-    df_image_summary.to_csv(os.path.join(project_dir, "Output", "Image Summary.csv"), index=False)
-
-    # Save a copy for easy Imager Viewer access
-    df_all_images.to_csv(os.path.join(project_dir, 'All Images.csv'), index=False)
+    df_all_squares.to_csv(os.path.join(project_dir, 'All Squares.csv'), index=False)
+    df_all_recordings.to_csv(os.path.join(project_dir, 'All Recordings.csv'), index=False)
 
     run_time = time.time() - time_stamp
     paint_logger.info(f"Compiled  output for {project_dir} in {format_time_nicely(run_time)}")
@@ -164,8 +147,8 @@ class CompileDialog:
             self.lbl_root_dir.config(text=self.root_directory)
 
     def on_compile_pressed(self) -> None:
-        # Check if the directory is a likely project directory
-        if is_likely_root_directory(self.root_directory):
+        type = test_paint_directory_type(self.root_directory)
+        if type is 'Project':
             compile_project_output(project_dir=self.root_directory, verbose=True)
             self.root.destroy()
         else:
