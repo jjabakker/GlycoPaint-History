@@ -302,25 +302,6 @@ def calc_area_of_square(nr_of_squares_in_row):
     return area
 
 
-def is_likely_root_directory(current_dir):
-    # Initialize a counter for directories with the file
-    count = 0
-
-    # Loop through all items in the current directory
-    for item in os.listdir(current_dir):
-        # Construct the full path of the item
-        item_path = os.path.join(current_dir, item)
-
-        # Check if the item is a directory
-        if os.path.isdir(item_path):
-            # Check if the file 'experiment_squares.csv' exists in that directory
-            file_path = os.path.join(item_path, 'experiment_tm.csv')
-            if os.path.isfile(file_path):
-                count += 1
-
-    return count > 0
-
-
 def label_visible_squares(df_squares):
     df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
     label_nr = 1

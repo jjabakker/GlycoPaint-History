@@ -8,12 +8,11 @@ from src.Application.Generate_Squares.Generate_Squares import (
     process_experiment_directory)
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
-    save_grid_defaults_to_file,
-    is_likely_root_directory)
+    save_grid_defaults_to_file)
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
-    format_time_nicely
+    format_time_nicely, test_paint_directory_type
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
@@ -200,10 +199,12 @@ class GenerateSquaresDialog:
         Otherwise,  check if the directories below experiment_squares.csv files and then call process_project_directory
         function.
         """
+
+        call_from_project = True if test_paint_directory_type(self.paint_directory) == 'Project' else False
         if os.path.isfile(os.path.join(self.paint_directory, 'experiment_tm.csv')):
-            return False, process_experiment_directory
-        elif is_likely_root_directory(self.paint_directory):
-            return True, process_project_directory
+            return call_from_project, process_experiment_directory
+        else:
+            return call_from_project, process_project_directory
         return None
 
     def save_parameters(self):
