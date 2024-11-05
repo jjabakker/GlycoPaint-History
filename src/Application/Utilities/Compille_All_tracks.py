@@ -29,8 +29,8 @@ def compile_all_tracks(project_directory):
         for file in files:
             if file == 'All Tracks.csv' and root != project_directory:
                 csv_files.append(os.path.join(root, file))
-                paint_logger.debug(f"Read Tracks file: {os.path.join(root, file)}")
-    paint_logger.info(f"Located {len(csv_files)} tracks files in {project_directory}")
+                # paint_logger.debug(f"Read Tracks file: {os.path.join(root, file)}")
+    paint_logger.info(f"Compiling 'All Tracks' from {len(csv_files)} tracks files in {project_directory}")
 
     csv_files.sort()
 
@@ -59,12 +59,9 @@ def compile_all_tracks(project_directory):
 
     run_time = time.time() - time_stamp
     paint_logger.info(
-        f"Combined {len(csv_files)} tracks files and saved as {all_tracks_file_path} in {format_time_nicely(run_time)}.")
+        f"Compiled  'All Tracks' from {len(csv_files)} tracks files in {project_directory} in {format_time_nicely(run_time)}.")
     paint_logger.info("")
 
 
 if __name__ == '__main__':
-    # compile_all_tracks('/Users/hans/Paint Data - v12/New Probes/Paint New Probes - 20 Squares')
-    # compile_all_tracks('/Users/hans/Paint Data - v12/New Probes/Paint New Probes - 30 Squares')
-    # compile_all_tracks('/Users/hans/Paint Data - v12/Regular Probes/Paint Regular Probes - 20 Squares')
     compile_all_tracks('/Users/hans/Paint Data - v12/Regular Probes/Paint Regular Probes - 30 Squares')

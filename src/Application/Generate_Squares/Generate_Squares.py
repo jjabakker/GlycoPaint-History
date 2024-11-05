@@ -61,6 +61,7 @@ def process_project_directory(
     'process_all_images_in_paint_directory' for each directory in the root directory.
     """
 
+    nr_experiments_processed = 0
     root_directory = paint_directory
 
     # --------------------------------------------------------------------------------------------
@@ -76,7 +77,11 @@ def process_project_directory(
             continue
         if 'Output' in experiment_dir:
             continue
-        if os.path.exists(os.path.join(root_directory, experiment_dir)) and not paint_force:
+        if (os.path.exists(os.path.join(root_directory, experiment_dir)) and
+                os.path.exists(os.path.join(root_directory, experiment_dir, 'All Squares.csv')) and
+                os.path.exists(os.path.join(root_directory, experiment_dir, 'All Recordings.csv')) and
+                os.path.exists(os.path.join(root_directory, experiment_dir, 'All Tracks.csv')) and
+                not paint_force):
             paint_logger.info(f"Experiment output exists and skipped: {experiment_dir}")
             continue
         process_experiment_directory(
@@ -91,7 +96,9 @@ def process_project_directory(
             process_square_tau=process_square_tau,
             called_from_project=called_from_project,
             verbose=False)
+        nr_experiments_processed
 
+    return nr_experiments_processed
 
 def process_experiment_directory(
         paint_directory: str,
@@ -340,7 +347,7 @@ def process_single_image_in_experiment_directory(
     # ----------------------------------------------------------------------------------------------------
 
     min_track_duration = 0
-    max_track_duration = 10000  # ToDo - Really shoul come form the userint
+    max_track_duration = 10000  # ToDo - Really should come from the user interface
     if process_recording_tau:
         tau, r_squared, density = calc_single_tau_and_density_for_image(
             experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, min_required_density_ratio,

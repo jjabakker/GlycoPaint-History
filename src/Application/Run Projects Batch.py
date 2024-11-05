@@ -8,6 +8,7 @@ from datetime import datetime
 from src.Application.Compile_Project.Compile_Project import compile_project_output
 from src.Application.Generate_Squares.Generate_Squares import process_project_directory
 from src.Application.Utilities.General_Support_Functions import format_time_nicely
+from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
     set_directory_tree_timestamp,
     get_timestamp_from_string)
@@ -22,7 +23,7 @@ from src.Common.Support.LoggerConfig import (
 paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
 
-PAINT_FORCE = True
+PAINT_FORCE = False
 
 
 def process_json_configuration_block(paint_source_dir,
@@ -75,13 +76,12 @@ def process_json_configuration_block(paint_source_dir,
         os.makedirs(paint_data_dir)
 
     # Copy the data from Paint Source to the appropriate directory in Paint Data
-
-    shutil.copytree(paint_source_dir, paint_data_dir, dirs_exist_ok=True)
+    copy_tm_data_from_paint_source(paint_source_dir, paint_data_dir)
 
     if not os.path.exists(r_dest_dir):
         os.makedirs(r_dest_dir)
 
-    process_project_directory(
+    nr_experiments_processed = process_project_directory(
         paint_directory=paint_data_dir,
         nr_of_squares_in_row=nr_of_squares_in_row,
         min_r_squared=min_r_squared,
@@ -91,20 +91,28 @@ def process_json_configuration_block(paint_source_dir,
         max_square_coverage=max_square_coverage,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
-        force=paint_force,
+        paint_force=paint_force,
         verbose=False)
 
-    # Compile the squares file
-    compile_project_output(paint_data_dir, verbose=True)
+    # Compile the All Recordings and All Squares files
+    if nr_experiments_processed > 0:
+        compile_project_output(paint_data_dir, verbose=True)
+    else:
+        paint_logger.info(f"No experiments processed in {paint_data_dir}")
+        paint_logger.info(f"No All Recordings, All Sqaures, All Tracks compiled for {paint_data_dir}")
 
-    # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine)
-    output_source = paint_data_dir
-    output_destination = os.path.join(r_dest_dir, 'Output')
-    os.makedirs(output_destination, exist_ok=True)
-    shutil.copy(os.path.join(output_source, 'Squares.csv'), output_destination)
-    shutil.copy(os.path.join(output_source, 'Tracks.csv'), output_destination)
-    shutil.copy(os.path.join(output_source, 'Recordings.csv'), output_destination)
-    paint_logger.info(f"Copied output to {output_destination}")
+    # Now copy the data from the Paint Data directory to the R space
+    if False:
+        output_source = paint_data_dir
+        output_destination = os.path.join(r_dest_dir, 'Output')
+        os.makedirs(output_destination, exist_ok=True)
+        try:
+            shutil.copy(os.path.join(output_source, 'Squares.csv'), output_destination)
+            shutil.copy(os.path.join(output_source, 'Tracks.csv'), output_destination)
+            shutil.copy(os.path.join(output_source, 'Recordings.csv'), output_destination)
+            paint_logger.info(f"Copied output to {output_destination}")
+        except Exception:
+            paint_logger.error(f"Failed to copy output to {output_destination}")
 
     # Set the timestamp for the R data destination directory
 
@@ -158,6 +166,7 @@ def main():
     data_version = process_project_params['Version']
     r_dest = process_project_params['R Destination']
     time_string = process_project_params['Time String']
+    paint_force = process_project_params['Force']
 
     paint_data = paint_data + ' - v' + data_version
     r_dest = r_dest + ' - v' + data_version
@@ -181,6 +190,7 @@ def main():
     paint_logger.info(f"The Version is                          : {data_version}")
     paint_logger.info(f"The R Output directory is               : {r_dest}")
     paint_logger.info(f"The number of directories to process is : {nr_to_process}")
+    paint_logger.info(f"Paint force is                          : {paint_force}")
 
     nr_to_process = sum(1 for entry in config if entry['flag'])
 
@@ -209,7 +219,7 @@ def main():
                     process_recording_tau=entry['process_recording_tau'],
                     process_square_tau=entry['process_square_tau'],
                     time_string=time_string,
-                    paint_force=PAINT_FORCE):
+                    paint_force=paint_force):
                 error_count += 1
 
     # Report the time it took in hours minutes seconds

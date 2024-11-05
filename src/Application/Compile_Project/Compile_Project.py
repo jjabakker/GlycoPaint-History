@@ -36,7 +36,7 @@ if not paint_logger_file_name_assigned:
 
 def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: bool = False):
     paint_logger.info("")
-    paint_logger.info(f"Compiling output for {project_dir}")
+    paint_logger.info(f"Compiling 'All Recordings' and 'All Squares' for {project_dir}")
     time_stamp = time.time()
 
     # Create the dataframes to be filled
@@ -51,7 +51,7 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
         experiment_dir_path = os.path.join(project_dir, experiment_name)
         if not os.path.isdir(experiment_dir_path) or 'Output' in experiment_name or experiment_name.startswith('-'):
             continue
-        if verbose:
+        if False:
             paint_logger.debug(f'Processing experiment: {experiment_dir_path}')
 
         # Read the experiment file
@@ -69,8 +69,6 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
             sys.exit()
         df_all_squares = pd.concat([df_all_squares, df_squares])
 
-    # Read the 'All Tracks' files in the experiument directory and concatenate them
-    compile_all_tracks(project_dir)
 
     # -----------------------------------------------------------------------------
     # At this point we have the df_all_recordings and  df_all_squares complete.
@@ -100,7 +98,7 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
     df_all_recordings.to_csv(os.path.join(project_dir, 'All Recordings.csv'), index=False)
 
     run_time = time.time() - time_stamp
-    paint_logger.info(f"Compiled  output for {project_dir} in {format_time_nicely(run_time)}")
+    paint_logger.info(f"Compiled  'All Recordings' and 'All Squares' for {project_dir} in {format_time_nicely(run_time)}")
     paint_logger.info("")
 
     # ------------------------------------
