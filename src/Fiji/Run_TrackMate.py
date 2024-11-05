@@ -14,7 +14,6 @@ paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
 
 from DirectoriesAndLocations import (
-    get_tracks_file_path,
     get_experiment_info_file_path,
     get_experiment_tm_file_path,
     create_directories,
@@ -202,7 +201,7 @@ def process_recording(row, recording_source_directory, experiment_directory):
         ext_recording_name = recording_name + "-threshold-" + str(int(threshold))
 
         time_stamp = time.time()
-        tracks_file_path = get_tracks_file_path(experiment_directory, ext_recording_name)
+        tracks_file_path = os.path.join(experiment_directory, ext_recording_name + '-tracks.csv')
         recording_file_path = os.path.join(experiment_directory, 'TrackMate Images', ext_recording_name + '.jpg')
 
         # suppress_fiji_output()

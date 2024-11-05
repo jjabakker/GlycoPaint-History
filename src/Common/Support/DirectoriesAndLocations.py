@@ -17,20 +17,6 @@ def get_experiment_info_file_path(experiment_directory):
 def get_experiment_tm_file_path(experiment_directory):
     return os.path.join(experiment_directory, EXPERIMENT_TM)
 
-
-# ----------------------------------------------------------------------------------------------------------------------
-# TrackMate Tracks
-# ----------------------------------------------------------------------------------------------------------------------
-
-def get_tracks_dir_path(experiment_directory, image_name):
-    return os.path.join(experiment_directory)
-    # return os.path.join(experiment_directory, image_name)
-
-
-def get_tracks_file_path(experiment_directory, image_name):
-    return os.path.join(get_tracks_dir_path(experiment_directory, image_name), image_name + "-tracks.csv")
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Tau Plots
 # ----------------------------------------------------------------------------------------------------------------------
@@ -41,16 +27,6 @@ TAU_PLOTS = "Tau Plots"
 def get_tau_plots_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, TAU_PLOTS)
 
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Squares
-# ----------------------------------------------------------------------------------------------------------------------
-
-SQUARES = "Squares"
-
-
-def get_squares_dir_path(experiment_directory, image_name):
-    return os.path.join(experiment_directory, image_name, SQUARES)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
