@@ -24,7 +24,6 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
     calc_variability,
     calculate_density,
     write_np_to_excel,
-    get_df_from_file,
     calc_area_of_square,
     calc_average_track_count_in_background_squares,
     label_visible_squares
@@ -38,9 +37,7 @@ from src.Application.Utilities.General_Support_Functions import (
 
 from src.Common.Support.DirectoriesAndLocations import (
     delete_files_in_directory,
-    get_tau_plots_dir_path,
-    get_tracks_dir_path,
-    get_squares_dir_path)
+    get_tau_plots_dir_path)
 
 from src.Common.Support.PaintConfig import get_paint_attribute
 
@@ -85,7 +82,10 @@ def process_project_directory(
             paint_logger.info(f"Experiment output exists and skipped: {experiment_dir}")
             continue
         process_experiment_directory(
-            os.path.join(root_directory, experiment_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
+            os.path.join(root_directory, experiment_dir),
+            nr_of_squares_in_row,
+            min_r_squared,
+            min_tracks_for_tau,
             min_required_density_ratio,
             max_allowable_variability,
             max_square_coverage,
@@ -185,8 +185,7 @@ def process_experiment_directory(
         ext_image_path = os.path.join(experiment_path, experiment_row['Ext Recording Name'])
 
         process = True
-        if process or image_needs_processing(ext_image_path, recording_name):
-
+        if process:
             # --------------------------------------------------------------------------------------------
             # Process the image
             # --------------------------------------------------------------------------------------------
@@ -749,31 +748,3 @@ def add_columns_to_experiment_file(
     df_experiment.loc[mask, 'Neighbour Mode'] = 'Free'
 
     return df_experiment
-
-
-def image_needs_processing(
-        experiment_path: str,
-        recording_name: str) -> bool:
-    """
-    This function checks if the squares file needs to be updated. It does this by comparing the timestamps of the
-    tracks and squares files
-    :param experiment_path:
-    :param recording_name:
-    :return:
-    """
-
-    squares_file_name = os.path.join(get_squares_dir_path(experiment_path, recording_name),
-                                     recording_name + "-squares.csv")
-    tracks_file_name = os.path.join(get_tracks_dir_path(experiment_path, recording_name),
-                                    recording_name + "-tracks.csv")
-
-    if not os.path.isfile(squares_file_name):  # If the squares file does not exist, force processing
-        return True
-
-    squares_file_timestamp = os.path.getmtime(squares_file_name)   # ToDo - This is not used?
-    tracks_file_timestamp = os.path.getmtime(tracks_file_name)
-
-    if squares_file_timestamp < tracks_file_timestamp:
-        return True
-
-    return False
