@@ -130,19 +130,6 @@ def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr
     return xi, yi
 
 
-# def get_df_from_file(file, header=0, skip_rows=[]):
-#     try:
-#         df = pd.read_csv(file, header=header, skiprows=skip_rows)
-#     except FileNotFoundError:
-#         df = None
-#         paint_logger.error("File not found: " + file)
-#     except IOError:
-#         df = None
-#         paint_logger.error("IoError: " + file)
-#
-#     return df
-
-
 def get_grid_defaults_from_file() -> dict:
     parameter_file_path = os.path.join(get_paint_profile_directory(), "grid_parameters.csv")
 
@@ -322,6 +309,14 @@ def create_unique_key_for_squares(df):
 
     # Reorder the columns
     cols = list(df.columns)
-    cols.insert(0, cols.pop(cols.index('Unique')))
+    cols.insert(0, cols.pop(cols.index('Unique Key')))
     df = df[cols]
     return df
+
+
+def select_tracks_for_tau_calculation(df_tracks_in_square, limit_DC):
+
+    if limit_DC:
+        df_tracks_in_square = df_tracks_in_square[df_tracks_in_square['Diffusion Coefficient'] > 0]
+
+    return df_tracks_in_square

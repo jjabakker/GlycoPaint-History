@@ -27,7 +27,8 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
     calc_area_of_square,
     calc_average_track_count_in_background_squares,
     label_visible_squares,
-    create_unique_key_for_squares
+    create_unique_key_for_squares,
+    select_tracks_for_tau_calculation
 )
 
 from src.Application.Utilities.General_Support_Functions import (
@@ -217,6 +218,7 @@ def process_experiment_directory(
                 process_recording_tau,
                 process_square_tau,
                 plot_to_file, verbose)
+
             if df_squares is None:
                 paint_logger.error("Aborted with error")
                 return None
@@ -539,11 +541,17 @@ def create_df_squares(row: pd.Series,
             # --------------------------------------------------------------------------------------------
 
             if process_square_tau:
-                if nr_of_tracks_in_square < min_tracks_for_tau:  # Too few points to curve fit
+
+                # First decide what tracks to consider for the Tau calculation
+                limit_dc = get_paint_attribute('Generate Squares',
+                                               'Exclude zero DC tracks from Tau Calculation')
+                df_tracks_for_tau = select_tracks_for_tau_calculation(df_tracks_in_square, limit_dc)
+
+                if len(df_tracks_for_tau) < min_tracks_for_tau:  # Too few points to curve fit
                     tau = -1
                     r_squared = 0
                 else:
-                    duration_data = compile_duration(df_tracks_in_square)
+                    duration_data = compile_duration(df_tracks_for_tau)
                     plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name),
                                             recording_name + "-square-" + str(square_seq_nr) + ".png")
                     tau, r_squared = curve_fit_and_plot(
