@@ -303,10 +303,10 @@ class ImageViewer(tk.Tk):
             anchor=tk.W)
 
         # Place the radio buttons and button in the grid
-        if self.user_specified_mode == 'EXPERIMENT_LEVEL':
-            self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-            self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-            self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+
+        self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
 
     def load_images_and_config(self):
 
@@ -635,7 +635,7 @@ class ImageViewer(tk.Tk):
 
         try:
             # Define the destination path inside the temporary directory
-            temp_file = os.path.join(temp_dir, os.path.basename(self.squares_file_name))
+            temp_file = os.path.join(temp_dir, 'Temporary All Squares.csv')
 
             # Save squares data to the temporary file
             save_squares_to_file(self.df_squares, temp_file)
@@ -1052,11 +1052,6 @@ class ImageViewer(tk.Tk):
         if not (self.experiment_changed or self.squares_changed):
             return False
 
-        # There is something to save but in PROJECT_LEVEL mode, changes are never saved
-        if self.user_specified_mode == "PROJECT_LEVEL":
-            paint_logger.debug("Changed were made, but in PROJECT_LEVEL mode Changes are never saved.")
-            return False
-
         # There is something to save but the Never option is selected
         if self.save_state_var.get() == 'Never':
             paint_logger.debug("Changes were not saved, because the 'Never' option was selected.")
@@ -1076,8 +1071,8 @@ class ImageViewer(tk.Tk):
                     self.df_experiment.loc[image_name, 'Max Allowable Variability'] = self.list_images[i][
                         'Max Allowable Variability']
                     self.df_experiment.loc[image_name, 'Neighbour Mode'] = self.list_images[i]['Neighbour Mode']
-                save_experiment_to_file(self.df_experiment, self.experiment_squares_file_path)
-                paint_logger.debug(f"Experiment file {self.experiment_squares_file_path} was saved.")
+                save_experiment_to_file(self.df_experiment, os.path.join(self.user_specified_directory, 'All Recordings.csv'))
+                paint_logger.debug(f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
             self.experiment_changed = False
 
         # There is squares data to save.
@@ -1087,8 +1082,11 @@ class ImageViewer(tk.Tk):
             else:  # Then must be 'Always'
                 save = True
             if save:
-                save_squares_to_file(self.df_squares, self.squares_file_name)
-                paint_logger.debug(f"Squares file {self.squares_file_name} was saved.")
+                self.df_all_squares.set_index(['Ext Recording Name', 'Square Nr'], inplace=True, drop=False)
+                self.df_squares.set_index(['Ext Recording Name', 'Square Nr'], inplace=True, drop=False)
+                self.df_all_squares.update(self.df_squares)
+                save_squares_to_file(self.df_all_squares, os.path.join(self.user_specified_directory, 'All Squares.csv'))
+                paint_logger.debug(f"Squares file {os.path.join(self.user_specified_directory, 'All Squares.csv')} was saved.")
             self.squares_changed = False
         return save
 
@@ -1160,7 +1158,7 @@ class ImageViewer(tk.Tk):
         for image in self.saved_list_images:
             choose = True
             for key, value in selection.items():
-                if image[key] not in value:
+                if str(image[key]) not in value:
                     choose = False
                     break
             if choose:
@@ -1183,8 +1181,7 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
     height = 512 / nr_of_squares_in_row
 
     color_index = get_color_index(value, max_value, min_value, 20)
-    if color_index >= 20:
-        i = 1
+
     color = colors[color_index]
 
     canvas_to_draw_on.create_rectangle(
