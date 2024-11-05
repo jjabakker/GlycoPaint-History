@@ -8,7 +8,7 @@ from datetime import datetime
 from src.Application.Compile_Project.Compile_Project import compile_project_output
 from src.Application.Generate_Squares.Generate_Squares import process_project_directory
 from src.Application.Utilities.General_Support_Functions import format_time_nicely
-from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source
+from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source_with_images
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
     set_directory_tree_timestamp,
     get_timestamp_from_string)
@@ -76,7 +76,7 @@ def process_json_configuration_block(paint_source_dir,
         os.makedirs(paint_data_dir)
 
     # Copy the data from Paint Source to the appropriate directory in Paint Data
-    copy_tm_data_from_paint_source(paint_source_dir, paint_data_dir)
+    copy_tm_data_from_paint_source_with_images(paint_source_dir, paint_data_dir)
 
     if not os.path.exists(r_dest_dir):
         os.makedirs(r_dest_dir)
