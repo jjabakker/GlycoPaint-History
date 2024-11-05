@@ -311,3 +311,17 @@ def label_visible_squares(df_squares):
             df_squares.at[idx, 'Label Nr'] = label_nr
             label_nr += 1
     df_squares.sort_index(inplace=True)
+
+
+def create_unique_key_for_squares(df):
+
+    df['String Square Nr'] = df['Square Nr'].astype(str)
+    df['Unique Key'] = df['Ext Recording Name'] + ' - ' + df['String Square Nr']
+    df.set_index('Unique Key', inplace=True, drop=False)
+    df.drop('String Square Nr', axis=1, inplace=True)
+
+    # Reorder the columns
+    cols = list(df.columns)
+    cols.insert(0, cols.pop(cols.index('Unique')))
+    df = df[cols]
+    return df

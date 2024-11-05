@@ -15,7 +15,7 @@ if not paint_logger_file_name_assigned:
 
 from src.Application.Generate_Squares.Utilities.Curvefit_and_Plot import (
     compile_duration,
-    curve_fit_and_plot,
+    curve_fit_and_plot
 )
 
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
@@ -26,7 +26,8 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
     write_np_to_excel,
     calc_area_of_square,
     calc_average_track_count_in_background_squares,
-    label_visible_squares
+    label_visible_squares,
+    create_unique_key_for_squares
 )
 
 from src.Application.Utilities.General_Support_Functions import (
@@ -87,18 +88,18 @@ def process_project_directory(
             paint_logger.info('')
             continue
         process_experiment_directory(
-            os.path.join(root_directory, experiment_dir),
-            nr_of_squares_in_row,
-            min_r_squared,
-            min_tracks_for_tau,
-            min_required_density_ratio,
-            max_allowable_variability,
-            max_square_coverage,
+            paint_directory=os.path.join(root_directory, experiment_dir),
+            nr_of_squares_in_row=nr_of_squares_in_row,
+            min_r_squared=min_r_squared,
+            min_tracks_for_tau=min_tracks_for_tau,
+            min_required_density_ratio=min_required_density_ratio,
+            max_allowable_variability=max_allowable_variability,
+            max_square_coverage=max_square_coverage,
             process_recording_tau=process_recording_tau,
             process_square_tau=process_square_tau,
             called_from_project=called_from_project,
             verbose=False)
-        nr_experiments_processed
+        nr_experiments_processed += 1
 
     return nr_experiments_processed
 
@@ -129,7 +130,7 @@ def process_experiment_directory(
     time_stamp = time.time()
 
     # --------------------------------------------------------------------------------------------
-    # Read the All Tracks  file and add two columns for the square and label numbers
+    # Read the All Tracks file and add two columns for the square and label numbers
     # --------------------------------------------------------------------------------------------
 
     df_all_tracks = pd.read_csv(os.path.join(paint_directory, 'All Tracks.csv'))
@@ -282,8 +283,9 @@ def process_experiment_directory(
     paint_logger.info(f"Processed  {nr_files:2d} images in {experiment_path} in {format_time_nicely(run_time)}")
 
     # --------------------------------------------------------------------------------------------
-    # Save the All Squares  file
+    # Make a unique index and then save the All Squares  file
     # --------------------------------------------------------------------------------------------
+    df_all_squares = create_unique_key_for_squares(df_all_squares)
     df_all_squares.to_csv(os.path.join(experiment_path, "All Squares.csv"), index=False)
 
 
