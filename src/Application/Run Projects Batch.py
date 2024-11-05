@@ -5,14 +5,10 @@ import sys
 import time
 from datetime import datetime
 
-from src.Application.Compile_Project_Output.Compile_Project_Output import compile_project_output
+from src.Application.Compile_Project.Compile_Project import compile_project_output
 from src.Application.Generate_Squares.Generate_Squares import process_project_directory
-from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import \
-    copy_data_from_paint_source_to_paint_data
-from src.Application.Utilities.General_Support_Functions import (
-    copy_directory,
-    format_time_nicely
-)
+from src.Application.Utilities.General_Support_Functions import format_time_nicely
+
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
     set_directory_tree_timestamp,
     get_timestamp_from_string)
@@ -83,7 +79,6 @@ def process_json_configuration_block(paint_source_dir,
 
     shutil.copytree(paint_source_dir, paint_data_dir, dirs_exist_ok=True)
 
-
     if not os.path.exists(r_dest_dir):
         os.makedirs(r_dest_dir)
 
@@ -97,16 +92,19 @@ def process_json_configuration_block(paint_source_dir,
         max_square_coverage=max_square_coverage,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
+        force=paint_force,
         verbose=False)
 
     # Compile the squares file
     compile_project_output(paint_data_dir, verbose=True)
 
     # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine)
-    output_source = os.path.join(paint_data_dir, 'Output')
+    output_source = paint_data_dir
     output_destination = os.path.join(r_dest_dir, 'Output')
     os.makedirs(output_destination, exist_ok=True)
-    copy_directory(output_source, output_destination)
+    shutil.copy(os.path.join(output_source, 'Squares.csv'), output_destination)
+    shutil.copy(os.path.join(output_source, 'Tracks.csv'), output_destination)
+    shutil.copy(os.path.join(output_source, 'Recordings.csv'), output_destination)
     paint_logger.info(f"Copied output to {output_destination}")
 
     # Set the timestamp for the R data destination directory

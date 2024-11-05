@@ -59,6 +59,7 @@ def process_project_directory(
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
         called_from_project: bool = True,
+        paint_force: bool = False,
         verbose: bool = False) -> None:
     """
     This function processes all images in a root directory. It calls the function
@@ -79,6 +80,9 @@ def process_project_directory(
         if not os.path.isdir(os.path.join(root_directory, experiment_dir)):
             continue
         if 'Output' in experiment_dir:
+            continue
+        if os.path.exists(os.path.join(root_directory, experiment_dir)) and not paint_force:
+            paint_logger.info(f"Experiment output exists and skipped: {experiment_dir}")
             continue
         process_experiment_directory(
             os.path.join(root_directory, experiment_dir), nr_of_squares_in_row, min_r_squared, min_tracks_for_tau,
@@ -102,6 +106,7 @@ def process_experiment_directory(
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
         called_from_project: bool = True,
+        paint_force: bool = False,
         verbose: bool = False) -> None:
     """
     This function processes all images in a paint directory. It reads the experiment file, to find out what
