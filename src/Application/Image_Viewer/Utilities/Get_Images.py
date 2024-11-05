@@ -24,7 +24,9 @@ def get_images(self, initial=False):
         try:
             left_image_dir = os.path.join(
                 self.user_specified_directory,
-                'TrackMate Images' if self.user_specified_directory == 'Experiment' else experiment, 'TrackMate Images')
+                'TrackMate Images' if self.user_specified_mode == 'Experiment' else os.path.join(experiment,
+                                                                                                      'TrackMate Images')
+            )
             left_img = ImageTk.PhotoImage(Image.open(os.path.join(left_image_dir, ext_recording_name + '.jpg')))
             valid = True
         except:
@@ -39,7 +41,9 @@ def get_images(self, initial=False):
         # Find the corresponding BF
         bf_image_dir = os.path.join(
             self.user_specified_directory,
-            'Brightfield Images' if self.user_specified_directory == 'Experiment' else experiment, 'Brightfield Images')
+            'Brightfield Images' if self.user_specified_mode == 'Experiment' else os.path.join(experiment,
+                                                                                               'Brightfield Images')
+        )
         right_valid, right_img = get_corresponding_bf(bf_image_dir, ext_recording_name, recording_name)
 
         record = {
