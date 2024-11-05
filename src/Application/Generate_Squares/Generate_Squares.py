@@ -82,7 +82,9 @@ def process_project_directory(
                 os.path.exists(os.path.join(root_directory, experiment_dir, 'All Recordings.csv')) and
                 os.path.exists(os.path.join(root_directory, experiment_dir, 'All Tracks.csv')) and
                 not paint_force):
+            paint_logger.info('')
             paint_logger.info(f"Experiment output exists and skipped: {experiment_dir}")
+            paint_logger.info('')
             continue
         process_experiment_directory(
             os.path.join(root_directory, experiment_dir),
@@ -194,9 +196,9 @@ def process_experiment_directory(
             # Process the image
             # --------------------------------------------------------------------------------------------
 
-            if verbose:
+            if True:
                 paint_logger.debug(
-                    f"Processing file {current_image_nr} of {nr_files}: seq nr: {index} name: {recording_name}")
+                    f"Processing file {current_image_nr} of {nr_files}: {recording_name}")
             else:
                 paint_logger.debug(recording_name)
 
