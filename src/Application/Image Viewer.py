@@ -57,7 +57,6 @@ class ImageViewer(tk.Tk):
         self.parent.resizable(False, False)
 
         # Save the parameters
-        self.user_specified_level = None  # ToDO Remove this later
         self.user_specified_directory = user_specified_directory
         self.user_specified_mode = user_specified_mode
 
@@ -130,9 +129,7 @@ class ImageViewer(tk.Tk):
         self.saved_list_images = []
         self.df_all_squares = None
 
-        msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "EXPERIMENT_LEVEL" else self.user_specified_level}'
-        msg += f'{" - NO SAVING" if self.user_specified_mode == "PROJECT_LEVEL" else ""}'
-        self.parent.title(msg)
+        self.parent.title(f'Image Viewer - {self.user_specified_directory}')
 
     def setup_ui(self):
         """
