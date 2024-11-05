@@ -223,7 +223,7 @@ def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_
     model.getLogger().log('Found ' + str(model.getTrackModel().nTracks(True)) + ' tracks.')
 
     nr_spots = model.getSpots().getNSpots(True)  # Get visible spots only
-    all_tracks = model.getTrackModel().nTracks(False)  # Get all tracks
+    tracks = model.getTrackModel().nTracks(False)  # Get all tracks
     filtered_tracks = model.getTrackModel().nTracks(True)  # Get filtered tracks
 
-    return nr_spots, all_tracks, filtered_tracks
+    return nr_spots, tracks, filtered_tracks
