@@ -25,6 +25,8 @@ from src.Common.Support.LoggerConfig import (
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
 
+from src.Application.Utilities.Compille_All_tracks import compile_all_tracks
+
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Compile Output.log')
 
@@ -71,9 +73,11 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
             sys.exit()
         df_all_squares = pd.concat([df_all_squares, df_squares])
 
+    # Read the 'All Tracks' files in the experiument directory and concatenate them
+    compile_all_tracks(project_dir)
 
     # -----------------------------------------------------------------------------
-    # At this point we have the df_all_recordings, df_all_squares and df_image_summary complete.
+    # At this point we have the df_all_recordings and  df_all_squares complete.
     # Some small tidying up
     # -----------------------------------------------------------------------------
 
@@ -103,6 +107,12 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
     paint_logger.info(f"Compiled  output for {project_dir} in {format_time_nicely(run_time)}")
     paint_logger.info("")
 
+
+    # ------------------------------------
+    # Then do the Tracks File
+    # -------------------------------------
+
+    compile_all_tracks(project_dir)
 
 class CompileDialog:
 
@@ -142,14 +152,16 @@ class CompileDialog:
             self.lbl_root_dir.config(text=self.root_directory)
 
     def on_compile_pressed(self) -> None:
-        type = test_paint_directory_type(self.root_directory)
-        if type is 'Project':
-            compile_project_output(project_dir=self.root_directory, verbose=True)
-            self.root.destroy()
-        else:
+
+        dir_content = os.listdir(self.root_directory)
+
+        if all(item in dir_content for item in ['TrackMate Images', 'Brightfield Images']):
             paint_logger.error("The selected directory does not seem to be a project directory")
             paint_messagebox(self.root, title='Warning',
                              message="The selected directory does not seem to be a project directory")
+        else:
+            compile_project_output(project_dir=self.root_directory, verbose=True)
+            self.root.destroy()
 
     def on_exit_pressed(self) -> None:
         self.root.destroy()
