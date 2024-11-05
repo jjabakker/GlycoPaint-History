@@ -3,6 +3,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import warnings
 from scipy.optimize import OptimizeWarning
 from scipy.optimize import curve_fit
 
@@ -106,10 +107,14 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
     y = np.asarray(y)
 
     # Perform the fit
-    p0 = (2000, 4, 10)  # this is more what we see
+    p0 = [2000, 4, 10]  # this is more what we see
 
     try:
-        params, cv = curve_fit(mono_exp, x, y, p0)  # noinspection PyTupleAssignment
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            warnings.simplefilter("ignore", category=OptimizeWarning)
+            params, cv = curve_fit(mono_exp, x, y, p0)
+
         m, t, b = params
     except ValueError:
         if verbose:
