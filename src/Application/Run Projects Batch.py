@@ -78,8 +78,8 @@ def process_json_configuration_block(paint_source_dir,
     # Copy the data from Paint Source to the appropriate directory in Paint Data
     copy_tm_data_from_paint_source_with_images(paint_source_dir, paint_data_dir)
 
-    if not os.path.exists(r_dest_dir):
-        os.makedirs(r_dest_dir)
+    # if not os.path.exists(r_dest_dir):
+    #     os.makedirs(r_dest_dir)
 
     nr_experiments_processed = process_project_directory(
         paint_directory=paint_data_dir,
@@ -122,7 +122,7 @@ def process_json_configuration_block(paint_source_dir,
             paint_logger.error(f"Time string '{time_stamp}' is not a valid date string.")
     else:
         specific_time = None
-    set_directory_tree_timestamp(r_dest_dir, specific_time)
+    # set_directory_tree_timestamp(r_dest_dir, specific_time)
     set_directory_tree_timestamp(paint_data_dir, specific_time)
 
     paint_logger.info("")
