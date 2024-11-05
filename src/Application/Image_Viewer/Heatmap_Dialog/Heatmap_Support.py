@@ -8,7 +8,7 @@ from src.Common.Support.LoggerConfig import paint_logger
 heatmap_modes = {
     1: 'Tau',
     2: 'Density',
-    3: 'DC',
+    3: 'Diffusion Coefficient',
     4: 'Max Track Duration',
     5: 'Total Track Duration'
 }
@@ -25,13 +25,14 @@ def get_colormap_colors(cmap_name, num_colors):
     return [_rgb_to_hex(cmap(i / num_colors)) for i in range(num_colors)]
 
 
-def get_color_index(var, var_max, var_min, nr_levels):
-    var = max(var, 0)
+def get_color_index(value, var_max, var_min, nr_levels):
+    var = max(value, 0)
     if var_max == var_min:
         return 0
-    index = math.floor(var * nr_levels / (var_max - var_min))
-    if index == nr_levels:
-        index -= 1
+
+    # Normalize the value to an index in the range of the color index (0-19)
+    index = int((value - var_min) / (var_max - var_min) * (nr_levels - 1))
+
     return index
 
 

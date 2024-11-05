@@ -44,7 +44,7 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
         squares_file_path = find_squares_file(project_directory, recording_name + '-squares.csv')
         if squares_file_path:
             df_squares = pd.read_csv(squares_file_path)
-            df_squares['DC'] = 0
+            df_squares['Diffusion Coefficient'] = 0
         else:
             paint_logger.error(
                 f"Could not find squares file {recording_name + '-squares.csv'} for recording {recording_name}")
@@ -62,11 +62,11 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
                 dc_mean = df_tracks_in_square['Diffusion Coefficient'].mean()
             else:
                 dc_mean = -1
-            df_squares.loc[index, 'DC'] = int(dc_mean)
+            df_squares.loc[index, 'Diffusion Coefficient'] = int(dc_mean)
             line_count += 1
 
         df_squares.to_csv(squares_file_path, index=False)
-        paint_logger.debug(f"File {squares_file_path} was updated: {line_count} squares with a valid DC")
+        paint_logger.debug(f"File {squares_file_path} was updated: {line_count} squares with a valid Diffusion Coefficient")
         image_count += 1
 
     run_time = round(time.time() - time_stamp, 1)
