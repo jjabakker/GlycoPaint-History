@@ -130,17 +130,17 @@ def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr
     return xi, yi
 
 
-def get_df_from_file(file, header=0, skip_rows=[]):
-    try:
-        df = pd.read_csv(file, header=header, skiprows=skip_rows)
-    except FileNotFoundError:
-        df = None
-        paint_logger.error("File not found: " + file)
-    except IOError:
-        df = None
-        paint_logger.error("IoError: " + file)
-
-    return df
+# def get_df_from_file(file, header=0, skip_rows=[]):
+#     try:
+#         df = pd.read_csv(file, header=header, skiprows=skip_rows)
+#     except FileNotFoundError:
+#         df = None
+#         paint_logger.error("File not found: " + file)
+#     except IOError:
+#         df = None
+#         paint_logger.error("IoError: " + file)
+#
+#     return df
 
 
 def get_grid_defaults_from_file() -> dict:
