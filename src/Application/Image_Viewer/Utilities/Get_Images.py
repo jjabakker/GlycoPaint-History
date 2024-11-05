@@ -16,10 +16,6 @@ def get_images(self, initial=False):
     list_images = []
     error_count = 0
 
-    #recordings_in_all_squares = self.df_all_squares['Ext Recording Name'].unique().tolist()
-
-    #for index, recording in enumerate(recordings_in_all_squares):
-
     for index, experiment_row in self.df_experiment.iterrows():
         ext_recording_name = experiment_row['Ext Recording Name']
         recording_name = experiment_row['Recording Name']

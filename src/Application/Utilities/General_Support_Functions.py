@@ -184,7 +184,6 @@ def copy_directory(src, dest):
 
 
 def test_paint_directory_type(directory):
-
     dir_content = os.listdir(directory)
 
     if not all(item in dir_content for item in ['All Recordings.csv', 'All Squares.csv']):
@@ -197,4 +196,3 @@ def test_paint_directory_type(directory):
         else:
             # Likely a Project directory
             return 'Project'
-

@@ -30,10 +30,8 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
 )
 
 from src.Application.Utilities.General_Support_Functions import (
-    save_squares_to_file,
     save_experiment_to_file,
-    format_time_nicely,
-    read_experiment_tm_file)
+    format_time_nicely)
 
 from src.Common.Support.DirectoriesAndLocations import (
     delete_files_in_directory,
@@ -112,7 +110,6 @@ def process_experiment_directory(
     This function processes all images in a paint directory. It reads the experiment file, to find out what
     images need processing
     """
-
 
     df_all_squares = pd.DataFrame()
     experiment_path = paint_directory
@@ -196,10 +193,20 @@ def process_experiment_directory(
             else:
                 paint_logger.debug(recording_name)
 
-            df_squares, tau, r_squared, density = process_single_image_in_experiment_directory(df_all_tracks,
-                experiment_row, experiment_path, ext_image_path, recording_name, nr_of_squares_in_row, min_r_squared,
-                min_tracks_for_tau, min_required_density_ratio, max_allowable_variability, process_recording_tau,
-                process_square_tau, plot_to_file, verbose)
+            df_squares, tau, r_squared, density = process_single_image_in_experiment_directory(
+                df_all_tracks,
+                experiment_row,
+                experiment_path,
+                ext_image_path,
+                recording_name,
+                nr_of_squares_in_row,
+                min_r_squared,
+                min_tracks_for_tau,
+                min_required_density_ratio,
+                max_allowable_variability,
+                process_recording_tau,
+                process_square_tau,
+                plot_to_file, verbose)
             if df_squares is None:
                 paint_logger.error("Aborted with error")
                 return None
@@ -297,7 +304,7 @@ def process_single_image_in_experiment_directory(
     density = 0
 
     # Empty the plt directory
-    delete_files_in_directory(get_tau_plots_dir_path(experiment_path, recording_name))    # TODO - Check this
+    delete_files_in_directory(get_tau_plots_dir_path(experiment_path, recording_name))  # TODO - Check this
 
     df_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
 
@@ -333,7 +340,7 @@ def process_single_image_in_experiment_directory(
     # ----------------------------------------------------------------------------------------------------
 
     min_track_duration = 0
-    max_track_duration = 10000     # ToDo - Really shoul come form the userint
+    max_track_duration = 10000  # ToDo - Really shoul come form the userint
     if process_recording_tau:
         tau, r_squared, density = calc_single_tau_and_density_for_image(
             experiment_path, df_squares, df_tracks, min_tracks_for_tau, min_r_squared, min_required_density_ratio,
@@ -346,19 +353,19 @@ def process_single_image_in_experiment_directory(
 
 
 def calc_single_tau_and_density_for_image(
-    experiment_directory: str,
-    df_squares: pd.DataFrame,
-    df_tracks: pd.DataFrame,
-    min_tracks_for_tau: int,
-    min_r_squared: float,
-    min_required_density_ratio: float,
-    max_allowable_variability: float,
-    min_track_duration: int,
-    max_track_duration: int,
-    recording_name: str,
-    nr_of_squares_in_row: int,
-    concentration: float,
-    plot_to_file: bool
+        experiment_directory: str,
+        df_squares: pd.DataFrame,
+        df_tracks: pd.DataFrame,
+        min_tracks_for_tau: int,
+        min_r_squared: float,
+        min_required_density_ratio: float,
+        max_allowable_variability: float,
+        min_track_duration: int,
+        max_track_duration: int,
+        recording_name: str,
+        nr_of_squares_in_row: int,
+        concentration: float,
+        plot_to_file: bool
 ) -> tuple:
     """
     This function calculates a single Tau and Density for an image. It does this by considering only the tracks

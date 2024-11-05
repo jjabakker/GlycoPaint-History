@@ -17,6 +17,7 @@ def get_experiment_info_file_path(experiment_directory):
 def get_experiment_tm_file_path(experiment_directory):
     return os.path.join(experiment_directory, EXPERIMENT_TM)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Tau Plots
 # ----------------------------------------------------------------------------------------------------------------------
@@ -26,7 +27,6 @@ TAU_PLOTS = "Tau Plots"
 
 def get_tau_plots_dir_path(experiment_directory, image_name):
     return os.path.join(experiment_directory, image_name, TAU_PLOTS)
-
 
 
 # ----------------------------------------------------------------------------------------------------------------------

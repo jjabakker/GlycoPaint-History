@@ -16,7 +16,6 @@ sys.path.append(paint_dir)
 from DirectoriesAndLocations import (
     get_experiment_info_file_path,
     get_experiment_tm_file_path,
-    create_directories,
     get_default_locations,
     save_default_locations)
 
@@ -32,7 +31,6 @@ from FijiSupportFunctions import (
 from LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
-
 
 paint_logger_change_file_handler_name('Grid Process Batch.log')
 
@@ -265,7 +263,7 @@ def run_trackmate_with_supplied_directories(recordings_directory, experiment_dir
         run_trackmate(experiment_directory, recordings_directory)
         run_time = time.time() - time_stamp
         run_time = round(run_time, 1)
-        paint_logger.info("\nProcessing completed in {}.". format(format_time_nicely(run_time)))
+        paint_logger.info("\nProcessing completed in {}.".format(format_time_nicely(run_time)))
 
     # Run Fiji code on a new thread to avoid conflicts with the Swing EDT
     fiji_thread = threading.Thread(target=run_fiji_code)
@@ -393,9 +391,6 @@ if __name__ == "__main__":
             paint_logger.warning("User aborted the batch processing.")
             suppress_fiji_output()
             exit(0)
-
-        print experiment_directory
-        print recordings_directory
 
         time_stamp = time.time()
         run_trackmate(recordings_directory, experiment_directory, )

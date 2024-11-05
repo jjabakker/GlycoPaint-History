@@ -1,6 +1,3 @@
-import pandas as pd
-
-
 def select_squares_for_display_do_the_work(self):
     """
     Select squares based on defined conditions for density, variability, and track duration,
@@ -8,15 +5,15 @@ def select_squares_for_display_do_the_work(self):
     """
     # Define the conditions for squares to be visible
     self.df_squares['Visible'] = (
-        (self.df_squares['Density Ratio'] >= self.min_required_density_ratio) &
-        (self.df_squares['Variability'] <= self.max_allowable_variability) &
-        (self.df_squares['Max Track Duration'] >= self.min_track_duration) &
-        (self.df_squares['Max Track Duration'] <= self.max_track_duration)
+            (self.df_squares['Density Ratio'] >= self.min_required_density_ratio) &
+            (self.df_squares['Variability'] <= self.max_allowable_variability) &
+            (self.df_squares['Max Track Duration'] >= self.min_track_duration) &
+            (self.df_squares['Max Track Duration'] <= self.max_track_duration)
     )
 
     self.df_squares['Visible'] = (
-        (self.df_squares['Visible']) &
-        (self.df_squares['Tau'] > 0)
+            (self.df_squares['Visible']) &
+            (self.df_squares['Tau'] > 0)
     )
 
     # Eliminate isolated squares based on neighborhood rules
@@ -93,6 +90,7 @@ def select_squares_relaxed(df_squares, nr_of_squares_in_row):
             list_of_squares.append(square_nr)
 
     return df_squares, list_of_squares
+
 
 def get_strict_neighbours(row, col, nr_of_squares_in_row):
     """

@@ -1,8 +1,6 @@
+import csv
 import os
 import time
-import csv
-
-import pandas as pd
 
 from src.Application.Utilities.General_Support_Functions import (
     format_time_nicely)
@@ -60,13 +58,13 @@ def compile_all_tracks(project_directory):
                     writer.writerow(row)
 
     run_time = time.time() - time_stamp
-    paint_logger.info(f"Combined {len(csv_files)} tracks files and saved as {all_tracks_file_path} in {format_time_nicely(run_time)}.")
+    paint_logger.info(
+        f"Combined {len(csv_files)} tracks files and saved as {all_tracks_file_path} in {format_time_nicely(run_time)}.")
     paint_logger.info("")
 
 
-
 if __name__ == '__main__':
-    #compile_all_tracks('/Users/hans/Paint Data - v12/New Probes/Paint New Probes - 20 Squares')
-    #compile_all_tracks('/Users/hans/Paint Data - v12/New Probes/Paint New Probes - 30 Squares')
-    #compile_all_tracks('/Users/hans/Paint Data - v12/Regular Probes/Paint Regular Probes - 20 Squares')
+    # compile_all_tracks('/Users/hans/Paint Data - v12/New Probes/Paint New Probes - 20 Squares')
+    # compile_all_tracks('/Users/hans/Paint Data - v12/New Probes/Paint New Probes - 30 Squares')
+    # compile_all_tracks('/Users/hans/Paint Data - v12/Regular Probes/Paint Regular Probes - 20 Squares')
     compile_all_tracks('/Users/hans/Paint Data - v12/Regular Probes/Paint Regular Probes - 30 Squares')

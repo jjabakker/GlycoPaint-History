@@ -12,7 +12,8 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
-    format_time_nicely, test_paint_directory_type
+    format_time_nicely,
+    test_paint_directory_type
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip

@@ -10,22 +10,19 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
+from src.Application.Utilities.Compille_All_tracks import compile_all_tracks
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
     read_experiment_file,
     read_squares_from_file,
     format_time_nicely,
-    correct_all_images_column_types,
-    test_paint_directory_type)
+    correct_all_images_column_types)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
-
-from src.Application.Utilities.Compille_All_tracks import compile_all_tracks
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Compile Output.log')
@@ -38,7 +35,6 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 
 def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: bool = False):
-
     paint_logger.info("")
     paint_logger.info(f"Compiling output for {project_dir}")
     time_stamp = time.time()
@@ -107,12 +103,12 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
     paint_logger.info(f"Compiled  output for {project_dir} in {format_time_nicely(run_time)}")
     paint_logger.info("")
 
-
     # ------------------------------------
     # Then do the Tracks File
     # -------------------------------------
 
     compile_all_tracks(project_dir)
+
 
 class CompileDialog:
 

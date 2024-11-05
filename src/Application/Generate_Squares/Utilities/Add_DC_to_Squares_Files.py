@@ -70,7 +70,8 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
         image_count += 1
 
     run_time = round(time.time() - time_stamp, 1)
-    paint_logger.info(f"Updated {line_count:2d} lines in {image_count} images in {project_directory} in {format_time_nicely(run_time)}")
+    paint_logger.info(
+        f"Updated {line_count:2d} lines in {image_count} images in {project_directory} in {format_time_nicely(run_time)}")
     paint_logger.info("")
 
 

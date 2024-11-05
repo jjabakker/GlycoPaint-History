@@ -85,5 +85,3 @@ class SelectViewerDataDialog:
     def get_result(self):
         self.top.wait_window()
         return self.proceed, self.directory, self.mode
-
-

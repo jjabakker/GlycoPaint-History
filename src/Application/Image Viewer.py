@@ -23,25 +23,22 @@ from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_heatmap_data)
 from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
 from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
+from src.Application.Image_Viewer.Utilities.Display_Selected_Squares import (
+    display_selected_squares_do_the_work,
+    mark_selected_squares_do_the_work)
 from src.Application.Image_Viewer.Utilities.Get_Images import get_images
 from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import (
     test_if_square_is_in_rectangle,
     save_as_png)
+from src.Application.Image_Viewer.Utilities.Select_Squares_For_Display import select_squares_for_display_do_the_work
 from src.Application.Utilities.General_Support_Functions import (
-    read_experiment_file,
     read_squares_from_file,
     save_experiment_to_file,
     save_squares_to_file)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
-from src.Application.Image_Viewer.Utilities.Select_Squares_For_Display import select_squares_for_display_do_the_work
-from src.Application.Image_Viewer.Utilities.Display_Selected_Squares  import (
-    display_selected_squares_do_the_work,
-    mark_selected_squares_do_the_work)
-
 
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Image Viewer.log')
@@ -60,7 +57,7 @@ class ImageViewer(tk.Tk):
         self.parent.resizable(False, False)
 
         # Save the parameters
-        self.user_specified_level = None   # ToDO Remove this later
+        self.user_specified_level = None  # ToDO Remove this later
         self.user_specified_directory = user_specified_directory
         self.user_specified_mode = user_specified_mode
 
@@ -330,7 +327,8 @@ class ImageViewer(tk.Tk):
 
         # Check that the two align
         if set(self.df_all_squares['Ext Recording Name']) != set(self.df_experiment['Ext Recording Name']):
-            self.show_error_and_exit("The recordings in the 'All Squares' file do not align with the 'All Experiments' file")
+            self.show_error_and_exit(
+                "The recordings in the 'All Squares' file do not align with the 'All Experiments' file")
 
         self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
@@ -697,7 +695,7 @@ class ImageViewer(tk.Tk):
         :return:
         """
 
-        self.df_squares['Visible'] = True   # ToDo i9s this ok?
+        self.df_squares['Visible'] = True  # ToDo is this ok?
         self.df_squares['Cell Id'] = 0
 
         self.select_squares_for_display()
@@ -776,7 +774,6 @@ class ImageViewer(tk.Tk):
         # Generate the graphpad info for summary statistics
         # df_stats = analyse_all_images(self.experiment_directory)
         # create_summary_graphpad(self.experiment_directory, df_stats)
-
 
     def provide_report_on_cell(self, _, cell_nr):
         """
@@ -919,7 +916,6 @@ class ImageViewer(tk.Tk):
     def mark_selected_squares(self, list_of_squares):
 
         mark_selected_squares_do_the_work(list_of_squares, self.nr_of_squares_in_row, self.cn_left_image)
-
 
     def on_forward_backward(self, direction):
         """

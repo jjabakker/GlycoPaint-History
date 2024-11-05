@@ -165,8 +165,9 @@ def get_grid_defaults_from_file() -> dict:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
-            required_columns = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_required_density_ratio',
-                                'max_allowable_variability', 'max_square_coverage', 'process_recording_tau', 'process_square_tau']
+            required_columns = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared',
+                                'min_required_density_ratio', 'max_allowable_variability', 'max_square_coverage',
+                                'process_recording_tau', 'process_square_tau']
             for col in required_columns:
                 if col not in reader.fieldnames:
                     # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
