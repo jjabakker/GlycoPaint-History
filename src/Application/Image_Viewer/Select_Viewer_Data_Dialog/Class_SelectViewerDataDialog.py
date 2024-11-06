@@ -9,6 +9,7 @@ from src.Application.Utilities.General_Support_Functions import (
     test_paint_directory_type)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.LoggerConfig import paint_logger
+from src.Application.Utilities.ToolTips import ToolTip
 
 
 class SelectViewerDataDialog:
@@ -48,8 +49,11 @@ class SelectViewerDataDialog:
 
     def setup_frame_directory(self, frame_directory):
 
-        btn_root_dir = ttk.Button(frame_directory, text='Experiment Directory', width=15, command=self.on_change_dir)
+        btn_root_dir = ttk.Button(frame_directory, text='Paint Directory', width=15, command=self.on_change_dir)
         self.lbl_experiment_dir = ttk.Label(frame_directory, text=self.experiment_directory, width=80)
+
+        tooltip = "Select the directory where the Paint project or experiment is located. This can be a Project or Experiment directory."
+        ToolTip(btn_root_dir, tooltip, wraplength=400)
 
         btn_root_dir.grid(column=1, row=0, padx=(5, 5), pady=5)
         self.lbl_experiment_dir.grid(column=2, row=0, padx=5, pady=5)
