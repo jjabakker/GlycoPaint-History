@@ -260,9 +260,6 @@ def process_experiment_directory(
 
             df_experiment.loc[index, 'Exclude'] = df_experiment.loc[index, 'Squares Ratio'] >= max_square_coverage
 
-            # Then assign the mean Diffusion Coefficient value to the experiment file    #ToDo - implement this
-
-            df_squares = pd.concat([df_squares, df_squares], ignore_index=True)
             current_image_nr += 1
             processed += 1
         else:
