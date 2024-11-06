@@ -6,7 +6,7 @@ from os import makedirs
 # ----------------------------------------------------------------------------------------------------------------------
 # Experiment
 # ----------------------------------------------------------------------------------------------------------------------
-EXPERIMENT_TM = "Experiment TM.csv"
+EXPERIMENT_TM = "All Recordings.csv"
 EXPERIMENT_INFO = "Experiment Info.csv"
 
 

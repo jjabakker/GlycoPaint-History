@@ -148,14 +148,14 @@ def process_experiment_directory(
     # Read the experiment file, check if it is in the correct format and add the required columns
     # --------------------------------------------------------------------------------------------
 
-    df_experiment = pd.read_csv(os.path.join(paint_directory, 'Experiment TM.csv'))
+    df_experiment = pd.read_csv(os.path.join(paint_directory, 'All Recordings.csv'))
     if df_experiment is None:
         paint_logger.error(
             f"Function 'process_all_images_in_paint_directory' failed: Likely, {experiment_path} is not a valid directory containing cell image information.")
         sys.exit(1)
     if len(df_experiment) == 0:
         paint_logger.error(
-            f"Function 'process_all_images_in_paint_directory' failed: 'Experiment TM.csv' in {experiment_path} is empty")
+            f"Function 'process_all_images_in_paint_directory' failed: 'All Recordings.csv' in {experiment_path} is empty")
         sys.exit(1)
 
     # Confirm the experiment file is in the correct format

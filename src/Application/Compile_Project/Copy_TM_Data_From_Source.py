@@ -17,7 +17,7 @@ def copy_tm_data_from_paint_source(source_dir, destination_dir):
             os.makedirs(dest_path, exist_ok=True)
 
             # Copy only the specified files if they exist
-            for file in ['All Tracks.csv', 'Experiment TM.csv']:
+            for file in ['All Tracks.csv', 'All Recordings.csv']:
                 src_file_path = os.path.join(subdir_path, file)
                 if os.path.exists(src_file_path):
                     dest_file_path = os.path.join(dest_path, file)
@@ -47,7 +47,7 @@ def copy_tm_data_from_paint_source_with_images(source_dir, destination_dir):
             os.makedirs(dest_path, exist_ok=True)
 
             # Copy only the specified files if they exist
-            for file in ['All Tracks.csv', 'Experiment TM.csv']:
+            for file in ['All Tracks.csv', 'All Recordings.csv']:
                 src_file_path = os.path.join(subdir_path, file)
                 dest_file_path = os.path.join(dest_path, file)
                 if os.path.exists(src_file_path):

@@ -80,7 +80,7 @@ def run_trackmate(experiment_directory, recording_source_directory):
             message = "Processing " + str(nr_to_process) + " recordings in directory " + recording_source_directory
             paint_logger.info(message)
 
-            # Initialise the Experiment TM file with the column headers
+            # Initialise the All Recordings file with the column headers
             col_names = csv_reader.fieldnames + ['Nr Spots', 'Nr Tracks', 'Run Time', 'Ext Recording Name',
                                                  'Recording Size', 'Time Stamp']
             experiment_tm_file_path = initialise_experiment_tm_file(experiment_directory, col_names)
