@@ -23,8 +23,6 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
 
     time_stamp = time.time()
 
-    nr_squares = nr_of_squares_in_row ** 2
-
     # Find out which unique Recordings there are
     # recording_names = df_tracks['Recording Name'].unique().tolist()
 
@@ -109,11 +107,3 @@ def find_ext_recording_names(directory):
                     print(f"Error reading {file_path}: {e}")
 
     return ext_recording_names
-
-
-if __name__ == '__main__':
-    df_tracks = pd.read_csv('/Users/hans/Paint Work/New Probes/Output/All Tracks.csv')
-    add_dc_to_squares_file(df_tracks, 20, '/Users/hans/Paint Work/New Probes')
-
-    df_tracks = pd.read_csv('/Users/hans/Paint Work/Regular Probes/Output/All Tracks.csv')
-    add_dc_to_squares_file(df_tracks, 20, '/Users/hans/Paint Work/Regular Probes')

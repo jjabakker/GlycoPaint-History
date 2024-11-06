@@ -151,8 +151,6 @@ class CompileDialog:
 
     def on_compile_pressed(self) -> None:
 
-        dir_content = os.listdir(self.root_directory)
-
         dir_type = test_paint_directory_type_for_compile(self.root_directory)
         if dir_type == 'Project':
             compile_project_output(project_dir=self.root_directory, verbose=True)

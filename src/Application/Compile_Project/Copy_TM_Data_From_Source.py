@@ -61,8 +61,3 @@ def copy_tm_data_from_paint_source_with_images(source_dir, destination_dir):
                 if os.path.exists(src_folder_path):
                     copy_with_overwrite(src_folder_path, dest_folder_path)
 
-
-if __name__ == '__main__':
-    source_dir = '/Users/hans/Paint Source/New Probes'
-    destination_dir = '/Users/hans/Downloads/Test'
-    copy_tm_data_from_paint_source_with_images(source_dir, destination_dir)
