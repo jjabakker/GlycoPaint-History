@@ -66,7 +66,7 @@ def read_experiment_file(experiment_file_path: str, only_records_to_process: boo
 
 
 def read_experiment_tm_file(experiment_file_path, only_records_to_process=True):
-    df_experiment = read_experiment_file(os.path.join(experiment_file_path, 'Experiment TM.csv'),
+    df_experiment = read_experiment_file(os.path.join(experiment_file_path, 'All Recordings.csv'),
                                          only_records_to_process=only_records_to_process)
     return df_experiment
 
@@ -215,6 +215,7 @@ def _inspect_dirs(root_dir, required_files, required_dirs):  # Define the set of
 def test_paint_directory_type_for_generate(directory):
     required_files = {'All Tracks.csv'}
     required_dirs = {'TrackMate Images', 'Brightfield Images'}
+    required_dirs = {'TrackMate Images'}
 
     complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
     if complete_experiment_dirs > 0:
@@ -233,6 +234,7 @@ def test_paint_directory_type_for_generate(directory):
 def test_paint_directory_type_for_compile(directory):
     required_files = {'All Squares.csv', 'All Tracks.csv', 'All Recordings.csv'}
     required_dirs = {'TrackMate Images', 'Brightfield Images'}
+    required_dirs = {'TrackMate Images'}
 
     complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
     if complete_experiment_dirs > 0:
