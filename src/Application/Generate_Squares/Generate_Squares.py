@@ -104,6 +104,7 @@ def process_project_directory(
 
     return nr_experiments_processed
 
+
 def process_experiment_directory(
         paint_directory: str,
         nr_of_squares_in_row: int,

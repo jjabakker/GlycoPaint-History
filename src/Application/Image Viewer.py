@@ -1071,8 +1071,10 @@ class ImageViewer(tk.Tk):
                     self.df_experiment.loc[image_name, 'Max Allowable Variability'] = self.list_images[i][
                         'Max Allowable Variability']
                     self.df_experiment.loc[image_name, 'Neighbour Mode'] = self.list_images[i]['Neighbour Mode']
-                save_experiment_to_file(self.df_experiment, os.path.join(self.user_specified_directory, 'All Recordings.csv'))
-                paint_logger.debug(f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
+                save_experiment_to_file(self.df_experiment,
+                                        os.path.join(self.user_specified_directory, 'All Recordings.csv'))
+                paint_logger.debug(
+                    f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
             self.experiment_changed = False
 
         # There is squares data to save.
@@ -1085,8 +1087,10 @@ class ImageViewer(tk.Tk):
                 self.df_all_squares.set_index(['Unique Key'], inplace=True, drop=False)
                 self.df_squares.set_index(['Unique Key'], inplace=True, drop=False)
                 self.df_all_squares.update(self.df_squares)
-                save_squares_to_file(self.df_all_squares, os.path.join(self.user_specified_directory, 'All Squares.csv'))
-                paint_logger.debug(f"Squares file {os.path.join(self.user_specified_directory, 'All Squares.csv')} was saved.")
+                save_squares_to_file(self.df_all_squares,
+                                     os.path.join(self.user_specified_directory, 'All Squares.csv'))
+                paint_logger.debug(
+                    f"Squares file {os.path.join(self.user_specified_directory, 'All Squares.csv')} was saved.")
             self.squares_changed = False
         return save
 

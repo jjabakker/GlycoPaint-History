@@ -1,6 +1,5 @@
 import sys
 
-import math
 import matplotlib.pyplot as plt
 
 from src.Common.Support.LoggerConfig import paint_logger

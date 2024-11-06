@@ -8,8 +8,8 @@ from src.Application.Utilities.General_Support_Functions import (
     save_default_locations,
     test_paint_directory_type)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-from src.Common.Support.LoggerConfig import paint_logger
 from src.Application.Utilities.ToolTips import ToolTip
+from src.Common.Support.LoggerConfig import paint_logger
 
 
 class SelectViewerDataDialog:

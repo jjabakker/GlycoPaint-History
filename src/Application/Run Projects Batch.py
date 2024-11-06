@@ -6,9 +6,9 @@ import time
 from datetime import datetime
 
 from src.Application.Compile_Project.Compile_Project import compile_project_output
+from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source_with_images
 from src.Application.Generate_Squares.Generate_Squares import process_project_directory
 from src.Application.Utilities.General_Support_Functions import format_time_nicely
-from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source_with_images
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
     set_directory_tree_timestamp,
     get_timestamp_from_string)

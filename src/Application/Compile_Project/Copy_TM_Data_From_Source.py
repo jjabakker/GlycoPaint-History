@@ -3,7 +3,6 @@ import shutil
 
 
 def copy_tm_data_from_paint_source(source_dir, destination_dir):
-
     # Ensure the destination directory exists
     os.makedirs(destination_dir, exist_ok=True)
 
@@ -25,7 +24,6 @@ def copy_tm_data_from_paint_source(source_dir, destination_dir):
                     shutil.copy2(src_file_path, dest_file_path)  # copy2 preserves metadata
 
 
-
 def copy_with_overwrite(src, dst):
     # If the destination is a directory and exists, remove it
     if os.path.isdir(dst):
@@ -35,7 +33,6 @@ def copy_with_overwrite(src, dst):
 
 
 def copy_tm_data_from_paint_source_with_images(source_dir, destination_dir):
-
     # Ensure the destination directory exists
     os.makedirs(destination_dir, exist_ok=True)
 

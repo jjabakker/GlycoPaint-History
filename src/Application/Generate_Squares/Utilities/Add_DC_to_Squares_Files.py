@@ -66,7 +66,8 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
             line_count += 1
 
         df_squares.to_csv(squares_file_path, index=False)
-        paint_logger.debug(f"File {squares_file_path} was updated: {line_count} squares with a valid Diffusion Coefficient")
+        paint_logger.debug(
+            f"File {squares_file_path} was updated: {line_count} squares with a valid Diffusion Coefficient")
         image_count += 1
 
     run_time = round(time.time() - time_stamp, 1)

@@ -1,9 +1,9 @@
 import sys
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import warnings
 from scipy.optimize import OptimizeWarning
 from scipy.optimize import curve_fit
 

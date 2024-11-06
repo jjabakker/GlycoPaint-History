@@ -25,7 +25,7 @@ def get_images(self, initial=False):
             left_image_dir = os.path.join(
                 self.user_specified_directory,
                 'TrackMate Images' if self.user_specified_mode == 'Experiment' else os.path.join(experiment,
-                                                                                                      'TrackMate Images')
+                                                                                                 'TrackMate Images')
             )
             left_img = ImageTk.PhotoImage(Image.open(os.path.join(left_image_dir, ext_recording_name + '.jpg')))
             valid = True

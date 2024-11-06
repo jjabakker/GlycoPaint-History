@@ -70,7 +70,6 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
             sys.exit()
         df_all_squares = pd.concat([df_all_squares, df_squares])
 
-
     # -----------------------------------------------------------------------------
     # At this point we have the df_all_recordings and  df_all_squares complete.
     # Some small tidying up
@@ -99,7 +98,8 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
     df_all_recordings.to_csv(os.path.join(project_dir, 'All Recordings.csv'), index=False)
 
     run_time = time.time() - time_stamp
-    paint_logger.info(f"Compiled  'All Recordings' and 'All Squares' for {project_dir} in {format_time_nicely(run_time)}")
+    paint_logger.info(
+        f"Compiled  'All Recordings' and 'All Squares' for {project_dir} in {format_time_nicely(run_time)}")
     paint_logger.info("")
 
     # ------------------------------------

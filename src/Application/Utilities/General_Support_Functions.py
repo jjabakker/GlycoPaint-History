@@ -183,7 +183,7 @@ def copy_directory(src, dest):
         paint_logger.error(f"An unexpected error occurred: {e}")
 
 
-def _inspect_dirs(root_dir, required_files, required_dirs):    # Define the set of required files
+def _inspect_dirs(root_dir, required_files, required_dirs):  # Define the set of required files
 
     # Initialize counters
     complete_count = 0
@@ -213,7 +213,6 @@ def _inspect_dirs(root_dir, required_files, required_dirs):    # Define the set 
 
 
 def test_paint_directory_type_for_generate(directory):
-
     required_files = {'All Tracks.csv'}
     required_dirs = {'TrackMate Images', 'Brightfield Images'}
 
@@ -232,7 +231,6 @@ def test_paint_directory_type_for_generate(directory):
 
 
 def test_paint_directory_type_for_compile(directory):
-
     required_files = {'All Squares.csv', 'All Tracks.csv', 'All Recordings.csv'}
     required_dirs = {'TrackMate Images', 'Brightfield Images'}
 

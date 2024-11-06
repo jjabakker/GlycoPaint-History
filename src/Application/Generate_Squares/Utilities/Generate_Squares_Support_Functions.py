@@ -301,7 +301,6 @@ def label_visible_squares(df_squares):
 
 
 def create_unique_key_for_squares(df):
-
     df['String Square Nr'] = df['Square Nr'].astype(str)
     df['Unique Key'] = df['Ext Recording Name'] + ' - ' + df['String Square Nr']
     df.set_index('Unique Key', inplace=True, drop=False)
@@ -315,7 +314,6 @@ def create_unique_key_for_squares(df):
 
 
 def select_tracks_for_tau_calculation(df_tracks_in_square, limit_DC):
-
     if limit_DC:
         df_tracks_in_square = df_tracks_in_square[df_tracks_in_square['Diffusion Coefficient'] > 0]
 

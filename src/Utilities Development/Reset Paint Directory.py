@@ -1,10 +1,11 @@
 import os
 from tkinter import *
 from tkinter import ttk, filedialog
+
 from src.Application.Utilities.ToolTips import ToolTip
 
-def reset_root(root_dir):
 
+def reset_root(root_dir):
     files_to_remove = ['All Recordings.csv', 'All Squares.csv']
 
     for dirpath, dirnames, filenames in os.walk(root_dir):
