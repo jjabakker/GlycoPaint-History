@@ -551,16 +551,16 @@ class ImageViewer(tk.Tk):
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
             # Add the squares and write the canvas complete with squares
-            self.select_squares_display()
+            self.select_squares_for_display()
             self.display_selected_squares()
             image_name = image_name + '-squares'
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
         # Find all the ps files and delete them
-        ps_files = os.listdir(squares_dir)
-        for item in ps_files:
-            if item.endswith(".ps"):
-                os.remove(os.path.join(squares_dir, item))
+        # ps_files = os.listdir(squares_dir)
+        # for item in ps_files:
+        #     if item.endswith(".ps"):
+        #         os.remove(os.path.join(squares_dir, item))
 
         # Find all the png files and sort them
         png_files = []
