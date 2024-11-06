@@ -62,7 +62,6 @@ def compile_project_output(project_dir: str, drop_empty: bool = True, verbose: b
         df_all_recordings = pd.concat([df_all_recordings, df_experiment])
 
         df_squares = read_squares_from_file(os.path.join(experiment_dir_path, 'All Squares.csv'))
-        df_all_squares = pd.concat([df_all_squares, df_squares])
 
         if df_squares is None:
             paint_logger.error(f"Error reading {os.path.join(experiment_dir_path, 'All Squares.csv')}")
