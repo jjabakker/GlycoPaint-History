@@ -1082,8 +1082,8 @@ class ImageViewer(tk.Tk):
             else:  # Then must be 'Always'
                 save = True
             if save:
-                self.df_all_squares.set_index(['Ext Recording Name', 'Square Nr'], inplace=True, drop=False)
-                self.df_squares.set_index(['Ext Recording Name', 'Square Nr'], inplace=True, drop=False)
+                self.df_all_squares.set_index(['Unique Key'], inplace=True, drop=False)
+                self.df_squares.set_index(['Unique Key'], inplace=True, drop=False)
                 self.df_all_squares.update(self.df_squares)
                 save_squares_to_file(self.df_all_squares, os.path.join(self.user_specified_directory, 'All Squares.csv'))
                 paint_logger.debug(f"Squares file {os.path.join(self.user_specified_directory, 'All Squares.csv')} was saved.")
