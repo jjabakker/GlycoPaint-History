@@ -6,7 +6,7 @@ from tkinter import ttk
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
-    test_paint_directory_type)
+    test_paint_directory_type_for_compile)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 from src.Common.Support.LoggerConfig import paint_logger
@@ -70,7 +70,7 @@ class SelectViewerDataDialog:
         self.directory = self.lbl_experiment_dir.cget('text')
 
         dir_content = os.listdir(self.directory)
-        type = test_paint_directory_type(self.directory)
+        type = test_paint_directory_type_for_compile(self.directory)
         if type is None:
             # Unlikely that this is Project or Experiment directory
             paint_logger.error("The selected directory does not seem to be a project or experiment directory")
