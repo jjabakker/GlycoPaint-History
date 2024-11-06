@@ -66,11 +66,11 @@ def get_square_coordinates(nr_of_squares_in_row, sequence_number):
     return x0, y0, x1, y1
 
 
-def calc_variability(tracks_df, square_nr, nr_of_squares_in_row, granularity):
+def calc_variability(df_tracks, square_nr, nr_of_squares_in_row, granularity):
     """
     The variability is calculated by creating a grid of granularity x granularity in the square for
     which tracks_fd specifies the tracks
-    :param tracks_df: A dataframe that contains the tracks of the square for which the variability is calculated
+    :param df_tracks: A dataframe that contains the tracks of the square for which the variability is calculated
     :param square_nr: The sequence number of the square for which the variability is calculated
     :param nr_of_squares_in_row: The number of rows and columns in the image
     :param granularity: Specifies how fine the grid is that is created
@@ -81,10 +81,10 @@ def calc_variability(tracks_df, square_nr, nr_of_squares_in_row, granularity):
     matrix = np.zeros((granularity, granularity), dtype=int)
 
     # Loop over all the tracks in the square and determine where they sit in the grid
-    for i in range(len(tracks_df)):
+    for index, row in df_tracks.iterrows():
         # Retrieve the x and y values expressed in micrometers
-        x = float(tracks_df.at[i, "Track X Location"])
-        y = float(tracks_df.at[i, "Track Y Location"])
+        x = float(row["Track X Location"])
+        y = float(row["Track Y Location"])
 
         # The width of the image is 82.0864 micrometer. The width and height of a square can be calculated
         width = 82.0864 / nr_of_squares_in_row
@@ -318,3 +318,14 @@ def select_tracks_for_tau_calculation(df_tracks_in_square, limit_DC):
         df_tracks_in_square = df_tracks_in_square[df_tracks_in_square['Diffusion Coefficient'] > 0]
 
     return df_tracks_in_square
+
+
+def create_unique_key_for_tracks(df):
+    df['Unique Key'] = df['Recording Name'] + ' - ' + df['Track Label'].str.split('_').str[1]
+    df.set_index('Unique Key', inplace=True, drop=False)
+
+    # Reorder the columns
+    cols = list(df.columns)
+    cols.insert(0, cols.pop(cols.index('Unique Key')))
+    df = df[cols]
+    return df
