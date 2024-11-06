@@ -204,7 +204,7 @@ def process_recording(row, recording_source_directory, experiment_directory):
 
         # suppress_fiji_output()
         nr_spots, total_tracks, long_tracks = execute_trackmate_in_Fiji(
-            ext_recording_name, threshold, tracks_file_path, recording_file_path)
+            ext_recording_name, threshold, tracks_file_path, recording_file_path, False)
         # restore_fiji_output()
 
         # IJ.run("Set Scale...", "distance=6.2373 known=1 unit=micron")

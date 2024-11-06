@@ -9,6 +9,7 @@ import csv
 import os
 import sys
 
+from ij.plugin.frame import RoiManager
 import fiji.plugin.trackmate.features.FeatureFilter as FeatureFilter
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer as HyperStackDisplayer
 from fiji.plugin.trackmate import (
@@ -36,7 +37,7 @@ from PaintConfig import load_paint_config
 from DirectoriesAndLocations import get_paint_defaults_file_path
 
 
-def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
+def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename, kas_special):
     print("\nProcessing: " + tracks_filename)
 
     paint_config = load_paint_config(get_paint_defaults_file_path())
@@ -167,6 +168,11 @@ def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_
     # ----------------
     # Display results
     # ----------------
+
+    if kas_special:
+        rm = RoiManager.getInstance()
+        rm.runCommand("Open", os.path.expanduser("~/paint.roi"))
+        rm.runCommand("Show All")
 
     # A selection.
     selection_model = SelectionModel(model)
