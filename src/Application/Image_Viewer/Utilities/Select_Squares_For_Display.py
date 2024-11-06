@@ -1,3 +1,6 @@
+from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import label_visible_squares
+
+
 def select_squares_for_display_do_the_work(self):
     """
     Select squares based on defined conditions for density, variability, and track duration,
@@ -21,6 +24,9 @@ def select_squares_for_display_do_the_work(self):
         select_squares_strict(self.df_squares, self.nr_of_squares_in_row)
     elif self.neighbour_state == 'Relaxed':
         select_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
+
+    # Label visible squares, so that it is always a range starting from 1
+    label_visible_squares(self.df_squares)
 
 
 def select_squares_strict(df_squares, nr_of_squares_in_row):
