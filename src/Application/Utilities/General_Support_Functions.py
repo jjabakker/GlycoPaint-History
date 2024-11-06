@@ -183,16 +183,68 @@ def copy_directory(src, dest):
         paint_logger.error(f"An unexpected error occurred: {e}")
 
 
-def test_paint_directory_type(directory):
-    dir_content = os.listdir(directory)
+def _inspect_dirs(root_dir, required_files, required_dirs):    # Define the set of required files
 
-    if not all(item in dir_content for item in ['All Recordings.csv', 'All Squares.csv']):
-        # Unlikely that this is Project or Experiment directory
-        return None
+    # Initialize counters
+    complete_count = 0
+    incomplete_count = 0
+
+    # Loop through each immediate subdirectory in the root directory
+    for subdir in os.listdir(root_dir):
+        subdir_path = os.path.join(root_dir, subdir)
+
+        # Check if it is a directory (ignore files in root_dir)
+        if os.path.isdir(subdir_path):
+            # Get the set of files and directories in the subdirectory
+            items_in_subdir = set(os.listdir(subdir_path))
+
+            # Check for required files and directories
+            has_required_files = required_files.issubset(items_in_subdir)
+            has_required_dirs = required_dirs.issubset(items_in_subdir)
+
+            # Update counters based on the presence of required files and directories
+            if has_required_files and has_required_dirs:
+                complete_count += 1
+            else:
+                incomplete_count += 1
+
+    # Return the counts of complete and incomplete subdirectories
+    return complete_count, incomplete_count
+
+
+def test_paint_directory_type_for_generate(directory):
+
+    required_files = {'All Tracks.csv'}
+    required_dirs = {'TrackMate Images', 'Brightfield Images'}
+
+    complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
+    if complete_experiment_dirs > 0:
+        if problem_experiment_dirs == 0:
+            return 'Project'
+        else:
+            return None
     else:
+        dir_content = os.listdir(directory)
         if all(item in dir_content for item in ['TrackMate Images', 'Brightfield Images']):
-            # Likely an Experiment directory
             return 'Experiment'
         else:
-            # Likely a Project directory
+            return None
+
+
+def test_paint_directory_type_for_compile(directory):
+
+    required_files = {'All Squares.csv', 'All Tracks.csv', 'All Recordings.csv'}
+    required_dirs = {'TrackMate Images', 'Brightfield Images'}
+
+    complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
+    if complete_experiment_dirs > 0:
+        if problem_experiment_dirs == 0:
             return 'Project'
+        else:
+            return None
+    else:
+        dir_content = os.listdir(directory)
+        if all(item in dir_content for item in ['TrackMate Images', 'Brightfield Images']):
+            return 'Experiment'
+        else:
+            return None
