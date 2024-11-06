@@ -12,9 +12,12 @@ from java.lang.System import getProperty
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
 
-from Trackmate import paint_trackmate
+# from Trackmate import paint_trackmate
+from Run_TrackMate import run_trackmate
+from Trackmate import execute_trackmate_in_Fiji
 
-from CommonSupportFunctions import (
+
+from DirectoriesAndLocations import (
     create_directories,
     get_default_image_directory)
 
@@ -42,11 +45,11 @@ def process_full_image(threshold, image_directory, image_name, cell_type, probe,
     :return:
     """
 
-    full_results_file = os.path.join(image_directory, image_name, image_name, "-full-results.csv")
-    full_tracks_filename = os.path.join(image_directory, image_name, "tracks", image_name, "-full-tracks.csv")
-    tiff_filename = os.path.join(image_directory, image_name, "img", image_name, ".tiff")
+    full_results_file = os.path.join(image_directory, image_name, image_name + "-full-results.csv")
+    full_tracks_filename = os.path.join(image_directory, image_name, image_name + "-full-tracks.csv")
+    tiff_filename = os.path.join(image_directory, image_name, image_name + ".tiff")
 
-    nr_spots, total_tracks, long_tracks = paint_trackmate(threshold, full_tracks_filename, tiff_filename)
+    nr_spots, total_tracks, long_tracks = execute_trackmate_in_Fiji('single', threshold, full_tracks_filename, tiff_filename)
     if nr_spots == -1:
         paint_logger.error("\n'Process full image' did not manage to run 'paint_trackmate'")
         paint_logger.error(getframeinfo(currentframe()).filename, getframeinfo(currentframe()).lineno)
@@ -89,25 +92,10 @@ def get_user_input(interactive):
     probe_type = "Simple"
     concentration_probe = 1
 
-    # See if there is a choices file. If there is, take the default values from there
-    configuration_dir = os.path.expanduser('~') + os.sep + "Paint Profile"
-    choices_file = configuration_dir + os.sep + "cell_user_choices.csv"
-
-    try:
-        f = open(choices_file, 'rt')
-        reader = csv.DictReader(f)  # f will have a valid value
-        for row in reader:
-            threshold = float(row['threshold'])
-            concentration_probe = float(row['concentration_probe'])
-            probe = row['probe']
-            probe_type = row['probe_type']
-        f.close()
-    except IOError:
-        # This is not a real problem, we then use defaults
-        threshold = 5.0
-        concentration_probe = 1.0
-        probe = "1 Mono"
-        probe_type = "Simple"
+    threshold = 5.0
+    concentration_probe = 1.0
+    probe = "1 Mono"
+    probe_type = "Simple"
 
     # In all cases show the dialog to allow the user to change
     if interactive:
@@ -127,16 +115,6 @@ def get_user_input(interactive):
             concentration_probe = gui.getNextNumber()
             probe = gui.getNextRadioButton()
             probe_type = gui.getNextRadioButton()
-
-            # Write the choices file
-            open_attribute = fiji_get_file_open_write_attribute()
-            export_file = open(choices_file, open_attribute)
-            export_writer = csv.writer(export_file)
-            fields = ["threshold", "concentration_probe", "probe", "probe_type"]
-            export_writer.writerow(fields)
-            fields = [threshold, concentration_probe, probe, probe_type]
-            export_writer.writerow(fields)
-
         else:
             return 0, 0, 0, 0
 
