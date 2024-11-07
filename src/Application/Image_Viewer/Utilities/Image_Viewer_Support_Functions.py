@@ -7,6 +7,7 @@ pd.options.mode.copy_on_write = True
 
 
 def save_as_png(canvas, file_name):
+
     # First save as a postscript file
     canvas.postscript(file=file_name + '.ps', colormode='color')
 

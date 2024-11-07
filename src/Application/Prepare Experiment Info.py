@@ -111,6 +111,8 @@ def prepare_experiment_info_file(image_source_directory, experiment_directory):
         paint_logger.info('')
         paint_logger.info(f"Process finished normally with {seq_nr - 1} images processed.")
 
+    convert_bf_images(image_source_directory, experiment_directory, force=False)
+
     paint_logger.info('')
     paint_logger.info(
         "Don't forget to edit the experiment file to specify correct values for Probe, Probe type, Cell Type, Adjuvant and concentration.")
@@ -122,7 +124,7 @@ if __name__ == '__main__':
     class BatchDialog:
 
         def __init__(self, _root):
-            _root.title('Prepare Experiments Info file')
+            _root.title('Prepare Experiments Info')
 
             self.image_directory = ""
             self.paint_directory = ""
