@@ -191,6 +191,9 @@ def _inspect_dirs(root_dir, required_files, required_dirs):  # Define the set of
 
     # Loop through each immediate subdirectory in the root directory
     for subdir in os.listdir(root_dir):
+        if subdir == 'Output':
+            continue
+
         subdir_path = os.path.join(root_dir, subdir)
 
         # Check if it is a directory (ignore files in root_dir)
