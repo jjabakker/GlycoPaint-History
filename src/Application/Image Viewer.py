@@ -1106,6 +1106,7 @@ class ImageViewer(tk.Tk):
         selected_idx = self.heatmap_option.get()
         if selected_idx == -1:
             self.heatmap_control_dialog = None
+            self.select_squares_for_display()
             self.display_selected_squares()
         else:
 
