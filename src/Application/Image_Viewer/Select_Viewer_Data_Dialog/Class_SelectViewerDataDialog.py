@@ -69,7 +69,11 @@ class SelectViewerDataDialog:
 
         self.directory = self.lbl_experiment_dir.cget('text')
 
-        dir_content = os.listdir(self.directory)
+        if not os.path.isdir(self.directory):
+            paint_logger.error("The selected directory does not exist")
+            paint_messagebox(self.parent, title='Warning', message="The selected directory does not exist")
+            return
+
         type = test_paint_directory_type_for_compile(self.directory)
         if type is None:
             # Unlikely that this is Project or Experiment directory

@@ -1,3 +1,4 @@
+import os
 import time
 import tkinter as tk
 from tkinter import ttk, filedialog
@@ -170,6 +171,11 @@ class GenerateSquaresDialog:
     def on_generate_squares_pressed(self):
         """Generate the squares and save the parameters."""
         start_time = time.time()
+
+        if not os.path.isdir(self.paint_directory):
+            paint_logger.error("The selected directory does not exist")
+            paint_messagebox(self.root, title='Warning', message="The selected directory does not exist")
+            return
 
         dir_type = test_paint_directory_type_for_generate(self.paint_directory)
         if dir_type == 'Project':
