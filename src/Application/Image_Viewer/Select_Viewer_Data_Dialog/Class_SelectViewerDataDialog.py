@@ -6,11 +6,12 @@ from tkinter import ttk
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
-    test_paint_directory_type_for_compile)
+    test_paint_directory_type_for_compile,
+)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 from src.Common.Support.LoggerConfig import paint_logger
-
+from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import only_one_nr_of_squares_in_row
 
 class SelectViewerDataDialog:
 
@@ -81,6 +82,13 @@ class SelectViewerDataDialog:
             paint_messagebox(self.parent, title='Warning',
                              message="The selected directory does not seem to be a project or experiment directory")
         else:
+
+            # Now do a quick check to see if all recordings have been processed with the same nr_of_square_in_row setting
+            if not only_one_nr_of_squares_in_row(self.directory):
+                paint_messagebox(self.parent, title='Warning',
+                                 message="Not all recordings have been processed with the same nr_of_square_in_row setting. Please run Generate Squares with consistent parameters.")
+                return
+
             # The dialog will simply exit and the main programs will pick up the return values
             self.mode = type
             self.proceed = True
@@ -93,3 +101,4 @@ class SelectViewerDataDialog:
     def get_result(self):
         self.top.wait_window()
         return self.proceed, self.directory, self.mode
+
