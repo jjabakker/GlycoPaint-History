@@ -556,12 +556,6 @@ class ImageViewer(tk.Tk):
             image_name = image_name + '-squares'
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
-        # Find all the ps files and delete them
-        # ps_files = os.listdir(squares_dir)
-        # for item in ps_files:
-        #     if item.endswith(".ps"):
-        #         os.remove(os.path.join(squares_dir, item))
-
         # Find all the png files and sort them
         png_files = []
         files = os.listdir(squares_dir)
@@ -577,7 +571,9 @@ class ImageViewer(tk.Tk):
         pdf_path = os.path.join(squares_dir, 'images.pdf')
 
         # Create a pdf with a first images and all the other images to it
-        png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
+        if platform.system() == "Darwin":
+            png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
+
 
         # Go back to the image where we were
         self.img_no -= 1
