@@ -716,7 +716,7 @@ class ImageViewer(tk.Tk):
             self.list_images[self.img_no]['Min Required Density Ratio'] = density_ratio
             self.experiment_changed = True
         elif setting_type == "Max Allowable Variability":
-            self.max_allowed_variability = variability
+            self.max_allowable_variability = variability
             self.list_images[self.img_no]['Max Allowable Variability'] = variability
             self.experiment_changed = True
         elif setting_type == "Neighbour Mode":
@@ -730,7 +730,7 @@ class ImageViewer(tk.Tk):
         elif setting_type == "Set for All":
             # Set the same settings for all recordings
             self.min_required_density_ratio = density_ratio
-            self.max_allowed_variability = variability
+            self.max_allowable_variability = variability
             self.min_track_duration = min_duration
             self.max_track_duration = max_duration
             self.neighbour_state = neighbour_mode
