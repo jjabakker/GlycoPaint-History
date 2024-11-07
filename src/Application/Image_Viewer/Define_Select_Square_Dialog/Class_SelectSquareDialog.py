@@ -27,6 +27,7 @@ class SelectSquareDialog:
         # Set window properties
         self.select_dialog = tk.Toplevel(self.image_viewer.parent)
         self.select_dialog.title("Select Squares")
+        self.select_dialog.attributes("-topmost", True)
         self.select_dialog.resizable(False, False)
         self.select_dialog.geometry("300x790")
         self.select_dialog.attributes('-topmost', True)
@@ -93,6 +94,10 @@ class SelectSquareDialog:
         self.frame_buttons.columnconfigure(0, weight=1)
 
     def setup_frame_neighbours(self):
+
+        # Create a label for the neighbour mode
+        self.rb_neighbour_label = ttk.Label(self.frame_neighbours, text="Neighbour Mode", width=20)
+
         # Create three radio buttons for the neighbour mode
         self.neighbour_var = tk.StringVar(value="")
         self.rb_neighbour_free = tk.Radiobutton(
@@ -106,9 +111,10 @@ class SelectSquareDialog:
             command=lambda: self.filter_changed('Neighbour Mode'), anchor=tk.W)
 
         # Place the radio buttons and button in the grid
-        self.rb_neighbour_free.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_relaxed.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_neighbour_strict.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+        self.rb_neighbour_label.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_neighbour_free.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_neighbour_relaxed.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+        self.rb_neighbour_strict.grid(column=0, row=3, padx=5, pady=5, sticky=tk.W)
 
     def setup_frame_variability(self):
         """

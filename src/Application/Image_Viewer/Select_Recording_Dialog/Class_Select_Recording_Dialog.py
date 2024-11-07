@@ -9,9 +9,11 @@ class SelectRecordingDialog(tk.Toplevel):
     def __init__(self, parent, dataframe, callback):
         super().__init__(parent)
         self.title("Select Recordings")
+        self.attributes("-topmost", True)
         self.df = dataframe.copy()
         self.callback = callback
         self.parent = parent
+
 
         # Only filter on these specific columns
         self.filter_columns = ['Probe Type', 'Probe', 'Cell Type', 'Adjuvant', 'Concentration']

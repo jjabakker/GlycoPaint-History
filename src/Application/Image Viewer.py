@@ -281,8 +281,8 @@ class ImageViewer(tk.Tk):
             self.frame_commands, text='Reset', command=lambda: self.on_reset_image(), width=button_width)
 
         self.bn_select_recording.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_show_heatmap.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_show_select_squares.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_show_heatmap.grid(column=0, row=2, padx=5, pady=5)
         self.bn_show_define_cells.grid(column=0, row=3, padx=5, pady=5)
         self.bn_output.grid(column=0, row=4, padx=5, pady=5)
         self.bn_reset.grid(column=0, row=5, padx=5, pady=5)
