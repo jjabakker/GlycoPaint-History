@@ -215,7 +215,6 @@ def _inspect_dirs(root_dir, required_files, required_dirs):  # Define the set of
 def test_paint_directory_type_for_generate(directory):
     required_files = {'All Tracks.csv'}
     required_dirs = {'TrackMate Images', 'Brightfield Images'}
-    required_dirs = {'TrackMate Images'}
 
     complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
     if complete_experiment_dirs > 0:
@@ -225,7 +224,7 @@ def test_paint_directory_type_for_generate(directory):
             return None
     else:
         dir_content = os.listdir(directory)
-        if all(item in dir_content for item in ['TrackMate Images', 'Brightfield Images']):
+        if all(item in dir_content for item in required_dirs):
             return 'Experiment'
         else:
             return None
@@ -234,7 +233,6 @@ def test_paint_directory_type_for_generate(directory):
 def test_paint_directory_type_for_compile(directory):
     required_files = {'All Squares.csv', 'All Tracks.csv', 'All Recordings.csv'}
     required_dirs = {'TrackMate Images', 'Brightfield Images'}
-    required_dirs = {'TrackMate Images'}
 
     complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
     if complete_experiment_dirs > 0:
@@ -244,7 +242,7 @@ def test_paint_directory_type_for_compile(directory):
             return None
     else:
         dir_content = os.listdir(directory)
-        if all(item in dir_content for item in ['TrackMate Images', 'Brightfield Images']):
+        if all(item in dir_content for item in required_dirs):
             return 'Experiment'
         else:
             return None
