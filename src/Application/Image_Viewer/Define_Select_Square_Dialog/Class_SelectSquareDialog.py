@@ -106,13 +106,13 @@ class SelectSquareDialog:
         self.neighbour_var = tk.StringVar(value="")
         self.rb_neighbour_free = tk.Radiobutton(
             self.frame_neighbours, text="Free", variable=self.neighbour_var, width=12, value="Free",
-            command=lambda: self.filter_changed('Neighbour Mode'), anchor=tk.W)
+            command=lambda: self.on_filter_changed('Neighbour Mode'), anchor=tk.W)
         self.rb_neighbour_strict = tk.Radiobutton(
             self.frame_neighbours, text="Strict", variable=self.neighbour_var, width=12, value="Strict",
-            command=lambda: self.filter_changed('Neighbour Mode'), anchor=tk.W)
+            command=lambda: self.on_filter_changed('Neighbour Mode'), anchor=tk.W)
         self.rb_neighbour_relaxed = tk.Radiobutton(
             self.frame_neighbours, text="Relaxed", variable=self.neighbour_var, width=12, value="Relaxed",
-            command=lambda: self.filter_changed('Neighbour Mode'), anchor=tk.W)
+            command=lambda: self.on_filter_changed('Neighbour Mode'), anchor=tk.W)
 
         # Place the radio buttons and button in the grid
         self.rb_neighbour_label.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
@@ -131,7 +131,7 @@ class SelectSquareDialog:
         self.lbl_variability_text = ttk.Label(self.frame_variability, text='Max Allowable Variability', width=20)
         self.sc_variability = tk.Scale(self.frame_variability, from_=1.5, to=10, variable=self.variability,
                                        orient='vertical', resolution=0.5)
-        self.sc_variability.bind("<ButtonRelease-1>", lambda event: self.filter_changed('Max Allowable Variability'))
+        self.sc_variability.bind("<ButtonRelease-1>", lambda event: self.on_filter_changed('Max Allowable Variability'))
         self.lbl_variability_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_variability.grid(column=0, row=1, padx=5, pady=5)
 
@@ -147,7 +147,7 @@ class SelectSquareDialog:
             self.frame_density_ratio, text='Min Required Density Ratio', width=20)
         self.sc_density_ratio = tk.Scale(
             self.frame_density_ratio, from_=1, to=100, variable=self.density_ratio, orient='vertical', resolution=0.5)
-        self.sc_density_ratio.bind("<ButtonRelease-1>", lambda event: self.filter_changed('Min Required Density Ratio'))
+        self.sc_density_ratio.bind("<ButtonRelease-1>", lambda event: self.on_filter_changed('Min Required Density Ratio'))
         self.lbl_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_density_ratio.grid(column=0, row=1, padx=5, pady=5)
 
@@ -179,7 +179,7 @@ class SelectSquareDialog:
         self.sc_track_max_duration = tk.Scale(
             self.frame_max_duration, from_=0, to=200, variable=self.track_max_duration, orient='vertical',
             resolution=0.1)
-        self.sc_track_max_duration.bind("<ButtonRelease-1>", lambda event: self.filter_changed('Max Track Duration'))
+        self.sc_track_max_duration.bind("<ButtonRelease-1>", lambda event: self.on_filter_changed('Max Track Duration'))
 
         self.lbl_track_max_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
         self.sc_track_max_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
@@ -196,7 +196,7 @@ class SelectSquareDialog:
         self.sc_track_min_duration = tk.Scale(
             self.frame_min_duration, from_=0, to=200, variable=self.track_min_duration, orient='vertical',
             resolution=0.1)
-        self.sc_track_min_duration.bind("<ButtonRelease-1>", lambda event: self.filter_changed('Min Track Duration'))
+        self.sc_track_min_duration.bind("<ButtonRelease-1>", lambda event: self.on_filter_changed('Min Track Duration'))
         self.lbl_track_min_duration_text.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
         self.sc_track_min_duration.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W + tk.E)
 
@@ -204,7 +204,7 @@ class SelectSquareDialog:
     # Event Handlers
     # --------------------------------------------------------------------------------------------------------
 
-    def filter_changed(self, changed_slider):
+    def on_filter_changed(self, changed_slider):
         """
         Notify the main window about the track duration change, using the callback function provided by the
         Image Viewer (update_select_squares)
