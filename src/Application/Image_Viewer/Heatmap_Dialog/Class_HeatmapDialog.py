@@ -135,8 +135,9 @@ class HeatMapDialog:
         toggle_button = tk.Button(button_container, text="Toggle", command=self.on_toggle, width=10)
 
         # Grid the buttons in the container frame
-        close_button.grid(row=0, column=0, padx=5, pady=5)
-        toggle_button.grid(row=0, column=1, padx=5, pady=5)
+        toggle_button.grid(row=0, column=0, padx=5, pady=5)
+        close_button.grid(row=0, column=1, padx=5, pady=5)
+
 
     # --------------------------------------------------------------
     # Event Handlers
