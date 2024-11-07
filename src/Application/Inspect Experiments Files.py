@@ -47,7 +47,7 @@ def inspect_experiment_squares_files(root_dir):
         logging.info(f'Inspecting directory: {paint_dir_path}')
 
         # Read the experiments file in the directory
-        experiment_file_name = os.path.join(paint_dir_path, 'experiment_squares.csv')
+        experiment_file_name = os.path.join(paint_dir_path, 'All Recordings.csv')
 
         df_experiment = read_experiment_file(experiment_file_name, only_records_to_process=False)
 
@@ -61,13 +61,9 @@ def inspect_experiment_squares_files(root_dir):
     # ------------------------------------
     # Save the output file
     # ------------------------------------
-    output_dir = os.path.join(root_dir, "Output")
-
-    # Ensure Output directory exists
-    os.makedirs(output_dir, exist_ok=True)
 
     # Save the concatenated DataFrame to Excel
-    output_file = os.path.join(output_dir, 'Images to Process.csv')
+    output_file = os.path.join(root_dir, 'Images to Process.csv')
     try:
         df_all_images.to_csv(output_file, index=False)
         logging.info(f"Output file saved at: {output_file}")
