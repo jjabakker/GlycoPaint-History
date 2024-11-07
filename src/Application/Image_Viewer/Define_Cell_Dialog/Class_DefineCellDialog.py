@@ -8,6 +8,7 @@ class DefineCellDialog:
     # Setting up
     # --------------------------------------------------------------
 
+
     def __init__(self, image_viewer, callback_to_assign_squares_to_cell, callback_to_reset_square_selection,
                  callback_to_close):
 
@@ -18,7 +19,7 @@ class DefineCellDialog:
         self.callback_to_close = callback_to_close
 
         # Set windows properties
-        self.control_window = tk.Toplevel(image_viewer)
+        self.control_window = tk.Toplevel(self.image_viewer.parent)
         self.control_window.resizable(False, False)
         self.control_window.title("Define Cells")
         self.control_window.attributes("-topmost", True)
