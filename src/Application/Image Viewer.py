@@ -343,9 +343,7 @@ class ImageViewer(tk.Tk):
         self.on_forward_backward('FORWARD')
 
     def on_select_recording(self):
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
-                self.select_recording_dialog]):
+        if self.is_dialog_active():
             return
         else:
             self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
@@ -353,9 +351,7 @@ class ImageViewer(tk.Tk):
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
 
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
-                self.select_recording_dialog]):
+        if self.is_dialog_active():
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
@@ -368,13 +364,19 @@ class ImageViewer(tk.Tk):
         self.bn_show_heatmap.configure(state=state)
         self.bn_show_define_cells.configure(state=state)
         self.bn_show_select_squares.configure(state=state)
+        self.bn_select_recording.configure(state=state)
+
+    def is_dialog_active(self):
+        return any(dialog is not None for dialog in
+                   [self.select_square_dialog,
+                    self.define_cells_dialog,
+                    self.heatmap_control_dialog,
+                    self.select_recording_dialog])
 
     def on_show_select_squares(self):
         # If the select square dialog is not already active, then we need to run the select square dialog
 
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
-                self.select_recording_dialog]):
+        if self.is_dialog_active():
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
@@ -393,9 +395,7 @@ class ImageViewer(tk.Tk):
 
     def on_show_define_cells(self):
 
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
-                self.select_recording_dialog]):
+        if self.is_dialog_active():
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
@@ -710,13 +710,6 @@ class ImageViewer(tk.Tk):
         """
         This function is called from the SelectSquareDialog when a control has changed or when the control exists. This
         give an opportunity to update the settings for the current image
-        :param setting_type:
-        :param density_ratio:
-        :param variability:
-        :param min_duration:
-        :param max_duration:
-        :param neighbour_mode:
-        :return:
         """
         if setting_type == "Min Required Density Ratio":
             self.min_required_density_ratio = density_ratio
