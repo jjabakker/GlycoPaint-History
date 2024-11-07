@@ -89,8 +89,12 @@ class SelectSquareDialog:
         self.frame_buttons.grid(column=0, row=4, padx=5, pady=1, sticky=(tk.N, tk.S, tk.E, tk.W))
 
     def setup_frame_buttons(self):
-        bn_set_neighbours_all = tk.Button(self.frame_buttons, text="Set for All", command=self.set_for_all, width=10)
+        bn_set_neighbours_all = tk.Button(self.frame_buttons, text="Set for All", command=self.on_set_for_all, width=10)
+        bn_close = tk.Button(self.frame_buttons, text="Close", command=self.on_close, width=10)
+
         bn_set_neighbours_all.grid(column=0, row=0, padx=5, pady=5)
+        bn_close.grid(column=1, row=0, padx=5, pady=5)
+
         self.frame_buttons.columnconfigure(0, weight=1)
 
     def setup_frame_neighbours(self):
@@ -209,14 +213,14 @@ class SelectSquareDialog:
         self.callback(changed_slider, self.sc_density_ratio.get(), self.sc_variability.get(),
                       self.track_min_duration.get(), self.track_max_duration.get(), self.neighbour_var.get())
 
-    def set_for_all(self):
+    def on_set_for_all(self):
         self.callback("Set for All", self.sc_density_ratio.get(), self.sc_variability.get(),
                       self.track_min_duration.get(), self.track_max_duration.get(), self.neighbour_var.get())
         pass
 
-    def on_close(self):
+    def on_close(self):   #@@@@@@
         """
-        Set the radio button to an invalid value of -1 and destroy the window    @@
+        Set the radio button to an invalid value of -1 and destroy the window
         The callback function (update_select_squares) is called in the ImageViewer dialog
         """
 
