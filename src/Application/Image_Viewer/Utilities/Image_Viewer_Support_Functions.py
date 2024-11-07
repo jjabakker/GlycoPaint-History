@@ -6,10 +6,19 @@ from PIL import Image
 pd.options.mode.copy_on_write = True
 
 
-def save_as_png(canvas, file_name):
+def save_as_png(canvas, file_name, size_pixels=(512, 512)):
+    canvas.config(width=size_pixels[0], height=size_pixels[1])
     # First save as a postscript file
     canvas.postscript(file=file_name + '.ps', colormode='color')
+    # Open the PostScript file with PIL
+    img = Image.open(file_name + '.ps')
+    img = img.resize(size_pixels)
+    # Save as PNG
+    #img.save(file_name + '.png', 'PNG')
 
+    # Save as TIFF
+    img.save(file_name + '.tiff', 'TIFF')
+    return
     # Then let PIL convert to a png file
     img = Image.open(file_name + '.ps')
     img.save(f"{file_name}.png", 'png')

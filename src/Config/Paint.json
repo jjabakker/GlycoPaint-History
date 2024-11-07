@@ -10,7 +10,7 @@
   "Generate Squares": {
     "Plot to File": false,
     "Fraction of Squares to Determine Background": 0.1,
-    "Exclude zero DC tracks from Tau Calculation": true,
+    "Exclude zero DC tracks from Tau Calculation": false,
     "logging": {
       "level": "INFO",
       "file": "Generate Squares.log"

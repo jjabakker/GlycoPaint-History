@@ -577,7 +577,7 @@ class ImageViewer(tk.Tk):
         pdf_path = os.path.join(squares_dir, 'images.pdf')
 
         # Create a pdf with a first images and all the other images to it
-        png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
+        #png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
 
         # Go back to the image where we were
         self.img_no -= 1

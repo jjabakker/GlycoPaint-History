@@ -28,6 +28,7 @@ from ij import WindowManager
 from ij.io import FileSaver
 from java.lang.System import getProperty
 
+
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
 
@@ -179,7 +180,7 @@ def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_
 
     # Read the default display settings.
     ds = DisplaySettingsIO.readUserDefault()
-    ds.setTrackColorBy(TrackMateObject.TRACKS, 'TRACK_DURATION')
+    ds.setTrackColorBy(TrackMateObject.TRACKS, 'TRACK_INDEX')
 
     displayer = HyperStackDisplayer(model, selection_model, imp, ds)
     displayer.render()
