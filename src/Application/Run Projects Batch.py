@@ -99,7 +99,7 @@ def process_json_configuration_block(paint_source_dir,
         compile_project_output(paint_data_dir, verbose=True)
     else:
         paint_logger.info(f"No experiments processed in {paint_data_dir}")
-        paint_logger.info(f"No All Recordings, All Sqaures, All Tracks compiled for {paint_data_dir}")
+        paint_logger.info(f"No All Recordings, All Squares, All Tracks compiled for {paint_data_dir}")
 
     # Now copy the data from the Paint Data directory to the R space
     if False:
