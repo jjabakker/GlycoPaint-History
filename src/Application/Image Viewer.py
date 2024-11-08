@@ -1197,11 +1197,11 @@ import tkinter as tk
 
 if __name__ == '__main__':
     root = tk.Tk()
-    root.eval('tk::PlaceWindow . center')
+    root.geometry("1x1")  # Ensure root is visible
+    root.deiconify()
 
-    # Show the SelectViewerDataDialog using the original root
-    dialog_result = SelectViewerDataDialog(root)
-    proceed, directory, mode = dialog_result.get_result()
+    dialog = SelectViewerDataDialog(root)
+    proceed, directory, mode = dialog.get_result()
 
     if proceed:
         # Initialize ImageViewer without withdrawing `root`
@@ -1215,5 +1215,4 @@ if __name__ == '__main__':
         # Hide root if not proceeding
         root.withdraw()
 
-    print("Starting main loop")
     root.mainloop()
