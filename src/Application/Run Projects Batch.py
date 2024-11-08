@@ -4,6 +4,7 @@ import shutil
 import sys
 import time
 from datetime import datetime
+from tkinter import messagebox
 
 from src.Application.Compile_Project.Compile_Project import compile_project_output
 from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source_with_images
@@ -171,6 +172,9 @@ def main():
     paint_data = paint_data + ' - v' + data_version
     r_dest = r_dest + ' - v' + data_version
 
+    result = messagebox.askyesno("Confirmation", f"Do you want to proceed generating version {data_version} in {paint_data}?")
+    if not result:
+        return
     if time_string == '':
         current_time = datetime.now()
         time_string = current_time.strftime("%Y-%m-%d %H:%M:%S")
