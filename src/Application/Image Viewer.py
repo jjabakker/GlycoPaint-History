@@ -12,38 +12,33 @@ from tkinter import messagebox
 from tkinter import ttk
 
 import matplotlib.pyplot as plt
+import pandas as pd
 from PIL import Image
 
 from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
 from src.Application.Image_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
 from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
+from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
+from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
 from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors, get_color_index,
     get_heatmap_data)
-from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
-from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
+from src.Application.Image_Viewer.Utilities.Display_Selected_Squares import (
+    display_selected_squares_do_the_work,
+    mark_selected_squares_do_the_work)
 from src.Application.Image_Viewer.Utilities.Get_Images import get_images
 from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import (
-    eliminate_isolated_squares_relaxed,
-    eliminate_isolated_squares_strict,
     test_if_square_is_in_rectangle,
     save_as_png)
+from src.Application.Image_Viewer.Utilities.Select_Squares_For_Display import select_squares_for_display_do_the_work
 from src.Application.Utilities.General_Support_Functions import (
-    read_experiment_file,
     read_squares_from_file,
     save_experiment_to_file,
     save_squares_to_file)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-from src.Common.Support.DirectoriesAndLocations import (
-    get_squares_file_path)
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
-from src.Application.Image_Viewer.Utilities.Select_Squares_For_Display import select_squares_for_display_do_the_work
-from src.Application.Image_Viewer.Utilities.Display_Selected_Squares  import (
-    display_selected_squares_do_the_work,
-    mark_selected_squares_do_the_work)
-
 
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Image Viewer.log')
@@ -53,16 +48,15 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 # ImageViewer Class
 # ----------------------------------------------------------------------------------------
 
-class ImageViewer(tk.Tk):
+class ImageViewer():
 
-    def __init__(self, parent, user_specified_directory, user_specified_level, user_specified_mode):
+    def __init__(self, parent, user_specified_directory, user_specified_mode):
 
         super().__init__()
         self.parent = tk.Toplevel(parent)
         self.parent.resizable(False, False)
 
         # Save the parameters
-        self.user_specified_level = user_specified_level
         self.user_specified_directory = user_specified_directory
         self.user_specified_mode = user_specified_mode
 
@@ -133,11 +127,8 @@ class ImageViewer(tk.Tk):
         self.squares_in_rectangle = []
 
         self.saved_list_images = []
-        self.df_all_squares = None
 
-        msg = f'Image Viewer - {self.user_specified_directory if self.user_specified_mode == "EXPERIMENT_LEVEL" else self.user_specified_level}'
-        msg += f'{" - NO SAVING" if self.user_specified_mode == "PROJECT_LEVEL" else ""}'
-        self.parent.title(msg)
+        self.parent.title(f'Image Viewer - {self.user_specified_directory}')
 
     def setup_ui(self):
         """
@@ -289,8 +280,8 @@ class ImageViewer(tk.Tk):
             self.frame_commands, text='Reset', command=lambda: self.on_reset_image(), width=button_width)
 
         self.bn_select_recording.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_show_heatmap.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_show_select_squares.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_show_heatmap.grid(column=0, row=2, padx=5, pady=5)
         self.bn_show_define_cells.grid(column=0, row=3, padx=5, pady=5)
         self.bn_output.grid(column=0, row=4, padx=5, pady=5)
         self.bn_reset.grid(column=0, row=5, padx=5, pady=5)
@@ -311,61 +302,60 @@ class ImageViewer(tk.Tk):
             anchor=tk.W)
 
         # Place the radio buttons and button in the grid
-        if self.user_specified_mode == 'EXPERIMENT_LEVEL':
-            self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-            self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-            self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+
+        self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
+        self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
 
     def load_images_and_config(self):
 
-        if self.user_specified_mode == "EXPERIMENT_LEVEL":
-            self.experiment_directory_path = self.user_specified_directory
-            self.experiment_bf_directory = os.path.join(self.experiment_directory_path, 'Converted BF Images')
-            self.experiment_squares_file_path = os.path.join(self.experiment_directory_path, 'experiment_squares.csv')
-        else:
-            # self.experiment_directory_path is not set in this case    TODO: Check when it is set
-            self.project_directory = os.path.split(self.user_specified_level)[0]
-            self.experiment_squares_file_path = self.user_specified_level
+        # Read the All Squares file
+        self.df_all_squares = read_squares_from_file(
+            os.path.join(self.user_specified_directory, 'All Squares.csv'))
+        if self.df_all_squares is None:
+            self.show_error_and_exit("No 'All Squares.csv.csv' file, Did you select an image directory?")
 
-        self.df_experiment = read_experiment_file(self.experiment_squares_file_path, True)
+        # Read the All Experiments file
+        self.df_experiment = pd.read_csv(os.path.join(self.user_specified_directory, 'All Recordings.csv'))
         if self.df_experiment is None:
-            self.show_error_and_exit("No 'experiment_squares.csv.csv' file, Did you select an image directory?")
+            self.show_error_and_exit("No 'experiment_squares.csv' file, Did you select an image directory?")
+        self.df_experiment.set_index('Ext Recording Name', drop=False, inplace=True)
+
+        # Check that the two align
+        if set(self.df_all_squares['Ext Recording Name']) != set(self.df_experiment['Ext Recording Name']):
+            self.show_error_and_exit(
+                "The recordings in the 'All Squares' file do not align with the 'All Experiments' file")
 
         self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
+        # Load the images
         self.list_images = get_images(self, initial=True)
         if not self.list_images:
-            self.show_error_and_exit(f"No images were found in directory {self.experiment_directory_path}.")
+            self.show_error_and_exit(f"No images were found in directory {self.user_specified_directory}.")
 
+        # Load the combobox with the image names
         self.list_of_image_names = [image['Left Image Name'] for image in self.list_images]
         self.cb_image_names['values'] = self.list_of_image_names
-
-        self.df_all_squares = read_squares_from_file(os.path.join(self.experiment_directory_path, 'all_squares_in_experiment.csv'))
 
         self.initialise_image_display()
         self.img_no = -1
         self.on_forward_backward('FORWARD')
 
-
     def on_select_recording(self):
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
-                self.select_recording_dialog]):
+        if self.is_dialog_active():
             return
         else:
             self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
-
+            pass
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
 
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
-                self.select_recording_dialog]):
+        if self.is_dialog_active():
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
             self.heatmap_control_dialog = HeatMapDialog(self)
-            # self.heatmap_control_dialog.on_heatmap_variable_change()
+            self.heatmap_control_dialog.on_heatmap_variable_change()
             self.img_no -= 1
             self.on_forward_backward('FORWARD')
 
@@ -373,13 +363,19 @@ class ImageViewer(tk.Tk):
         self.bn_show_heatmap.configure(state=state)
         self.bn_show_define_cells.configure(state=state)
         self.bn_show_select_squares.configure(state=state)
+        self.bn_select_recording.configure(state=state)
+
+    def is_dialog_active(self):
+        return any(dialog is not None for dialog in
+                   [self.select_square_dialog,
+                    self.define_cells_dialog,
+                    self.heatmap_control_dialog,
+                    self.select_recording_dialog])
 
     def on_show_select_squares(self):
         # If the select square dialog is not already active, then we need to run the select square dialog
 
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
-                self.select_recording_dialog]):
+        if self.is_dialog_active():
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
@@ -392,15 +388,14 @@ class ImageViewer(tk.Tk):
             self.max_track_duration = 199
 
             if self.select_square_dialog is None:
+                pass
                 self.select_square_dialog = SelectSquareDialog(
                     self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
                     self.min_track_duration, self.max_track_duration, self.neighbour_state)
 
     def on_show_define_cells(self):
 
-        if any(dialog is not None for dialog in
-               [self.select_square_dialog, self.define_cells_dialog, self.heatmap_control_dialog,
-                self.select_recording_dialog]):
+        if self.is_dialog_active():
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
@@ -538,7 +533,7 @@ class ImageViewer(tk.Tk):
         """
 
         # Create the squares directory if it does not exist
-        squares_dir = os.path.join(self.experiment_directory_path, 'Output', 'Squares')
+        squares_dir = os.path.join(self.user_specified_directory, 'Output', 'Squares')
         os.makedirs(squares_dir, exist_ok=True)
 
         # Cycle through all images
@@ -556,16 +551,16 @@ class ImageViewer(tk.Tk):
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
             # Add the squares and write the canvas complete with squares
-            self.select_squares_display()
+            self.select_squares_for_display()
             self.display_selected_squares()
             image_name = image_name + '-squares'
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
         # Find all the ps files and delete them
-        ps_files = os.listdir(squares_dir)
-        for item in ps_files:
-            if item.endswith(".ps"):
-                os.remove(os.path.join(squares_dir, item))
+        # ps_files = os.listdir(squares_dir)
+        # for item in ps_files:
+        #     if item.endswith(".ps"):
+        #         os.remove(os.path.join(squares_dir, item))
 
         # Find all the png files and sort them
         png_files = []
@@ -582,7 +577,9 @@ class ImageViewer(tk.Tk):
         pdf_path = os.path.join(squares_dir, 'images.pdf')
 
         # Create a pdf with a first images and all the other images to it
-        png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
+        if platform.system() == "Darwin":
+            png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
+
 
         # Go back to the image where we were
         self.img_no -= 1
@@ -640,7 +637,7 @@ class ImageViewer(tk.Tk):
 
         try:
             # Define the destination path inside the temporary directory
-            temp_file = os.path.join(temp_dir, os.path.basename(self.squares_file_name))
+            temp_file = os.path.join(temp_dir, 'Temporary All Squares.csv')
 
             # Save squares data to the temporary file
             save_squares_to_file(self.df_squares, temp_file)
@@ -697,7 +694,7 @@ class ImageViewer(tk.Tk):
         :return:
         """
 
-        self.df_squares['Visible'] = True   # ToDo i9s this ok?
+        self.df_squares['Visible'] = True  # ToDo is this ok?
         self.df_squares['Cell Id'] = 0
 
         self.select_squares_for_display()
@@ -713,20 +710,13 @@ class ImageViewer(tk.Tk):
         """
         This function is called from the SelectSquareDialog when a control has changed or when the control exists. This
         give an opportunity to update the settings for the current image
-        :param setting_type:
-        :param density_ratio:
-        :param variability:
-        :param min_duration:
-        :param max_duration:
-        :param neighbour_mode:
-        :return:
         """
         if setting_type == "Min Required Density Ratio":
             self.min_required_density_ratio = density_ratio
             self.list_images[self.img_no]['Min Required Density Ratio'] = density_ratio
             self.experiment_changed = True
         elif setting_type == "Max Allowable Variability":
-            self.max_allowed_variability = variability
+            self.max_allowable_variability = variability
             self.list_images[self.img_no]['Max Allowable Variability'] = variability
             self.experiment_changed = True
         elif setting_type == "Neighbour Mode":
@@ -740,7 +730,7 @@ class ImageViewer(tk.Tk):
         elif setting_type == "Set for All":
             # Set the same settings for all recordings
             self.min_required_density_ratio = density_ratio
-            self.max_allowed_variability = variability
+            self.max_allowable_variability = variability
             self.min_track_duration = min_duration
             self.max_track_duration = max_duration
             self.neighbour_state = neighbour_mode
@@ -776,7 +766,6 @@ class ImageViewer(tk.Tk):
         # Generate the graphpad info for summary statistics
         # df_stats = analyse_all_images(self.experiment_directory)
         # create_summary_graphpad(self.experiment_directory, df_stats)
-
 
     def provide_report_on_cell(self, _, cell_nr):
         """
@@ -920,7 +909,6 @@ class ImageViewer(tk.Tk):
 
         mark_selected_squares_do_the_work(list_of_squares, self.nr_of_squares_in_row, self.cn_left_image)
 
-
     def on_forward_backward(self, direction):
         """
         The function is called when we switch image
@@ -1012,22 +1000,19 @@ class ImageViewer(tk.Tk):
         # Now it depends what control dialog is up
         # ----------------------------------------------------------------------------
 
-        # If the heatmap control dialog is up just display the heatmap
+        # If the heatmap control dialog is up display the heatmap
         if self.heatmap_control_dialog:
-
-            # self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            # self.df_squares = read_squares_from_file(self.squares_file_name)
-
             self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
             self.display_heatmap()
+
+            # And send the heatmap control dialog a sign that min max values have changed
+            self.heatmap_control_dialog.on_heatmap_global_local_change()
+
             return
 
         else:  # update the regular image
 
             self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-
-            # self.squares_file_name = self.list_images[self.img_no]['Squares File']
-            # self.df_squares = read_squares_from_file(self.squares_file_name)
             self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
 
             # Set the filter parameters with values retrieved from the experiment file
@@ -1048,6 +1033,7 @@ class ImageViewer(tk.Tk):
         # ----------------------------------------------------------------------------
 
         if self.heatmap_control_dialog:
+            self.select_squares_for_display()      # @@@@@@@
             self.display_heatmap()
         else:
             self.select_squares_for_display()
@@ -1066,17 +1052,12 @@ class ImageViewer(tk.Tk):
         if not (self.experiment_changed or self.squares_changed):
             return False
 
-        # There is something to save but in PROJECT_LEVEL mode, changes are never saved
-        if self.user_specified_mode == "PROJECT_LEVEL":
-            paint_logger.debug("Changed were made, but in PROJECT_LEVEL mode Changes are never saved.")
-            return False
-
         # There is something to save but the Never option is selected
         if self.save_state_var.get() == 'Never':
             paint_logger.debug("Changes were not saved, because the 'Never' option was selected.")
             return False
 
-        # There is experiments data to save.
+        # There is experiment data to save.
         if self.experiment_changed:
             if self.save_state_var.get() == 'Ask':
                 save = self.user_confirms_save('Experiment')
@@ -1090,8 +1071,10 @@ class ImageViewer(tk.Tk):
                     self.df_experiment.loc[image_name, 'Max Allowable Variability'] = self.list_images[i][
                         'Max Allowable Variability']
                     self.df_experiment.loc[image_name, 'Neighbour Mode'] = self.list_images[i]['Neighbour Mode']
-                save_experiment_to_file(self.df_experiment, self.experiment_squares_file_path)
-                paint_logger.debug(f"Experiment file {self.experiment_squares_file_path} was saved.")
+                save_experiment_to_file(self.df_experiment,
+                                        os.path.join(self.user_specified_directory, 'All Recordings.csv'))
+                paint_logger.debug(
+                    f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
             self.experiment_changed = False
 
         # There is squares data to save.
@@ -1101,8 +1084,13 @@ class ImageViewer(tk.Tk):
             else:  # Then must be 'Always'
                 save = True
             if save:
-                save_squares_to_file(self.df_squares, self.squares_file_name)
-                paint_logger.debug(f"Squares file {self.squares_file_name} was saved.")
+                self.df_all_squares.set_index(['Unique Key'], inplace=True, drop=False)
+                self.df_squares.set_index(['Unique Key'], inplace=True, drop=False)
+                self.df_all_squares.update(self.df_squares)
+                save_squares_to_file(self.df_all_squares,
+                                     os.path.join(self.user_specified_directory, 'All Squares.csv'))
+                paint_logger.debug(
+                    f"Squares file {os.path.join(self.user_specified_directory, 'All Squares.csv')} was saved.")
             self.squares_changed = False
         return save
 
@@ -1114,29 +1102,6 @@ class ImageViewer(tk.Tk):
         answer = messagebox.askyesno("Save Changes", f"Do you want to save the {mode} changes?")
         return answer
 
-    def read_squares(self, image_name):
-        self.squares_file_name = os.path.join(self.experiment_directory_path, image_name, 'grid',
-                                              image_name + '-squares.csv')
-        self.df_squares = read_squares_from_file(self.list_images[self.img_no]['Squares File'])
-        if self.df_squares is None:
-            paint_logger.error(f"Function 'read_squares' failed - Squares file {self.squares_file_name} was not found.")
-            sys.exit()
-        return self.df_squares
-
-    def update_squares_file(self):
-        # It is necessary to the squares file, because the user may have made changes
-        if self.user_specified_mode == 'EXPERIMENT_LEVEL':
-            squares_file_path = get_squares_file_path(self.experiment_directory_path, self.image_name)
-            squares_file_name = os.path.join(self.experiment_directory_path, self.image_name, 'grid',
-                                             self.image_name + '-squares.csv')
-        else:
-            squares_file_path = os.path.join(self.experiment_directory_path,
-                                             str(self.df_experiment.iloc[self.img_no]['Experiment Date']),
-                                             self.image_name,
-                                             'grid',
-                                             self.image_name + '-squares.csv')
-        save_squares_to_file(self.df_squares, squares_file_path)  # TODO
-
     # ---------------------------------------------------------------------------------------
     # Heatmap Dialog Interaction
     # ---------------------------------------------------------------------------------------
@@ -1146,6 +1111,7 @@ class ImageViewer(tk.Tk):
         selected_idx = self.heatmap_option.get()
         if selected_idx == -1:
             self.heatmap_control_dialog = None
+            self.select_squares_for_display()
             self.display_selected_squares()
         else:
 
@@ -1197,7 +1163,7 @@ class ImageViewer(tk.Tk):
         for image in self.saved_list_images:
             choose = True
             for key, value in selection.items():
-                if image[key] not in value:
+                if str(image[key]) not in value:
                     choose = False
                     break
             if choose:
@@ -1213,15 +1179,22 @@ class ImageViewer(tk.Tk):
         self.on_forward_backward('START')
 
 
-def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):
+def draw_heatmap_square(
+        canvas_to_draw_on,
+        square_nr,
+        nr_of_squares_in_row,
+        value,
+        min_value,
+        max_value,
+        colors):
+
     col_nr = square_nr % nr_of_squares_in_row
     row_nr = square_nr // nr_of_squares_in_row
     width = 512 / nr_of_squares_in_row
     height = 512 / nr_of_squares_in_row
 
     color_index = get_color_index(value, max_value, min_value, 20)
-    if color_index >= 20:
-        i = 1
+
     color = colors[color_index]
 
     canvas_to_draw_on.create_rectangle(
@@ -1233,23 +1206,25 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
 # Main
 # ---------------------------------------------------------------------------------------
 
+
 if __name__ == '__main__':
     root = tk.Tk()
-    root.withdraw()
-    root.eval('tk::PlaceWindow . center')
-    dialog_result = SelectViewerDataDialog(root)
-    proceed, experiment_directory, project_file, mode = dialog_result.get_result()
+    root.geometry("1x1")  # Ensure root is visible
+    root.deiconify()
+
+    dialog = SelectViewerDataDialog(root)
+    proceed, directory, mode = dialog.get_result()
 
     if proceed:
-        root = tk.Tk()
-        root.withdraw()
-        root.eval('tk::PlaceWindow . center')
+        # Initialize ImageViewer without withdrawing `root`
+        root.deiconify()  # Show the root window for ImageViewer
         paint_logger.debug(f'Mode: {mode}')
-        if mode == 'EXPERIMENT_LEVEL':
-            paint_logger.info(f'Root directory: {experiment_directory}')
-        else:
-            paint_logger.debug(f'Project file: {project_file}')
+        paint_logger.info(f'Mode is: {mode} - Directory: {directory}')
 
-        image_viewer = ImageViewer(root, experiment_directory, project_file, mode)
+        # Initialize ImageViewer, ensuring it does not create a new Tk instance
+        image_viewer = ImageViewer(root, directory, mode)
+    else:
+        # Hide root if not proceeding
+        root.withdraw()
 
     root.mainloop()

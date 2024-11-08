@@ -1,3 +1,4 @@
+import os
 from tkinter import *
 
 import pandas as pd
@@ -6,34 +7,23 @@ from PIL import Image
 pd.options.mode.copy_on_write = True
 
 
-def save_as_png(canvas, file_name):
+def save_as_png(canvas, file_name, size_pixels=(512, 512)):
+
+    canvas.config(width=size_pixels[0], height=size_pixels[1])
+
     # First save as a postscript file
     canvas.postscript(file=file_name + '.ps', colormode='color')
+
+    # Open the PostScript file with PIL
+    img = Image.open(file_name + '.ps')
+    img = img.resize(size_pixels)
+
+    # Save as TIFF
+    img.save(file_name + '.tiff', 'TIFF')
 
     # Then let PIL convert to a png file
     img = Image.open(file_name + '.ps')
     img.save(f"{file_name}.png", 'png')
-
-
-# def save_square_info_to_batch(self):  # TODO
-#     for index, row in self.df_experiment.iterrows():
-#         self.squares_file_name = self.list_images[self.img_no]['Squares File']
-#         df_squares = read_squares_from_file(self.squares_file_name)
-#         if df_squares is None:
-#             paint_logger.error("Function 'save_square_info_to_batch' failed: - Square file does not exist")
-#             sys.exit()
-#         if len(df_squares) > 0:
-#             nr_visible_squares = len(df_squares[df_squares['Visible']])
-#             nr_total_squares = len(df_squares)
-#             squares_ratio = round(nr_visible_squares / nr_total_squares, 2)
-#         else:
-#             nr_visible_squares = 0
-#             nr_total_squares = 0
-#             squares_ratio = 0.0
-#
-#         self.df_experiment.loc[index, 'Nr Visible Squares'] = nr_visible_squares
-#         self.df_experiment.loc[index, 'Nr Total Squares'] = nr_total_squares
-#         self.df_experiment.loc[index, 'Squares Ratio'] = squares_ratio
 
 
 def eliminate_isolated_squares_strict(df_squares, nr_of_squares_in_row):
@@ -213,3 +203,8 @@ def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
         return x0 >= xr1 and x1 <= xr0 and y0 >= yr0 and y1 <= yr1
 
     return False
+
+
+def only_one_nr_of_squares_in_row(directory):
+    df_experiment = pd.read_csv(os.path.join(directory, 'All Recordings.csv'))
+    return df_experiment['Nr of Squares in Row'].nunique() == 1

@@ -9,7 +9,7 @@ def rename_batch_files(root_dir):
             # Check if the file name is 'batch.csv'
             if filename == 'batch.csv':
                 old_file = os.path.join(dirpath, filename)  # Full path to the current 'batch.csv' file
-                new_file = os.path.join(dirpath, 'experiment_info.csv')  # Full path for the renamed file
+                new_file = os.path.join(dirpath, 'Experiment Info.csv')  # Full path for the renamed file
 
                 try:
                     # Rename the file

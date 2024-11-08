@@ -1,4 +1,3 @@
-
 from tkinter import *
 
 
@@ -18,7 +17,7 @@ def display_selected_squares_do_the_work(self):
     self.cn_left_image.bind('<B1-Motion>', lambda e: self.expand_rectangle_size(e))
 
     if self.show_squares:
-        # If there are no squares you can stop here
+        # If there are no squares, you can stop here
         if len(self.df_squares) > 0:
 
             # Then draw the of squares that are assigned to a cell
@@ -47,8 +46,6 @@ def draw_single_square(
         square_assigned_to_cell,
         provide_information_on_square,
         color='white'):
-
-
     colour_table = {1: ('red', 'white'),
                     2: ('yellow', 'black'),
                     3: ('green', 'white'),
@@ -101,11 +98,11 @@ def draw_single_square(
 
     # Bind events to the invisible rectangle (transparent clickable area)
     canvas.tag_bind(invisible_rect, '<Button-1>', lambda e: square_assigned_to_cell(square_nr))
-    canvas.tag_bind(invisible_rect, '<Button-2>', lambda e: provide_information_on_square(e, squares_row['Label Nr'], square_nr))
+    canvas.tag_bind(invisible_rect, '<Button-2>',
+                    lambda e: provide_information_on_square(e, squares_row['Label Nr'], square_nr))
 
 
 def mark_selected_squares_do_the_work(list_of_squares, nr_of_squares_in_row, canvas):
-
     for square_nr in list_of_squares:
         col_nr = square_nr % nr_of_squares_in_row
         row_nr = square_nr // nr_of_squares_in_row

@@ -14,15 +14,12 @@ paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
 
 from DirectoriesAndLocations import (
-    get_tracks_file_path,
     get_experiment_info_file_path,
     get_experiment_tm_file_path,
-    get_image_file_path,
-    create_directories,
     get_default_locations,
     save_default_locations)
 
-from Trackmate import excute_trackmate_in_Fiji
+from Trackmate import execute_trackmate_in_Fiji
 
 from FijiSupportFunctions import (
     fiji_get_file_open_write_attribute,
@@ -35,14 +32,12 @@ from LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
 
-
 paint_logger_change_file_handler_name('Grid Process Batch.log')
 
 
 def run_trackmate(experiment_directory, recording_source_directory):
     # Open the experiment file to determine the columns (which should be in the paint directory)
 
-    # experiment_info_path = os.path.join(experiment_directory, EXPERIMENT_INFO)
     experiment_info_path = get_experiment_info_file_path(experiment_directory)
 
     if not os.path.exists(experiment_info_path):
@@ -52,8 +47,16 @@ def run_trackmate(experiment_directory, recording_source_directory):
         suppress_fiji_output
         sys.exit()
 
-    with open(experiment_info_path, mode='r') as experiment_info_file:
+    image_dir = os.path.join(experiment_directory, 'TrackMate Images')
+    if not os.path.exists(image_dir):
+        os.mkdir(image_dir)
+    else:
+        for filename in os.listdir(image_dir):
+            file_path = os.path.join(image_dir, filename)
+            if os.path.isfile(file_path):
+                os.remove(file_path)  # Delete the file
 
+    with open(experiment_info_path, mode='r') as experiment_info_file:
         csv_reader = csv.DictReader(experiment_info_file)
         if not {'Recording Sequence Nr', 'Recording Name', 'Experiment Date', 'Experiment Name', 'Condition Nr',
                 'Replicate Nr', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant', 'Concentration', 'Threshold',
@@ -77,7 +80,7 @@ def run_trackmate(experiment_directory, recording_source_directory):
             message = "Processing " + str(nr_to_process) + " recordings in directory " + recording_source_directory
             paint_logger.info(message)
 
-            # Initialise the experiment_tm file with the column headers
+            # Initialise the All Recordings file with the column headers
             col_names = csv_reader.fieldnames + ['Nr Spots', 'Nr Tracks', 'Run Time', 'Ext Recording Name',
                                                  'Recording Size', 'Time Stamp']
             experiment_tm_file_path = initialise_experiment_tm_file(experiment_directory, col_names)
@@ -121,7 +124,45 @@ def run_trackmate(experiment_directory, recording_source_directory):
                 paint_logger.warning(msg)
                 JOptionPane.showMessageDialog(None, msg, "Warning", JOptionPane.WARNING_MESSAGE)
 
-            return 0
+            # -----------------------------------------------------------------------------
+            # Concatenate the tracks file with the existing one
+            # -----------------------------------------------------------------------------
+
+            # Define the directory to search in
+            keywords = ["threshold", "tracks"]
+            matching_files = []
+
+            # Loop through each file in the directory
+            for filename in os.listdir(experiment_directory):
+                # Check if it's a CSV file and if all keywords are in the filename
+                if filename.endswith('.csv') and all(keyword in filename.lower() for keyword in ["threshold", "track"]):
+                    matching_files.append(os.path.join(experiment_directory, filename))
+            matching_files.sort()
+
+            # Define the output file
+            output_file = os.path.join(experiment_directory, "All Tracks.csv")
+
+            # Open the output file in write mode
+            with open(output_file, 'w') as outfile:
+                writer = None
+
+                # Loop through each CSV file
+                for filename in matching_files:
+                    with open(filename, 'r') as infile:
+                        reader = csv.reader(infile)
+                        header = next(reader)  # Read the header row
+
+                        # Write the header only once, when the writer is None
+                        if writer is None:
+                            writer = csv.writer(outfile)
+                            writer.writerow(header)
+
+                        # Write the rest of the rows
+                        for row in reader:
+                            writer.writerow(row)
+
+            for filename in matching_files:
+                os.remove(filename)
 
         except KeyError as e:
             paint_logger.error("Run_Trackmate: Missing expected column in row: {}.format(e)")
@@ -131,11 +172,10 @@ def run_trackmate(experiment_directory, recording_source_directory):
 
 def process_recording(row, recording_source_directory, experiment_directory):
     status = 'OK'
-    adjuvant = row['Adjuvant']
     recording_name = row['Recording Name']
     threshold = float(row['Threshold'])
 
-    if adjuvant == 'None':
+    if row['Adjuvant'] == 'None':
         row['Adjuvant'] = 'No'
 
     recording_file_name = os.path.join(recording_source_directory, recording_name + '.nd2')
@@ -158,15 +198,13 @@ def process_recording(row, recording_source_directory, experiment_directory):
 
         ext_recording_name = recording_name + "-threshold-" + str(int(threshold))
 
-        create_directories(os.path.join(experiment_directory, ext_recording_name), True)
-
         time_stamp = time.time()
-        tracks_file_path = get_tracks_file_path(experiment_directory, ext_recording_name)
-        recording_file_path = get_image_file_path(experiment_directory, ext_recording_name)
+        tracks_file_path = os.path.join(experiment_directory, ext_recording_name + '-tracks.csv')
+        recording_file_path = os.path.join(experiment_directory, 'TrackMate Images', ext_recording_name + '.jpg')
 
         # suppress_fiji_output()
-        nr_spots, total_tracks, long_tracks = excute_trackmate_in_Fiji(
-            ext_recording_name, threshold, tracks_file_path, recording_file_path)
+        nr_spots, total_tracks, long_tracks = execute_trackmate_in_Fiji(
+            ext_recording_name, threshold, tracks_file_path, recording_file_path, False)
         # restore_fiji_output()
 
         # IJ.run("Set Scale...", "distance=6.2373 known=1 unit=micron")
@@ -225,7 +263,7 @@ def run_trackmate_with_supplied_directories(recordings_directory, experiment_dir
         run_trackmate(experiment_directory, recordings_directory)
         run_time = time.time() - time_stamp
         run_time = round(run_time, 1)
-        paint_logger.info("\nProcessing completed in {}.". format(format_time_nicely(run_time)))
+        paint_logger.info("\nProcessing completed in {}.".format(format_time_nicely(run_time)))
 
     # Run Fiji code on a new thread to avoid conflicts with the Swing EDT
     fiji_thread = threading.Thread(target=run_fiji_code)

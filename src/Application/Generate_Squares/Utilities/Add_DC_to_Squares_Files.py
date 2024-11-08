@@ -23,8 +23,6 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
 
     time_stamp = time.time()
 
-    nr_squares = nr_of_squares_in_row ** 2
-
     # Find out which unique Recordings there are
     # recording_names = df_tracks['Recording Name'].unique().tolist()
 
@@ -44,7 +42,7 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
         squares_file_path = find_squares_file(project_directory, recording_name + '-squares.csv')
         if squares_file_path:
             df_squares = pd.read_csv(squares_file_path)
-            df_squares['DC'] = 0
+            df_squares['Diffusion Coefficient'] = 0
         else:
             paint_logger.error(
                 f"Could not find squares file {recording_name + '-squares.csv'} for recording {recording_name}")
@@ -62,15 +60,17 @@ def add_dc_to_squares_file(df_tracks: pd.DataFrame, nr_of_squares_in_row: int, p
                 dc_mean = df_tracks_in_square['Diffusion Coefficient'].mean()
             else:
                 dc_mean = -1
-            df_squares.loc[index, 'DC'] = int(dc_mean)
+            df_squares.loc[index, 'Diffusion Coefficient'] = int(dc_mean)
             line_count += 1
 
         df_squares.to_csv(squares_file_path, index=False)
-        paint_logger.debug(f"File {squares_file_path} was updated: {line_count} squares with a valid DC")
+        paint_logger.debug(
+            f"File {squares_file_path} was updated: {line_count} squares with a valid Diffusion Coefficient")
         image_count += 1
 
     run_time = round(time.time() - time_stamp, 1)
-    paint_logger.info(f"Updated {line_count:2d} lines in {image_count} images in {project_directory} in {format_time_nicely(run_time)}")
+    paint_logger.info(
+        f"Updated {line_count:2d} lines in {image_count} images in {project_directory} in {format_time_nicely(run_time)}")
     paint_logger.info("")
 
 
@@ -107,11 +107,3 @@ def find_ext_recording_names(directory):
                     print(f"Error reading {file_path}: {e}")
 
     return ext_recording_names
-
-
-if __name__ == '__main__':
-    df_tracks = pd.read_csv('/Users/hans/Paint Work/New Probes/Output/All Tracks.csv')
-    add_dc_to_squares_file(df_tracks, 20, '/Users/hans/Paint Work/New Probes')
-
-    df_tracks = pd.read_csv('/Users/hans/Paint Work/Regular Probes/Output/All Tracks.csv')
-    add_dc_to_squares_file(df_tracks, 20, '/Users/hans/Paint Work/Regular Probes')

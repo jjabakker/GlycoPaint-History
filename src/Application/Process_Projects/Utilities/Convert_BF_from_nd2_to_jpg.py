@@ -40,8 +40,8 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
         paint_directory (str): Directory to store the converted JPEGs.
         force (bool): Force overwrite of existing JPEG files, even if up to date.
     """
-    # Create a 'Converted BF Images' directory if it doesn't exist
-    bf_jpeg_dir = os.path.join(image_source_directory, "Converted BF Images")
+    # Create a 'Brightfield Images' directory if it doesn't exist
+    bf_jpeg_dir = os.path.join(image_source_directory, "Brightfield Images")
     if not os.path.isdir(bf_jpeg_dir):
         os.mkdir(bf_jpeg_dir)
 
@@ -84,13 +84,13 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
                       count)
 
     # Copy the entire 'Converted BF Images' directory to the paint directory
-    dest_dir = os.path.join(paint_directory, "Converted BF Images")
+    dest_dir = os.path.join(paint_directory, "Brightfield Images")
     if os.path.exists(dest_dir):
         # If the destination directory already exists, remove it before copying
         shutil.rmtree(dest_dir)
 
     try:
         shutil.copytree(bf_jpeg_dir, dest_dir)
-        paint_logger.info("Copied the entire 'Converted BF Images' directory to %s", dest_dir)
+        paint_logger.info("Copied the entire 'Brightfield Images' directory to %s", dest_dir)
     except Exception as e:
         paint_logger.error("Error copying the directory %s to %s: %s", bf_jpeg_dir, dest_dir, str(e))

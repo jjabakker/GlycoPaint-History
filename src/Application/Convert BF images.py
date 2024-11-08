@@ -57,7 +57,7 @@ class ConvertDialog:
     def on_convert(self):
         if self.image_directory == "" or self.paint_directory == "":
             message = 'The image directory needs to point to where the images are.\n\n'
-            message += 'The experiment directory is where the experiment_info.csv will be placed.'
+            message += "The experiment directory is where the 'Experiment Info.csv' file will be placed."
             messagebox.showwarning(title='Warning', message=message)
         else:
             convert_bf_images(self.image_directory, self.paint_directory, force=False)

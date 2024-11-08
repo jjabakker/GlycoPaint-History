@@ -37,11 +37,11 @@ def traverse_and_clean(root_dir):
     # Walk the directory tree starting from root_dir
     for dirpath, dirnames, filenames in os.walk(root_dir):
         for filename in filenames:
-            if filename == 'experiment_info.csv':
+            if filename == 'Experiment Info.csv':
                 file_path = os.path.join(dirpath, filename)
                 clean_experiment_info_csv(file_path)
 
 
 # Example usage
-root_directory = '/Users/Hans/Paint Source New'  # Replace with your root directory path
+root_directory = '/Users/Hans/Paint Source New'
 traverse_and_clean(root_directory)

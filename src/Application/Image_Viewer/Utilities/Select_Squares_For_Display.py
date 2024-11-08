@@ -1,4 +1,4 @@
-import pandas as pd
+from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import label_visible_squares
 
 
 def select_squares_for_display_do_the_work(self):
@@ -8,15 +8,15 @@ def select_squares_for_display_do_the_work(self):
     """
     # Define the conditions for squares to be visible
     self.df_squares['Visible'] = (
-        (self.df_squares['Density Ratio'] >= self.min_required_density_ratio) &
-        (self.df_squares['Variability'] <= self.max_allowable_variability) &
-        (self.df_squares['Max Track Duration'] >= self.min_track_duration) &
-        (self.df_squares['Max Track Duration'] <= self.max_track_duration)
+            (self.df_squares['Density Ratio'] >= self.min_required_density_ratio) &
+            (self.df_squares['Variability'] <= self.max_allowable_variability) &
+            (self.df_squares['Max Track Duration'] >= self.min_track_duration) &
+            (self.df_squares['Max Track Duration'] <= self.max_track_duration)
     )
 
     self.df_squares['Visible'] = (
-        (self.df_squares['Visible']) &
-        (self.df_squares['Tau'] > 0)
+            (self.df_squares['Visible']) &
+            (self.df_squares['Tau'] > 0)
     )
 
     # Eliminate isolated squares based on neighborhood rules
@@ -24,6 +24,9 @@ def select_squares_for_display_do_the_work(self):
         select_squares_strict(self.df_squares, self.nr_of_squares_in_row)
     elif self.neighbour_state == 'Relaxed':
         select_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
+
+    # Label visible squares, so that it is always a range starting from 1
+    label_visible_squares(self.df_squares)
 
 
 def select_squares_strict(df_squares, nr_of_squares_in_row):
@@ -93,6 +96,7 @@ def select_squares_relaxed(df_squares, nr_of_squares_in_row):
             list_of_squares.append(square_nr)
 
     return df_squares, list_of_squares
+
 
 def get_strict_neighbours(row, col, nr_of_squares_in_row):
     """

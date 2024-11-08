@@ -75,7 +75,7 @@ class HeatMapDialog:
         lbl_radio.grid(row=2, column=0, padx=5, pady=5)
 
         # Add radio buttons for the provided option names
-        self.option_names = ["Tau", "Density", "DC", "Track Duration", "Cum Track Duration"]
+        self.option_names = ["Tau", "Density", "Diffusion Coefficient", "Track Duration", "Cum Track Duration"]
         for idx, name in enumerate(self.option_names, start=1):
             radio_btn = tk.Radiobutton(
                 self.frame_mode_buttons, text=name, command=self.on_heatmap_variable_change,
@@ -135,8 +135,9 @@ class HeatMapDialog:
         toggle_button = tk.Button(button_container, text="Toggle", command=self.on_toggle, width=10)
 
         # Grid the buttons in the container frame
-        close_button.grid(row=0, column=0, padx=5, pady=5)
-        toggle_button.grid(row=0, column=1, padx=5, pady=5)
+        toggle_button.grid(row=0, column=0, padx=5, pady=5)
+        close_button.grid(row=0, column=1, padx=5, pady=5)
+
 
     # --------------------------------------------------------------
     # Event Handlers

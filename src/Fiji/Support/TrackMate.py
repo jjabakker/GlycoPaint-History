@@ -9,6 +9,7 @@ import csv
 import os
 import sys
 
+from ij.plugin.frame import RoiManager
 import fiji.plugin.trackmate.features.FeatureFilter as FeatureFilter
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer as HyperStackDisplayer
 from fiji.plugin.trackmate import (
@@ -27,6 +28,7 @@ from ij import WindowManager
 from ij.io import FileSaver
 from java.lang.System import getProperty
 
+
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
 
@@ -36,7 +38,7 @@ from PaintConfig import load_paint_config
 from DirectoriesAndLocations import get_paint_defaults_file_path
 
 
-def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename):
+def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename, kas_special):
     print("\nProcessing: " + tracks_filename)
 
     paint_config = load_paint_config(get_paint_defaults_file_path())
@@ -168,12 +170,17 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     # Display results
     # ----------------
 
+    if kas_special:
+        rm = RoiManager.getInstance()
+        rm.runCommand("Open", os.path.expanduser("~/paint.roi"))
+        rm.runCommand("Show All")
+
     # A selection.
     selection_model = SelectionModel(model)
 
     # Read the default display settings.
     ds = DisplaySettingsIO.readUserDefault()
-    ds.setTrackColorBy(TrackMateObject.TRACKS, 'TRACK_DURATION')
+    ds.setTrackColorBy(TrackMateObject.TRACKS, 'TRACK_INDEX')
 
     displayer = HyperStackDisplayer(model, selection_model, imp, ds)
     displayer.render()
@@ -223,7 +230,7 @@ def excute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_f
     model.getLogger().log('Found ' + str(model.getTrackModel().nTracks(True)) + ' tracks.')
 
     nr_spots = model.getSpots().getNSpots(True)  # Get visible spots only
-    all_tracks = model.getTrackModel().nTracks(False)  # Get all tracks
+    tracks = model.getTrackModel().nTracks(False)  # Get all tracks
     filtered_tracks = model.getTrackModel().nTracks(True)  # Get filtered tracks
 
-    return nr_spots, all_tracks, filtered_tracks
+    return nr_spots, tracks, filtered_tracks

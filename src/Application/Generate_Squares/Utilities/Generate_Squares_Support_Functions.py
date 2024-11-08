@@ -66,11 +66,11 @@ def get_square_coordinates(nr_of_squares_in_row, sequence_number):
     return x0, y0, x1, y1
 
 
-def calc_variability(tracks_df, square_nr, nr_of_squares_in_row, granularity):
+def calc_variability(df_tracks, square_nr, nr_of_squares_in_row, granularity):
     """
     The variability is calculated by creating a grid of granularity x granularity in the square for
     which tracks_fd specifies the tracks
-    :param tracks_df: A dataframe that contains the tracks of the square for which the variability is calculated
+    :param df_tracks: A dataframe that contains the tracks of the square for which the variability is calculated
     :param square_nr: The sequence number of the square for which the variability is calculated
     :param nr_of_squares_in_row: The number of rows and columns in the image
     :param granularity: Specifies how fine the grid is that is created
@@ -81,10 +81,10 @@ def calc_variability(tracks_df, square_nr, nr_of_squares_in_row, granularity):
     matrix = np.zeros((granularity, granularity), dtype=int)
 
     # Loop over all the tracks in the square and determine where they sit in the grid
-    for i in range(len(tracks_df)):
+    for index, row in df_tracks.iterrows():
         # Retrieve the x and y values expressed in micrometers
-        x = float(tracks_df.at[i, "Track X Location"])
-        y = float(tracks_df.at[i, "Track Y Location"])
+        x = float(row["Track X Location"])
+        y = float(row["Track Y Location"])
 
         # The width of the image is 82.0864 micrometer. The width and height of a square can be calculated
         width = 82.0864 / nr_of_squares_in_row
@@ -130,19 +130,6 @@ def get_indices(x1: float, y1: float, width: float, height: float, square_seq_nr
     return xi, yi
 
 
-def get_df_from_file(file, header=0, skip_rows=[]):
-    try:
-        df = pd.read_csv(file, header=header, skiprows=skip_rows)
-    except FileNotFoundError:
-        df = None
-        paint_logger.error("File not found: " + file)
-    except IOError:
-        df = None
-        paint_logger.error("IoError: " + file)
-
-    return df
-
-
 def get_grid_defaults_from_file() -> dict:
     parameter_file_path = os.path.join(get_paint_profile_directory(), "grid_parameters.csv")
 
@@ -165,8 +152,9 @@ def get_grid_defaults_from_file() -> dict:
             reader = csv.DictReader(file)  # Use DictReader to access columns by header names
 
             # Ensure required columns are present
-            required_columns = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared', 'min_required_density_ratio',
-                                'max_allowable_variability', 'max_square_coverage', 'process_recording_tau', 'process_square_tau']
+            required_columns = ['nr_of_squares_in_row', 'min_tracks_for_tau', 'min_r_squared',
+                                'min_required_density_ratio', 'max_allowable_variability', 'max_square_coverage',
+                                'process_recording_tau', 'process_square_tau']
             for col in required_columns:
                 if col not in reader.fieldnames:
                     # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
@@ -302,25 +290,6 @@ def calc_area_of_square(nr_of_squares_in_row):
     return area
 
 
-def is_likely_root_directory(current_dir):
-    # Initialize a counter for directories with the file
-    count = 0
-
-    # Loop through all items in the current directory
-    for item in os.listdir(current_dir):
-        # Construct the full path of the item
-        item_path = os.path.join(current_dir, item)
-
-        # Check if the item is a directory
-        if os.path.isdir(item_path):
-            # Check if the file 'experiment_squares.csv' exists in that directory
-            file_path = os.path.join(item_path, 'experiment_tm.csv')
-            if os.path.isfile(file_path):
-                count += 1
-
-    return count > 0
-
-
 def label_visible_squares(df_squares):
     df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
     label_nr = 1
@@ -329,3 +298,34 @@ def label_visible_squares(df_squares):
             df_squares.at[idx, 'Label Nr'] = label_nr
             label_nr += 1
     df_squares.sort_index(inplace=True)
+
+
+def create_unique_key_for_squares(df):
+    df['String Square Nr'] = df['Square Nr'].astype(str)
+    df['Unique Key'] = df['Ext Recording Name'] + ' - ' + df['String Square Nr']
+    df.set_index('Unique Key', inplace=True, drop=False)
+    df.drop('String Square Nr', axis=1, inplace=True)
+
+    # Reorder the columns
+    cols = list(df.columns)
+    cols.insert(0, cols.pop(cols.index('Unique Key')))
+    df = df[cols]
+    return df
+
+
+def select_tracks_for_tau_calculation(df_tracks_in_square, limit_DC):
+    if limit_DC:
+        df_tracks_in_square = df_tracks_in_square[df_tracks_in_square['Diffusion Coefficient'] > 0]
+
+    return df_tracks_in_square
+
+
+def create_unique_key_for_tracks(df):
+    df['Unique Key'] = df['Recording Name'] + ' - ' + df['Track Label'].str.split('_').str[1]
+    df.set_index('Unique Key', inplace=True, drop=False)
+
+    # Reorder the columns
+    cols = list(df.columns)
+    cols.insert(0, cols.pop(cols.index('Unique Key')))
+    df = df[cols]
+    return df

@@ -66,7 +66,7 @@ def read_experiment_file(experiment_file_path: str, only_records_to_process: boo
 
 
 def read_experiment_tm_file(experiment_file_path, only_records_to_process=True):
-    df_experiment = read_experiment_file(os.path.join(experiment_file_path, 'experiment_tm.csv'),
+    df_experiment = read_experiment_file(os.path.join(experiment_file_path, 'All Recordings.csv'),
                                          only_records_to_process=only_records_to_process)
     return df_experiment
 
@@ -181,3 +181,71 @@ def copy_directory(src, dest):
         paint_logger.error(f"RecursionError: {e}")
     except Exception as e:
         paint_logger.error(f"An unexpected error occurred: {e}")
+
+
+def _inspect_dirs(root_dir, required_files, required_dirs):  # Define the set of required files
+
+    # Initialize counters
+    complete_count = 0
+    incomplete_count = 0
+
+    # Loop through each immediate subdirectory in the root directory
+    for subdir in os.listdir(root_dir):
+        if subdir == 'Output':
+            continue
+
+        subdir_path = os.path.join(root_dir, subdir)
+
+        # Check if it is a directory (ignore files in root_dir)
+        if os.path.isdir(subdir_path):
+            # Get the set of files and directories in the subdirectory
+            items_in_subdir = set(os.listdir(subdir_path))
+
+            # Check for required files and directories
+            has_required_files = required_files.issubset(items_in_subdir)
+            has_required_dirs = required_dirs.issubset(items_in_subdir)
+
+            # Update counters based on the presence of required files and directories
+            if has_required_files and has_required_dirs:
+                complete_count += 1
+            else:
+                incomplete_count += 1
+
+    # Return the counts of complete and incomplete subdirectories
+    return complete_count, incomplete_count
+
+
+def test_paint_directory_type_for_generate(directory):
+    required_files = {'All Tracks.csv'}
+    required_dirs = {'TrackMate Images', 'Brightfield Images'}
+
+    complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
+    if complete_experiment_dirs > 0:
+        if problem_experiment_dirs == 0:
+            return 'Project'
+        else:
+            return None
+    else:
+        dir_content = os.listdir(directory)
+        if all(item in dir_content for item in required_dirs):
+            return 'Experiment'
+        else:
+            return None
+
+
+def test_paint_directory_type_for_compile(directory):
+    required_files = {'All Squares.csv', 'All Tracks.csv', 'All Recordings.csv'}
+    required_dirs = {'TrackMate Images', 'Brightfield Images'}
+
+    complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
+    if complete_experiment_dirs > 0:
+        if problem_experiment_dirs == 0:
+            return 'Project'
+        else:
+            return None
+    else:
+        dir_content = os.listdir(directory)
+        if all(item in dir_content for item in required_dirs):
+            return 'Experiment'
+        else:
+            return None

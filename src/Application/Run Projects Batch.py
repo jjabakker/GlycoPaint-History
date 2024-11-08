@@ -4,16 +4,12 @@ import shutil
 import sys
 import time
 from datetime import datetime
+from tkinter import messagebox
 
-from src.Application.Compile_Project_Output.Compile_Project_Output import compile_project_output
-from src.Application.Generate_Squares.Generate_Squares import process_project_directory
-from src.Application.Generate_Squares.Utilities.Create_All_Tracks import create_and_save_all_tracks
-from src.Application.Process_Projects.Utilities.Copy_Data_From_Paint_Source import \
-    copy_data_from_paint_source_to_paint_data
-from src.Application.Utilities.General_Support_Functions import (
-    copy_directory,
-    format_time_nicely
-)
+from src.Application.Compile_Project.Compile_Project import compile_project_output
+from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source_with_images
+from src.Application.Generate_Squares.Generate_Squares import process_project
+from src.Application.Utilities.General_Support_Functions import format_time_nicely
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
     set_directory_tree_timestamp,
     get_timestamp_from_string)
@@ -28,7 +24,7 @@ from src.Common.Support.LoggerConfig import (
 paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
 
-PAINT_FORCE = True
+PAINT_FORCE = False
 
 
 def process_json_configuration_block(paint_source_dir,
@@ -47,8 +43,7 @@ def process_json_configuration_block(paint_source_dir,
                                      process_recording_tau: bool,
                                      process_square_tau: bool,
                                      time_string: str,
-                                     paint_force: bool,
-                                     generate_all_tracks) -> bool:
+                                     paint_force: bool) -> bool:
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} - Processing {project_directory}"
     paint_logger.info("")
@@ -82,13 +77,12 @@ def process_json_configuration_block(paint_source_dir,
         os.makedirs(paint_data_dir)
 
     # Copy the data from Paint Source to the appropriate directory in Paint Data
-    if not copy_data_from_paint_source_to_paint_data(paint_source_dir, paint_data_dir):
-        return False
+    copy_tm_data_from_paint_source_with_images(paint_source_dir, paint_data_dir)
 
-    if not os.path.exists(r_dest_dir):
-        os.makedirs(r_dest_dir)
+    # if not os.path.exists(r_dest_dir):
+    #     os.makedirs(r_dest_dir)
 
-    process_project_directory(
+    nr_experiments_processed = process_project(
         paint_directory=paint_data_dir,
         nr_of_squares_in_row=nr_of_squares_in_row,
         min_r_squared=min_r_squared,
@@ -98,25 +92,28 @@ def process_json_configuration_block(paint_source_dir,
         max_square_coverage=max_square_coverage,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
-        generate_all_tracks=False,
+        paint_force=paint_force,
         verbose=False)
 
-    # Compile the squares file
-    compile_project_output(paint_data_dir, verbose=True)
+    # Compile the All Recordings and All Squares files
+    if nr_experiments_processed > 0:
+        compile_project_output(paint_data_dir, verbose=True)
+    else:
+        paint_logger.info(f"No experiments processed in {paint_data_dir}")
+        paint_logger.info(f"No All Recordings, All Squares, All Tracks compiled for {paint_data_dir}")
 
-    if generate_all_tracks:
-        # Read all tracks files in the directory tree and concatenate them into a single All Tracks
-        df_tracks = create_and_save_all_tracks(paint_data_dir)
-        if df_tracks is None:
-            paint_logger.error('All Tracks not generated')
-            return
-
-    # Now copy the data from the Paint Data directory to the R space (OK, to use a general copy routine)
-    output_source = os.path.join(paint_data_dir, 'Output')
-    output_destination = os.path.join(r_dest_dir, 'Output')
-    os.makedirs(output_destination, exist_ok=True)
-    copy_directory(output_source, output_destination)
-    paint_logger.info(f"Copied output to {output_destination}")
+    # Now copy the data from the Paint Data directory to the R space
+    if False:
+        output_source = paint_data_dir
+        output_destination = os.path.join(r_dest_dir, 'Output')
+        os.makedirs(output_destination, exist_ok=True)
+        try:
+            shutil.copy(os.path.join(output_source, 'Squares.csv'), output_destination)
+            shutil.copy(os.path.join(output_source, 'Tracks.csv'), output_destination)
+            shutil.copy(os.path.join(output_source, 'Recordings.csv'), output_destination)
+            paint_logger.info(f"Copied output to {output_destination}")
+        except Exception:
+            paint_logger.error(f"Failed to copy output to {output_destination}")
 
     # Set the timestamp for the R data destination directory
 
@@ -126,7 +123,7 @@ def process_json_configuration_block(paint_source_dir,
             paint_logger.error(f"Time string '{time_stamp}' is not a valid date string.")
     else:
         specific_time = None
-    set_directory_tree_timestamp(r_dest_dir, specific_time)
+    # set_directory_tree_timestamp(r_dest_dir, specific_time)
     set_directory_tree_timestamp(paint_data_dir, specific_time)
 
     paint_logger.info("")
@@ -170,11 +167,14 @@ def main():
     data_version = process_project_params['Version']
     r_dest = process_project_params['R Destination']
     time_string = process_project_params['Time String']
-    generate_all_tracks = process_project_params['Generate All Tracks']
+    paint_force = process_project_params['Force']
 
     paint_data = paint_data + ' - v' + data_version
     r_dest = r_dest + ' - v' + data_version
 
+    result = messagebox.askyesno("Confirmation", f"Do you want to proceed generating version {data_version} in {paint_data}?")
+    if not result:
+        return
     if time_string == '':
         current_time = datetime.now()
         time_string = current_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -194,7 +194,7 @@ def main():
     paint_logger.info(f"The Version is                          : {data_version}")
     paint_logger.info(f"The R Output directory is               : {r_dest}")
     paint_logger.info(f"The number of directories to process is : {nr_to_process}")
-    paint_logger.info(f"All Tracks will {'' if generate_all_tracks else 'not'} be generated")
+    paint_logger.info(f"Paint force is                          : {paint_force}")
 
     nr_to_process = sum(1 for entry in config if entry['flag'])
 
@@ -223,8 +223,7 @@ def main():
                     process_recording_tau=entry['process_recording_tau'],
                     process_square_tau=entry['process_square_tau'],
                     time_string=time_string,
-                    paint_force=PAINT_FORCE,
-                    generate_all_tracks=generate_all_tracks):
+                    paint_force=paint_force):
                 error_count += 1
 
     # Report the time it took in hours minutes seconds

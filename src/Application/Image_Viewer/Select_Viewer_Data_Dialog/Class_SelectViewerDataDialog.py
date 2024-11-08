@@ -1,36 +1,35 @@
 import os
-import sys
 import tkinter as tk
-from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 
-import pandas as pd
-
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
-    save_default_locations)
+    save_default_locations,
+    test_paint_directory_type_for_compile,
+)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
+from src.Application.Utilities.ToolTips import ToolTip
 from src.Common.Support.LoggerConfig import paint_logger
-
+from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import only_one_nr_of_squares_in_row
 
 class SelectViewerDataDialog:
 
-    def __init__(self, parent: tk.Tk) -> None:
-
-        self.top = tk.Toplevel(parent)
+    def __init__(self, parent) -> None:
+        # Create a Toplevel window for the dialog
+        self.dialog = tk.Toplevel(parent)
         self.parent = parent
-        self.parent.title('Select Viewer')
-
         self.proceed = False
-        self.experiment_directory, self.project_directory, self.images_directory, self.project_file = get_default_locations()
+
+        self.dialog.title('Select Viewer')
+        self.experiment_directory, self.directory, self.images_directory, self.project_file = get_default_locations()
+        self.mode = None
 
         # Main content frame
-        content = ttk.Frame(parent)
+        content = ttk.Frame(self.dialog)  # Attach to self.dialog
         content.grid(column=0, row=0)
 
-        #  Do the lay-out
-        content.grid(column=0, row=0)
+        # Layout
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
@@ -40,8 +39,12 @@ class SelectViewerDataDialog:
         frame_directory.grid(column=0, row=1, padx=5, pady=5)
         frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
-    def setup_frame_buttons(self, frame_buttons):
+        # Make the dialog modal
+        self.dialog.transient(parent)    # Link it to the main root window
+        self.dialog.grab_set()           # Grab all input focus
+        parent.wait_window(self.dialog)  # Wait until dialog is closed
 
+    def setup_frame_buttons(self, frame_buttons):
         btn_process = ttk.Button(frame_buttons, text='View', command=self.on_view)
         btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.on_exit)
 
@@ -49,88 +52,71 @@ class SelectViewerDataDialog:
         btn_exit.grid(column=0, row=2)
 
     def setup_frame_directory(self, frame_directory):
-
-        btn_root_dir = ttk.Button(
-            frame_directory, text='Experiment Directory', width=15, command=self.on_change_project_dir)
-        btn_conf_file = ttk.Button(frame_directory, text='Project file', width=15, command=self.on_change_project_file)
-
+        btn_root_dir = ttk.Button(frame_directory, text='Paint Directory', width=15, command=self.on_change_dir)
         self.lbl_experiment_dir = ttk.Label(frame_directory, text=self.experiment_directory, width=80)
-        self.lbl_project_file = ttk.Label(frame_directory, text=self.project_file, width=80)
 
-        self.mode_var = StringVar(value="EXPERIMENT_LEVEL")
-        self.rb_mode_directory = ttk.Radiobutton(
-            frame_directory, text="", variable=self.mode_var, width=3, value="EXPERIMENT_LEVEL")
-        self.rb_mode_conf_file = ttk.Radiobutton(
-            frame_directory, text="", variable=self.mode_var, width=3, value="PROJECT_LEVEL")
+        tooltip = "Select the directory where the Paint project or experiment is located. This can be a Project or Experiment directory."
+        ToolTip(btn_root_dir, tooltip, wraplength=400)
 
-        self.rb_mode_directory.grid(column=0, row=0, padx=(5, 2), pady=5)
-        self.rb_mode_conf_file.grid(column=0, row=1, padx=(5, 2), pady=5)
-
-        btn_root_dir.grid(column=1, row=0, padx=(0, 5), pady=5)
-        btn_conf_file.grid(column=1, row=1, padx=(0, 5), pady=5)
-
+        btn_root_dir.grid(column=1, row=0, padx=(5, 5), pady=5)
         self.lbl_experiment_dir.grid(column=2, row=0, padx=5, pady=5)
-        self.lbl_project_file.grid(column=2, row=1, padx=5, pady=5)
 
-    def on_change_project_dir(self) -> None:
-        self.project_directory = filedialog.askdirectory(initialdir=self.project_directory)
-        if self.project_directory:
-            self.mode_var.set('EXPERIMENT_LEVEL')
-            self.lbl_experiment_dir.config(text=self.project_directory)
-            save_default_locations(self.project_directory, self.experiment_directory, self.images_directory,
+    def on_change_dir(self) -> None:
+        self.directory = filedialog.askdirectory(initialdir=self.directory)
+        if self.directory:
+            self.lbl_experiment_dir.config(text=self.directory)
+            save_default_locations(self.directory, self.experiment_directory, self.images_directory,
                                    self.project_file)
 
-    def on_change_project_file(self) -> None:
-        self.level = filedialog.askopenfilename(initialdir=self.experiment_directory,
-                                                filetypes=[('CSV files', '*.csv')],
-                                                title='Select a configuration file')
-        if self.level:
-            self.mode_var.set('PROJECT_LEVEL')
-            self.lbl_project_file.config(text=self.level)
-            save_default_locations(self.project_directory, self.experiment_directory, self.images_directory,
-                                   self.level)
-
     def on_view(self) -> None:
-        error = False
+        self.directory = self.lbl_experiment_dir.cget('text')
 
-        self.experiment_directory = self.lbl_experiment_dir.cget('text')
-        self.project_file = self.lbl_project_file.cget('text')
+        if not os.path.isdir(self.directory):
+            paint_logger.error("The selected directory does not exist")
+            paint_messagebox(self.dialog, title='Warning', message="The selected directory does not exist")
+            return
 
-        if self.mode_var.get() == "EXPERIMENT_LEVEL":
-            if not os.path.exists(os.path.join(self.experiment_directory, 'experiment_squares.csv')):
-                msg = "The Experiment directory does not exist or does not contain the required 'experiment squares.csv' file (and is likely not a valid Experiment directory)"
-                paint_logger.error(msg)
-                paint_logger.error(f"Experiment directory: {self.experiment_directory}")
-                paint_messagebox(self.parent, title='Warning', message=msg)
-                error = True
-        elif self.mode_var.get() == "PROJECT_LEVEL":
-            if not os.path.isfile(self.project_file):
-                msg = "The project file does not exist!"
-                paint_logger.error(msg)
-                paint_messagebox(self.parent, title='Warning', message=msg)
-                error = True
-            else:
-                try:
-                    df = pd.read_csv(self.project_file)
-                    if len(df) > 100:
-                        msg = f"You are viewing {len(df)} recordings. Opening the viewer may take some time."
-                        # paint_messagebox(self.parent, title='Info', message=msg)
-                        paint_logger.debug(msg)
-                except:
-                    pass
+        type = test_paint_directory_type_for_compile(self.directory)
+        if type is None:
+            paint_logger.error("The selected directory does not seem to be a project or experiment directory")
+            paint_messagebox(self.dialog, title='Warning',
+                             message="The selected directory does not seem to be a project or experiment directory")
         else:
-            paint_logger.error("Invalid mode=")
-            sys.exit()
+            # If it is a project directory, check if all experiments have the same nr_of_squares_in_row setting
+            if not only_one_nr_of_squares_in_row(self.directory):
+                paint_messagebox(self.dialog, title='Warning',
+                                 message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
+                return
 
-        if not error:
-            # The dialog will simply exit and the main programs will pick up the return values
+            # If it is a project directory, check if there are no newer experiments, i.e. when you HAVE forgotten to run Compile Project
+            if not self.test_project_up_to_date(self.directory):
+                return
+
+            self.mode = type
             self.proceed = True
-            self.parent.destroy()
+            self.dialog.destroy()  # Destroy only the Toplevel dialog
 
-    def on_exit(self) -> None:
+    def on_exit(self):
         self.proceed = False
-        self.parent.destroy()
+        self.dialog.destroy()  # Destroy only the Toplevel dialog
 
     def get_result(self):
-        self.top.wait_window()
-        return self.proceed, self.experiment_directory, self.project_file, self.mode_var.get()
+        return self.proceed, getattr(self, 'directory', None), getattr(self, 'mode', None)
+
+    def test_project_up_to_date(self, project_directory):
+
+        out_of_date = []
+        time_stamp_project = os.path.getmtime(os.path.join(project_directory, 'All Recordings.csv'))
+
+        experiments = os.listdir(project_directory)
+        for experiment in experiments:
+            if not os.path.isdir(os.path.join(project_directory, experiment)):
+                continue
+            experiment_directory = os.path.join(project_directory, experiment)
+            time_stamp_experiment = os.path.getmtime(os.path.join(experiment_directory, 'All Recordings.csv'))
+            if time_stamp_project < time_stamp_experiment:
+                out_of_date.append(experiment)
+        if out_of_date and len(out_of_date) > 0:
+            paint_messagebox(self.dialog, title='Warning', message="The following experiments are out of date: " + ", ".join(out_of_date) +  ". You may want to run Compile Project.")
+
+        return len(out_of_date) == 0
