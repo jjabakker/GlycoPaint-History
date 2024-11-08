@@ -15,10 +15,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from PIL import Image
 
-#from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
-#from src.Application.Image_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
-#from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
-#from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
+from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
+from src.Application.Image_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
+from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
+from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
 from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
 from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors, get_color_index,
@@ -346,7 +346,7 @@ class ImageViewer():
         if self.is_dialog_active():
             return
         else:
-            #self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
+            self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
             pass
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
@@ -355,8 +355,8 @@ class ImageViewer():
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
-            #self.heatmap_control_dialog = HeatMapDialog(self)
-            # self.heatmap_control_dialog.on_heatmap_variable_change()
+            self.heatmap_control_dialog = HeatMapDialog(self)
+            self.heatmap_control_dialog.on_heatmap_variable_change()
             self.img_no -= 1
             self.on_forward_backward('FORWARD')
 
@@ -390,9 +390,9 @@ class ImageViewer():
 
             if self.select_square_dialog is None:
                 pass
-                # self.select_square_dialog = SelectSquareDialog(
-                #     self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
-                #     self.min_track_duration, self.max_track_duration, self.neighbour_state)
+                self.select_square_dialog = SelectSquareDialog(
+                    self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
+                    self.min_track_duration, self.max_track_duration, self.neighbour_state)
 
     def on_show_define_cells(self):
 
@@ -400,9 +400,9 @@ class ImageViewer():
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
-            # self.define_cells_dialog = DefineCellDialog(
-            #     self, self.callback_to_assign_squares_to_cell_id, self.callback_to_reset_square_selection,
-            #     self.callback_to_close_define_cells)
+            self.define_cells_dialog = DefineCellDialog(
+                self, self.callback_to_assign_squares_to_cell_id, self.callback_to_reset_square_selection,
+                self.callback_to_close_define_cells)
 
     def callback_to_close_define_cells(self):
         self.define_cells_dialog = None

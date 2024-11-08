@@ -20,7 +20,6 @@ class SelectViewerDataDialog:
         self.dialog = tk.Toplevel(parent)
         self.parent = parent
         self.proceed = False
-        print("Dialog initialized")  # Diagnostic print
 
         self.dialog.title('Select Viewer')
         self.experiment_directory, self.directory, self.images_directory, self.project_file = get_default_locations()
@@ -88,16 +87,13 @@ class SelectViewerDataDialog:
                                  message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
                 return
 
-            print("View button clicked")  # Diagnostic print
             self.mode = type
             self.proceed = True
             self.dialog.destroy()  # Destroy only the Toplevel dialog
 
     def on_exit(self):
         self.proceed = False
-        print("Exit button clicked")  # Diagnostic print
         self.dialog.destroy()  # Destroy only the Toplevel dialog
 
     def get_result(self):
-        print("Returning result after dialog closes")  # Diagnostic print
         return self.proceed, getattr(self, 'directory', None), getattr(self, 'mode', None)

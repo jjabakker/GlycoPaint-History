@@ -4,15 +4,22 @@ from tkinter import ttk
 import pandas as pd
 
 
-class SelectRecordingDialog(tk.Toplevel):
+class SelectRecordingDialog():
 
-    def __init__(self, parent, dataframe, callback):
-        super().__init__(parent)
-        self.title("Select Recordings")
-        self.attributes("-topmost", True)
+    def __init__(self, image_viewer, dataframe, callback):
+
+        self.image_viewer = image_viewer
+
+        self.control_window = tk.Toplevel(self.image_viewer.parent)
+        self.control_window.title("Select Recordings")
+        self.control_window.attributes("-topmost", True)
+        self.control_window.resizable(False, False)
+        self.control_window.attributes('-topmost', True)
+        self.control_window.protocol("WM_DELETE_WINDOW", self.on_cancel)
+
         self.df = dataframe.copy()
         self.callback = callback
-        self.parent = parent
+        self.parent = image_viewer
 
 
         # Only filter on these specific columns
@@ -24,9 +31,12 @@ class SelectRecordingDialog(tk.Toplevel):
         # Store original unique values for reset functionality
         self.original_values = {col: sorted(self.df[col].unique()) for col in self.filter_columns}
 
-        # Frame to hold listboxes and buttons
-        frame = ttk.Frame(self, padding="10")
-        frame.grid(row=0, column=0, sticky="NSEW")
+        self.setup_userinterface()
+
+    def setup_userinterface(self):
+        # Frame to hold list boxes and buttons
+        content = ttk.Frame(self.control_window, padding="10")
+        content.grid(row=0, column=0, sticky="NSEW")
 
         self.listboxes = {}  # Listboxes for each column
         self.filtered_df = self.df.copy()  # DataFrame to store the filtered results
@@ -34,10 +44,10 @@ class SelectRecordingDialog(tk.Toplevel):
         # Generate a listbox and filter button for each column
         for i, col in enumerate(self.filter_columns):
             # Label for the column name
-            ttk.Label(frame, text=col).grid(row=0, column=i, padx=5, sticky="W")
+            ttk.Label(content, text=col).grid(row=0, column=i, padx=5, sticky="W")
 
             # Create a listbox with multiple selection mode
-            listbox = tk.Listbox(frame, height=6, width=15, selectmode=tk.MULTIPLE)
+            listbox = tk.Listbox(content, height=6, width=15, selectmode=tk.MULTIPLE)
             listbox.grid(row=1, column=i, padx=5, pady=5)
             self.listboxes[col] = listbox
 
@@ -45,11 +55,11 @@ class SelectRecordingDialog(tk.Toplevel):
             self.populate_listbox(col)
 
             # Create a filter button below the listbox
-            filter_button = ttk.Button(frame, text="Filter", command=lambda c=col: self.apply_filter(c))
+            filter_button = ttk.Button(content, text="Filter", command=lambda c=col: self.apply_filter(c))
             filter_button.grid(row=2, column=i, padx=(5, 2), pady=5, sticky="EW")
 
         # Buttons to reset, apply, and cancel at the bottom center
-        button_frame = ttk.Frame(frame)  # Frame for the buttons
+        button_frame = ttk.Frame(content)  # Frame for the buttons
         button_frame.grid(row=3, column=0, columnspan=len(self.filter_columns), pady=10)
 
         reset_all_button = ttk.Button(button_frame, text="Reset All", command=self.reset_all_filters)
@@ -58,7 +68,7 @@ class SelectRecordingDialog(tk.Toplevel):
         confirm_button = ttk.Button(button_frame, text="Apply All Filters", command=self.apply_all_filters)
         confirm_button.pack(side=tk.LEFT, padx=5)
 
-        cancel_button = ttk.Button(button_frame, text="Cancel", command=self.cancel)
+        cancel_button = ttk.Button(button_frame, text="Cancel", command=self.on_cancel)
         cancel_button.pack(side=tk.LEFT, padx=5)
 
     def populate_listbox(self, col):
@@ -108,12 +118,12 @@ class SelectRecordingDialog(tk.Toplevel):
         self.callback(selected_filters, True)
 
         # Close the dialog
-        self.destroy()
+        self.control_window.destroy()
 
-    def cancel(self):
+    def on_cancel(self):
         """ Close the dialog without applying any filters. """
         self.callback(None, False)
-        self.destroy()
+        self.control_window.destroy()
 
 
 if __name__ == "__main__":
