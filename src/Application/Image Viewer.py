@@ -127,7 +127,6 @@ class ImageViewer():
         self.squares_in_rectangle = []
 
         self.saved_list_images = []
-        self.df_all_squares = None
 
         self.parent.title(f'Image Viewer - {self.user_specified_directory}')
 
@@ -1001,10 +1000,14 @@ class ImageViewer():
         # Now it depends what control dialog is up
         # ----------------------------------------------------------------------------
 
-        # If the heatmap control dialog is up just display the heatmap
+        # If the heatmap control dialog is up display the heatmap
         if self.heatmap_control_dialog:
             self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
             self.display_heatmap()
+
+            # And send the heatmap control dialog a sign that min max values have changed
+            self.heatmap_control_dialog.on_heatmap_global_local_change()
+
             return
 
         else:  # update the regular image
@@ -1030,6 +1033,7 @@ class ImageViewer():
         # ----------------------------------------------------------------------------
 
         if self.heatmap_control_dialog:
+            self.select_squares_for_display()      # @@@@@@@
             self.display_heatmap()
         else:
             self.select_squares_for_display()
@@ -1053,7 +1057,7 @@ class ImageViewer():
             paint_logger.debug("Changes were not saved, because the 'Never' option was selected.")
             return False
 
-        # There is experiments data to save.
+        # There is experiment data to save.
         if self.experiment_changed:
             if self.save_state_var.get() == 'Ask':
                 save = self.user_confirms_save('Experiment')
@@ -1175,7 +1179,15 @@ class ImageViewer():
         self.on_forward_backward('START')
 
 
-def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, value, min_value, max_value, colors):
+def draw_heatmap_square(
+        canvas_to_draw_on,
+        square_nr,
+        nr_of_squares_in_row,
+        value,
+        min_value,
+        max_value,
+        colors):
+
     col_nr = square_nr % nr_of_squares_in_row
     row_nr = square_nr // nr_of_squares_in_row
     width = 512 / nr_of_squares_in_row
@@ -1193,7 +1205,7 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
 # ---------------------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------------------
-import tkinter as tk
+
 
 if __name__ == '__main__':
     root = tk.Tk()
