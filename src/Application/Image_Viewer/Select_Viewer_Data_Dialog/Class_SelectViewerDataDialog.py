@@ -17,7 +17,7 @@ class SelectViewerDataDialog:
 
     def __init__(self, parent: tk.Tk) -> None:
 
-        self.top = tk.Toplevel(parent)
+        # self.top = tk.Toplevel(parent)
         self.parent = parent
         self.parent.title('Select Viewer')
 
@@ -99,6 +99,6 @@ class SelectViewerDataDialog:
         self.parent.destroy()
 
     def get_result(self):
-        self.top.wait_window()
+        self.parent.wait_window()  # Use self.parent instead of self.top
         return self.proceed, self.directory, self.mode
 
