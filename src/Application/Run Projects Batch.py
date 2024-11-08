@@ -43,7 +43,8 @@ def process_json_configuration_block(paint_source_dir,
                                      process_recording_tau: bool,
                                      process_square_tau: bool,
                                      time_string: str,
-                                     paint_force: bool) -> bool:
+                                     paint_force: bool,
+                                     drop_empty_squares: bool) -> bool:
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} - Processing {project_directory}"
     paint_logger.info("")
@@ -61,6 +62,7 @@ def process_json_configuration_block(paint_source_dir,
     paint_logger.info(f"Max Allowable Variability   : {max_allowable_variability}")
     paint_logger.info(f"Max square coverage         : {max_square_coverage}")
     paint_logger.info(f"Paint Force                 : {paint_force}")
+    paint_logger.info(f"Drop Empty Squares          : {drop_empty_squares}")
 
     paint_logger.info("")
     paint_logger.info("-" * 40)
@@ -97,7 +99,7 @@ def process_json_configuration_block(paint_source_dir,
 
     # Compile the All Recordings and All Squares files
     if nr_experiments_processed > 0:
-        compile_project_output(paint_data_dir, verbose=True)
+        compile_project_output(paint_data_dir, drop_empty_squares=drop_empty_squares, verbose=True)
     else:
         paint_logger.info(f"No experiments processed in {paint_data_dir}")
         paint_logger.info(f"No All Recordings, All Squares, All Tracks compiled for {paint_data_dir}")
@@ -168,6 +170,7 @@ def main():
     r_dest = process_project_params['R Destination']
     time_string = process_project_params['Time String']
     paint_force = process_project_params['Force']
+    drop_empty_squares = process_project_params['Drop Empty Squares']
 
     paint_data = paint_data + ' - v' + data_version
     r_dest = r_dest + ' - v' + data_version
@@ -223,7 +226,8 @@ def main():
                     process_recording_tau=entry['process_recording_tau'],
                     process_square_tau=entry['process_square_tau'],
                     time_string=time_string,
-                    paint_force=paint_force):
+                    paint_force=paint_force,
+                    drop_empty_squares=drop_empty_squares):
                 error_count += 1
 
     # Report the time it took in hours minutes seconds

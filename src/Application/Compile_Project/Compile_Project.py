@@ -36,7 +36,10 @@ if not paint_logger_file_name_assigned:
 # -----------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
 
-def compile_project_output(project_dir: str, drop_empty: bool = False, verbose: bool = False):
+def compile_project_output(
+        project_dir: str,
+        drop_empty_squares: bool = False,
+        verbose: bool = False):
     paint_logger.info("")
     paint_logger.info(f"Compiling 'All Recordings' and 'All Squares' for {project_dir}")
     time_stamp = time.time()
@@ -86,7 +89,7 @@ def compile_project_output(project_dir: str, drop_empty: bool = False, verbose: 
     correct_all_images_column_types(df_all_recordings)
 
     # Optionally drop the squares that have no tracks
-    if drop_empty:
+    if drop_empty_squares:
         df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
 
     # ------------------------------------
