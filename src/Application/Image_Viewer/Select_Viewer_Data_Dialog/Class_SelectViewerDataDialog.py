@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from tkinter import ttk
 
 from src.Application.Utilities.General_Support_Functions import (
@@ -11,7 +11,9 @@ from src.Application.Utilities.General_Support_Functions import (
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 from src.Common.Support.LoggerConfig import paint_logger
-from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import only_one_nr_of_squares_in_row
+from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import (
+    only_one_nr_of_squares_in_row,
+    nr_recordings)
 
 class SelectViewerDataDialog:
 
@@ -88,9 +90,16 @@ class SelectViewerDataDialog:
                                  message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
                 return
 
-            # If it is a project directory, check if there are no newer experiments, i.e. when you HAVE forgotten to run Compile Project
+            # If it is a project directory, check if there are no newer experiments, i.e., when you have forgotten to run Compile Project
             if not self.test_project_up_to_date(self.directory):
                 return
+
+            # Ok, it all looks good. Check if very many recordings are requested and warn the user
+            nr = nr_recordings(self.directory)
+            if nr_recordings(self.directory) > 100:
+                msg =f"You are about to view a {nr} recordings. This may take a while."
+                paint_logger.info(msg)
+                messagebox.showinfo('Warning', msg)
 
             self.mode = type
             self.proceed = True

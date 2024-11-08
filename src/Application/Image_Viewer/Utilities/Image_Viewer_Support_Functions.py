@@ -208,3 +208,8 @@ def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):
 def only_one_nr_of_squares_in_row(directory):
     df_experiment = pd.read_csv(os.path.join(directory, 'All Recordings.csv'))
     return df_experiment['Nr of Squares in Row'].nunique() == 1
+
+
+def nr_recordings(directory):
+    df_experiment = pd.read_csv(os.path.join(directory, 'All Recordings.csv'))
+    return len(df_experiment)
