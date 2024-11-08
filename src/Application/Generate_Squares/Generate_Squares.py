@@ -150,17 +150,20 @@ def process_experiment(
     df_experiment = pd.read_csv(os.path.join(paint_directory, 'All Recordings.csv'))
     if df_experiment is None:
         paint_logger.error(
-            f"Function 'process_all_images_in_paint_directory' failed: Likely, {experiment_path} is not a valid directory containing cell image information.")
+            f"Function 'process_all_images_in_paint_directory' failed: Likely, {experiment_path} is not a valid  \
+            directory containing cell image information.")
         sys.exit(1)
     if len(df_experiment) == 0:
         paint_logger.error(
-            f"Function 'process_all_images_in_paint_directory' failed: 'All Recordings.csv' in {experiment_path} is empty")
+            f"Function 'process_all_images_in_paint_directory' failed: 'All Recordings.csv' in {experiment_path} \
+            is empty")
         sys.exit(1)
 
     # Confirm the experiment file is in the correct format
     if not check_experiment_integrity(df_experiment):
         paint_logger.error(
-            f"Function 'process_all_images_in_paint_directory' failed: The experiment file in {experiment_path} is not in the valid format.")
+            f"Function 'process_all_images_in_paint_directory' failed: The experiment file in {experiment_path} is \
+            not in the valid format.")
         sys.exit(1)
 
     df_experiment = add_columns_to_experiment_file(
@@ -393,9 +396,11 @@ def calculate_recording_tau_and_density(
         ]
 
     # Select only the tracks that fall within these squares.
-    # The following code filters df_tracks to include rows where Square Nr values match those in df_squares_for_single_tau
+    # The following code filters df_tracks to include rows where Square Nr values match those
+    # in df_squares_for_single_tau
 
-    df_tracks_for_tau = df_recording_tracks[df_recording_tracks['Square Nr'].isin(df_squares_for_single_tau['Square Nr'])]
+    df_tracks_for_tau = df_recording_tracks[
+        df_recording_tracks['Square Nr'].isin(df_squares_for_single_tau['Square Nr'])]
     nr_of_tracks_for_single_tau = len(df_tracks_for_tau)
 
     # --------------------------------------------------------------------------------------------
@@ -736,14 +741,6 @@ def add_columns_to_experiment_file(
     """
     This function adds columns to the experiment file that are needed for the grid processing.
     Only images for which the 'Process' column is set to 'Yes' are processed.
-
-    :param df_experiment:
-    :param nr_of_squares_in_row:
-    :param min_tracks_for_tau:
-    :param min_r_squared:
-    :param min_required_density_ratio:
-    :param max_allowable_variability:
-    :return:
     """
 
     mask = ((df_experiment['Process'] == 'Yes') |
