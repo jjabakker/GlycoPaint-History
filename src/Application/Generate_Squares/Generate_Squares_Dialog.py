@@ -201,7 +201,7 @@ class GenerateSquaresDialog:
             process_recording_tau=self.process_average_tau.get(),
             process_square_tau=self.process_square_specific_tau.get(),
             called_from_project=called_from_project,
-            paint_force=False,
+            paint_force=True,
             verbose=False
         )
         run_time = time.time() - start_time
