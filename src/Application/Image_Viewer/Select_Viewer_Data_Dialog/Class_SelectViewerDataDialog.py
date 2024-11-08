@@ -82,9 +82,14 @@ class SelectViewerDataDialog:
             paint_messagebox(self.dialog, title='Warning',
                              message="The selected directory does not seem to be a project or experiment directory")
         else:
+            # If it is a project directory, check if all experiments have the same nr_of_squares_in_row setting
             if not only_one_nr_of_squares_in_row(self.directory):
                 paint_messagebox(self.dialog, title='Warning',
                                  message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
+                return
+
+            # If it is a project directory, check if there are no newer experiments, i.e. when you HAVE forgotten to run Compile Project
+            if not self.test_project_up_to_date(self.directory):
                 return
 
             self.mode = type
@@ -97,3 +102,21 @@ class SelectViewerDataDialog:
 
     def get_result(self):
         return self.proceed, getattr(self, 'directory', None), getattr(self, 'mode', None)
+
+    def test_project_up_to_date(self, project_directory):
+
+        out_of_date = []
+        time_stamp_project = os.path.getmtime(os.path.join(project_directory, 'All Recordings.csv'))
+
+        experiments = os.listdir(project_directory)
+        for experiment in experiments:
+            if not os.path.isdir(os.path.join(project_directory, experiment)):
+                continue
+            experiment_directory = os.path.join(project_directory, experiment)
+            time_stamp_experiment = os.path.getmtime(os.path.join(experiment_directory, 'All Recordings.csv'))
+            if time_stamp_project < time_stamp_experiment:
+                out_of_date.append(experiment)
+        if out_of_date and len(out_of_date) > 0:
+            paint_messagebox(self.dialog, title='Warning', message="The following experiments are out of date: " + ", ".join(out_of_date) +  ". You may want to run Compile Project.")
+
+        return len(out_of_date) == 0
