@@ -315,8 +315,6 @@ def process_single_image_in_experiment_directory(
     # Empty the plt directory
     delete_files_in_directory(get_tau_plots_dir_path(experiment_path, recording_name))  # TODO - Check this
 
-    # df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
-
     # -----------------------------------------------------------------------------------------------------
     # A df_squares dataframe is generated and, if the process_square_tau flag is set, for every square the
     # Tau and Density are calculated. The results are written to a squares file.
@@ -493,6 +491,7 @@ def create_df_squares(row: pd.Series,
         df_tracks_in_square = df_recording_tracks[mask]
         df_all_tracks.loc[df_tracks_in_square['Unique Key'], 'Square Nr'] = int(square_seq_nr)
 
+        # Provide reasonable values for squares not containing any tracks
         nr_of_tracks_in_square = len(df_tracks_in_square)
         if nr_of_tracks_in_square == 0:
 
@@ -507,11 +506,13 @@ def create_df_squares(row: pd.Series,
                 r_squared = 0
             density = 0
             variability = 0
+            dc_mean = 0
 
         else:
+            # For a square with tracks, calculate the values
 
-            # Assign the tracks to the square.
-            df_recording_tracks.loc[mask, 'Square Nr'] = square_seq_nr
+            # Assign the tracks to the square - this is pointless
+            # df_recording_tracks.loc[mask, 'Square Nr'] = square_seq_nr
 
             # --------------------------------------------------------------------------------------------
             # Calculate the sum of track durations for the square
@@ -536,7 +537,7 @@ def create_df_squares(row: pd.Series,
                 average_long_track = df_tracks_in_square.tail(nr_tracks_to_average)['Track Duration'].mean()
 
             # --------------------------------------------------------------------------------------------
-            # Find the maximum track duration. If there are no tracks then set the value to 0
+            # Find the maximum track duration
             # --------------------------------------------------------------------------------------------
 
             max_track_duration = df_tracks_in_square['Track Duration'].max()
@@ -583,10 +584,21 @@ def create_df_squares(row: pd.Series,
                 nr_tracks=nr_of_tracks_in_square, area=square_area, time=100, concentration=concentration,
                 magnification=1000)
 
+            # --------------------------------------------------------------------------------------------
+            # Calculate the variability for the square
+            # --------------------------------------------------------------------------------------------
+
             variability = calc_variability(df_tracks_in_square, square_seq_nr, nr_of_squares_in_row, 10)
+
+            # --------------------------------------------------------------------------------------------
+            # Calculate the diffusion coefficient  for the square
+            # --------------------------------------------------------------------------------------------
+
+            dc_mean = df_tracks_in_square['Diffusion Coefficient'].mean()
 
         # --------------------------------------------------------------------------------------------
         # Enter the calculated values in the tau, density, and variability matrices
+        # Not really needed and hardly used for analysis. Could be removed
         # --------------------------------------------------------------------------------------------
 
         tau_matrix[row_nr, col_nr] = int(tau)
@@ -628,7 +640,7 @@ def create_df_squares(row: pd.Series,
                        'Density Ratio': 0.0,
                        'Tau': round(tau, 0),
                        'R2': round(r_squared, 2),
-                       'Diffusion Coefficient': 0,
+                       'Diffusion Coefficient': round(dc_mean, 0),
                        'Average Long Track Duration': round(average_long_track, 1),
                        'Max Track Duration': round(max_track_duration, 1),
                        'Total Track Duration': round(total_track_duration, 1),
@@ -652,26 +664,6 @@ def create_df_squares(row: pd.Series,
         df_squares['Density Ratio'] = 999.9  # Special code
     else:
         df_squares['Density Ratio'] = round(df_squares['Nr Tracks'] / background_tracks, 1)
-
-    # --------------------------------------------------------------------------------------------
-    # Then add the diffusion coefficient to the squares file
-    # --------------------------------------------------------------------------------------------
-
-    df_squares.set_index('Square Nr', drop=False, inplace=True)
-    df_squares['Diffusion Coefficient'] = 0
-    for index, row in df_squares.iterrows():
-        square_nr = row['Square Nr']
-        x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_nr)
-        df_tracks_in_square = df_recording_tracks[
-            (df_recording_tracks['Track X Location'] >= x0) &
-            (df_recording_tracks['Track X Location'] <= x1) &
-            (df_recording_tracks['Track Y Location'] >= y0) &
-            (df_recording_tracks['Track Y Location'] <= y1)]
-        if len(df_tracks_in_square) > 0:
-            dc_mean = df_tracks_in_square['Diffusion Coefficient'].mean()
-        else:
-            dc_mean = -1
-        df_squares.loc[index, 'Diffusion Coefficient'] = int(dc_mean)
 
     if verbose:
         write_matrices(recording_path, recording_name, tau_matrix, density_matrix, count_matrix, variability_matrix,
