@@ -174,7 +174,7 @@ def process_experiment_directory(
 
     nr_files = df_all_tracks['Recording Name'].nunique()
     nr_files1 = len(df_experiment)
-    if (nr_files1 != nr_files):
+    if nr_files1 != nr_files:
         paint_logger.info("All Squares file is not consistent with All Recordings")
     if nr_files <= 0:
         paint_logger.info("No files selected for processing")
@@ -311,10 +311,6 @@ def process_single_image_in_experiment_directory(
     directory and creates a grid of squares. For each square the Tau and Density ratio is calculated. The squares
     are then filtered on visibility. For each square a squares.csv id written to the 'grid' directory.
     """
-
-    tau = 0
-    r_squared = 0
-    density = 0
 
     # Empty the plt directory
     delete_files_in_directory(get_tau_plots_dir_path(experiment_path, recording_name))  # TODO - Check this
@@ -638,7 +634,7 @@ def create_df_squares(row: pd.Series,
         df_squares = pd.concat([df_squares, pd.DataFrame.from_records([squares_row])])
 
     # --------------------------------------------------------------------------------------------
-    # At this point, the full df_square dataframe exists. Now sone post processing is done
+    # At this point, the full df_square dataframe exists. Now some post processing is done
     # --------------------------------------------------------------------------------------------
 
     # --------------------------------------------------------------------------------------------
