@@ -15,22 +15,22 @@ from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions impor
 
 class SelectViewerDataDialog:
 
-    def __init__(self, parent: tk.Tk) -> None:
-
-        # self.top = tk.Toplevel(parent)
+    def __init__(self, parent) -> None:
+        # Create a Toplevel window for the dialog
+        self.dialog = tk.Toplevel(parent)
         self.parent = parent
-        self.parent.title('Select Viewer')
-
         self.proceed = False
+        print("Dialog initialized")  # Diagnostic print
+
+        self.dialog.title('Select Viewer')
         self.experiment_directory, self.directory, self.images_directory, self.project_file = get_default_locations()
         self.mode = None
 
         # Main content frame
-        content = ttk.Frame(parent)
+        content = ttk.Frame(self.dialog)  # Attach to self.dialog
         content.grid(column=0, row=0)
 
-        #  Do the lay-out
-        content.grid(column=0, row=0)
+        # Layout
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
@@ -40,8 +40,12 @@ class SelectViewerDataDialog:
         frame_directory.grid(column=0, row=1, padx=5, pady=5)
         frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
-    def setup_frame_buttons(self, frame_buttons):
+        # Make the dialog modal
+        self.dialog.transient(parent)    # Link it to the main root window
+        self.dialog.grab_set()           # Grab all input focus
+        parent.wait_window(self.dialog)  # Wait until dialog is closed
 
+    def setup_frame_buttons(self, frame_buttons):
         btn_process = ttk.Button(frame_buttons, text='View', command=self.on_view)
         btn_exit = ttk.Button(frame_buttons, text='Exit', command=self.on_exit)
 
@@ -49,7 +53,6 @@ class SelectViewerDataDialog:
         btn_exit.grid(column=0, row=2)
 
     def setup_frame_directory(self, frame_directory):
-
         btn_root_dir = ttk.Button(frame_directory, text='Paint Directory', width=15, command=self.on_change_dir)
         self.lbl_experiment_dir = ttk.Label(frame_directory, text=self.experiment_directory, width=80)
 
@@ -67,38 +70,34 @@ class SelectViewerDataDialog:
                                    self.project_file)
 
     def on_view(self) -> None:
-
         self.directory = self.lbl_experiment_dir.cget('text')
 
         if not os.path.isdir(self.directory):
             paint_logger.error("The selected directory does not exist")
-            paint_messagebox(self.parent, title='Warning', message="The selected directory does not exist")
+            paint_messagebox(self.dialog, title='Warning', message="The selected directory does not exist")
             return
 
         type = test_paint_directory_type_for_compile(self.directory)
         if type is None:
-            # Unlikely that this is Project or Experiment directory
             paint_logger.error("The selected directory does not seem to be a project or experiment directory")
-            paint_messagebox(self.parent, title='Warning',
+            paint_messagebox(self.dialog, title='Warning',
                              message="The selected directory does not seem to be a project or experiment directory")
         else:
-
-            # Now do a quick check to see if all recordings have been processed with the same nr_of_square_in_row setting
             if not only_one_nr_of_squares_in_row(self.directory):
-                paint_messagebox(self.parent, title='Warning',
-                                 message="Not all recordings have been processed with the same nr_of_square_in_row setting. Please run Generate Squares with consistent parameters.")
+                paint_messagebox(self.dialog, title='Warning',
+                                 message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
                 return
 
-            # The dialog will simply exit and the main programs will pick up the return values
+            print("View button clicked")  # Diagnostic print
             self.mode = type
             self.proceed = True
-            self.parent.destroy()
+            self.dialog.destroy()  # Destroy only the Toplevel dialog
 
-    def on_exit(self) -> None:
+    def on_exit(self):
         self.proceed = False
-        self.parent.destroy()
+        print("Exit button clicked")  # Diagnostic print
+        self.dialog.destroy()  # Destroy only the Toplevel dialog
 
     def get_result(self):
-        self.parent.wait_window()  # Use self.parent instead of self.top
-        return self.proceed, self.directory, self.mode
-
+        print("Returning result after dialog closes")  # Diagnostic print
+        return self.proceed, getattr(self, 'directory', None), getattr(self, 'mode', None)

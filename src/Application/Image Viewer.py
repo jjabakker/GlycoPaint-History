@@ -15,14 +15,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from PIL import Image
 
-from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
-from src.Application.Image_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
-from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
+#from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
+#from src.Application.Image_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
+#from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
+#from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
+from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
 from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors, get_color_index,
     get_heatmap_data)
-from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
-from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
 from src.Application.Image_Viewer.Utilities.Display_Selected_Squares import (
     display_selected_squares_do_the_work,
     mark_selected_squares_do_the_work)
@@ -48,7 +48,7 @@ paint_logger_change_file_handler_name('Image Viewer.log')
 # ImageViewer Class
 # ----------------------------------------------------------------------------------------
 
-class ImageViewer(tk.Tk):
+class ImageViewer():
 
     def __init__(self, parent, user_specified_directory, user_specified_mode):
 
@@ -346,8 +346,8 @@ class ImageViewer(tk.Tk):
         if self.is_dialog_active():
             return
         else:
-            self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
-
+            #self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
+            pass
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
 
@@ -355,7 +355,7 @@ class ImageViewer(tk.Tk):
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
-            self.heatmap_control_dialog = HeatMapDialog(self)
+            #self.heatmap_control_dialog = HeatMapDialog(self)
             # self.heatmap_control_dialog.on_heatmap_variable_change()
             self.img_no -= 1
             self.on_forward_backward('FORWARD')
@@ -389,9 +389,10 @@ class ImageViewer(tk.Tk):
             self.max_track_duration = 199
 
             if self.select_square_dialog is None:
-                self.select_square_dialog = SelectSquareDialog(
-                    self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
-                    self.min_track_duration, self.max_track_duration, self.neighbour_state)
+                pass
+                # self.select_square_dialog = SelectSquareDialog(
+                #     self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
+                #     self.min_track_duration, self.max_track_duration, self.neighbour_state)
 
     def on_show_define_cells(self):
 
@@ -399,9 +400,9 @@ class ImageViewer(tk.Tk):
             return
         else:
             self.set_dialog_buttons(tk.DISABLED)
-            self.define_cells_dialog = DefineCellDialog(
-                self, self.callback_to_assign_squares_to_cell_id, self.callback_to_reset_square_selection,
-                self.callback_to_close_define_cells)
+            # self.define_cells_dialog = DefineCellDialog(
+            #     self, self.callback_to_assign_squares_to_cell_id, self.callback_to_reset_square_selection,
+            #     self.callback_to_close_define_cells)
 
     def callback_to_close_define_cells(self):
         self.define_cells_dialog = None
@@ -1192,20 +1193,34 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
 # ---------------------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------------------
+import tkinter as tk
 
 if __name__ == '__main__':
+    print("Creating root window")
     root = tk.Tk()
-    root.withdraw()
     root.eval('tk::PlaceWindow . center')
+    print("Main root created")  # Diagnostic print
+
+    # Show the SelectViewerDataDialog using the original root
     dialog_result = SelectViewerDataDialog(root)
     proceed, directory, mode = dialog_result.get_result()
 
+    print(f"Dialog result: proceed={proceed}, directory={directory}, mode={mode}")  # Diagnostic print
+
     if proceed:
-        root = tk.Tk()
-        root.withdraw()
-        root.eval('tk::PlaceWindow . center')
+        print("Proceeding with ImageViewer")
+        # Initialize ImageViewer without withdrawing `root`
+        root.deiconify()  # Show the root window for ImageViewer
         paint_logger.debug(f'Mode: {mode}')
         paint_logger.info(f'Mode is: {mode} - Directory: {directory}')
-        image_viewer = ImageViewer(root, directory, mode)
 
+        # Initialize ImageViewer, ensuring it does not create a new Tk instance
+        print("Initializing ImageViewer")
+        image_viewer = ImageViewer(root, directory, mode)
+    else:
+        # Hide root if not proceeding
+        root.withdraw()
+        print("Application closed without proceeding")
+
+    print("Starting main loop")
     root.mainloop()
