@@ -8,7 +8,7 @@ from tkinter import messagebox
 
 from src.Application.Compile_Project.Compile_Project import compile_project_output
 from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source_with_images
-from src.Application.Generate_Squares.Generate_Squares import process_project_directory
+from src.Application.Generate_Squares.Generate_Squares import process_project
 from src.Application.Utilities.General_Support_Functions import format_time_nicely
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
     set_directory_tree_timestamp,
@@ -82,7 +82,7 @@ def process_json_configuration_block(paint_source_dir,
     # if not os.path.exists(r_dest_dir):
     #     os.makedirs(r_dest_dir)
 
-    nr_experiments_processed = process_project_directory(
+    nr_experiments_processed = process_project(
         paint_directory=paint_data_dir,
         nr_of_squares_in_row=nr_of_squares_in_row,
         min_r_squared=min_r_squared,

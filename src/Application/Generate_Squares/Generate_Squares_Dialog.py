@@ -4,8 +4,8 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 
 from src.Application.Generate_Squares.Generate_Squares import (
-    process_project_directory,
-    process_experiment_directory)
+    process_project,
+    process_experiment)
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
     save_grid_defaults_to_file)
@@ -179,10 +179,10 @@ class GenerateSquaresDialog:
 
         dir_type = test_paint_directory_type_for_generate(self.paint_directory)
         if dir_type == 'Project':
-            generate_function = process_project_directory
+            generate_function = process_project
             called_from_project = True
         elif dir_type == 'Experiment':
-            generate_function = process_experiment_directory
+            generate_function = process_experiment
             called_from_project = False
         else:
             msg = "The selected directory does not seem to be a project directory, nor an experiment directory"
