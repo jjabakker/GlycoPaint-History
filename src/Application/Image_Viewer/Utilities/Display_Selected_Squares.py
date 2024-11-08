@@ -17,7 +17,7 @@ def display_selected_squares_do_the_work(self):
     self.cn_left_image.bind('<B1-Motion>', lambda e: self.expand_rectangle_size(e))
 
     if self.show_squares:
-        # If there are no squares you can stop here
+        # If there are no squares, you can stop here
         if len(self.df_squares) > 0:
 
             # Then draw the of squares that are assigned to a cell
