@@ -1196,31 +1196,24 @@ def draw_heatmap_square(canvas_to_draw_on, square_nr, nr_of_squares_in_row, valu
 import tkinter as tk
 
 if __name__ == '__main__':
-    print("Creating root window")
     root = tk.Tk()
     root.eval('tk::PlaceWindow . center')
-    print("Main root created")  # Diagnostic print
 
     # Show the SelectViewerDataDialog using the original root
     dialog_result = SelectViewerDataDialog(root)
     proceed, directory, mode = dialog_result.get_result()
 
-    print(f"Dialog result: proceed={proceed}, directory={directory}, mode={mode}")  # Diagnostic print
-
     if proceed:
-        print("Proceeding with ImageViewer")
         # Initialize ImageViewer without withdrawing `root`
         root.deiconify()  # Show the root window for ImageViewer
         paint_logger.debug(f'Mode: {mode}')
         paint_logger.info(f'Mode is: {mode} - Directory: {directory}')
 
         # Initialize ImageViewer, ensuring it does not create a new Tk instance
-        print("Initializing ImageViewer")
         image_viewer = ImageViewer(root, directory, mode)
     else:
         # Hide root if not proceeding
         root.withdraw()
-        print("Application closed without proceeding")
 
     print("Starting main loop")
     root.mainloop()
