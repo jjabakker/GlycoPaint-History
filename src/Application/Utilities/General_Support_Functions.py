@@ -210,6 +210,11 @@ def _inspect_dirs(root_dir, required_files, required_dirs):  # Define the set of
                 complete_count += 1
             else:
                 incomplete_count += 1
+                paint_logger.error(f"Directory {subdir} is incomplete. Expected files: {required_files} and {required_dirs}")
+                if not has_required_files:
+                    paint_logger.error(f"Missing files: {required_files - items_in_subdir}")
+                if not has_required_dirs:
+                    paint_logger.error(f"Missing directories: {required_dirs - items_in_subdir}")
 
     # Return the counts of complete and incomplete subdirectories
     return complete_count, incomplete_count
