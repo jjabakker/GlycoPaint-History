@@ -5,8 +5,8 @@ from tkinter import ttk, filedialog, messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 
 def reset_root(root_dir):
-    files_to_remove = ['All Recordings.csv', 'All Squares.csv']
-    directories_to_remove = ['Dir1', 'Dir2']  # Add directory names you want to remove
+    files_to_remove = ['All Recordings.csv', 'All Squares.csv', 'All Tracks.csv', 'Experiment TM.csv']  # Add file names you want to remove
+    directories_to_remove = ['Brightfield Images', 'TrackMate Images']  # Add directory names you want to remove
 
     for dirpath, dirnames, filenames in os.walk(root_dir):
         # Remove specified files
