@@ -296,7 +296,7 @@ def label_visible_squares(df_squares):
     df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
     label_nr = 1
     for idx, row in df_squares.iterrows():
-        if row['Visible']:
+        if row['Selected']:
             df_squares.at[idx, 'Label Nr'] = label_nr
             label_nr += 1
     df_squares.sort_index(inplace=True)

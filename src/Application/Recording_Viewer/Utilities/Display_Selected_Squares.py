@@ -3,7 +3,7 @@ from tkinter import *
 
 def display_selected_squares_do_the_work(self):
     """
-    Display the squares on the left image canvas, that have the Visible flag set
+    Display the squares on the left image canvas, that have the 'Selected' flag set
     :return:
     """
 
@@ -22,14 +22,14 @@ def display_selected_squares_do_the_work(self):
 
             # Then draw the of squares that are assigned to a cell
             for index, squares_row in self.df_squares.iterrows():
-                if squares_row['Visible']:
+                if squares_row['Selected']:
                     if squares_row['Cell Id'] != 0:
                         draw_single_square(
                             self.show_squares_numbers, self.nr_of_squares_in_row, self.cn_left_image, squares_row,
                             self.square_assigned_to_cell, self.provide_information_on_square)
             # Then draw the thin lines of squares that are not assigned to a cell
             for index, squares_row in self.df_squares.iterrows():
-                if squares_row['Visible']:
+                if squares_row['Selected']:
                     draw_single_square(
                         self.show_squares_numbers, self.nr_of_squares_in_row, self.cn_left_image, squares_row,
                         self.square_assigned_to_cell, self.provide_information_on_square)

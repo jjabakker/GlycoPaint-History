@@ -232,7 +232,7 @@ def process_experiment(
             min_track_duration = 0  # ToDo Correct this
             max_track_duration = 10000
 
-            df_squares['Visible'] = (
+            df_squares['Selected'] = (         # @@@@
                     (df_squares['Density Ratio'] >= min_required_density_ratio) &
                     (df_squares['Variability'] <= max_allowable_variability) &
                     (df_squares['Max Track Duration'] >= min_track_duration) &
@@ -240,12 +240,12 @@ def process_experiment(
             )
 
             nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
-            nr_visible_squares = len(df_squares[df_squares['Visible']])
+            nr_visible_squares = len(df_squares[df_squares['Selected']])
             nr_invisible_squares = nr_total_squares - nr_visible_squares
             nr_valid_tau_squares = len(df_squares[df_squares['Tau'] > 0])
 
             df_experiment.loc[index, 'Nr Total Squares'] = nr_total_squares
-            df_experiment.loc[index, 'Nr Visible Squares'] = nr_invisible_squares
+            df_experiment.loc[index, 'Nr Visible Squares'] = nr_visible_squares
             df_experiment.loc[index, 'Nr Invisible Squares'] = nr_invisible_squares
 
             df_experiment.loc[index, 'Nr Defined Squares'] = nr_valid_tau_squares
@@ -634,7 +634,7 @@ def calculate_squares(row: pd.Series,
                        'Y0': round(y0, 2),
                        'X1': round(x1, 2),
                        'Y1': round(y1, 2),
-                       'Visible': True,
+                       'Selected': True,
                        'Variability': round(variability, 2),
                        'Density': round(density, 1),
                        'Density Ratio': 0.0,

@@ -6,16 +6,17 @@ def select_squares_for_display_do_the_work(self):
     Select squares based on defined conditions for density, variability, and track duration,
     and apply visibility rules based on neighborhood states.
     """
+
     # Define the conditions for squares to be visible
-    self.df_squares['Visible'] = (
+    self.df_squares['Selected'] = (
             (self.df_squares['Density Ratio'] >= self.min_required_density_ratio) &
             (self.df_squares['Variability'] <= self.max_allowable_variability) &
             (self.df_squares['Max Track Duration'] >= self.min_track_duration) &
             (self.df_squares['Max Track Duration'] <= self.max_track_duration)
     )
 
-    self.df_squares['Visible'] = (
-            (self.df_squares['Visible']) &
+    self.df_squares['Selected'] = (
+            (self.df_squares['Selected']) &
             (self.df_squares['Tau'] > 0)
     )
 
@@ -36,7 +37,7 @@ def select_squares_strict(df_squares, nr_of_squares_in_row):
     list_of_squares = []
 
     for index, square in df_squares.iterrows():
-        if not square['Visible']:
+        if not square['Selected']:
             continue
 
         row, col = square['Row Nr'], square['Col Nr']
@@ -52,12 +53,12 @@ def select_squares_strict(df_squares, nr_of_squares_in_row):
             neighbor_index = int((nb[0] - 1) * nr_of_squares_in_row + (nb[1] - 1))
 
             # Check if the neighbor exists and is visible
-            if neighbor_index in df_squares.index and df_squares.loc[neighbor_index, 'Visible']:
+            if neighbor_index in df_squares.index and df_squares.loc[neighbor_index, 'Selected']:
                 has_visible_neighbors = True
                 break  # Exit early if any visible neighbor is found
 
         # Update visibility based on visible neighbors
-        df_squares.at[square_nr, 'Visible'] = has_visible_neighbors
+        df_squares.at[square_nr, 'Selected'] = has_visible_neighbors
         if has_visible_neighbors:
             list_of_squares.append(square_nr)
 
@@ -71,7 +72,7 @@ def select_squares_relaxed(df_squares, nr_of_squares_in_row):
     list_of_squares = []
 
     for index, square in df_squares.iterrows():
-        if not square['Visible']:
+        if not square['Selected']:
             continue
 
         row, col = square['Row Nr'], square['Col Nr']
@@ -87,11 +88,11 @@ def select_squares_relaxed(df_squares, nr_of_squares_in_row):
             neighbor_index = int((nb[0] - 1) * nr_of_squares_in_row + (nb[1] - 1))
 
             # Check if the neighbor exists and is visible
-            if neighbor_index in df_squares.index and df_squares.loc[neighbor_index, 'Visible']:
+            if neighbor_index in df_squares.index and df_squares.loc[neighbor_index, 'Selected']:
                 visible_neighbors += 1
 
-        # Update 'Visible' based on initial visibility and neighbors' visibility
-        df_squares.at[square_nr, 'Visible'] = visible_neighbors > 0 and square['Visible']
+        # Update 'Selected' based on initial visibility and neighbors' visibility
+        df_squares.at[square_nr, 'Selected'] = visible_neighbors > 0 and square['Selected']
         if visible_neighbors > 0:
             list_of_squares.append(square_nr)
 

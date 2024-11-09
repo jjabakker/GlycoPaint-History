@@ -610,7 +610,7 @@ class RecordingViewer():
             self.provide_report_on_cell(self, cell_id)
 
             df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_id]
-            df_selection_visible = df_selection[df_selection['Visible']]
+            df_selection_visible = df_selection[df_selection['Selected']]
             tau_values_visible = df_selection_visible['Tau'].to_list()
 
             if len(tau_values_visible) > 0:
@@ -664,7 +664,7 @@ class RecordingViewer():
             shutil.rmtree(temp_dir)
 
         nr_total_squares = len(self.df_squares)
-        tau_values = self.df_squares[self.df_squares['Visible']]['Tau'].tolist()
+        tau_values = self.df_squares[self.df_squares['Selected']]['Tau'].tolist()
         nr_visible_squares = len(tau_values)
         if nr_visible_squares != 0:
             tau_min = min(tau_values)
@@ -694,7 +694,7 @@ class RecordingViewer():
         :return:
         """
 
-        self.df_squares['Visible'] = True  # ToDo is this ok?
+        self.df_squares['Selected'] = True  # ToDo is this ok?
         self.df_squares['Cell Id'] = 0
 
         self.select_squares_for_display()
@@ -779,7 +779,7 @@ class RecordingViewer():
 
         # See if there are any squares defined for this cell
         df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
-        df_visible = df_selection[df_selection['Visible']]
+        df_visible = df_selection[df_selection['Selected']]
         if len(df_visible) == 0:
             paint_logger.debug(
                 f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
@@ -896,7 +896,7 @@ class RecordingViewer():
 
         for i in range(len(self.df_squares)):
             square = self.df_squares.iloc[i]
-            if square['Visible']:
+            if square['Selected']:
                 if test_if_square_is_in_rectangle(
                         square['X0'], square['Y0'], square['X1'], square['Y1'], self.start_x, self.start_y,
                         event.x, event.y):
