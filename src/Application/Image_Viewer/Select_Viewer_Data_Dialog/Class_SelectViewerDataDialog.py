@@ -84,15 +84,18 @@ class SelectViewerDataDialog:
             paint_messagebox(self.dialog, title='Warning',
                              message="The selected directory does not seem to be a project or experiment directory")
         else:
-            # If it is a project directory, check if all experiments have the same nr_of_squares_in_row setting
+            if type == 'Project':
+                # If it is a project directory, check if there are no newer experiments, i.e., when you have forgotten to run Compile Project
+                if not self.test_project_up_to_date(self.directory):
+                    return
+
+            # Check if all experiments have the same nr_of_squares_in_row setting
             if not only_one_nr_of_squares_in_row(self.directory):
                 paint_messagebox(self.dialog, title='Warning',
                                  message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
                 return
 
-            # If it is a project directory, check if there are no newer experiments, i.e., when you have forgotten to run Compile Project
-            if not self.test_project_up_to_date(self.directory):
-                return
+
 
             # Ok, it all looks good. Check if very many recordings are requested and warn the user
             nr = nr_recordings(self.directory)
