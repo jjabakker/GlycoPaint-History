@@ -6,8 +6,10 @@ from tkinter import ttk, filedialog
 import pandas as pd
 
 from src.Application.Utilities.General_Support_Functions import (
-    read_experiment_file
+    read_experiment_file,
+    classify_directory
 )
+from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.DirectoriesAndLocations import (
     get_default_locations,
     save_default_locations)
@@ -77,18 +79,27 @@ class InspectDialog:
     """
 
     def __init__(self, _root):
-        _root.title('Inspect Experiments Files')
+        self.root = _root
+        self.root.title('Inspect Experiments Files')
         self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
         # Set up the UI layout
-        content = ttk.Frame(_root)
+        self.root.geometry("800x140")
+        content = ttk.Frame(self.root)
+
+        # Configure content frame to take full width
+        content.grid(column=0, row=0, sticky="nsew")
+        self.root.grid_columnconfigure(0, weight=1)
+
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
-        #  Do the lay-out
-        content.grid(column=0, row=0)
-        frame_directory.grid(column=0, row=1, padx=5, pady=5)
+        # Layout configuration
+        frame_directory.grid(column=0, row=1, padx=5, pady=5, sticky="ew")
         frame_buttons.grid(column=0, row=2, padx=5, pady=5)
+
+        # Configure the column inside frame_directory to expand
+        frame_directory.grid_columnconfigure(1, weight=1)
 
         # Fill the button frame
         btn_process = ttk.Button(frame_buttons, text='Process', command=self.process)
@@ -98,10 +109,10 @@ class InspectDialog:
 
         # Fill the directory frame
         btn_root_dir = ttk.Button(frame_directory, text='Project Directory', width=15, command=self.change_root_dir)
-        self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=50)
+        self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=60)
 
         btn_root_dir.grid(column=0, row=0, padx=10, pady=5)
-        self.lbl_root_dir.grid(column=1, row=0, padx=20, pady=5)
+        self.lbl_root_dir.grid(column=1, row=0, padx=20, pady=5, sticky="ew")
 
     def change_root_dir(self):
         """
@@ -116,11 +127,17 @@ class InspectDialog:
         """
         Starts the Experiments file inspection process.
         """
-        if self.root_directory:
+
+        dir_type, _ = classify_directory(self.root_directory)
+        if dir_type == 'Project':
             inspect_experiment_squares_files(root_dir=self.root_directory)
+            root.destroy()
+        elif dir_type == 'Experiment':
+            msg = "The selected directory does not seem to be a project directory, but an experiment directory"
+            paint_messagebox(self.root, title='Warning', message=msg)
         else:
-            logging.error("No root directory selected.")
-        root.destroy()
+            msg = "The selected directory does not seem to be a project directory, nor an experiment directory"
+            paint_messagebox(self.root, title='Warning', message=msg)
 
     def exit_dialog(self):
         """
