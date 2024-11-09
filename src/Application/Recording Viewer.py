@@ -15,22 +15,22 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from PIL import Image
 
-from src.Application.Image_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
-from src.Application.Image_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
-from src.Application.Image_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
-from src.Application.Image_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
-from src.Application.Image_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
-from src.Application.Image_Viewer.Heatmap_Dialog.Heatmap_Support import (
+from src.Application.Recording_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
+from src.Application.Recording_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
+from src.Application.Recording_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
+from src.Application.Recording_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
+from src.Application.Recording_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
+from src.Application.Recording_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors, get_color_index,
     get_heatmap_data)
-from src.Application.Image_Viewer.Utilities.Display_Selected_Squares import (
+from src.Application.Recording_Viewer.Utilities.Display_Selected_Squares import (
     display_selected_squares_do_the_work,
     mark_selected_squares_do_the_work)
-from src.Application.Image_Viewer.Utilities.Get_Images import get_images
-from src.Application.Image_Viewer.Utilities.Image_Viewer_Support_Functions import (
+from src.Application.Recording_Viewer.Utilities.Get_Images import get_images
+from src.Application.Recording_Viewer.Utilities.Recording_Viewer_Support_Functions import (
     test_if_square_is_in_rectangle,
     save_as_png)
-from src.Application.Image_Viewer.Utilities.Select_Squares_For_Display import select_squares_for_display_do_the_work
+from src.Application.Recording_Viewer.Utilities.Select_Squares_For_Display import select_squares_for_display_do_the_work
 from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,
@@ -41,14 +41,14 @@ from src.Common.Support.LoggerConfig import (
     paint_logger_change_file_handler_name)
 
 # Log to an appropriately named file
-paint_logger_change_file_handler_name('Image Viewer.log')
+paint_logger_change_file_handler_name('Recording Viewer.log')
 
 
 # ----------------------------------------------------------------------------------------
-# ImageViewer Class
+# RecordingViewer Class
 # ----------------------------------------------------------------------------------------
 
-class ImageViewer():
+class RecordingViewer():
 
     def __init__(self, parent, user_specified_directory, user_specified_mode):
 
@@ -128,7 +128,7 @@ class ImageViewer():
 
         self.saved_list_images = []
 
-        self.parent.title(f'Image Viewer - {self.user_specified_directory}')
+        self.parent.title(f'Recording Viewer - {self.user_specified_directory}')
 
     def setup_ui(self):
         """
@@ -1216,13 +1216,13 @@ if __name__ == '__main__':
     proceed, directory, mode = dialog.get_result()
 
     if proceed:
-        # Initialize ImageViewer without withdrawing `root`
-        root.deiconify()  # Show the root window for ImageViewer
+        # Initialize RecordingViewer without withdrawing `root`
+        root.deiconify()  # Show the root window for RecordingViewer
         paint_logger.debug(f'Mode: {mode}')
         paint_logger.info(f'Mode is: {mode} - Directory: {directory}')
 
-        # Initialize ImageViewer, ensuring it does not create a new Tk instance
-        image_viewer = ImageViewer(root, directory, mode)
+        # Initialize RecordingViewer, ensuring it does not create a new Tk instance
+        image_viewer = RecordingViewer(root, directory, mode)
     else:
         # Hide root if not proceeding
         root.withdraw()
