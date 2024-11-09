@@ -13,7 +13,7 @@ from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
     format_time_nicely,
-    test_paint_directory_type_for_generate
+    classify_directory
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
@@ -177,7 +177,7 @@ class GenerateSquaresDialog:
             paint_messagebox(self.root, title='Warning', message="The selected directory does not exist")
             return
 
-        dir_type = test_paint_directory_type_for_generate(self.paint_directory)
+        dir_type, _ = classify_directory(self.paint_directory)
         if dir_type == 'Project':
             generate_function = process_project
             called_from_project = True

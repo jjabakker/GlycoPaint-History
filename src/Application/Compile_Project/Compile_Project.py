@@ -18,7 +18,7 @@ from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file,
     format_time_nicely,
     correct_all_images_column_types,
-    test_paint_directory_type_for_compile)
+    classify_directory)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 from src.Common.Support.LoggerConfig import (
@@ -88,7 +88,7 @@ def compile_project_output(
     # Ensure column types are correct
     correct_all_images_column_types(df_all_recordings)
 
-    # Optionally drop the squares that have no tracks
+    # Optionally, drop the squares that have no tracks
     if drop_empty_squares:
         df_all_squares = df_all_squares[df_all_squares['Nr Tracks'] != 0]
 
@@ -154,7 +154,7 @@ class CompileDialog:
 
     def on_compile_pressed(self) -> None:
 
-        dir_type = test_paint_directory_type_for_compile(self.root_directory)
+        dir_type, maturity = classify_directory(self.root_directory)
         if dir_type == 'Project':
             compile_project_output(project_dir=self.root_directory, verbose=True)
             self.root.destroy()

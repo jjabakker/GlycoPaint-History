@@ -183,74 +183,47 @@ def copy_directory(src, dest):
         paint_logger.error(f"An unexpected error occurred: {e}")
 
 
-def _inspect_dirs(root_dir, required_files, required_dirs):  # Define the set of required files
+def classify_directory(directory_path):
+    # Define required files and subdirectories for an experiment directory
+    experiment_files = {'All Recordings.csv', 'All Tracks.csv'}
+    experiment_subdirs = {'Brightfield Images', 'TrackMate Images'}
+    mature_experiment_file = 'All Squares.csv'
 
-    # Initialize counters
-    complete_count = 0
-    incomplete_count = 0
+    # Define required files for a project directory
+    project_files = {'All Recordings.csv', 'All Tracks.csv'}
+    mature_project_file = 'All Squares.csv'
 
-    # Loop through each immediate subdirectory in the root directory
-    for subdir in os.listdir(root_dir):
-        if subdir == 'Output':
-            continue
+    # Initialize classification variables
+    directory_type = None
+    maturity = 'Immature'
 
-        subdir_path = os.path.join(root_dir, subdir)
+    # Check if it is an experiment directory
+    contents = set(os.listdir(directory_path))
+    if experiment_files.issubset(contents) and experiment_subdirs.issubset(contents):
+        directory_type = 'Experiment'
+        # Check for maturity based on the presence of 'All Squares.csv'
+        if mature_experiment_file in contents:
+            maturity = 'Mature'
 
-        # Check if it is a directory (ignore files in root_dir)
-        if os.path.isdir(subdir_path):
-            # Get the set of files and directories in the subdirectory
-            items_in_subdir = set(os.listdir(subdir_path))
-
-            # Check for required files and directories
-            has_required_files = required_files.issubset(items_in_subdir)
-            has_required_dirs = required_dirs.issubset(items_in_subdir)
-
-            # Update counters based on the presence of required files and directories
-            if has_required_files and has_required_dirs:
-                complete_count += 1
-            else:
-                incomplete_count += 1
-                paint_logger.error(f"Directory {subdir} is incomplete. Expected files: {required_files} and {required_dirs}")
-                if not has_required_files:
-                    paint_logger.error(f"Missing files: {required_files - items_in_subdir}")
-                if not has_required_dirs:
-                    paint_logger.error(f"Missing directories: {required_dirs - items_in_subdir}")
-
-    # Return the counts of complete and incomplete subdirectories
-    return complete_count, incomplete_count
-
-
-def test_paint_directory_type_for_generate(directory):
-    required_files = {'All Tracks.csv'}
-    required_dirs = {'TrackMate Images', 'Brightfield Images'}
-
-    complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
-    if complete_experiment_dirs > 0:
-        if problem_experiment_dirs == 0:
-            return 'Project'
-        else:
-            return None
     else:
-        dir_content = os.listdir(directory)
-        if all(item in dir_content for item in required_dirs):
-            return 'Experiment'
-        else:
-            return None
+        # Check if it is a project directory by looking for experiment subdirectories
+        experiment_dirs = [
+            d for d in os.listdir(directory_path)
+            if os.path.isdir(os.path.join(directory_path, d))
+        ]
+        experiment_dir_count = 0
+        for sub_dir in experiment_dirs:
+            sub_dir_path = os.path.join(directory_path, sub_dir)
+            sub_contents = set(os.listdir(sub_dir_path))
+            if experiment_files.issubset(sub_contents) and experiment_subdirs.issubset(sub_contents):
+                experiment_dir_count += 1
 
+        # If it contains one or more experiment directories, classify as project
+        if experiment_dir_count > 0:
+            directory_type = 'Project'
+            # Check for maturity based on the presence of 'All Squares.csv'
+            if project_files.issubset(contents) and mature_project_file in contents:
+                maturity = 'Mature'
 
-def test_paint_directory_type_for_compile(directory):
-    required_files = {'All Squares.csv', 'All Tracks.csv', 'All Recordings.csv'}
-    required_dirs = {'TrackMate Images', 'Brightfield Images'}
-
-    complete_experiment_dirs, problem_experiment_dirs = _inspect_dirs(directory, required_files, required_dirs)
-    if complete_experiment_dirs > 0:
-        if problem_experiment_dirs == 0:
-            return 'Project'
-        else:
-            return None
-    else:
-        dir_content = os.listdir(directory)
-        if all(item in dir_content for item in required_dirs):
-            return 'Experiment'
-        else:
-            return None
+    # Return type and maturity
+    return directory_type, maturity

@@ -5,8 +5,7 @@ from tkinter import ttk
 
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
-    save_default_locations,
-    test_paint_directory_type_for_compile,
+    save_default_locations, classify_directory,
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
@@ -78,35 +77,41 @@ class SelectViewerDataDialog:
             paint_messagebox(self.dialog, title='Warning', message="The selected directory does not exist")
             return
 
-        type = test_paint_directory_type_for_compile(self.directory)
+        type, maturity = classify_directory(self.directory)
         if type is None:
             paint_logger.error("The selected directory does not seem to be a project or experiment directory")
             paint_messagebox(self.dialog, title='Warning',
                              message="The selected directory does not seem to be a project or experiment directory")
-        else:
-            if type == 'Project':
+        elif type == 'Experiment':
+            if maturity == 'Mature':
+                self.mode = type
+                self.proceed = True
+                self.dialog.destroy()
+            else:
+                paint_logger.error("The selected directory is an immature experiment directory")
+                paint_messagebox(self.dialog, title='Warning', message="The selected directory is an immature experiment directory")
+        elif type == 'Project':
+            if maturity == 'Mature':
                 # If it is a project directory, check if there are no newer experiments, i.e., when you have forgotten to run Compile Project
                 if not self.test_project_up_to_date(self.directory):
                     return
-
-            # Check if all experiments have the same nr_of_squares_in_row setting
-            if not only_one_nr_of_squares_in_row(self.directory):
+                if not only_one_nr_of_squares_in_row(self.directory):
+                    paint_messagebox(self.dialog, title='Warning',
+                                     message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
+                    return
+                # Ok, it all looks good. Check if very many recordings are requested and warn the user
+                nr = nr_recordings(self.directory)
+                if nr_recordings(self.directory) > 100:
+                    msg = f"You are about to view a {nr} recordings. This may take a while."
+                    paint_logger.info(msg)
+                    messagebox.showinfo('Warning', msg)
+                self.mode = type
+                self.proceed = True
+                self.dialog.destroy()
+            else:
+                paint_logger.error("The selected directory is an immature project directory")
                 paint_messagebox(self.dialog, title='Warning',
-                                 message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
-                return
-
-
-
-            # Ok, it all looks good. Check if very many recordings are requested and warn the user
-            nr = nr_recordings(self.directory)
-            if nr_recordings(self.directory) > 100:
-                msg =f"You are about to view a {nr} recordings. This may take a while."
-                paint_logger.info(msg)
-                messagebox.showinfo('Warning', msg)
-
-            self.mode = type
-            self.proceed = True
-            self.dialog.destroy()  # Destroy only the Toplevel dialog
+                                 message="The selected directory is an immature experiment directory")
 
     def on_exit(self):
         self.proceed = False
