@@ -159,6 +159,7 @@ class HeatMapDialog:
         """
 
         if not self.toggle:
+            self.image_viewer.select_squares_for_display()
             self.image_viewer.display_selected_squares()
         else:
             self.image_viewer.display_heatmap()
