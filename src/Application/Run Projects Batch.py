@@ -175,9 +175,9 @@ def main():
     paint_data = paint_data + ' - v' + data_version
     r_dest = r_dest + ' - v' + data_version
 
-    result = messagebox.askyesno("Confirmation", f"Do you want to proceed generating version {data_version} in {paint_data}?")
-    if not result:
-        return
+    # result = messagebox.askyesno("Confirmation", f"Do you want to proceed generating version {data_version} in {paint_data}?")
+    # if not result:
+    #     return
     if time_string == '':
         current_time = datetime.now()
         time_string = current_time.strftime("%Y-%m-%d %H:%M:%S")
