@@ -289,7 +289,6 @@ def calc_area_of_square(nr_of_squares_in_row):
     micrometer_per_image = micrometer_per_pixel * pixel_per_image
     micrometer_per_square = micrometer_per_image / nr_of_squares_in_row
     area = micrometer_per_square * micrometer_per_square
-
     return area
 
 
@@ -332,3 +331,95 @@ def create_unique_key_for_tracks(df):
     cols.insert(0, cols.pop(cols.index('Unique Key')))
     df = df[cols]
     return df
+
+
+def write_matrices(
+        recording_path: str,
+        recording_name: str,
+        tau_matrix: np.ndarray,
+        density_matrix: np.ndarray,
+        count_matrix: np.ndarray,
+        variability_matrix: np.ndarray,
+        verbose: bool):
+    """
+    Simply utility function to write the matrices to disk.
+    If the grid directory does not exist, exit.
+    """
+
+    # Check if the grid directory exists
+    dir_name = os.path.join(recording_path, "grid")
+    if not os.path.exists(dir_name):
+        paint_logger.error(f"Function 'write_matrices' failed: Directory {dir_name} does not exists.")
+        exit(-1)
+
+    # Write the Tau matrix to file
+    if verbose:
+        print(f"\n\nThe Tau matrix for image : {recording_name}\n")
+        print(tau_matrix)
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-tau.xlsx"
+    write_np_to_excel(tau_matrix, filename)
+
+    # Write the Density matrix to file
+    if verbose:
+        print(f"\n\nThe Density matrix for image : {recording_name}\n")
+        print(tau_matrix)
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-density.xlsx"
+    write_np_to_excel(density_matrix, filename)
+
+    # Write the count matrix to file
+    if verbose:
+        print(f"\n\nThe Count matrix for image: {recording_name}\n")
+        print(count_matrix)
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-count.xlsx"
+    write_np_to_excel(count_matrix, filename)
+
+    # Write the percentage matrix to file
+    percentage_matrix = count_matrix / count_matrix.sum() * 100
+    percentage_matrix.round(1)
+    if verbose:
+        print(f"\n\nThe Percentage matrix for image: {recording_name}\n")
+        with np.printoptions(precision=1, suppress=True):
+            print(count_matrix)
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-percentage.xlsx"
+    write_np_to_excel(percentage_matrix, filename)
+
+    # Write the variability matrix to file
+    if verbose:
+        print(f"\n\nThe Variability matrix for image: {recording_name}\n")
+        print(variability_matrix)
+    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-variability.xlsx"
+    write_np_to_excel(variability_matrix, filename)
+
+    return 0
+
+
+def add_columns_to_experiment_file(
+        df_experiment: pd.DataFrame,
+        nr_of_squares_in_row: int,
+        min_tracks_for_tau: int,
+        min_r_squared: float,
+        min_required_density_ratio: float,
+        max_allowable_variability: float):
+    """
+    This function adds columns to the experiment file that are needed for the grid processing.
+    Only images for which the 'Process' column is set to 'Yes' are processed.
+    """
+
+    mask = ((df_experiment['Process'] == 'Yes') |
+            (df_experiment['Process'] == 'yes') |
+            (df_experiment['Process'] == 'Y') |
+            (df_experiment['Process'] == 'y'))
+
+    # User specified parameters
+    df_experiment.loc[mask, 'Min Tracks for Tau'] = int(min_tracks_for_tau)
+    df_experiment.loc[mask, 'Min R Squared'] = min_r_squared
+    df_experiment.loc[mask, 'Nr of Squares in Row'] = int(nr_of_squares_in_row)
+    df_experiment.loc[mask, 'Max Allowable Variability'] = max_allowable_variability
+    df_experiment.loc[mask, 'Min Required Density Ratio'] = min_required_density_ratio
+
+    # Default values
+    df_experiment.loc[mask, 'Exclude'] = False
+    df_experiment.loc[mask, 'Neighbour Mode'] = 'Free'
+
+    return df_experiment
+
