@@ -115,7 +115,7 @@ class RecordingViewer():
         self.min_required_density_ratio = None
         self.min_track_duration = None
         self.max_track_duration = None
-        self.neighbour_state = None
+        self.neighbour_mode = None
 
         # Variables to hold references to the Dialogs, initially all empty
         self.select_square_dialog = None
@@ -289,7 +289,7 @@ class RecordingViewer():
 
     def setup_frame_save_commands(self):
 
-        # Create three radio buttons for the neighbour mode
+        # Create three radio buttons for the Save mode
         self.save_state_var = tk.StringVar(value="Ask")
         self.rb_always_save = tk.Radiobutton(
             self.frame_save_commands, text="Always Save", variable=self.save_state_var, width=12, value="Always",
@@ -382,7 +382,7 @@ class RecordingViewer():
 
             self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
             self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
-            self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
+            self.neighbour_mode = self.list_images[self.img_no]['Neighbour Mode']
 
             self.min_track_duration = 1
             self.max_track_duration = 199
@@ -391,7 +391,7 @@ class RecordingViewer():
                 pass
                 self.select_square_dialog = SelectSquareDialog(
                     self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
-                    self.min_track_duration, self.max_track_duration, self.neighbour_state)
+                    self.min_track_duration, self.max_track_duration, self.neighbour_mode)
 
     def on_show_define_cells(self):
 
@@ -709,7 +709,7 @@ class RecordingViewer():
                               neighbour_mode: str) -> None:
         """
         This function is called from the SelectSquareDialog when a control has changed or when the control exists. This
-        give an opportunity to update the settings for the current image
+        gives an opportunity to update the settings for the current image
         """
         if setting_type == "Min Required Density Ratio":
             self.min_required_density_ratio = density_ratio
@@ -720,7 +720,7 @@ class RecordingViewer():
             self.list_images[self.img_no]['Max Allowable Variability'] = variability
             self.experiment_changed = True
         elif setting_type == "Neighbour Mode":
-            self.neighbour_state = neighbour_mode
+            self.neighbour_mode = neighbour_mode
             self.list_images[self.img_no]['Neighbour Mode'] = neighbour_mode
             self.experiment_changed = True
         elif setting_type == "Min Track Duration":
@@ -733,7 +733,7 @@ class RecordingViewer():
             self.max_allowable_variability = variability
             self.min_track_duration = min_duration
             self.max_track_duration = max_duration
-            self.neighbour_state = neighbour_mode
+            self.neighbour_mode = neighbour_mode
 
             for image in self.list_images:
                 image['Min Required Density Ratio'] = density_ratio
@@ -1021,12 +1021,12 @@ class RecordingViewer():
 
             self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
             self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
-            self.neighbour_state = self.list_images[self.img_no]['Neighbour Mode']
+            self.neighbour_mode = self.list_images[self.img_no]['Neighbour Mode']
 
             if self.select_square_dialog:
                 self.select_square_dialog.initialise_controls(
                     self.min_required_density_ratio, self.max_allowable_variability, self.min_track_duration,
-                    self.max_track_duration, self.neighbour_state)
+                    self.max_track_duration, self.neighbour_mode)
 
         # ----------------------------------------------------------------------------
         # Then display

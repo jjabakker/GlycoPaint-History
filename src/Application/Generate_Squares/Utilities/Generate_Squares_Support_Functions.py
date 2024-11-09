@@ -4,6 +4,9 @@ import os
 import numpy as np
 import pandas as pd
 
+from src.Application.Recording_Viewer.Utilities.Recording_Viewer_Support_Functions import (
+    eliminate_isolated_squares_strict,
+    eliminate_isolated_squares_relaxed)
 from src.Common.Support.DirectoriesAndLocations import (
     get_paint_profile_directory)
 from src.Common.Support.LoggerConfig import paint_logger
