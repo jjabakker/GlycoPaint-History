@@ -20,9 +20,9 @@ def select_squares_for_display_do_the_work(self):
     )
 
     # Eliminate isolated squares based on neighborhood rules
-    if self.neighbour_state == 'Strict':
+    if self.neighbour_mode == 'Strict':
         select_squares_strict(self.df_squares, self.nr_of_squares_in_row)
-    elif self.neighbour_state == 'Relaxed':
+    elif self.neighbour_mode == 'Relaxed':
         select_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
 
     # Label visible squares, so that it is always a range starting from 1
