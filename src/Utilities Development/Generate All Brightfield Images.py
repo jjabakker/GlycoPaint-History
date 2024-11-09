@@ -71,4 +71,4 @@ regular_probes = [
 
 for experiment in regular_probes:
     convert_bf_images(os.path.join('/Volumes/Extreme Pro/Omero', str(experiment)),
-                      os.path.join('/Users/hans/Paint Source/Regular Probes', str(experiment), 'Brightfield Images'))
+                      os.path.join('/Users/hans/Paint Source/Regular Probes/', str(experiment)))
