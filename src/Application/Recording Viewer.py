@@ -30,7 +30,7 @@ from src.Application.Recording_Viewer.Utilities.Get_Images import get_images
 from src.Application.Recording_Viewer.Utilities.Recording_Viewer_Support_Functions import (
     test_if_square_is_in_rectangle,
     save_as_png)
-from src.Application.Recording_Viewer.Utilities.Select_Squares_For_Display import select_squares_for_display_do_the_work
+from src.Application.Recording_Viewer.Utilities.Select_Squares_For_Display import select_squares
 from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,
@@ -809,7 +809,7 @@ class RecordingViewer():
         return
 
     def select_squares_for_display(self):
-        select_squares_for_display_do_the_work(self)
+        select_squares(self)
 
     def display_selected_squares(self):
         display_selected_squares_do_the_work(self)

@@ -1,7 +1,7 @@
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import label_visible_squares
 
 
-def select_squares_for_display_do_the_work(self):
+def select_squares(self):
     """
     Select squares based on defined conditions for density, variability, and track duration,
     and apply visibility rules based on neighborhood states.
