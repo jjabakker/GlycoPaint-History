@@ -289,16 +289,6 @@ def calc_area_of_square(nr_of_squares_in_row):
     return area
 
 
-def label_visible_squares(df_squares):
-    df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
-    label_nr = 1
-    for idx, row in df_squares.iterrows():
-        if row['Selected']:
-            df_squares.at[idx, 'Label Nr'] = label_nr
-            label_nr += 1
-    df_squares.sort_index(inplace=True)
-
-
 def create_unique_key_for_squares(df):
     df['String Square Nr'] = df['Square Nr'].astype(str)
     df['Unique Key'] = df['Ext Recording Name'] + ' - ' + df['String Square Nr']

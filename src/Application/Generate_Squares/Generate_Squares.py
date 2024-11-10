@@ -5,7 +5,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares
+from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares, label_visible_squares
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -26,7 +26,6 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
     calculate_density,
     calc_area_of_square,
     calc_average_track_count_in_background_squares,
-    label_visible_squares,
     create_unique_key_for_squares,
     create_unique_key_for_tracks,
     select_tracks_for_tau_calculation,
@@ -234,7 +233,7 @@ def process_experiment(
             max_track_duration = 10000
 
             nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
-            select_squares(df_squares, nr_of_squares_in_row)
+            # select_squares(df_squares, nr_of_squares_in_row)
             nr_visible_squares = len(df_squares[df_squares['Selected']])
             nr_invisible_squares = nr_total_squares - nr_visible_squares
             nr_valid_tau_squares = len(df_squares[df_squares['Tau'] > 0])
@@ -328,10 +327,11 @@ def process_recording(
         verbose)
 
     # ----------------------------------------------------------------------------------------------------
-    # Assign labels to the tracks file, so that tracks are assigned to squares
+    # Assign labels in All Squares,so that selected tracks are assigned to squares
     # ----------------------------------------------------------------------------------------------------
 
-    label_visible_squares(df_squares)
+    # select_squares(self)       #ToDO @@@@@@@@@@@
+    # label_visible_squares(df_squares)
 
     df_temp = df_squares[df_squares['Label Nr'] != 0]
     for index, experiment_row in df_temp.iterrows():

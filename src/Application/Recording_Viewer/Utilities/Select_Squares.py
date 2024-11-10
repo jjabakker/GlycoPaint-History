@@ -1,4 +1,3 @@
-from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import label_visible_squares
 
 
 def select_squares(self, apply_tau=True):
@@ -32,12 +31,12 @@ def select_squares(self, apply_tau=True):
         raise ValueError(f"Neighbour mode '{self.neighbour_mode}' not recognized.")
 
     # Label visible squares, so that there is always a range from 1 to nr_selected squares
-    label_visible_squares(self.df_squares)
+    label_visible_squares()
 
 
 def select_squares_strict(df_squares, nr_of_squares_in_row):
     """
-    Identifies squares with visible neighbors in a strict manner and updates their visibility status.
+    Identifies squares with visible neighbors in strict mode and updates their Selected status.
     """
     list_of_squares = []
 
@@ -141,3 +140,23 @@ def get_relaxed_neighbours(row, col, nr_of_squares_in_row):
         (max(row - 1, 1), max(col - 1, 1)),  # Above Left
         (max(row - 1, 1), min(col + 1, nr_of_squares_in_row))  # Above Right
     ]
+
+
+def label_visible_squares(self):
+    # Sort by 'Nr Tracks' in descending order
+    self.df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
+
+    # Initialize label number
+    label_nr = 1
+
+    # Iterate through rows and label selected ones
+    for idx, row in self.df_squares.iterrows():
+        if row['Selected']:
+            self.df_squares.at[idx, 'Label Nr'] = label_nr
+            label_nr += 1
+        else:
+            self.df_squares.at[idx, 'Label Nr'] = None  # Clear label for unselected rows
+
+    # Restore original order
+    self.df_squares.sort_index(inplace=True)
+
