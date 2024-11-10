@@ -5,6 +5,7 @@ import time
 import numpy as np
 import pandas as pd
 
+from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -232,14 +233,8 @@ def process_experiment(
             min_track_duration = 0  # ToDo Correct this
             max_track_duration = 10000
 
-            df_squares['Selected'] = (         # @@@@
-                    (df_squares['Density Ratio'] >= min_required_density_ratio) &
-                    (df_squares['Variability'] <= max_allowable_variability) &
-                    (df_squares['Max Track Duration'] >= min_track_duration) &
-                    (df_squares['Max Track Duration'] <= max_track_duration)
-            )
-
             nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
+            select_squares(df_squares, nr_of_squares_in_row)
             nr_visible_squares = len(df_squares[df_squares['Selected']])
             nr_invisible_squares = nr_total_squares - nr_visible_squares
             nr_valid_tau_squares = len(df_squares[df_squares['Tau'] > 0])

@@ -1,7 +1,7 @@
 from tkinter import *
 
 
-def display_selected_squares_do_the_work(self):
+def display_selected_squares(self):
     """
     Display the squares on the left image canvas, that have the 'Selected' flag set
     :return:
@@ -35,7 +35,7 @@ def display_selected_squares_do_the_work(self):
                         self.square_assigned_to_cell, self.provide_information_on_square)
 
             # Then draw the thick lines of squares that are marked
-            mark_selected_squares_do_the_work(self.squares_in_rectangle, self.nr_of_squares_in_row, self.cn_left_image)
+            mark_selected_squares(self.squares_in_rectangle, self.nr_of_squares_in_row, self.cn_left_image)
 
 
 def draw_single_square(
@@ -102,7 +102,7 @@ def draw_single_square(
                     lambda e: provide_information_on_square(e, squares_row['Label Nr'], square_nr))
 
 
-def mark_selected_squares_do_the_work(list_of_squares, nr_of_squares_in_row, canvas):
+def mark_selected_squares(list_of_squares, nr_of_squares_in_row, canvas):
     for square_nr in list_of_squares:
         col_nr = square_nr % nr_of_squares_in_row
         row_nr = square_nr // nr_of_squares_in_row

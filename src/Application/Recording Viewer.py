@@ -24,13 +24,13 @@ from src.Application.Recording_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors, get_color_index,
     get_heatmap_data)
 from src.Application.Recording_Viewer.Utilities.Display_Selected_Squares import (
-    display_selected_squares_do_the_work,
-    mark_selected_squares_do_the_work)
+    display_selected_squares,
+    mark_selected_squares)
 from src.Application.Recording_Viewer.Utilities.Get_Images import get_images
 from src.Application.Recording_Viewer.Utilities.Recording_Viewer_Support_Functions import (
     test_if_square_is_in_rectangle,
     save_as_png)
-from src.Application.Recording_Viewer.Utilities.Select_Squares_For_Display import select_squares
+from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares
 from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,
@@ -812,7 +812,7 @@ class RecordingViewer():
         select_squares(self)
 
     def display_selected_squares(self):
-        display_selected_squares_do_the_work(self)
+        display_selected_squares(self)
 
     def square_assigned_to_cell(self, square_nr):
 
@@ -907,7 +907,7 @@ class RecordingViewer():
 
     def mark_selected_squares(self, list_of_squares):
 
-        mark_selected_squares_do_the_work(list_of_squares, self.nr_of_squares_in_row, self.cn_left_image)
+        mark_selected_squares(list_of_squares, self.nr_of_squares_in_row, self.cn_left_image)
 
     def on_forward_backward(self, direction):
         """
