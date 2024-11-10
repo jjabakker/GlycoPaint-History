@@ -87,11 +87,6 @@ def correct_all_images_column_types(df_experiment):
         df_experiment['Min Tracks for Tau'] = df_experiment['Min Tracks for Tau'].astype(int)
         df_experiment['Min R Squared'] = df_experiment['Min R Squared'].astype(float)
         df_experiment['Nr of Squares in Row'] = df_experiment['Nr of Squares in Row'].astype(int)
-        df_experiment['Nr Visible Squares'] = df_experiment['Nr Visible Squares'].astype(int)
-        df_experiment['Nr Invisible Squares'] = df_experiment['Nr Invisible Squares'].astype(int)
-        df_experiment['Nr Total Squares'] = df_experiment['Nr Total Squares'].astype(int)
-        df_experiment['Nr Defined Squares'] = df_experiment['Nr Defined Squares'].astype(int)
-        df_experiment['Nr Rejected Squares'] = df_experiment['Nr Rejected Squares'].astype(int)
 
     except (ValueError, TypeError):
         return False

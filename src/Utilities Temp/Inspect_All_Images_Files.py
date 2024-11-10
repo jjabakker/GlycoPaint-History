@@ -34,9 +34,7 @@ def inspect_all_images_file(image_file_path: str, short_file_name: str) -> None:
         'Replicate Nr', 'Recording Name', 'Probe', 'Probe Type', 'Cell Type', 'Adjuvant',
         'Concentration', 'Threshold', 'Min Required Density Ratio', 'Process', 'Ext Recording Name',
         'Nr Spots', 'Nr Tracks', 'Image Size', 'Run Time', 'Time Stamp', 'Min Tracks for Tau',
-        'Min R Squared', 'Nr of Squares in Row', 'Exclude', 'Neighbour Mode', 'Max Allowable Variability',
-        'Nr Total Squares', 'Nr Defined Squares', 'Nr Visible Squares',
-        'Nr Invisible Squares', 'Nr Rejected Squares', 'Max Squares Ratio', 'Squares Ratio',
+        'Min R Squared', 'Nr of Squares in Row', 'Exclude', 'Neighbour Mode', 'Max Allowable Variability'
     }
 
     expected_single_columns = {'Tau', 'Density', 'R Squared', 'Min Density Ratio'}
@@ -67,7 +65,7 @@ def inspect_all_images_file(image_file_path: str, short_file_name: str) -> None:
     # -------------------------------------------------------------------------------------------
 
     # Count the number of unique values for the following columns
-    nr_of_squares = int(math.sqrt(df_images.loc[0, 'Nr Total Squares']))
+    nr_of_squares = int(math.sqrt(df_images.loc[0, 'Nr of Squares in Row']))
     paint_logger.info(f"Number of squares per row is          : {nr_of_squares}")
 
     # If the processing name mentions a number of squares, check if it is correct

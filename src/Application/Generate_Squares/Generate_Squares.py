@@ -238,17 +238,6 @@ def process_experiment(
             nr_invisible_squares = nr_total_squares - nr_visible_squares
             nr_valid_tau_squares = len(df_squares[df_squares['Tau'] > 0])
 
-            df_experiment.loc[index, 'Nr Total Squares'] = nr_total_squares
-            df_experiment.loc[index, 'Nr Visible Squares'] = nr_visible_squares
-            df_experiment.loc[index, 'Nr Invisible Squares'] = nr_invisible_squares
-
-            df_experiment.loc[index, 'Nr Defined Squares'] = nr_valid_tau_squares
-            df_experiment.loc[index, 'Nr Rejected Squares'] = nr_total_squares - nr_valid_tau_squares
-
-            df_experiment.loc[index, 'Squares Ratio'] = round(100 * nr_visible_squares / nr_total_squares)
-            df_experiment.loc[index, 'Max Squares Ratio'] = max_square_coverage
-            df_experiment.loc[index, 'Nr Rejected Squares'] = nr_total_squares - nr_valid_tau_squares
-
             df_experiment.loc[index, 'Ext Recording Name'] = recording_name
             df_experiment.loc[index, 'Tau'] = tau
             df_experiment.loc[index, 'Density'] = density
