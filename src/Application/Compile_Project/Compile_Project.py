@@ -66,6 +66,7 @@ def compile_project_output(
             sys.exit()
         df_all_recordings = pd.concat([df_all_recordings, df_experiment])
 
+        # Read the squares file
         df_squares = read_squares_from_file(os.path.join(experiment_dir_path, 'All Squares.csv'))
 
         if df_squares is None:
@@ -119,7 +120,7 @@ class CompileDialog:
 
         self.root.title('Compile Project')
 
-        self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
+        self.project_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
         content = ttk.Frame(self.root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
@@ -138,7 +139,7 @@ class CompileDialog:
 
         # Fill the directory frame
         btn_root_dir = ttk.Button(frame_directory, text='Project Directory', width=15, command=self.change_root_dir)
-        self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=80)
+        self.lbl_root_dir = ttk.Label(frame_directory, text=self.project_directory, width=80)
 
         tooltip = "Specify a Project directory here, i.e. a directory that holds Experiment directories."
         ToolTip(btn_root_dir, tooltip, wraplength=400)
@@ -147,16 +148,18 @@ class CompileDialog:
         self.lbl_root_dir.grid(column=1, row=0, padx=20, pady=5)
 
     def change_root_dir(self) -> None:
-        self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
-        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
-        if len(self.root_directory) != 0:
-            self.lbl_root_dir.config(text=self.root_directory)
+        self.project_directory = filedialog.askdirectory(initialdir=self.project_directory)
+        save_default_locations(self.project_directory, self.paint_directory, self.images_directory, self.level)
+        if len(self.project_directory) != 0:
+            self.lbl_root_dir.config(text=self.project_directory)
 
     def on_compile_pressed(self) -> None:
-
-        dir_type, maturity = classify_directory(self.root_directory)
+        if not os.path.exists(self.project_directory):
+            paint_messagebox(self.project_directory, title='Warning', message='The selected directory does not exist.')
+            return
+        dir_type, maturity = classify_directory(self.project_directory)
         if dir_type == 'Project':
-            compile_project_output(project_dir=self.root_directory, verbose=True)
+            compile_project_output(project_dir=self.project_directory, verbose=True)
             self.root.destroy()
         elif dir_type == 'Experiment':
             msg = "The selected directory does not seem to be a project directory, but an experiment directory."
