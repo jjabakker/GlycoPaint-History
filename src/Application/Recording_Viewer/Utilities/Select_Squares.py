@@ -1,7 +1,7 @@
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import label_visible_squares
 
 
-def select_squares(self):
+def select_squares(self, apply_tau=True):
     """
     Select squares based on defined conditions for density, variability, and track duration,
     and apply visibility rules based on neighborhood states.
@@ -15,18 +15,23 @@ def select_squares(self):
             (self.df_squares['Max Track Duration'] <= self.max_track_duration)
     )
 
-    self.df_squares['Selected'] = (
-            (self.df_squares['Selected']) &
-            (self.df_squares['Tau'] > 0)
-    )
+    if apply_tau:
+        self.df_squares['Selected'] = (
+                (self.df_squares['Selected']) &
+                (self.df_squares['Tau'] > 0)
+        )
 
     # Eliminate isolated squares based on neighborhood rules
-    if self.neighbour_mode == 'Strict':
+    if self.neighbour_mode == 'Free':
+        pass
+    elif self.neighbour_mode == 'Strict':
         select_squares_strict(self.df_squares, self.nr_of_squares_in_row)
     elif self.neighbour_mode == 'Relaxed':
         select_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
+    else:
+        raise ValueError(f"Neighbour mode '{self.neighbour_mode}' not recognized.")
 
-    # Label visible squares, so that it is always a range starting from 1
+    # Label visible squares, so that there is always a range from 1 to nr_selected squares
     label_visible_squares(self.df_squares)
 
 
