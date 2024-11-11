@@ -54,7 +54,6 @@ def process_project(
         min_tracks_for_tau: int,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
-        called_from_project: bool = True,
         paint_force: bool = False,
         verbose: bool = False) -> None:
     """
@@ -100,7 +99,6 @@ def process_project(
             min_tracks_for_tau=min_tracks_for_tau,
             process_recording_tau=process_recording_tau,
             process_square_tau=process_square_tau,
-            called_from_project=called_from_project,
             verbose=False)
         nr_experiments_processed += 1
 
@@ -115,7 +113,6 @@ def process_experiment(
         min_tracks_for_tau: int,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
-        called_from_project: bool = True,
         paint_force: bool = False,
         verbose: bool = False) -> None:
     """

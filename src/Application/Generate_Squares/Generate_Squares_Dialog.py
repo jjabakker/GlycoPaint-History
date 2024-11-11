@@ -29,7 +29,6 @@ if not paint_logger_file_name_assigned:
 
 
 class GenerateSquaresDialog:
-    DEFAULT_MAX_SQUARE_COVERAGE = 100  # Use constant for non-changing values
 
     def __init__(self, _root):
         self.root = _root
@@ -88,7 +87,6 @@ class GenerateSquaresDialog:
 
     def create_parameter_controls(self, frame):
         """Create parameter controls for the UI."""
-
         msg_nr_of_squares = "The number of squares in a row for the grid. The total number of squares will be this value squared."
         msg_min_tracks = "The minimum number of tracks required to calculate Tau. With too few tracks, curvefitting is unreliable."
         msg_min_r_squared = "The minimum allowable R-squared value for the tracks. Tau values with lower R-squared values are discarded."
@@ -180,10 +178,8 @@ class GenerateSquaresDialog:
         dir_type, _ = classify_directory(self.paint_directory)
         if dir_type == 'Project':
             generate_function = process_project
-            called_from_project = True
         elif dir_type == 'Experiment':
             generate_function = process_experiment
-            called_from_project = False
         else:
             msg = "The selected directory does not seem to be a project directory, nor an experiment directory"
             paint_logger.error(msg)
@@ -205,7 +201,6 @@ class GenerateSquaresDialog:
             min_tracks_for_tau=self.min_tracks_for_tau.get(),
             process_recording_tau=self.process_average_tau.get(),
             process_square_tau=self.process_square_specific_tau.get(),
-            called_from_project=called_from_project,
             paint_force=True,
             verbose=False
         )
