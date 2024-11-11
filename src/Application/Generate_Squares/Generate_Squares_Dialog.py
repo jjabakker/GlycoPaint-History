@@ -6,7 +6,7 @@ from tkinter import ttk, filedialog
 from src.Application.Generate_Squares.Generate_Squares import (
     process_project,
     process_experiment)
-from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
+from src.Application.Generate_Squares.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
     save_grid_defaults_to_file,
     pack_select_parameters)

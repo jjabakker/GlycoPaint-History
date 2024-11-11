@@ -4,13 +4,12 @@ import shutil
 import sys
 import time
 from datetime import datetime
-from tkinter import messagebox
 
 from src.Application.Compile_Project.Compile_Project import compile_project_output
 from src.Common.Support.PaintConfig import get_paint_attribute
 from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source_with_images
 from src.Application.Generate_Squares.Generate_Squares import process_project
-from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import pack_select_parameters
+from src.Application.Generate_Squares.Generate_Squares_Support_Functions import pack_select_parameters
 from src.Application.Utilities.General_Support_Functions import format_time_nicely
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
     set_directory_tree_timestamp,

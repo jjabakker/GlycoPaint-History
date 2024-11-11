@@ -10,7 +10,7 @@ from src.Application.Utilities.General_Support_Functions import (
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 from src.Common.Support.LoggerConfig import paint_logger
-from src.Application.Recording_Viewer.Utilities.Recording_Viewer_Support_Functions import (
+from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import (
     only_one_nr_of_squares_in_row,
     nr_recordings)
 

@@ -23,14 +23,14 @@ from src.Application.Recording_Viewer.Select_Viewer_Data_Dialog.Class_SelectView
 from src.Application.Recording_Viewer.Heatmap_Dialog.Heatmap_Support import (
     get_colormap_colors, get_color_index,
     get_heatmap_data)
-from src.Application.Recording_Viewer.Utilities.Display_Selected_Squares import (
+from src.Application.Recording_Viewer.Display_Selected_Squares import (
     display_selected_squares,
     mark_selected_squares)
-from src.Application.Recording_Viewer.Utilities.Get_Images import get_images
-from src.Application.Recording_Viewer.Utilities.Recording_Viewer_Support_Functions import (
+from src.Application.Recording_Viewer.Get_Images import get_images
+from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import (
     test_if_square_is_in_rectangle,
     save_as_png)
-from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares
+from src.Application.Recording_Viewer.Select_Squares import select_squares
 from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file,
     save_experiment_to_file,

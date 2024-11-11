@@ -5,7 +5,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares_with_parameters
+from src.Application.Recording_Viewer.Select_Squares import select_squares_with_parameters
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -14,12 +14,12 @@ from src.Common.Support.LoggerConfig import (
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
 
-from src.Application.Generate_Squares.Utilities.Curvefit_and_Plot import (
+from src.Application.Generate_Squares.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot
 )
 
-from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
+from src.Application.Generate_Squares.Generate_Squares_Support_Functions import (
     check_experiment_integrity,
     get_square_coordinates,
     calc_variability,

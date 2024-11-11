@@ -4,7 +4,7 @@ import time
 
 import pandas as pd
 
-from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
+from src.Application.Generate_Squares.Generate_Squares_Support_Functions import (
     get_square_coordinates)
 from src.Application.Utilities.General_Support_Functions import (
     format_time_nicely)
