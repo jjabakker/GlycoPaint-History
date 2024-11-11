@@ -63,6 +63,11 @@ def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_
 
     min_number_of_spots = trackmate_config['MIN_NUMBER_OF_SPOTS']
 
+    track_colouring = trackmate_config['TRACK_COLOURING']
+    if track_colouring != 'TRACK_DURATION' and track_colouring != 'TRACK_INDEX':
+        paint_logger.error('Invalid track colouring option in TrackMate configuration,default to TRACK_DURATION')
+        track_colouring = 'TRACK_DURATION'
+
     # We have to do the following to avoid errors with UTF8 chars generated in
     # TrackMate that will mess with our Fiji Jython.
     reload(sys)
@@ -180,7 +185,7 @@ def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_
 
     # Read the default display settings.
     ds = DisplaySettingsIO.readUserDefault()
-    ds.setTrackColorBy(TrackMateObject.TRACKS, 'TRACK_DURATION')
+    ds.setTrackColorBy(TrackMateObject.TRACKS, track_colouring)
 
     displayer = HyperStackDisplayer(model, selection_model, imp, ds)
     displayer.render()
