@@ -31,7 +31,7 @@ from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functio
     create_unique_key_for_tracks,
     select_tracks_for_tau_calculation,
     write_matrices,
-    add_columns_to_experiment_file
+    add_columns_to_experiment
 )
 
 from src.Application.Utilities.General_Support_Functions import (

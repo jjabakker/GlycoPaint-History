@@ -65,7 +65,6 @@ def process_json_configuration_block(paint_source_dir,
     paint_logger.info(f"Neighbour Mode              : {select_parameters['neighbour_mode']}")
     paint_logger.info(f"Min R squared               : {min_r_squared}")
     paint_logger.info(f"Min tracks for tau          : {min_tracks_for_tau}")
-    paint_logger.info(f"Max Allowable Variability   : {max_allowable_variability}")
     paint_logger.info(f"Max square coverage         : {max_square_coverage}")
     paint_logger.info(f"Paint Force                 : {paint_force}")
     paint_logger.info(f"Drop Empty Squares          : {drop_empty_squares}")

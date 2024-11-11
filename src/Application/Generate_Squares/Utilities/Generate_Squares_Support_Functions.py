@@ -380,7 +380,7 @@ def write_matrices(
     return 0
 
 
-def add_columns_to_experiment_file(
+def add_columns_to_experiment(
         df_experiment: pd.DataFrame,
         nr_of_squares_in_row: int,
         min_tracks_for_tau: int,
