@@ -50,17 +50,22 @@ def csv_file_identical(file1, file2, columns=None):
 
 
 if __name__ == '__main__':
+
+
+    version_old = 'v19'
+    version_new = 'v20'
+
     print("\nComparing All Squares files...")
-    file1a = '/Users/hans/Paint Data - v19/New Probes/Paint New Probes - 20 Squares/240812/All Squares.csv'
-    file1b = '/Users/hans/Paint Data - v20/New Probes/Paint New Probes - 20 Squares/240812/All Squares.csv'
+    file1a = f'/Users/hans/Paint Data - {version_old}/New Probes/Paint New Probes - 20 Squares/240812/All Squares.csv'
+    file1b = f'/Users/hans/Paint Data - {version_new}/New Probes/Paint New Probes - 20 Squares/240812/All Squares.csv'
     csv_file_identical(file1a, file1b, columns=['Tau', 'Density', 'Diffusion Coefficient', 'Label Nr'])
 
     print("\nComparing All Recordings files...")
-    file1a = '/Users/hans/Paint Data - v19/New Probes/Paint New Probes - 20 Squares/240812/All Recordings.csv'
-    file1b = '/Users/hans/Paint Data - v20/New Probes/Paint New Probes - 20 Squares/240812/All Recordings.csv'
+    file1a = f'/Users/hans/Paint Data - {version_old}/New Probes/Paint New Probes - 20 Squares/240812/All Recordings.csv'
+    file1b = f'/Users/hans/Paint Data - {version_new}/New Probes/Paint New Probes - 20 Squares/240812/All Recordings.csv'
     csv_file_identical(file1a, file1b, columns=['Tau', 'Density', 'Nr Tracks'])
 
     print("\nComparing All Tracks files...")
-    file1a = '/Users/hans/Paint Data - v19/New Probes/Paint New Probes - 20 Squares/240812/All Tracks.csv'
-    file1b = '/Users/hans/Paint Data - v20/New Probes/Paint New Probes - 20 Squares/240812/All Tracks.csv'
+    file1a = f'/Users/hans/Paint Data - {version_old}/New Probes/Paint New Probes - 20 Squares/240812/All Tracks.csv'
+    file1b = f'/Users/hans/Paint Data - {version_new}/New Probes/Paint New Probes - 20 Squares/240812/All Tracks.csv'
     csv_file_identical(file1a, file1b, columns=['Label Nr', 'Square Nr'])
