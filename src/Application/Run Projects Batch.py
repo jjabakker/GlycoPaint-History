@@ -38,16 +38,15 @@ def process_json_configuration_block(paint_source_dir,
                                      nr_of_squares_in_row: int,
                                      nr_to_process: int,
                                      current_process: int,
-                                     min_required_density_ratio: float,
                                      min_r_squared: float,
                                      min_tracks_for_tau: int,
-                                     max_allowable_variability: float,
                                      max_square_coverage: float,
                                      process_recording_tau: bool,
                                      process_square_tau: bool,
                                      time_string: str,
                                      paint_force: bool,
                                      drop_empty_squares: bool) -> bool:
+
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} - Processing {project_directory}"
     paint_logger.info("")
@@ -90,6 +89,7 @@ def process_json_configuration_block(paint_source_dir,
 
     # if not os.path.exists(r_dest_dir):
     #     os.makedirs(r_dest_dir)
+
 
     nr_experiments_processed = process_project(
         paint_directory=paint_data_dir,
@@ -209,6 +209,7 @@ def main():
 
     current_process_seq_nr = 0
     error_count = 0
+
     for entry in config:
         if entry['flag']:
             paint_source_dir = os.path.join(paint_source, entry['probe'])

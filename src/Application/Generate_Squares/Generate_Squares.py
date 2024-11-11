@@ -53,8 +53,6 @@ def process_project(
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
-        min_required_density_ratio: float,
-        max_allowable_variability: float,
         max_square_coverage: float,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
@@ -129,6 +127,7 @@ def process_experiment(
 
     # Load from the paint configuration file the parameters that are needed
     plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File')
+
 
     time_stamp = time.time()
 
@@ -232,21 +231,10 @@ def process_experiment(
             # Now update the experiment_squares file with the results
             # --------------------------------------------------------------------------------------------
 
-            min_track_duration = 0  # ToDo Correct this
-            max_track_duration = 10000
-
-            nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
-            # select_squares(df_squares, nr_of_squares_in_row)
-            nr_visible_squares = len(df_squares[df_squares['Selected']])
-            nr_invisible_squares = nr_total_squares - nr_visible_squares
-            nr_valid_tau_squares = len(df_squares[df_squares['Tau'] > 0])
-
             df_experiment.loc[index, 'Ext Recording Name'] = recording_name
             df_experiment.loc[index, 'Tau'] = tau
             df_experiment.loc[index, 'Density'] = density
             df_experiment.loc[index, 'R Squared'] = round(r_squared, 3)
-
-            df_experiment.loc[index, 'Exclude'] = df_experiment.loc[index, 'Squares Ratio'] >= max_square_coverage
 
             current_image_nr += 1
             processed += 1
@@ -292,7 +280,7 @@ def process_recording(
         verbose: bool = False) -> tuple:
     """
     This function processes a single image in a paint directory. It reads the full-track file from the 'tracks'
-    directory and creates a grid of squares. For each square the Tau and Density ratio is calculated. The squares
+    directory and creates a grid of squares. For each square, the Tau and Density ratio is calculated. The squares
     are then filtered on visibility. For each square a squares.csv id written to the 'grid' directory.
     """
 
@@ -318,7 +306,7 @@ def process_recording(
         verbose)
 
     # ----------------------------------------------------------------------------------------------------
-    # Assign labels in All Squares,so that selected tracks are assigned to squares
+    # Assign labels in All Squares, so that selected tracks are assigned to squares
     # ----------------------------------------------------------------------------------------------------
 
     labels_but_very_slow = True
@@ -343,8 +331,9 @@ def process_recording(
     # those values
     # ----------------------------------------------------------------------------------------------------
 
-    min_track_duration = 0
-    max_track_duration = 10000  # ToDo - Really should come from the user interface
+    # min_track_duration = 0
+    # max_track_duration = 10000  # ToDo - Really should come from the user interface
+
     if process_recording_tau:
         tau, r_squared, density = calculate_recording_tau_and_density(
             experiment_path,

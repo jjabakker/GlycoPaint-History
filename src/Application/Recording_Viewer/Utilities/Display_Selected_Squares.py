@@ -55,7 +55,7 @@ def draw_single_square(
 
     square_nr = squares_row['Square Nr']
     cell_id = squares_row['Cell Id']
-    label_nr = squares_row['Label Nr']
+    label_nr = int(squares_row['Label Nr'])
 
     col_nr = square_nr % nr_of_squares_in_row
     row_nr = square_nr // nr_of_squares_in_row
@@ -65,7 +65,7 @@ def draw_single_square(
     square_tag = f'square-{square_nr}'
     text_tag = f'text-{square_nr}'
 
-    if cell_id == -1:  # The square is deleted (for good), stop processing
+    if cell_id == -1:  # The square is deleted (for good), stop processing    #ToDo Really?
         return
 
     if cell_id != 0:  # The square is assigned to a cell

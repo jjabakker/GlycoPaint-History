@@ -154,18 +154,23 @@ class CompileDialog:
             self.lbl_root_dir.config(text=self.project_directory)
 
     def on_compile_pressed(self) -> None:
+
+        # Check if the directory exists and has not been deleted since it lst was chosen
         if not os.path.exists(self.project_directory):
             paint_messagebox(self.project_directory, title='Warning', message='The selected directory does not exist.')
             return
+
+        # Determine if it indeed is a project directory
         dir_type, maturity = classify_directory(self.project_directory)
-        if dir_type == 'Project':
+
+        if dir_type == 'Project':   # Project directory, so proceed
             compile_project_output(project_dir=self.project_directory, verbose=True)
             self.root.destroy()
-        elif dir_type == 'Experiment':
+        elif dir_type == 'Experiment':   # Experiment directory, so warn
             msg = "The selected directory does not seem to be a project directory, but an experiment directory."
             paint_logger.error(msg)
             paint_messagebox(self.root, title='Warning', message=msg)
-        else:
+        else:   # Just any directory, so warn
             msg = "The selected directory does not seem to be a project directory, nor an experiment directory."
             paint_logger.error(msg)
             paint_messagebox(self.root, title='Warning', message=msg)
