@@ -365,11 +365,12 @@ def calculate_recording_tau_and_density(
     # Select only the tracks for the recording
     df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
 
+    # Within that recoring uses all the selected squares. Note: no need to filter out squares with Ta < 0
     select_squares_with_parameters(
         df_squares=df_squares,
         select_parameters=select_parameters,
         nr_of_squares_in_row=nr_of_squares_in_row,
-        only_valid_tau=True)
+        only_valid_tau=False)
     df_squares_for_single_tau = df_squares[df_squares['Selected']]
 
     # Select only the tracks that fall within these squares.
