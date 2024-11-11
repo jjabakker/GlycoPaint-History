@@ -140,8 +140,8 @@ def process_experiment(
     if df_all_tracks is None:
         paint_logger.error(f"Could not read the 'All Tracks.csv' file in {paint_directory}")
         sys.exit(1)
-    df_all_tracks['Square Nr'] = 0
-    df_all_tracks['Label Nr'] = 0
+    df_all_tracks['Square Nr'] = None
+    df_all_tracks['Label Nr'] = None
 
     # --------------------------------------------------------------------------------------------
     # Read the experiment file, check if it is in the correct format and add the required columns
@@ -231,10 +231,10 @@ def process_experiment(
             # Now update the experiment_squares file with the results
             # --------------------------------------------------------------------------------------------
 
-            df_experiment.loc[index, 'Ext Recording Name'] = recording_name
-            df_experiment.loc[index, 'Tau'] = tau
-            df_experiment.loc[index, 'Density'] = density
-            df_experiment.loc[index, 'R Squared'] = round(r_squared, 3)
+            df_experiment.at[index, 'Ext Recording Name'] = recording_name
+            df_experiment.at[index, 'Tau'] = tau
+            df_experiment.at[index, 'Density'] = density
+            df_experiment.at[index, 'R Squared'] = round(r_squared, 3)
 
             current_image_nr += 1
             processed += 1
@@ -317,14 +317,14 @@ def process_recording(
             nr_of_squares_in_row=nr_of_squares_in_row,
             only_valid_tau=True)
 
-    df_temp = df_squares[df_squares['Label Nr'] != 0]
-    for index, experiment_row in df_temp.iterrows():
-        square = experiment_row['Square Nr']
-        label = experiment_row['Label Nr']
-        df_all_tracks.loc[
-            (df_all_tracks['Square Nr'] == square) &
-            (df_all_tracks['Recording Name'] == recording_name), 'Label Nr'
-        ] = label
+        df_temp = df_squares[df_squares['Label Nr'] != 0]
+        for index, experiment_row in df_temp.iterrows():
+            square = experiment_row['Square Nr']
+            label = experiment_row['Label Nr']
+            df_all_tracks.loc[
+                (df_all_tracks['Square Nr'] == square) &
+                (df_all_tracks['Recording Name'] == recording_name), 'Label Nr'
+            ] = label
 
     # ----------------------------------------------------------------------------------------------------
     # Now do the single mode processing: determine a single Tau and Density per image, i.e., for all squares and return
