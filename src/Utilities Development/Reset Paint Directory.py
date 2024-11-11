@@ -31,11 +31,11 @@ def reset_root(root_dir):
 
 class Dialog:
 
-    def __init__(self, root):
-        root.title('Reset Root Directory')
+    def __init__(self, _root):
+        _root.title('Reset Root Directory')
         self.root_dir = ""
 
-        content = ttk.Frame(root)
+        content = ttk.Frame(_root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
         frame_directory = ttk.Frame(content, borderwidth=5, relief='ridge')
 
@@ -50,7 +50,7 @@ class Dialog:
         self.btn_process.grid(column=0, row=1)
         btn_exit.grid(column=0, row=2)
 
-        tooltip = ("This will delete specified files and directories in the selected directory tree.")
+        tooltip = "This will delete specified files and directories in the selected directory tree."
         ToolTip(self.btn_process, tooltip, wraplength=400)
 
         # Fill directory frame
