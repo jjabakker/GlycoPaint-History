@@ -21,7 +21,7 @@ def copy_tm_data_from_paint_source(source_dir, destination_dir):
                 src_file_path = os.path.join(subdir_path, file)
                 if os.path.exists(src_file_path):
                     dest_file_path = os.path.join(dest_path, file)
-                    shutil.copy2(src_file_path, dest_file_path)  # copy2 preserves metadata
+                    shutil.copy(src_file_path, dest_file_path)  # copy2 preserves metadata
 
 
 def copy_with_overwrite(src, dst):
@@ -51,7 +51,7 @@ def copy_tm_data_from_paint_source_with_images(source_dir, destination_dir):
                 src_file_path = os.path.join(subdir_path, file)
                 dest_file_path = os.path.join(dest_path, file)
                 if os.path.exists(src_file_path):
-                    shutil.copy2(src_file_path, dest_file_path)  # Overwrite if exists
+                    shutil.copy(src_file_path, dest_file_path)  # Overwrite if exists
                     # print(f"Copied {src_file_path} to {dest_file_path}")
 
             # Copy 'Brightfield Images' and 'TrackMate Images' directories if they exist
