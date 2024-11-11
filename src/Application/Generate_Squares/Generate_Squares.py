@@ -431,14 +431,6 @@ def calculate_squares(experiment_row: pd.Series,
 
     # Create the tau_matrix (and other matrices if verbose is True)
     tau_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
-    if verbose:
-        count_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
-        density_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
-        variability_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
-
-    # Reset all label numbers and square numbers in the tracks dataframe   # ToDo Not again
-    # df_recording_tracks['Square Nr'] = 0
-    # df_recording_tracks['Label Nr'] = 0
 
     # Create an empty squares dataframe, that will contain the data for each square
     df_squares = pd.DataFrame()

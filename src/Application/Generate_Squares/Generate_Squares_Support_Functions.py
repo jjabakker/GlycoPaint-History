@@ -11,12 +11,6 @@ from src.Common.Support.LoggerConfig import paint_logger
 pd.options.mode.copy_on_write = True
 
 
-def write_np_to_excel(matrix: np.ndarray, filename: str) -> None:
-    df = pd.DataFrame(matrix)
-    df.reset_index(inplace=True)
-    df.to_excel(filename, index=False, index_label='None', header='False', float_format="%0.2f")
-
-
 def calculate_density(nr_tracks: int, area: float, time: float, concentration: float, magnification: float) -> float:
     """
     The function implements a simple algorithm to calculate the density of tracks in a square.
@@ -28,7 +22,7 @@ def calculate_density(nr_tracks: int, area: float, time: float, concentration: f
         Height: 82.0864 microns(512)
     The area of a square then is (82.0854/nr_of_squares_in_row)^2
 
-    To normalise concentration we divide by the supplied concentration
+    To normalise the concentration we divide by the supplied concentration
 
     :param nr_tracks:
     :param area:
@@ -316,65 +310,6 @@ def create_unique_key_for_tracks(df):
     df = df[cols]
     return df
 
-
-def write_matrices(
-        recording_path: str,
-        recording_name: str,
-        tau_matrix: np.ndarray,
-        density_matrix: np.ndarray,
-        count_matrix: np.ndarray,
-        variability_matrix: np.ndarray,
-        verbose: bool):
-    """
-    Simply utility function to write the matrices to disk.
-    If the grid directory does not exist, exit.
-    """
-
-    # Check if the grid directory exists
-    dir_name = os.path.join(recording_path, "grid")
-    if not os.path.exists(dir_name):
-        paint_logger.error(f"Function 'write_matrices' failed: Directory {dir_name} does not exists.")
-        exit(-1)
-
-    # Write the Tau matrix to file
-    if verbose:
-        print(f"\n\nThe Tau matrix for image : {recording_name}\n")
-        print(tau_matrix)
-    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-tau.xlsx"
-    write_np_to_excel(tau_matrix, filename)
-
-    # Write the Density matrix to file
-    if verbose:
-        print(f"\n\nThe Density matrix for image : {recording_name}\n")
-        print(tau_matrix)
-    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-density.xlsx"
-    write_np_to_excel(density_matrix, filename)
-
-    # Write the count matrix to file
-    if verbose:
-        print(f"\n\nThe Count matrix for image: {recording_name}\n")
-        print(count_matrix)
-    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-count.xlsx"
-    write_np_to_excel(count_matrix, filename)
-
-    # Write the percentage matrix to file
-    percentage_matrix = count_matrix / count_matrix.sum() * 100
-    percentage_matrix.round(1)
-    if verbose:
-        print(f"\n\nThe Percentage matrix for image: {recording_name}\n")
-        with np.printoptions(precision=1, suppress=True):
-            print(count_matrix)
-    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-percentage.xlsx"
-    write_np_to_excel(percentage_matrix, filename)
-
-    # Write the variability matrix to file
-    if verbose:
-        print(f"\n\nThe Variability matrix for image: {recording_name}\n")
-        print(variability_matrix)
-    filename = recording_path + os.sep + "grid" + os.sep + recording_name + "-variability.xlsx"
-    write_np_to_excel(variability_matrix, filename)
-
-    return 0
 
 
 def add_columns_to_experiment(
