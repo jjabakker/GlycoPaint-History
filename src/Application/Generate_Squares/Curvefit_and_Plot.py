@@ -63,7 +63,9 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
     :return: The Tau value in milliseconds and the R2
     """
 
-    # The curve_fit functiion expects x and y Numpy arrays
+    # function = m * np.exp(-t * x) + b
+
+    # The curve_fit function expects x and y Numpy arrays
     x = np.asarray(plot_data["Track Duration"])
     y = np.asarray(plot_data["Frequency"])
 
