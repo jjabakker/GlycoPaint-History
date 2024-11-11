@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from src.Application.Recording_Viewer.Heatmap_Dialog.Heatmap_Support import (
+from src.Application.Recording_Viewer.Heatmap_Support import (
     get_colormap_colors,
     get_heatmap_data)
 

@@ -15,12 +15,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from PIL import Image
 
-from src.Application.Recording_Viewer.Define_Cell_Dialog.Class_DefineCellDialog import DefineCellDialog
-from src.Application.Recording_Viewer.Define_Select_Square_Dialog.Class_SelectSquareDialog import SelectSquareDialog
-from src.Application.Recording_Viewer.Heatmap_Dialog.Class_HeatmapDialog import HeatMapDialog
-from src.Application.Recording_Viewer.Select_Recording_Dialog.Class_Select_Recording_Dialog import SelectRecordingDialog
-from src.Application.Recording_Viewer.Select_Viewer_Data_Dialog.Class_SelectViewerDataDialog import SelectViewerDataDialog
-from src.Application.Recording_Viewer.Heatmap_Dialog.Heatmap_Support import (
+from src.Application.Recording_Viewer.Class_DefineCellDialog import DefineCellDialog
+from src.Application.Recording_Viewer.Class_SelectSquareDialog import SelectSquareDialog
+from src.Application.Recording_Viewer.Class_HeatmapDialog import HeatMapDialog
+from src.Application.Recording_Viewer.Class_Select_Recording_Dialog import SelectRecordingDialog
+from src.Application.Recording_Viewer.Class_SelectViewerDataDialog import SelectViewerDataDialog
+from src.Application.Recording_Viewer.Heatmap_Support import (
     get_colormap_colors, get_color_index,
     get_heatmap_data)
 from src.Application.Recording_Viewer.Display_Selected_Squares import (
