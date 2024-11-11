@@ -5,8 +5,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares_actual, label_visible_squares, \
-    select_squares_with_parameters
+from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares_with_parameters
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -53,15 +52,13 @@ def process_project(
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
-        max_square_coverage: float,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
         called_from_project: bool = True,
         paint_force: bool = False,
         verbose: bool = False) -> None:
     """
-    This function processes all images in a root directory. It calls the function
-    'process_all_images_in_paint_directory' for each directory in the root directory.
+    This function processes all images in a Project. It calls the function 'process_experiment' for each Experiment
     """
 
     nr_experiments_processed = 0
@@ -76,10 +73,14 @@ def process_project(
     experiment_dirs = os.listdir(root_directory)
     experiment_dirs.sort()
     for experiment_dir in experiment_dirs:
+
+        # Skip if not a directory or if it is the Output directory
         if not os.path.isdir(os.path.join(root_directory, experiment_dir)):
             continue
         if 'Output' in experiment_dir:
             continue
+
+        # Look at the time tags and decide if reprocessing is needed. Always process when the paint_force flag is set
         if (os.path.exists(os.path.join(root_directory, experiment_dir)) and
                 os.path.exists(os.path.join(root_directory, experiment_dir, 'All Squares.csv')) and
                 os.path.exists(os.path.join(root_directory, experiment_dir, 'All Recordings.csv')) and
@@ -89,13 +90,14 @@ def process_project(
             paint_logger.info(f"Experiment output exists and skipped: {experiment_dir}")
             paint_logger.info('')
             continue
+
+        # Process the experiment
         process_experiment(
             paint_directory=os.path.join(root_directory, experiment_dir),
             select_parameters=select_parameters,
             nr_of_squares_in_row=nr_of_squares_in_row,
             min_r_squared=min_r_squared,
             min_tracks_for_tau=min_tracks_for_tau,
-            max_square_coverage=max_square_coverage,
             process_recording_tau=process_recording_tau,
             process_square_tau=process_square_tau,
             called_from_project=called_from_project,
@@ -111,15 +113,14 @@ def process_experiment(
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
-        max_square_coverage: float,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
         called_from_project: bool = True,
         paint_force: bool = False,
         verbose: bool = False) -> None:
     """
-    This function processes all images in a paint directory. It reads the experiment file, to find out what
-    images need processing
+    This function processes all Recordings in an Experiment. It reads the experiment file to find out what
+    Recordings need processing
     """
 
     df_all_squares = pd.DataFrame()
@@ -128,11 +129,10 @@ def process_experiment(
     # Load from the paint configuration file the parameters that are needed
     plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File')
 
-
     time_stamp = time.time()
 
     # --------------------------------------------------------------------------------------------
-    # Read the All Tracks file and add two columns for the square and label numbers
+    # Read the All Tracks file and add (or reinitialise two columns for the square and label numbers
     # --------------------------------------------------------------------------------------------
 
     df_all_tracks = pd.read_csv(os.path.join(paint_directory, 'All Tracks.csv'))
@@ -144,29 +144,30 @@ def process_experiment(
     df_all_tracks['Label Nr'] = None
 
     # --------------------------------------------------------------------------------------------
-    # Read the experiment file, check if it is in the correct format and add the required columns
+    # Read the All Recordings file, check if it is in the correct format and add the required columns
     # --------------------------------------------------------------------------------------------
 
     df_experiment = pd.read_csv(os.path.join(paint_directory, 'All Recordings.csv'))
     if df_experiment is None:
         paint_logger.error(
-            f"Function 'process_all_images_in_paint_directory' failed: Likely, {experiment_path} is not a valid  \
+            f"Function 'process_experiment' failed: Likely, {experiment_path} is not a valid  \
             directory containing cell image information.")
         sys.exit(1)
     if len(df_experiment) == 0:
         paint_logger.error(
-            f"Function 'process_all_images_in_paint_directory' failed: 'All Recordings.csv' in {experiment_path} \
+            f"Function 'process_experiment' failed: 'All Recordings.csv' in {experiment_path} \
             is empty")
         sys.exit(1)
 
-    # Confirm the experiment file is in the correct format
+    # Confirm the experiment is in the correct format
     if not check_experiment_integrity(df_experiment):
         paint_logger.error(
-            f"Function 'process_all_images_in_paint_directory' failed: The experiment file in {experiment_path} is \
+            f"Function 'process_experiment' failed: The experiment file in {experiment_path} is \
             not in the valid format.")
         sys.exit(1)
 
-    df_experiment = add_columns_to_experiment_file(
+    # Add some parameters that the user just specified to the experiment
+    df_experiment = add_columns_to_experiment(
         df_experiment,
         nr_of_squares_in_row,
         min_tracks_for_tau,
@@ -174,10 +175,7 @@ def process_experiment(
         select_parameters['min_required_density_ratio'],
         select_parameters['max_allowable_variability'])
 
-    # --------------------------------------------------------------------------------------------
-    # Determine how many images need processing from the experiment file
-    # --------------------------------------------------------------------------------------------
-
+    # Determine how many Recordings need processing
     nr_files = df_all_tracks['Recording Name'].nunique()
     nr_files1 = len(df_experiment)
     if nr_files1 != nr_files:
@@ -204,7 +202,7 @@ def process_experiment(
         if process:
 
             # --------------------------------------------------------------------------------------------
-            # Process the image
+            # Process the Recording
             # --------------------------------------------------------------------------------------------
 
             paint_logger.debug(f"Processing file {current_image_nr} of {nr_files}: {recording_name}")
@@ -228,7 +226,7 @@ def process_experiment(
                 return None
 
             # --------------------------------------------------------------------------------------------
-            # Now update the experiment_squares file with the results
+            # Now update the Experiment with the results
             # --------------------------------------------------------------------------------------------
 
             df_experiment.at[index, 'Ext Recording Name'] = recording_name
@@ -244,13 +242,13 @@ def process_experiment(
         df_all_squares = pd.concat([df_all_squares, df_squares], ignore_index=True)
 
     # --------------------------------------------------------------------------------------------
-    # Save to the tracks file
+    # Save to the All Tracks file (the square and label columns have been updated)
     # --------------------------------------------------------------------------------------------
 
     df_all_tracks.to_csv(os.path.join(paint_directory, 'All Tracks.csv'), index=False)
 
     # --------------------------------------------------------------------------------------------
-    # Save the experiment file
+    # Save the Experiment file
     # --------------------------------------------------------------------------------------------
 
     df_experiment.to_csv(os.path.join(experiment_path, "All Recordings.csv"))
@@ -279,9 +277,9 @@ def process_recording(
         plot_to_file: False,
         verbose: bool = False) -> tuple:
     """
-    This function processes a single image in a paint directory. It reads the full-track file from the 'tracks'
+    This function processes a single Recording in an Experiment. It reads the full-track file from the 'tracks'
     directory and creates a grid of squares. For each square, the Tau and Density ratio is calculated. The squares
-    are then filtered on visibility. For each square a squares.csv id written to the 'grid' directory.
+    are then filtered on visibility.
     """
 
     # Empty the plt directory
@@ -289,7 +287,7 @@ def process_recording(
 
     # -----------------------------------------------------------------------------------------------------
     # A df_squares dataframe is generated and, if the process_square_tau flag is set, for every square the
-    # Tau and Density are calculated. The results are written to a squares file.
+    # Tau and Density are calculated. The results are stored in 'All Squares'.
     # -----------------------------------------------------------------------------------------------------
 
     df_squares, tau_matrix, df_all_tracks = calculate_squares(
@@ -306,11 +304,12 @@ def process_recording(
         verbose)
 
     # ----------------------------------------------------------------------------------------------------
-    # Assign labels in All Squares, so that selected tracks are assigned to squares
+    # Assign labels in All Squares, so that selected tracks are assigned to squares.
+    # This is a slow process - see if it can be done more efficiently
     # ----------------------------------------------------------------------------------------------------
 
-    labels_but_very_slow = True
-    if labels_but_very_slow:
+    generate_labels_but_very_slow = True
+    if generate_labels_but_very_slow:
         select_squares_with_parameters(
             df_squares=df_squares,
             select_parameters=select_parameters,
@@ -330,9 +329,6 @@ def process_recording(
     # Now do the single mode processing: determine a single Tau and Density per image, i.e., for all squares and return
     # those values
     # ----------------------------------------------------------------------------------------------------
-
-    # min_track_duration = 0
-    # max_track_duration = 10000  # ToDo - Really should come from the user interface
 
     if process_recording_tau:
         tau, r_squared, density = calculate_recording_tau_and_density(
@@ -365,7 +361,7 @@ def calculate_recording_tau_and_density(
         plot_to_file: bool
 ) -> tuple:
     """
-    This function calculates a single Tau and Density for an image. It does this by considering only the tracks
+    This function calculates a single Tau and Density for a Recording. It does this by considering only the tracks
     in the image
     """
 
@@ -442,9 +438,9 @@ def calculate_squares(row: pd.Series,
         density_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
         variability_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
 
-    # Reset all label numbers and square numbers in the tracks dataframe
-    df_recording_tracks['Square Nr'] = 0
-    df_recording_tracks['Label Nr'] = 0
+    # Reset all label numbers and square numbers in the tracks dataframe   # ToDo Not again
+    # df_recording_tracks['Square Nr'] = 0
+    # df_recording_tracks['Label Nr'] = 0
 
     # Create an empty squares dataframe, that will contain the data for each square
     df_squares = pd.DataFrame()
@@ -461,11 +457,7 @@ def calculate_squares(row: pd.Series,
         col_nr = square_seq_nr % nr_of_squares_in_row
         row_nr = square_seq_nr // nr_of_squares_in_row
 
-        # --------------------------------------------------------------------------------------------
         # Determine which tracks fall within the square defined by boundaries x0, y0, x1, y1
-        # Create a new dataframe df_tracks_in_square that contains just those tracks
-        # --------------------------------------------------------------------------------------------
-
         x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_seq_nr)
         mask = ((df_recording_tracks['Track X Location'] >= x0) &
                 (df_recording_tracks['Track X Location'] < x1) &
@@ -477,7 +469,6 @@ def calculate_squares(row: pd.Series,
         # Provide reasonable values for squares not containing any tracks
         nr_of_tracks_in_square = len(df_tracks_in_square)
         if nr_of_tracks_in_square == 0:
-
             total_track_duration = 0
             average_long_track = 0
             max_track_duration = 0
@@ -492,10 +483,6 @@ def calculate_squares(row: pd.Series,
             dc_mean = 0
 
         else:
-            # For a square with tracks, calculate the values
-
-            # Assign the tracks to the square - this is pointless
-            # df_recording_tracks.loc[mask, 'Square Nr'] = square_seq_nr
 
             # --------------------------------------------------------------------------------------------
             # Calculate the sum of track durations for the square
@@ -579,21 +566,15 @@ def calculate_squares(row: pd.Series,
 
             dc_mean = df_tracks_in_square['Diffusion Coefficient'].mean()
 
-        # --------------------------------------------------------------------------------------------
         # Enter the calculated values in the tau, density, and variability matrices
         # Not really needed and hardly used for analysis. Could be removed
-        # --------------------------------------------------------------------------------------------
-
         tau_matrix[row_nr, col_nr] = int(tau)
         if verbose:
             density_matrix[row_nr, col_nr] = int(density)
             variability_matrix[row_nr, col_nr] = int(variability * 100)
             count_matrix[row_nr, col_nr] = nr_of_tracks_in_square
 
-        # --------------------------------------------------------------------------------------------
         # Create the new squares record to add all the data for this square
-        # --------------------------------------------------------------------------------------------
-
         squares_row = {'Recording Sequence Nr': row['Recording Sequence Nr'],
                        'Ext Recording Name': row['Ext Recording Name'],
                        'Experiment Name': row['Experiment Name'],
