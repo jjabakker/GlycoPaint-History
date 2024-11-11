@@ -809,7 +809,7 @@ class RecordingViewer():
         return
 
     def select_squares_for_display(self):
-        select_squares(self)
+        select_squares(self, only_valid_tau=True)
 
     def display_selected_squares(self):
         display_selected_squares(self)

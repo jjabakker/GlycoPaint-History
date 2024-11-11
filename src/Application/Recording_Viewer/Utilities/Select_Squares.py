@@ -11,7 +11,7 @@ def select_squares_with_parameters (df_squares, select_parameters, nr_of_squares
         nr_of_squares_in_row,
         only_valid_tau= only_valid_tau)
 
-def select_squares(self, only_valid_tau):
+def select_squares(self, only_valid_tau=True):
     """
     Wrapper function to select squares based on defined conditions for density, variability, and track duration,
     No need to pass on individual parameters.
