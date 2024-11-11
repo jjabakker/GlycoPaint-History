@@ -5,7 +5,8 @@ import time
 import numpy as np
 import pandas as pd
 
-from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares, label_visible_squares
+from src.Application.Recording_Viewer.Utilities.Select_Squares import select_squares_actual, label_visible_squares, \
+    select_squares_with_parameters
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -48,6 +49,7 @@ if not paint_logger_file_name_assigned:
 
 def process_project(
         paint_directory: str,
+        select_parameters: dict,
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
@@ -91,11 +93,10 @@ def process_project(
             continue
         process_experiment(
             paint_directory=os.path.join(root_directory, experiment_dir),
+            select_parameters=select_parameters,
             nr_of_squares_in_row=nr_of_squares_in_row,
             min_r_squared=min_r_squared,
             min_tracks_for_tau=min_tracks_for_tau,
-            min_required_density_ratio=min_required_density_ratio,
-            max_allowable_variability=max_allowable_variability,
             max_square_coverage=max_square_coverage,
             process_recording_tau=process_recording_tau,
             process_square_tau=process_square_tau,
@@ -108,11 +109,10 @@ def process_project(
 
 def process_experiment(
         paint_directory: str,
+        select_parameters: dict,
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
-        min_required_density_ratio: float,
-        max_allowable_variability: float,
         max_square_coverage: float,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
@@ -168,8 +168,12 @@ def process_experiment(
         sys.exit(1)
 
     df_experiment = add_columns_to_experiment_file(
-        df_experiment, nr_of_squares_in_row, min_tracks_for_tau, min_r_squared, min_required_density_ratio,
-        max_allowable_variability)
+        df_experiment,
+        nr_of_squares_in_row,
+        min_tracks_for_tau,
+        min_r_squared,
+        select_parameters['min_required_density_ratio'],
+        select_parameters['max_allowable_variability'])
 
     # --------------------------------------------------------------------------------------------
     # Determine how many images need processing from the experiment file
@@ -208,6 +212,7 @@ def process_experiment(
 
             df_squares, tau, r_squared, density = process_recording(
                 df_all_tracks,
+                select_parameters,
                 experiment_row,
                 experiment_path,
                 ext_image_path,
@@ -215,8 +220,6 @@ def process_experiment(
                 nr_of_squares_in_row,
                 min_r_squared,
                 min_tracks_for_tau,
-                min_required_density_ratio,
-                max_allowable_variability,
                 process_recording_tau,
                 process_square_tau,
                 plot_to_file, verbose)
@@ -275,6 +278,7 @@ def process_experiment(
 
 def process_recording(
         df_all_tracks: pd.DataFrame,
+        select_parameters: dict,
         experiment_row: pd.Series,
         experiment_path: str,
         recording_path: str,
@@ -282,8 +286,6 @@ def process_recording(
         nr_of_squares_in_row: int,
         min_r_squared: float,
         min_tracks_for_tau: int,
-        min_required_density_ratio: float,
-        max_allowable_variability: float,
         process_recording_tau: bool,
         process_square_tau: bool,
         plot_to_file: False,
@@ -319,8 +321,13 @@ def process_recording(
     # Assign labels in All Squares,so that selected tracks are assigned to squares
     # ----------------------------------------------------------------------------------------------------
 
-    # select_squares(self)       #ToDO @@@@@@@@@@@
-    # label_visible_squares(df_squares)
+    labels_but_very_slow = True
+    if labels_but_very_slow:
+        select_squares_with_parameters(
+            df_squares=df_squares,
+            select_parameters=select_parameters,
+            nr_of_squares_in_row=nr_of_squares_in_row,
+            only_valid_tau=True)
 
     df_temp = df_squares[df_squares['Label Nr'] != 0]
     for index, experiment_row in df_temp.iterrows():
@@ -340,9 +347,16 @@ def process_recording(
     max_track_duration = 10000  # ToDo - Really should come from the user interface
     if process_recording_tau:
         tau, r_squared, density = calculate_recording_tau_and_density(
-            experiment_path, df_squares, df_all_tracks, min_tracks_for_tau, min_r_squared, min_required_density_ratio,
-            max_allowable_variability, min_track_duration, max_track_duration, recording_name, nr_of_squares_in_row,
-            float(experiment_row['Concentration']), plot_to_file=plot_to_file)
+            experiment_path,
+            select_parameters,
+            df_squares,
+            df_all_tracks,
+            min_tracks_for_tau,
+            min_r_squared,
+            recording_name,
+            nr_of_squares_in_row,
+            float(experiment_row['Concentration']),
+            plot_to_file=plot_to_file)
     else:
         tau = r_squared = density = 0
 
@@ -351,14 +365,11 @@ def process_recording(
 
 def calculate_recording_tau_and_density(
         experiment_directory: str,
+        select_parameters: dict,
         df_squares: pd.DataFrame,
         df_all_tracks: pd.DataFrame,
         min_tracks_for_tau: int,
         min_r_squared: float,
-        min_required_density_ratio: float,
-        max_allowable_variability: float,
-        min_track_duration: int,
-        max_track_duration: int,
         recording_name: str,
         nr_of_squares_in_row: int,
         concentration: float,
@@ -372,13 +383,12 @@ def calculate_recording_tau_and_density(
     # Select only the tracks for the recording
     df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
 
-    # Identify the squares that contribute to the Tau calculation
-    df_squares_for_single_tau = df_squares[
-        (df_squares['Density Ratio'] >= min_required_density_ratio) &
-        (df_squares['Variability'] <= max_allowable_variability) &
-        (df_squares['Max Track Duration'] >= min_track_duration) &
-        (df_squares['Max Track Duration'] <= max_track_duration)
-        ]
+    select_squares_with_parameters(
+        df_squares=df_squares,
+        select_parameters=select_parameters,
+        nr_of_squares_in_row=nr_of_squares_in_row,
+        only_valid_tau=True)
+    df_squares_for_single_tau = df_squares[df_squares['Selected']]
 
     # Select only the tracks that fall within these squares.
     # The following code filters df_tracks to include rows where Square Nr values match those

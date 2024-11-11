@@ -7,8 +7,10 @@ from datetime import datetime
 from tkinter import messagebox
 
 from src.Application.Compile_Project.Compile_Project import compile_project_output
+from src.Common.Support.PaintConfig import get_paint_attribute
 from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source_with_images
 from src.Application.Generate_Squares.Generate_Squares import process_project
+from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import pack_select_parameters
 from src.Application.Utilities.General_Support_Functions import format_time_nicely
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
     set_directory_tree_timestamp,
@@ -31,6 +33,7 @@ def process_json_configuration_block(paint_source_dir,
                                      project_directory: str,
                                      paint_data_dir: str,
                                      r_dest_dir: str,
+                                     select_parameters: dict,
                                      probe: str,
                                      nr_of_squares_in_row: int,
                                      nr_to_process: int,
@@ -56,7 +59,11 @@ def process_json_configuration_block(paint_source_dir,
     paint_logger.info(f"Process Square Tau          : {process_square_tau}")
     paint_logger.info(f"Process Recording Tau       : {process_recording_tau}")
     paint_logger.info(f"Number of squares           : {nr_of_squares_in_row}")
-    paint_logger.info(f"Min Required Density Ratio  : {min_required_density_ratio}")
+    paint_logger.info(f"Min Required Density Ratio  : {select_parameters['min_required_density_ratio']}")
+    paint_logger.info(f"Max Allowable Variability   : {select_parameters['max_allowable_variability']}")
+    paint_logger.info(f"Min Track Duration          : {select_parameters['min_track_duration']}")
+    paint_logger.info(f"Max Track Duration          : {select_parameters['max_track_duration']}")
+    paint_logger.info(f"Neighbour Mode              : {select_parameters['neighbour_mode']}")
     paint_logger.info(f"Min R squared               : {min_r_squared}")
     paint_logger.info(f"Min tracks for tau          : {min_tracks_for_tau}")
     paint_logger.info(f"Max Allowable Variability   : {max_allowable_variability}")
@@ -86,11 +93,10 @@ def process_json_configuration_block(paint_source_dir,
 
     nr_experiments_processed = process_project(
         paint_directory=paint_data_dir,
+        select_parameters=select_parameters,
         nr_of_squares_in_row=nr_of_squares_in_row,
         min_r_squared=min_r_squared,
         min_tracks_for_tau=min_tracks_for_tau,
-        min_required_density_ratio=min_required_density_ratio,
-        max_allowable_variability=max_allowable_variability,
         max_square_coverage=max_square_coverage,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
@@ -209,6 +215,14 @@ def main():
             paint_data_dir = os.path.join(paint_data, entry['probe'], entry['project_directory'])
             r_dest_dir = os.path.join(r_dest, entry['project_directory'])
             current_process_seq_nr += 1
+
+            select_parameters = pack_select_parameters(
+                min_required_density_ratio=entry['min_required_density_ratio'],
+                max_allowable_variability=entry['max_allowable_variability'],
+                min_track_duration=get_paint_attribute('Generate Squares', 'Min Track Duration'),
+                max_track_duration=get_paint_attribute('Generate Squares', 'Max Track Duration'),
+                neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode'))
+
             if not process_json_configuration_block(
                     paint_source_dir=paint_source_dir,
                     project_directory=entry['project_directory'],
@@ -218,10 +232,9 @@ def main():
                     nr_of_squares_in_row=entry['nr_of_squares'],
                     nr_to_process=nr_to_process,
                     current_process=current_process_seq_nr,
-                    min_required_density_ratio=entry['min_required_density_ratio'],
+                    select_parameters=select_parameters,
                     min_r_squared=entry['min_r_squared'],
                     min_tracks_for_tau=entry['min_tracks_for_tau'],
-                    max_allowable_variability=entry['max_allowable_variability'],
                     max_square_coverage=entry['max_square_coverage'],
                     process_recording_tau=entry['process_recording_tau'],
                     process_square_tau=entry['process_square_tau'],

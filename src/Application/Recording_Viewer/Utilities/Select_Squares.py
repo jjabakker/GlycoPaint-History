@@ -1,37 +1,73 @@
 
+def select_squares_with_parameters (df_squares, select_parameters, nr_of_squares_in_row, only_valid_tau):
 
-def select_squares(self, apply_tau=True):
+    select_squares_actual(
+        df_squares,
+        select_parameters['min_required_density_ratio'],
+        select_parameters['max_allowable_variability'],
+        select_parameters['min_track_duration'],
+        select_parameters['max_track_duration'],
+        select_parameters['neighbour_mode'],
+        nr_of_squares_in_row,
+        only_valid_tau= only_valid_tau)
+
+def select_squares(self, only_valid_tau):
+    """
+    Wrapper function to select squares based on defined conditions for density, variability, and track duration,
+    No need to pass on individual parameters.
+    """
+
+    select_squares_actual(
+        self.df_squares,
+        self.min_required_density_ratio,
+        self.max_allowable_variability,
+        self.min_track_duration,
+        self.max_track_duration,
+        self.neighbour_mode,
+        self.nr_of_squares_in_row,
+        only_valid_tau=only_valid_tau)
+
+def select_squares_actual(
+    df_squares,
+    min_required_density_ratio,
+    max_allowable_variability,
+    min_track_duration,
+    max_track_duration,
+    neighbour_mode,
+    nr_of_squares_in_row,
+    only_valid_tau=True):
+
     """
     Select squares based on defined conditions for density, variability, and track duration,
     and apply visibility rules based on neighborhood states.
     """
 
     # Define the conditions for squares to be visible
-    self.df_squares['Selected'] = (
-            (self.df_squares['Density Ratio'] >= self.min_required_density_ratio) &
-            (self.df_squares['Variability'] <= self.max_allowable_variability) &
-            (self.df_squares['Max Track Duration'] >= self.min_track_duration) &
-            (self.df_squares['Max Track Duration'] <= self.max_track_duration)
+    df_squares['Selected'] = (
+            (df_squares['Density Ratio'] >= min_required_density_ratio) &
+            (df_squares['Variability'] <= max_allowable_variability) &
+            (df_squares['Max Track Duration'] >= min_track_duration) &
+            (df_squares['Max Track Duration'] <= max_track_duration)
     )
 
-    if apply_tau:
-        self.df_squares['Selected'] = (
-                (self.df_squares['Selected']) &
-                (self.df_squares['Tau'] > 0)
+    if only_valid_tau:
+        df_squares['Selected'] = (
+                (df_squares['Selected']) &
+                (df_squares['Tau'] > 0)
         )
 
     # Eliminate isolated squares based on neighborhood rules
-    if self.neighbour_mode == 'Free':
+    if neighbour_mode == 'Free':
         pass
-    elif self.neighbour_mode == 'Strict':
-        select_squares_strict(self.df_squares, self.nr_of_squares_in_row)
-    elif self.neighbour_mode == 'Relaxed':
-        select_squares_relaxed(self.df_squares, self.nr_of_squares_in_row)
+    elif neighbour_mode == 'Strict':
+        select_squares_strict(df_squares, nr_of_squares_in_row)
+    elif neighbour_mode == 'Relaxed':
+        select_squares_relaxed(df_squares, nr_of_squares_in_row)
     else:
-        raise ValueError(f"Neighbour mode '{self.neighbour_mode}' not recognized.")
+        raise ValueError(f"Neighbour mode '{neighbour_mode}' not recognized.")
 
     # Label visible squares, so that there is always a range from 1 to nr_selected squares
-    label_visible_squares()
+    label_visible_squares(df_squares)
 
 
 def select_squares_strict(df_squares, nr_of_squares_in_row):
@@ -142,21 +178,22 @@ def get_relaxed_neighbours(row, col, nr_of_squares_in_row):
     ]
 
 
-def label_visible_squares(self):
+def label_visible_squares(df_squares):
     # Sort by 'Nr Tracks' in descending order
-    self.df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
+    df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
+    df_squares.set_index('Square Nr', drop=False, inplace=True)
 
     # Initialize label number
     label_nr = 1
 
     # Iterate through rows and label selected ones
-    for idx, row in self.df_squares.iterrows():
+    for idx, row in df_squares.iterrows():
         if row['Selected']:
-            self.df_squares.at[idx, 'Label Nr'] = label_nr
+            df_squares.at[idx, 'Label Nr'] = label_nr
             label_nr += 1
         else:
-            self.df_squares.at[idx, 'Label Nr'] = None  # Clear label for unselected rows
+            df_squares.at[idx, 'Label Nr'] = None  # Clear label for unselected rows
 
     # Restore original order
-    self.df_squares.sort_index(inplace=True)
+    df_squares.sort_index(inplace=True)
 

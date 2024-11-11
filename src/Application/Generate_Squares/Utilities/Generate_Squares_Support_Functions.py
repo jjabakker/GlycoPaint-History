@@ -410,3 +410,21 @@ def add_columns_to_experiment_file(
 
     return df_experiment
 
+
+def pack_select_parameters(
+        min_required_density_ratio: float,
+        max_allowable_variability: float,
+        min_track_duration: int,
+        max_track_duration: int,
+        neighbour_mode: str):
+
+    select_parameters = {
+        'min_required_density_ratio': min_required_density_ratio,
+        'max_allowable_variability': max_allowable_variability,
+        'min_track_duration': min_track_duration,
+        'max_track_duration': max_track_duration,
+        'neighbour_mode': neighbour_mode
+    }
+
+    return select_parameters
+

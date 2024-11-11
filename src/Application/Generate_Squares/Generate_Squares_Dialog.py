@@ -8,7 +8,8 @@ from src.Application.Generate_Squares.Generate_Squares import (
     process_experiment)
 from src.Application.Generate_Squares.Utilities.Generate_Squares_Support_Functions import (
     get_grid_defaults_from_file,
-    save_grid_defaults_to_file)
+    save_grid_defaults_to_file,
+    pack_select_parameters)
 from src.Application.Utilities.General_Support_Functions import (
     get_default_locations,
     save_default_locations,
@@ -21,7 +22,7 @@ from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
-from src.Common.Support.PaintConfig import load_paint_config
+from src.Common.Support.PaintConfig import load_paint_config, get_paint_attribute
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
@@ -190,13 +191,19 @@ class GenerateSquaresDialog:
             paint_messagebox(self.root, title='Warning', message=msg)
             return
 
+        select_parameters = pack_select_parameters(
+            min_required_density_ratio=self.min_required_density_ratio.get(),
+            max_allowable_variability=self.max_allowable_variability.get(),
+            min_track_duration=get_paint_attribute('Generate Squares', 'Min Track Duration'),
+            max_track_duration=get_paint_attribute('Generate Squares', 'Max Track Duration'),
+            neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode'),
+        )
         generate_function(
             paint_directory=self.paint_directory,
+            select_parameters=select_parameters,
             nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
             min_r_squared=self.min_r_squared.get(),
             min_tracks_for_tau=self.min_tracks_for_tau.get(),
-            min_required_density_ratio=self.min_required_density_ratio.get(),
-            max_allowable_variability=self.max_allowable_variability.get(),
             max_square_coverage=self.max_square_coverage.get(),
             process_recording_tau=self.process_average_tau.get(),
             process_square_tau=self.process_square_specific_tau.get(),
