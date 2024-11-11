@@ -45,7 +45,6 @@ class GenerateSquaresDialog:
         self.min_r_squared = tk.DoubleVar(value=values.get('min_r_squared', 0.5))
         self.min_required_density_ratio = tk.DoubleVar(value=values.get('min_required_density_ratio', 0.5))
         self.max_allowable_variability = tk.DoubleVar(value=values.get('max_allowable_variability', 0.5))
-        self.max_square_coverage = tk.DoubleVar(value=GenerateSquaresDialog.DEFAULT_MAX_SQUARE_COVERAGE)
         self.process_average_tau = tk.IntVar(value=values.get('process_recording_tau', 0))
         self.process_square_specific_tau = tk.IntVar(value=values.get('process_square_tau', 1))
         self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
@@ -204,7 +203,6 @@ class GenerateSquaresDialog:
             nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
             min_r_squared=self.min_r_squared.get(),
             min_tracks_for_tau=self.min_tracks_for_tau.get(),
-            max_square_coverage=self.max_square_coverage.get(),
             process_recording_tau=self.process_average_tau.get(),
             process_square_tau=self.process_square_specific_tau.get(),
             called_from_project=called_from_project,
@@ -223,7 +221,6 @@ class GenerateSquaresDialog:
             min_r_squared=self.min_r_squared.get(),
             min_required_density_ratio=self.min_required_density_ratio.get(),
             max_allowable_variability=self.max_allowable_variability.get(),
-            max_square_coverage=self.max_square_coverage.get(),
             process_recording_tau=self.process_average_tau.get(),
             process_square_tau=self.process_square_specific_tau.get()
         )

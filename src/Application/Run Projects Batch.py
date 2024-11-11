@@ -40,7 +40,6 @@ def process_json_configuration_block(paint_source_dir,
                                      current_process: int,
                                      min_r_squared: float,
                                      min_tracks_for_tau: int,
-                                     max_square_coverage: float,
                                      process_recording_tau: bool,
                                      process_square_tau: bool,
                                      time_string: str,
@@ -65,7 +64,6 @@ def process_json_configuration_block(paint_source_dir,
     paint_logger.info(f"Neighbour Mode              : {select_parameters['neighbour_mode']}")
     paint_logger.info(f"Min R squared               : {min_r_squared}")
     paint_logger.info(f"Min tracks for tau          : {min_tracks_for_tau}")
-    paint_logger.info(f"Max square coverage         : {max_square_coverage}")
     paint_logger.info(f"Paint Force                 : {paint_force}")
     paint_logger.info(f"Drop Empty Squares          : {drop_empty_squares}")
 
@@ -96,7 +94,6 @@ def process_json_configuration_block(paint_source_dir,
         nr_of_squares_in_row=nr_of_squares_in_row,
         min_r_squared=min_r_squared,
         min_tracks_for_tau=min_tracks_for_tau,
-        max_square_coverage=max_square_coverage,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
         paint_force=paint_force,
@@ -235,7 +232,6 @@ def main():
                     select_parameters=select_parameters,
                     min_r_squared=entry['min_r_squared'],
                     min_tracks_for_tau=entry['min_tracks_for_tau'],
-                    max_square_coverage=entry['max_square_coverage'],
                     process_recording_tau=entry['process_recording_tau'],
                     process_square_tau=entry['process_square_tau'],
                     time_string=time_string,
