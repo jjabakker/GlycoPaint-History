@@ -1,6 +1,6 @@
 import os
 
-from src.Application.Process_Projects.Utilities.Convert_BF_from_nd2_to_jpg import convert_bf_images
+from src.Application.Process_Projects.Convert_BF_from_nd2_to_jpg import convert_bf_images
 
 
 def generate_directory_tree_third_level_directories_only(start_path, output_file, target_level=3):

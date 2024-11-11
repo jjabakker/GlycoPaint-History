@@ -6,7 +6,7 @@ from tkinter import ttk, filedialog
 
 import pandas as pd
 
-from src.Application.Process_Projects.Utilities.Convert_BF_from_nd2_to_jpg import convert_bf_images
+from src.Application.Process_Projects.Convert_BF_from_nd2_to_jpg import convert_bf_images
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
