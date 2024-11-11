@@ -7,6 +7,7 @@ import pandas as pd
 from src.Common.Support.DirectoriesAndLocations import (
     get_paint_profile_directory)
 from src.Common.Support.LoggerConfig import paint_logger
+from src.Common.Support.PaintConfig import get_paint_attribute
 
 pd.options.mode.copy_on_write = True
 
@@ -293,10 +294,10 @@ def create_unique_key_for_squares(df):
     return df
 
 
-def select_tracks_for_tau_calculation(df_tracks_in_square, limit_DC):
-    if limit_DC:
+def extra_constraints_on_tracksfor_tau_calculation(df_tracks_in_square):
+    limit_dc = get_paint_attribute('Generate Squares', 'Exclude zero DC tracks from Tau Calculation')
+    if limit_dc:
         df_tracks_in_square = df_tracks_in_square[df_tracks_in_square['Diffusion Coefficient'] > 0]
-
     return df_tracks_in_square
 
 
