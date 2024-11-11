@@ -180,7 +180,7 @@ def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_
 
     # Read the default display settings.
     ds = DisplaySettingsIO.readUserDefault()
-    ds.setTrackColorBy(TrackMateObject.TRACKS, 'TRACK_INDEX')
+    ds.setTrackColorBy(TrackMateObject.TRACKS, 'TRACK_DURATION')
 
     displayer = HyperStackDisplayer(model, selection_model, imp, ds)
     displayer.render()
