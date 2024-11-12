@@ -130,6 +130,8 @@ class RecordingViewer():
 
         self.parent.title(f'Recording Viewer - {self.user_specified_directory}')
 
+        self.show_tau_valid = True
+
     def setup_ui(self):
         """
         Sets up the UI by defining the top level frames
@@ -514,6 +516,9 @@ class RecordingViewer():
         elif event.keysym == 'h':
             self.on_histogram()
 
+        elif event.keysym == 'v':
+            self.on_toggle_valid_square()
+
         elif event.keysym == 'Right':
             if event.state & 0x0001:  # 0x0001 is the bit mask for Shift
                 self.on_forward_backward('END')
@@ -580,10 +585,18 @@ class RecordingViewer():
         if platform.system() == "Darwin":
             png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
 
-
         # Go back to the image where we were
         self.img_no -= 1
         self.on_forward_backward('FORWARD')
+
+    def on_toggle_valid_square(self):
+        if self.show_tau_valid:
+            self.show_tau_valid = False
+            select_squares(self, only_valid_tau=False)
+        else:
+            self.show_tau_valid = True
+            select_squares(self, only_valid_tau=True)
+        self.display_selected_squares()
 
     def on_exit_viewer(self):
 

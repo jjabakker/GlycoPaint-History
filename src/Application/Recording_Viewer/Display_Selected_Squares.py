@@ -1,4 +1,7 @@
 from tkinter import *
+import pandas as pd
+
+from pandas.core.dtypes.missing import is_valid_na_for_dtype
 
 
 def display_selected_squares(self):
@@ -55,7 +58,10 @@ def draw_single_square(
 
     square_nr = squares_row['Square Nr']
     cell_id = squares_row['Cell Id']
-    label_nr = int(squares_row['Label Nr'])
+    if pd.isna(squares_row['Label Nr']):
+        label_nr = 0
+    else:
+        label_nr = int(squares_row['Label Nr'])
 
     col_nr = square_nr % nr_of_squares_in_row
     row_nr = square_nr // nr_of_squares_in_row
@@ -75,10 +81,11 @@ def draw_single_square(
             outline=col, fill=col, width=0, tags=square_tag)
 
         if show_squares_numbers:
-            canvas.create_text(
-                col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
-                text=str(squares_row['Label Nr']), font=('Arial', -10),
-                fill=colour_table[squares_row['Cell Id']][1], tags=text_tag)
+            if not squares_row['Label Nr'].isna():
+                canvas.create_text(
+                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
+                    text=str(label_nr, font=('Arial', -10),
+                    fill=colour_table[squares_row['Cell Id']][1], tags=text_tag))
 
     # for all the squares draw the outline without filling the rectangle
     canvas.create_rectangle(
@@ -86,10 +93,13 @@ def draw_single_square(
         outline="white", fill="", width=1, tags=square_tag)
 
     if show_squares_numbers:
-        if cell_id == 0:  # The number of a square assigned to a cell should not be overwritten
-            canvas.create_text(
-                col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
-                font=('Arial', -10), fill='white', tags=text_tag)
+        if cell_id != 0:
+            pass# The number of a square assigned to a cell should not be overwritten
+        else:
+            if not pd.isna(squares_row['Label Nr']):
+                canvas.create_text(
+                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
+                    font=('Arial', -10), fill='white', tags=text_tag)
 
     # Create a transparent rectangle (clickable area)
     invisible_rect = canvas.create_rectangle(
