@@ -133,6 +133,9 @@ def process_experiment(
     # --------------------------------------------------------------------------------------------
 
     df_all_tracks = pd.read_csv(os.path.join(experiment_path, 'All Tracks.csv'))
+    if df_all_tracks is None:
+        paint_logger.error(f"Could not read the 'All Tracks.csv' file in {experiment_path}")
+        sys.exit(1)
     df_all_tracks = create_unique_key_for_tracks(df_all_tracks)
     if df_all_tracks is None:
         paint_logger.error(f"Could not read the 'All Tracks.csv' file in {experiment_path}")
