@@ -1,9 +1,6 @@
 from tkinter import *
 import pandas as pd
 
-from pandas.core.dtypes.missing import is_valid_na_for_dtype
-
-
 def display_selected_squares(self):
     """
     Display the squares on the left image canvas, that have the 'Selected' flag set
@@ -21,24 +18,36 @@ def display_selected_squares(self):
 
     if self.show_squares:
         # If there are no squares, you can stop here
-        if len(self.df_squares) > 0:
+        if len(self.df_squares) == 0:
+            return
 
-            # Then draw the of squares that are assigned to a cell
-            for index, squares_row in self.df_squares.iterrows():
-                if squares_row['Selected']:
-                    if squares_row['Cell Id'] != 0:
-                        draw_single_square(
-                            self.show_squares_numbers, self.nr_of_squares_in_row, self.cn_left_image, squares_row,
-                            self.square_assigned_to_cell, self.provide_information_on_square)
-            # Then draw the thin lines of squares that are not assigned to a cell
-            for index, squares_row in self.df_squares.iterrows():
-                if squares_row['Selected']:
-                    draw_single_square(
-                        self.show_squares_numbers, self.nr_of_squares_in_row, self.cn_left_image, squares_row,
-                        self.square_assigned_to_cell, self.provide_information_on_square)
+        # First draw the squares that are selected assigned to a cell
+        for index, squares_row in self.df_squares.iterrows():
+            if squares_row['Selected'] and squares_row['Cell Id'] != 0:
+                draw_single_square(
+                    self.show_squares_numbers,
+                    self.nr_of_squares_in_row,
+                    self.cn_left_image,
+                    squares_row,
+                    self.square_assigned_to_cell,
+                    self.provide_information_on_square)
 
-            # Then draw the thick lines of squares that are marked
-            mark_selected_squares(self.squares_in_rectangle, self.nr_of_squares_in_row, self.cn_left_image)
+        # Then draw the thin lines of squares that are not assigned to a cell
+        for index, squares_row in self.df_squares.iterrows():
+            if squares_row['Selected']:
+                draw_single_square(
+                    self.show_squares_numbers,
+                    self.nr_of_squares_in_row,
+                    self.cn_left_image,
+                    squares_row,
+                    self.square_assigned_to_cell,
+                    self.provide_information_on_square)
+
+        # Then draw the thick lines of squares that are marked
+        mark_selected_squares(
+            self.squares_in_rectangle,
+            self.nr_of_squares_in_row,
+            self.cn_left_image)
 
 
 def draw_single_square(
@@ -49,6 +58,7 @@ def draw_single_square(
         square_assigned_to_cell,
         provide_information_on_square,
         color='white'):
+
     colour_table = {1: ('red', 'white'),
                     2: ('yellow', 'black'),
                     3: ('green', 'white'),
@@ -77,20 +87,34 @@ def draw_single_square(
     if cell_id != 0:  # The square is assigned to a cell
         col = colour_table[squares_row['Cell Id']][0]
         canvas.create_rectangle(
-            col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-            outline=col, fill=col, width=0, tags=square_tag)
+            col_nr * width,
+            row_nr * width,
+            col_nr * width + width,
+            row_nr * height + height,
+            outline=col,
+            fill=col,
+            width=0,
+            tags=square_tag)
 
         if show_squares_numbers:
             if not squares_row['Label Nr'].isna():
                 canvas.create_text(
-                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width,
+                    col_nr * width + 0.5 * width,
+                    row_nr * width + 0.5 * width,
                     text=str(label_nr, font=('Arial', -10),
-                    fill=colour_table[squares_row['Cell Id']][1], tags=text_tag))
+                             fill=colour_table[squares_row['Cell Id']][1],
+                             tags=text_tag))
 
     # for all the squares draw the outline without filling the rectangle
     canvas.create_rectangle(
-        col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-        outline="white", fill="", width=1, tags=square_tag)
+        col_nr * width,
+        row_nr * width,
+        col_nr * width + width,
+        row_nr * height + height,
+        outline="white",
+        fill="",
+        width=1,
+        tags=square_tag)
 
     if show_squares_numbers:
         if cell_id != 0:
@@ -98,21 +122,33 @@ def draw_single_square(
         else:
             if not pd.isna(squares_row['Label Nr']):
                 canvas.create_text(
-                    col_nr * width + 0.5 * width, row_nr * width + 0.5 * width, text=str(label_nr),
-                    font=('Arial', -10), fill='white', tags=text_tag)
+                    col_nr * width + 0.5 * width,
+                    row_nr * width + 0.5 * width,
+                    text=str(label_nr),
+                    font=('Arial', -10),
+                    fill='white',
+                    tags=text_tag)
 
     # Create a transparent rectangle (clickable area)
     invisible_rect = canvas.create_rectangle(
-        col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-        outline="", fill="", tags=f"invisible-{square_nr}")
+        col_nr * width,
+        row_nr * width,
+        col_nr * width + width,
+        row_nr * height + height,
+        outline="",
+        fill="",
+        tags=f"invisible-{square_nr}")
 
     # Bind events to the invisible rectangle (transparent clickable area)
     canvas.tag_bind(invisible_rect, '<Button-1>', lambda e: square_assigned_to_cell(square_nr))
-    canvas.tag_bind(invisible_rect, '<Button-2>',
-                    lambda e: provide_information_on_square(e, squares_row['Label Nr'], square_nr))
+    canvas.tag_bind(invisible_rect, '<Button-2>', lambda e: provide_information_on_square(e, squares_row['Label Nr'], square_nr))
 
 
-def mark_selected_squares(list_of_squares, nr_of_squares_in_row, canvas):
+def mark_selected_squares(
+        list_of_squares,
+        nr_of_squares_in_row,
+        canvas):
+
     for square_nr in list_of_squares:
         col_nr = square_nr % nr_of_squares_in_row
         row_nr = square_nr // nr_of_squares_in_row
@@ -121,5 +157,10 @@ def mark_selected_squares(list_of_squares, nr_of_squares_in_row, canvas):
 
         # Draw the outline without filling the rectangle
         canvas.create_rectangle(
-            col_nr * width, row_nr * width, col_nr * width + width, row_nr * height + height,
-            outline='white', fill="", width=3)
+            col_nr * width,
+            row_nr * width,
+            col_nr * width + width,
+            row_nr * height + height,
+            outline='white',
+            fill="",
+            width=3)
