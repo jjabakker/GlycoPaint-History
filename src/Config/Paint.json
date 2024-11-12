@@ -9,6 +9,7 @@
   },
   "Generate Squares": {
     "Plot to File": false,
+    "Plot Max": 5,
     "Fraction of Squares to Determine Background": 0.1,
     "Exclude zero DC tracks from Tau Calculation": false,
     "Neighbour Mode":"Free",

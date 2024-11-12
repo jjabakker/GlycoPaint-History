@@ -221,7 +221,9 @@ def process_experiment(
                 min_tracks_for_tau,
                 process_recording_tau,
                 process_square_tau,
-                plot_to_file, verbose)
+                plot_to_file,
+                plot_max,
+                verbose)
 
             if df_squares is None:
                 paint_logger.error("Aborted with error")
@@ -276,6 +278,7 @@ def process_recording(
         process_recording_tau: bool,
         process_square_tau: bool,
         plot_to_file: False,
+        plot_max: int = 5,
         verbose: bool = False) -> tuple:
     """
     This function processes a single Recording in an Experiment. It reads the full-track file from the 'tracks'
@@ -283,8 +286,13 @@ def process_recording(
     are then filtered on visibility.
     """
 
-    # Empty the plt directory
-    delete_files_in_directory(get_tau_plots_dir_path(experiment_path, recording_name))  # TODO - Check this
+    # Create the Plot directory if needed
+    if plot_to_file:
+        plot_dir = os.path.join(experiment_path, 'Plot')
+        if not os.path.exists(plot_dir):
+            os.makedirs(plot_dir)
+        else:
+            delete_files_in_directory(plot_dir)
 
     # Look at squares for the recording
     df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
@@ -343,7 +351,10 @@ def process_recording(
             recording_name,
             nr_of_squares_in_row,
             float(experiment_row['Concentration']),
-            plot_to_file=plot_to_file)
+            df_squares,
+            select_parameters,
+            plot_to_file=plot_to_file,
+            plot_max=plot_max)
     else:
         tau = r_squared = density = 0
 
@@ -376,6 +387,9 @@ def process_squares(experiment_row: pd.Series,
     nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
     square_area = calc_area_of_square(nr_of_squares_in_row)
 
+    # Pick up the plot to file flag
+    plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File') or False
+
     # --------------------------------------------------------------------------------------------
     # Generate the data for a square in a row and append it to the squares dataframe
     # --------------------------------------------------------------------------------------------
@@ -401,6 +415,7 @@ def process_squares(experiment_row: pd.Series,
             square_seq_nr,
             row_nr,
             col_nr,
+            plot_to_file,
             verbose)
 
         # And add it to the squares dataframe and the tau to the tau_matrix
@@ -439,6 +454,7 @@ def process_square(
     square_seq_nr: int,
     row_nr: int,
     col_nr: int,
+    plot_to_file: bool,
     verbose: bool) -> pd.Series:
 
 
@@ -511,11 +527,16 @@ def process_square(
                 r_squared = 0
             else:
                 duration_data = compile_duration(df_tracks_for_tau)
-                plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name),
-                                        recording_name + "-square-" + str(square_seq_nr) + ".png")
+                plt_file = os.path.join(experiment_path, 'Plot', recording_name + str(square_seq_nr) + "-curve-fit.png")
                 tau, r_squared = curve_fit_and_plot(
-                    plot_data=duration_data, nr_tracks=nr_of_tracks_in_square, plot_max_x=5, plot_title=" ",
-                    file=plt_file, plot_to_screen=False, plot_to_file=False, verbose=False)
+                    plot_data=duration_data,
+                    nr_tracks=nr_of_tracks_in_square,
+                    plot_max_x=5,
+                    plot_title=" ",
+                    file=plt_file,
+                    plot_to_screen=False,
+                    plot_to_file=plot_to_file,
+                    verbose=False)
                 if tau == -2:  # Tau calculation failed
                     r_squared = 0
                 if r_squared < min_r_squared:  # Tau was calculated, but not reliable
@@ -595,6 +616,8 @@ def calculate_tau_and_density_for_recording(
         nr_of_squares_in_row: int,
         concentration: float,
         plot_to_file: bool
+        plot_to_file: bool,
+        plot_max: int = 5
 ) -> tuple:
     """
     This function calculates a single Tau and Density for a Recording. It does this by considering only the tracks
@@ -630,8 +653,14 @@ def calculate_tau_and_density_for_recording(
         duration_data = compile_duration(df_tracks_for_tau)
         plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name), recording_name + ".png")
         tau, r_squared = curve_fit_and_plot(
-            plot_data=duration_data, nr_tracks=nr_of_tracks_for_single_tau, plot_max_x=5, plot_title=" ",
-            file=plt_file, plot_to_screen=False, plot_to_file=plot_to_file, verbose=False)
+            plot_data=duration_data,
+            nr_tracks=nr_of_tracks_for_single_tau,
+            plot_max_x=5,
+            plot_title=" ",
+            file=plt_file,
+            plot_to_screen=False,
+            plot_to_file=plot_to_file,
+            verbose=False)
         if tau == -2:  # Tau calculation failed
             r_squared = 0
         tau = int(tau)
