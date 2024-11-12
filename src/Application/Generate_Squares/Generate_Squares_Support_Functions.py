@@ -295,7 +295,7 @@ def create_unique_key_for_squares(df):
 
 
 def extra_constraints_on_tracksfor_tau_calculation(df_tracks_in_square):
-    limit_dc = get_paint_attribute('Generate Squares', 'Exclude zero DC tracks from Tau Calculation')
+    limit_dc = get_paint_attribute('Generate Squares', 'Exclude zero DC tracks from Tau Calculation') or False
     if limit_dc:
         df_tracks_in_square = df_tracks_in_square[df_tracks_in_square['Diffusion Coefficient'] > 0]
     return df_tracks_in_square

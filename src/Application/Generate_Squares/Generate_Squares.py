@@ -123,7 +123,8 @@ def process_experiment(
     experiment_path = paint_directory
 
     # Load from the paint configuration file the parameters that are needed
-    plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File')
+    plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File') or ""
+    plot_max = get_paint_attribute('Generate Squares', 'Plot Max1') or 5
 
     time_stamp = time.time()
 

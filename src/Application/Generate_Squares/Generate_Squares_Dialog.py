@@ -189,9 +189,9 @@ class GenerateSquaresDialog:
         select_parameters = pack_select_parameters(
             min_required_density_ratio=self.min_required_density_ratio.get(),
             max_allowable_variability=self.max_allowable_variability.get(),
-            min_track_duration=get_paint_attribute('Generate Squares', 'Min Track Duration'),
-            max_track_duration=get_paint_attribute('Generate Squares', 'Max Track Duration'),
-            neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode'),
+            min_track_duration=get_paint_attribute('Generate Squares', 'Min Track Duration') or 0,
+            max_track_duration=get_paint_attribute('Generate Squares', 'Max Track Duration') or 10000,
+            neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode') or 'Free',
         )
         generate_function(
             paint_directory=self.paint_directory,
