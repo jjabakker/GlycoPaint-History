@@ -49,21 +49,19 @@ def compile_duration(tracks):
     return histdata
 
 
-def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Histogram', file="", plot_to_screen=True,
-                       plot_to_file=False, verbose=True):
+def curve_fit_and_plot(
+        plot_data,
+        nr_tracks,
+        plot_max_x,
+        plot_title='Duration Histogram',
+        file="",
+        plot_to_screen=True,
+        plot_to_file=False,
+        verbose=True):
     """
-    :param plot_data:
-    :param nr_tracks
-    :param plot_max_x: the maximum x value visible in the plot
-    :param plot_title: optional title for histogram plot
-    :param file:
-    :param plot_to_screen:
-    :param plot_to_file
-    :param verbose:
-    :return: The Tau value in milliseconds and the R2
+    The function fits an exponential decay function to the data and plots the result.
+    Function = m * np.exp(-t * x) + b
     """
-
-    # function = m * np.exp(-t * x) + b
 
     # The curve_fit function expects x and y Numpy arrays
     x = np.asarray(plot_data["Track Duration"])
@@ -111,7 +109,7 @@ def curve_fit_and_plot(plot_data, nr_tracks, plot_max_x, plot_title='Duration Hi
 
     if plot_to_file:
         fig, ax = plt.subplots()
-        ax.plot(x, y, linewidth=1.0, label="Data")
+        ax.scatter(x, y, linewidth=1.0, label="Data")
         ax.plot(x, mono_exp(x, m, t, b), linewidth=1.0, label="Fitted")
 
         x_middle = plot_max_x / 2 - plot_max_x * 0.1
