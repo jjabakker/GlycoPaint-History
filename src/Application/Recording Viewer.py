@@ -289,24 +289,19 @@ class RecordingViewer():
         self.bn_excel.grid(column=0, row=6, padx=5, pady=5)
 
     def setup_frame_save_commands(self):
-
-        # Create three radio buttons for the Save mode
+        # Create a StringVar for save state
         self.save_state_var = tk.StringVar(value="Ask")
-        self.rb_always_save = tk.Radiobutton(
-            self.frame_save_commands, text="Always Save", variable=self.save_state_var, width=12, value="Always",
-            anchor=tk.W)
-        self.rb_never_save = tk.Radiobutton(
-            self.frame_save_commands, text="Never Save", variable=self.save_state_var, width=12, value="Never",
-            anchor=tk.W)
-        self.rb_ask_toSave = tk.Radiobutton(
-            self.frame_save_commands, text="Ask to Save", variable=self.save_state_var, width=12, value="Ask",
-            anchor=tk.W)
 
-        # Place the radio buttons and button in the grid
+        # Define options for the radio buttons
+        options = [("Always Save", "Always"), ("Never Save", "Never"), ("Ask to Save", "Ask")]
 
-        self.rb_always_save.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
-        self.rb_never_save.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W)
-        self.rb_ask_toSave.grid(column=0, row=2, padx=5, pady=5, sticky=tk.W)
+        # Create and place each radio button using a loop
+        for i, (text, value) in enumerate(options):
+            rb = tk.Radiobutton(
+                self.frame_save_commands, text=text, variable=self.save_state_var,
+                width=12, value=value, anchor=tk.W
+            )
+            rb.grid(column=0, row=i, padx=5, pady=5, sticky=tk.W)
 
     def load_images_and_config(self):
 
@@ -347,7 +342,7 @@ class RecordingViewer():
             return
         else:
             self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
-            pass
+
     def on_show_heatmap(self):
         # If the heatmap is not already  active, then we need to run the heatmap dialog
 
@@ -391,8 +386,13 @@ class RecordingViewer():
             if self.select_square_dialog is None:
                 pass
                 self.select_square_dialog = SelectSquareDialog(
-                    self, self.update_select_squares, self.min_required_density_ratio, self.max_allowable_variability,
-                    self.min_track_duration, self.max_track_duration, self.neighbour_mode)
+                    self,
+                    self.update_select_squares,
+                    self.min_required_density_ratio,
+                    self.max_allowable_variability,
+                    self.min_track_duration,
+                    self.max_track_duration,
+                    self.neighbour_mode)
 
     def on_show_define_cells(self):
 
@@ -401,7 +401,9 @@ class RecordingViewer():
         else:
             self.set_dialog_buttons(tk.DISABLED)
             self.define_cells_dialog = DefineCellDialog(
-                self, self.callback_to_assign_squares_to_cell_id, self.callback_to_reset_square_selection,
+                self,
+                self.callback_to_assign_squares_to_cell_id,
+                self.callback_to_reset_square_selection,
                 self.callback_to_close_define_cells)
 
     def callback_to_close_define_cells(self):
@@ -422,25 +424,24 @@ class RecordingViewer():
         See if there are any squares selected and if so update the cell id, then update the display
         """
 
-        for square_nr in self.squares_in_rectangle:
-            self.df_squares.at[square_nr, 'Cell Id'] = int(cell_id)
+        # Update 'Cell Id' for all squares in the rectangle
+        self.df_squares.loc[self.squares_in_rectangle, 'Cell Id'] = int(cell_id)
 
+        # Set flag and clear the list
         self.squares_changed = True
         self.squares_in_rectangle = []
         self.display_selected_squares()
 
     def setup_exclude_button(self):
-        # Set up the exclude/include button state
 
+        # Find the index of the row matching the image name
         row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
-        if self.df_experiment.loc[row_index, 'Exclude']:
-            self.bn_exclude.config(text='Include')
-            self.text_for_info4.set('Excluded')
-            self.lbl_info4.config(style="Red.Label")
-        else:
-            self.bn_exclude.config(text='Exclude')
-            self.text_for_info4.set('')
-            self.lbl_info4.config(style="Black.Label")
+
+        # Check the 'Exclude' status and set properties accordingly
+        is_excluded = self.df_experiment.loc[row_index, 'Exclude']
+        self.bn_exclude.config(text='Include' if is_excluded else 'Exclude')
+        self.text_for_info4.set('Excluded' if is_excluded else '')
+        self.lbl_info4.config(style="Red.Label" if is_excluded else "Black.Label")
 
     def show_error_and_exit(self, message):
         paint_logger.error(message)
@@ -448,18 +449,32 @@ class RecordingViewer():
 
     def initialise_image_display(self):
         # Update the image display based on the current image number
-
-        self.cn_left_image.create_image(0, 0, anchor=tk.NW, image=self.list_images[self.img_no]['Left Image'])
-        self.cn_right_image.create_image(0, 0, anchor=tk.NW, image=self.list_images[self.img_no]['Right Image'])
+        left_image = self.list_images[self.img_no]['Left Image']
+        right_image = self.list_images[self.img_no]['Right Image']
+        self.cn_left_image.create_image(0, 0, anchor=tk.NW, image=left_image)
+        self.cn_right_image.create_image(0, 0, anchor=tk.NW, image=right_image)
 
         # Update labels for image information
         self.lbl_image_bf_name.set(self.list_images[self.img_no]['Right Image Name'])
-        cell_info = f"({self.list_images[self.img_no]['Cell Type']}) - ({self.list_images[self.img_no]['Adjuvant']}) - ({self.list_images[self.img_no]['Probe Type']}) - ({self.list_images[self.img_no]['Probe']})"
+
+        # Construct cell information text
+        cell_info = (
+            f"({self.list_images[self.img_no]['Cell Type']}) - "
+            f"({self.list_images[self.img_no]['Adjuvant']}) - "
+            f"({self.list_images[self.img_no]['Probe Type']}) - "
+            f"({self.list_images[self.img_no]['Probe']})"
+        )
         self.text_for_info1.set(cell_info)
-        info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
-        self.text_for_info2.set(info2)
-        info3 = f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
-        self.text_for_info3.set(info3)
+
+        # Construct and set additional information texts
+        self.text_for_info2.set(
+            f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - "
+            f"Threshold: {self.list_images[self.img_no]['Threshold']}"
+        )
+        self.text_for_info3.set(
+            f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - "
+            f"Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
+        )
 
     def on_exinclude(self):
         """
@@ -471,25 +486,20 @@ class RecordingViewer():
         # This was complex code, but the index is already the image name
 
         row_index = self.image_name
-        if not self.df_experiment.loc[row_index, 'Exclude']:
-            self.df_experiment.loc[row_index, 'Exclude'] = True
-            self.bn_exclude.config(text='Include')  # Change the button text
-            self.text_for_info4.set('Excluded')  # Change the info text to 'Excluded'
-            self.lbl_info4.config(style="Red.Label")
-            self.lbl_info4.configure(foreground='red')
-        else:
-            self.df_experiment.loc[row_index, 'Exclude'] = False
-            self.bn_exclude.config(text='Exclude')  # Change the button text
-            self.text_for_info4.set('')
-            self.lbl_info4.config(style="Black.Label")
+        is_excluded = self.df_experiment.loc[row_index, 'Exclude'] = not self.df_experiment.loc[row_index, 'Exclude']
+
+        self.bn_exclude.config(text='Include' if is_excluded else 'Exclude')
+        self.text_for_info4.set('Excluded' if is_excluded else '')
+        self.lbl_info4.config(style="Red.Label" if is_excluded else "Black.Label")
+        self.lbl_info4.configure(foreground='red' if is_excluded else 'black')
+
         self.experiment_changed = True
 
     def on_key_pressed(self, event):
         """
         This function is triggered by pressing a key and will perform the required actions
-
-        :return:
         """
+
         self.cn_left_image.focus_set()
 
         # Displaying squares is toggled by pressing 's'
@@ -500,35 +510,33 @@ class RecordingViewer():
         # Displaying square numbers is toggled by pressing 'n'
         elif event.keysym == 'n':
             self.show_squares_numbers = not self.show_squares_numbers
-            if self.show_squares:
-                self.show_numbers = True
+            self.show_numbers = self.show_squares  # Set show_numbers based on show_squares
             self.display_selected_squares()
 
         # Pressing 'o' will generate a pdf file containing all the images
         elif event.keysym == 'o':
             self.output_pictures_to_pdf()
 
+        # Pressing 't' will toggle the display of valid squares
         elif event.keysym == 't':
             self.show_squares = not self.show_squares
             self.display_selected_squares()
 
+        # Pressing 'h' will generate a histogram of the tau values
         elif event.keysym == 'h':
             self.on_histogram()
 
+        # Pressing 'v' will toggle the display of valid squares
         elif event.keysym == 'v':
             self.on_toggle_valid_square()
 
+        # Pressing 'right' will either go to the next image or the end of the list
         elif event.keysym == 'Right':
-            if event.state & 0x0001:  # 0x0001 is the bit mask for Shift
-                self.on_forward_backward('END')
-            else:
-                self.on_forward_backward('FORWARD')
+            self.on_forward_backward('END' if event.state & 0x0001 else 'FORWARD')
 
+        # Pressing 'left' will either go to the previous image or the start of the list
         elif event.keysym == 'Left':
-            if event.state & 0x0001:  # 0x0001 is the bit mask for Shift
-                self.on_forward_backward('START')
-            else:
-                self.on_forward_backward('BACKWARD')
+            self.on_forward_backward('START' if event.state & 0x0001 else 'BACKWARD')
 
     def output_pictures_to_pdf(self):
         """
@@ -560,12 +568,6 @@ class RecordingViewer():
             image_name = image_name + '-squares'
             save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
 
-        # Find all the ps files and delete them
-        # ps_files = os.listdir(squares_dir)
-        # for item in ps_files:
-        #     if item.endswith(".ps"):
-        #         os.remove(os.path.join(squares_dir, item))
-
         # Find all the png files and sort them
         png_files = []
         files = os.listdir(squares_dir)
@@ -589,24 +591,16 @@ class RecordingViewer():
         self.on_forward_backward('FORWARD')
 
     def on_toggle_valid_square(self):
-        if self.show_tau_valid:
-            self.show_tau_valid = False
-            select_squares(self, only_valid_tau=False)
-        else:
-            self.show_tau_valid = True
-            select_squares(self, only_valid_tau=True)
+        self.show_tau_valid = not self.show_tau_valid
+        select_squares(self, only_valid_tau=self.show_tau_valid)
         self.display_selected_squares()
 
     def on_exit_viewer(self):
-
-        status = False
         if self.experiment_changed or self.squares_changed:
             status = self.save_changes()
-
-        if status == False or status == True:
-            root.quit()
-        else:
-            return
+            if status is None:  # Handle case where save_changes returns None or a non-boolean
+                return
+        root.quit()
 
     def image_selected(self, _):
         image_name = self.cb_image_names.get()
@@ -678,18 +672,16 @@ class RecordingViewer():
         nr_total_squares = len(self.df_squares)
         tau_values = self.df_squares[self.df_squares['Selected']]['Tau'].tolist()
         nr_visible_squares = len(tau_values)
+
+        # Initialize tau values as '-'
+        tau_min = tau_max = tau_mean = tau_median = tau_std = '-'
+
         if nr_visible_squares != 0:
             tau_min = min(tau_values)
             tau_max = max(tau_values)
             tau_mean = round(statistics.mean(tau_values), 0)
             tau_median = round(statistics.median(tau_values), 0)
             tau_std = round(statistics.stdev(tau_values), 1)
-        else:
-            tau_min = '-'
-            tau_max = '-'
-            tau_mean = '-'
-            tau_median = '-'
-            tau_std = '-'
 
         print('\n\n')
         print(f'The total number of squares:   {nr_total_squares}')
