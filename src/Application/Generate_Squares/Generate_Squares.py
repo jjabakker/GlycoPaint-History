@@ -48,7 +48,7 @@ if not paint_logger_file_name_assigned:
 
 
 def process_project(
-        paint_directory: str,
+        project_path: str,
         select_parameters: dict,
         nr_of_squares_in_row: int,
         min_r_squared: float,
@@ -62,29 +62,28 @@ def process_project(
     """
 
     nr_experiments_processed = 0
-    root_directory = paint_directory
 
     # --------------------------------------------------------------------------------------------
     # Process all experiments in the project directory
     # --------------------------------------------------------------------------------------------
 
-    paint_logger.info(f"Starting generating squares for all images in {root_directory}")
+    paint_logger.info(f"Starting generating squares for all recordings in {project_path}")
     paint_logger.info('')
-    experiment_dirs = os.listdir(root_directory)
+    experiment_dirs = os.listdir(project_path)
     experiment_dirs.sort()
     for experiment_dir in experiment_dirs:
 
         # Skip if not a directory or if it is the Output directory
-        if not os.path.isdir(os.path.join(root_directory, experiment_dir)):
+        if not os.path.isdir(os.path.join(project_path, experiment_dir)):
             continue
         if 'Output' in experiment_dir:
             continue
 
         # Look at the time tags and decide if reprocessing is needed. Always process when the paint_force flag is set
-        if (os.path.exists(os.path.join(root_directory, experiment_dir)) and
-                os.path.exists(os.path.join(root_directory, experiment_dir, 'All Squares.csv')) and
-                os.path.exists(os.path.join(root_directory, experiment_dir, 'All Recordings.csv')) and
-                os.path.exists(os.path.join(root_directory, experiment_dir, 'All Tracks.csv')) and
+        if (os.path.exists(os.path.join(project_path, experiment_dir)) and
+                os.path.exists(os.path.join(project_path, experiment_dir, 'All Squares.csv')) and
+                os.path.exists(os.path.join(project_path, experiment_dir, 'All Recordings.csv')) and
+                os.path.exists(os.path.join(project_path, experiment_dir, 'All Tracks.csv')) and
                 not paint_force):
             paint_logger.info('')
             paint_logger.info(f"Experiment output exists and skipped: {experiment_dir}")
@@ -93,7 +92,7 @@ def process_project(
 
         # Process the experiment
         process_experiment(
-            experiment_path=os.path.join(root_directory, experiment_dir),
+            os.path.join(project_path, experiment_dir),
             select_parameters=select_parameters,
             nr_of_squares_in_row=nr_of_squares_in_row,
             min_r_squared=min_r_squared,
@@ -297,7 +296,7 @@ def process_recording(
         else:
             delete_files_in_directory(plot_dir)
 
-    # Look at squares for the recording
+    # Look at squares for the recording, note that at this time Label Nr and Square Nr are not assigned, but not needed
     df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
 
     # -----------------------------------------------------------------------------------------------------
@@ -394,9 +393,6 @@ def process_squares(
     df_squares = pd.DataFrame()
     nr_total_squares = int(nr_of_squares_in_row * nr_of_squares_in_row)
     square_area = calc_area_of_square(nr_of_squares_in_row)
-
-    # Pick up the plot to file flag
-    plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File') or False
 
     # --------------------------------------------------------------------------------------------
     # Generate the data for a square in a row and append it to the squares dataframe

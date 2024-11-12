@@ -194,7 +194,7 @@ class GenerateSquaresDialog:
             neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode') or 'Free',
         )
         generate_function(
-            paint_directory=self.paint_directory,
+            self.paint_directory,
             select_parameters=select_parameters,
             nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
             min_r_squared=self.min_r_squared.get(),
