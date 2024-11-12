@@ -337,6 +337,9 @@ def process_recording(
             only_valid_tau=True)
         label_selected_squares_and_tracks(df_squares, df_all_tracks)
 
+        # Refresh df_recording_tracks now to pick up Label and Square Nrs
+        df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
+
     # ----------------------------------------------------------------------------------------------------
     # Now do the single mode processing: determine a single Tau and Density per image, i.e., for all squares and return
     # those values
