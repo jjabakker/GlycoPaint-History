@@ -243,7 +243,7 @@ def main():
     format_time_nicely(run_time)
 
     paint_logger.info("")
-    paint_logger.info(f"Finished the whole process in:  {format_time_nicely(run_time)}")
+    paint_logger.info(f"Finished the whole process in: {format_time_nicely(run_time)}")
     paint_logger.info("")
 
     if error_count > 0:
