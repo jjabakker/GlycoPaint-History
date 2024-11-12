@@ -125,7 +125,7 @@ def process_experiment(
 
     # Load from the paint configuration file the parameters that are needed
     plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File') or ""
-    plot_max = get_paint_attribute('Generate Squares', 'Plot Max1') or 5
+    plot_max = get_paint_attribute('Generate Squares', 'Plot Max') or 5
 
     time_stamp = time.time()
 
@@ -317,6 +317,8 @@ def process_recording(
         min_r_squared,
         min_tracks_for_tau,
         process_square_tau,
+        plot_to_file,
+        plot_max,
         verbose)
 
     # ----------------------------------------------------------------------------------------------------
@@ -371,6 +373,8 @@ def process_squares(
         min_r_squared: float,
         min_tracks_for_tau: int,
         process_square_tau: bool,
+        plot_to_file: bool,
+        plot_max: int,
         verbose: bool) -> pd.DataFrame:
 
     # --------------------------------------------------------------------------------------------
@@ -418,6 +422,7 @@ def process_squares(
             row_nr,
             col_nr,
             plot_to_file,
+            plot_max,
             verbose)
 
         # And add it to the squares dataframe and the tau to the tau_matrix
@@ -458,6 +463,7 @@ def process_square(
     row_nr: int,
     col_nr: int,
     plot_to_file: bool,
+    plot_max: int,
     verbose: bool) -> pd.Series:
 
 
@@ -530,11 +536,11 @@ def process_square(
                 r_squared = 0
             else:
                 duration_data = compile_duration(df_tracks_for_tau)
-                plt_file = os.path.join(experiment_path, 'Plot', recording_name + str(square_seq_nr) + "-curve-fit.png")
+                plt_file = os.path.join(experiment_path, 'Plot', recording_name + '-' + str(square_seq_nr) + "-curve-fit.png")
                 tau, r_squared = curve_fit_and_plot(
                     plot_data=duration_data,
                     nr_tracks=nr_of_tracks_in_square,
-                    plot_max_x=5,
+                    plot_max_x=plot_max,
                     plot_title=" ",
                     file=plt_file,
                     plot_to_screen=False,
