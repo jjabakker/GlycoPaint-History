@@ -28,8 +28,7 @@ from src.Application.Generate_Squares.Generate_Squares_Support_Functions import 
     calc_average_track_count_in_background_squares,
     create_unique_key_for_squares,
     create_unique_key_for_tracks,
-    select_tracks_for_tau_calculation,
-    write_matrices,
+    extra_constraints_on_tracksfor_tau_calculation,
     add_columns_to_experiment
 )
 
@@ -172,7 +171,7 @@ def process_experiment(
         select_parameters['min_required_density_ratio'],
         select_parameters['max_allowable_variability'])
 
-    # Determine how many Recordings need processing
+    # Determine how many Recordings are in the files
     nr_files = df_all_tracks['Recording Name'].nunique()
     nr_files1 = len(df_experiment)
     if nr_files1 != nr_files:
@@ -214,7 +213,6 @@ def process_experiment(
                 df_all_tracks,
                 select_parameters,
                 experiment_row,
-                experiment_path,
                 ext_image_path,
                 recording_name,
                 nr_of_squares_in_row,
@@ -270,7 +268,6 @@ def process_recording(
         select_parameters: dict,
         experiment_row: pd.Series,
         experiment_path: str,
-        recording_path: str,
         recording_name: str,
         nr_of_squares_in_row: int,
         min_r_squared: float,
@@ -288,16 +285,19 @@ def process_recording(
     # Empty the plt directory
     delete_files_in_directory(get_tau_plots_dir_path(experiment_path, recording_name))  # TODO - Check this
 
+    # Look at squares for the recording
+    df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
+
     # -----------------------------------------------------------------------------------------------------
     # A df_squares dataframe is generated and, if the process_square_tau flag is set, for every square the
     # Tau and Density are calculated. The results are stored in 'All Squares'.
     # -----------------------------------------------------------------------------------------------------
 
-    df_squares, tau_matrix, df_all_tracks = calculate_squares(
+    df_squares, tau_matrix = process_squares(
         experiment_row,
         experiment_path,
         df_all_tracks,
-        recording_path,
+        df_recording_tracks,
         recording_name,
         nr_of_squares_in_row,
         float(experiment_row['Concentration']),
@@ -334,11 +334,9 @@ def process_recording(
     # ----------------------------------------------------------------------------------------------------
 
     if process_recording_tau:
-        tau, r_squared, density = calculate_recording_tau_and_density(
+        tau, r_squared, density = calculate_tau_and_density_for_recording(
             experiment_path,
-            select_parameters,
-            df_squares,
-            df_all_tracks,
+            df_recording_tracks,
             min_tracks_for_tau,
             min_r_squared,
             recording_name,
@@ -366,8 +364,8 @@ def process_squares(experiment_row: pd.Series,
     # Set up for processing
     # --------------------------------------------------------------------------------------------
 
-    # Look at squares for the recording
-    df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
+    # # Look at squares for the recording
+    # df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
 
     # Create the tau_matrix (and other matrices if verbose is True)
     tau_matrix = np.zeros((nr_of_squares_in_row, nr_of_squares_in_row), dtype=int)
@@ -452,174 +450,199 @@ def process_square(
     df_tracks_in_square = df_recording_tracks[mask]
     df_all_tracks.loc[df_tracks_in_square['Unique Key'], 'Square Nr'] = int(square_seq_nr)
 
-        # Provide reasonable values for squares not containing any tracks
-        nr_of_tracks_in_square = len(df_tracks_in_square)
-        if nr_of_tracks_in_square == 0:
-            total_track_duration = 0
-            average_long_track = 0
-            max_track_duration = 0
-            if process_square_tau:
+    # Provide reasonable values for squares not containing any tracks
+    nr_of_tracks_in_square = len(df_tracks_in_square)
+    if nr_of_tracks_in_square == 0:
+        total_track_duration = 0
+        average_long_track = 0
+        max_track_duration = 0
+        r_squared = 0
+        tau = -1 if process_square_tau else 0
+        density = 0
+        variability = 0
+        dc_mean = 0
+
+    else:
+
+        # --------------------------------------------------------------------------------------------
+        # Calculate the sum of track durations for the square
+        # --------------------------------------------------------------------------------------------
+
+        total_track_duration = sum(df_tracks_in_square['Track Duration'])
+
+        # --------------------------------------------------------------------------------------------
+        # Calculate the average of the long tracks for the square
+        # The long tracks are defined as the longest 10% of the tracks
+        # If the number of tracks is less than 10, the average long track is set on the full set
+        # --------------------------------------------------------------------------------------------
+
+        df_tracks_in_square.sort_values(by=['Track Duration'], inplace=True)
+
+        if nr_of_tracks_in_square < 10:
+            average_long_track = df_tracks_in_square.iloc[nr_of_tracks_in_square - 1]['Track Duration']
+        else:
+            percentage = get_paint_attribute('Generate Squares',
+                                             'Fraction of Squares to Determine Background')
+            nr_tracks_to_average = round(percentage * nr_of_tracks_in_square)
+            average_long_track = df_tracks_in_square.tail(nr_tracks_to_average)['Track Duration'].mean()
+
+        # --------------------------------------------------------------------------------------------
+        # Find the maximum track duration
+        # --------------------------------------------------------------------------------------------
+
+        max_track_duration = df_tracks_in_square['Track Duration'].max()
+
+        # --------------------------------------------------------------------------------------------
+        # Calculate the Tau for the square if requested. Use error codes:
+        #   -1: too few points to try to fit
+        #   -2: curve fitting tries, but failed
+        #   -3: curve fitting succeeded, but R2 is too low
+        # --------------------------------------------------------------------------------------------
+
+        if process_square_tau:
+
+            # First decide what tracks to consider for the Tau calculation
+
+            df_tracks_for_tau = extra_constraints_on_tracksfor_tau_calculation(df_tracks_in_square)
+
+            if len(df_tracks_for_tau) < min_tracks_for_tau:  # Too few points to curve fit
                 tau = -1
                 r_squared = 0
             else:
-                tau = 0
-                r_squared = 0
-            density = 0
-            variability = 0
-            dc_mean = 0
-
-        else:
-
-            # --------------------------------------------------------------------------------------------
-            # Calculate the sum of track durations for the square
-            # --------------------------------------------------------------------------------------------
-
-            total_track_duration = sum(df_tracks_in_square['Track Duration'])
-
-            # --------------------------------------------------------------------------------------------
-            # Calculate the average of the long tracks for the square
-            # The long tracks are defined as the longest 10% of the tracks
-            # If the number of tracks is less than 10, the average long track is set on the full set
-            # --------------------------------------------------------------------------------------------
-
-            df_tracks_in_square.sort_values(by=['Track Duration'], inplace=True)
-
-            if nr_of_tracks_in_square < 10:
-                average_long_track = df_tracks_in_square.iloc[nr_of_tracks_in_square - 1]['Track Duration']
-            else:
-                percentage = get_paint_attribute('Generate Squares',
-                                                 'Fraction of Squares to Determine Background')
-                nr_tracks_to_average = round(percentage * nr_of_tracks_in_square)
-                average_long_track = df_tracks_in_square.tail(nr_tracks_to_average)['Track Duration'].mean()
-
-            # --------------------------------------------------------------------------------------------
-            # Find the maximum track duration
-            # --------------------------------------------------------------------------------------------
-
-            max_track_duration = df_tracks_in_square['Track Duration'].max()
-
-            # --------------------------------------------------------------------------------------------
-            # Calculate the Tau for the square if requested. Use error codes:
-            #   -1: too few points to try to fit
-            #   -2: curve fitting tries, but failed
-            #   -3: curve fitting succeeded, but R2 is too low
-            # --------------------------------------------------------------------------------------------
-
-            if process_square_tau:
-
-                # First decide what tracks to consider for the Tau calculation
-                limit_dc = get_paint_attribute('Generate Squares',
-                                               'Exclude zero DC tracks from Tau Calculation')
-                df_tracks_for_tau = select_tracks_for_tau_calculation(df_tracks_in_square, limit_dc)
-
-                if len(df_tracks_for_tau) < min_tracks_for_tau:  # Too few points to curve fit
-                    tau = -1
+                duration_data = compile_duration(df_tracks_for_tau)
+                plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name),
+                                        recording_name + "-square-" + str(square_seq_nr) + ".png")
+                tau, r_squared = curve_fit_and_plot(
+                    plot_data=duration_data, nr_tracks=nr_of_tracks_in_square, plot_max_x=5, plot_title=" ",
+                    file=plt_file, plot_to_screen=False, plot_to_file=False, verbose=False)
+                if tau == -2:  # Tau calculation failed
                     r_squared = 0
-                else:
-                    duration_data = compile_duration(df_tracks_for_tau)
-                    plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name),
-                                            recording_name + "-square-" + str(square_seq_nr) + ".png")
-                    tau, r_squared = curve_fit_and_plot(
-                        plot_data=duration_data, nr_tracks=nr_of_tracks_in_square, plot_max_x=5, plot_title=" ",
-                        file=plt_file, plot_to_screen=False, plot_to_file=False, verbose=False)
-                    if tau == -2:  # Tau calculation failed
-                        r_squared = 0
-                    if r_squared < min_r_squared:  # Tau was calculated, but not reliable
-                        tau = -3
-                    tau = int(tau)
-            else:
-                tau = 0
-                r_squared = 0
+                if r_squared < min_r_squared:  # Tau was calculated, but not reliable
+                    tau = -3
+                tau = int(tau)
+        else:
+            tau = 0
+            r_squared = 0
 
-            # --------------------------------------------------------------------------------------------
-            # Calculate the density for the square
-            # Note: magnification is hard coded to 1000, just to get an easier to read number
-            # --------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------
+        # Calculate the density for the square
+        # Note: magnification is hard coded to 1000, just to get an easier to read number
+        # --------------------------------------------------------------------------------------------
 
-            density = calculate_density(
-                nr_tracks=nr_of_tracks_in_square, area=square_area, time=100, concentration=concentration,
-                magnification=1000)
+        density = calculate_density(
+            nr_tracks=nr_of_tracks_in_square, area=square_area, time=100, concentration=concentration,
+            magnification=1000)
 
-            # --------------------------------------------------------------------------------------------
-            # Calculate the variability for the square
-            # --------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------
+        # Calculate the variability for the square
+        # --------------------------------------------------------------------------------------------
 
-            variability = calc_variability(df_tracks_in_square, square_seq_nr, nr_of_squares_in_row, 10)
+        variability = calc_variability(df_tracks_in_square, square_seq_nr, nr_of_squares_in_row, 10)
 
-            # --------------------------------------------------------------------------------------------
-            # Calculate the diffusion coefficient for the square
-            # --------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------
+        # Calculate the diffusion coefficient for the square
+        # --------------------------------------------------------------------------------------------
 
-            dc_mean = df_tracks_in_square['Diffusion Coefficient'].mean()
+        dc_mean = df_tracks_in_square['Diffusion Coefficient'].mean()
 
-        # Enter the calculated values in the tau, density, and variability matrices
-        # Not really needed and hardly used for analysis. Could be removed
-        tau_matrix[row_nr, col_nr] = int(tau)
-        if verbose:
-            density_matrix[row_nr, col_nr] = int(density)
-            variability_matrix[row_nr, col_nr] = int(variability * 100)
-            count_matrix[row_nr, col_nr] = nr_of_tracks_in_square
 
-        # Create the new squares record to add all the data for this square
-        squares_row = {'Recording Sequence Nr': experiment_row['Recording Sequence Nr'],
-                       'Ext Recording Name': experiment_row['Ext Recording Name'],
-                       'Experiment Name': experiment_row['Experiment Name'],
-                       'Experiment Date': experiment_row['Experiment Date'],
-                       'Condition Nr': experiment_row['Condition Nr'],
-                       'Replicate Nr': experiment_row['Replicate Nr'],
-                       'Square Nr': int(square_seq_nr),
-                       'Probe': experiment_row['Probe'],
-                       'Probe Type': experiment_row['Probe Type'],
-                       'Cell Type': experiment_row['Cell Type'],
-                       'Adjuvant': experiment_row['Adjuvant'],
-                       'Concentration': experiment_row['Concentration'],
-                       'Threshold': experiment_row['Threshold'],
-                       'Row Nr': int(row_nr + 1),
-                       'Col Nr': int(col_nr + 1),
-                       'Label Nr': 0,
-                       'Cell Id': 0,
-                       'Nr Spots': experiment_row['Nr Spots'],
-                       'Nr Tracks': int(nr_of_tracks_in_square),
-                       'X0': round(x0, 2),
-                       'Y0': round(y0, 2),
-                       'X1': round(x1, 2),
-                       'Y1': round(y1, 2),
-                       'Selected': True,
-                       'Variability': round(variability, 2),
-                       'Density': round(density, 1),
-                       'Density Ratio': 0.0,
-                       'Tau': round(tau, 0),
-                       'R2': round(r_squared, 2),
-                       'Diffusion Coefficient': round(dc_mean, 0),
-                       'Average Long Track Duration': round(average_long_track, 1),
-                       'Max Track Duration': round(max_track_duration, 1),
-                       'Total Track Duration': round(total_track_duration, 1),
-                       }
-        # And add it to the squares dataframe
-        df_squares = pd.concat([df_squares, pd.DataFrame.from_records([squares_row])])
+    # Create the new squares record to add all the data for this square
+    squares_row = {'Recording Sequence Nr': experiment_row['Recording Sequence Nr'],
+                   'Ext Recording Name': experiment_row['Ext Recording Name'],
+                   'Experiment Name': experiment_row['Experiment Name'],
+                   'Experiment Date': experiment_row['Experiment Date'],
+                   'Condition Nr': experiment_row['Condition Nr'],
+                   'Replicate Nr': experiment_row['Replicate Nr'],
+                   'Square Nr': int(square_seq_nr),
+                   'Probe': experiment_row['Probe'],
+                   'Probe Type': experiment_row['Probe Type'],
+                   'Cell Type': experiment_row['Cell Type'],
+                   'Adjuvant': experiment_row['Adjuvant'],
+                   'Concentration': experiment_row['Concentration'],
+                   'Threshold': experiment_row['Threshold'],
+                   'Row Nr': int(row_nr + 1),
+                   'Col Nr': int(col_nr + 1),
+                   'Label Nr': 0,
+                   'Cell Id': 0,
+                   'Nr Spots': experiment_row['Nr Spots'],
+                   'Nr Tracks': int(nr_of_tracks_in_square),
+                   'X0': round(x0, 2),
+                   'Y0': round(y0, 2),
+                   'X1': round(x1, 2),
+                   'Y1': round(y1, 2),
+                   'Selected': True,
+                   'Variability': round(variability, 2),
+                   'Density': round(density, 1),
+                   'Density Ratio': 0.0,
+                   'Tau': round(tau, 0),
+                   'R2': round(r_squared, 2),
+                   'Diffusion Coefficient': round(dc_mean, 0),
+                   'Average Long Track Duration': round(average_long_track, 1),
+                   'Max Track Duration': round(max_track_duration, 1),
+                   'Total Track Duration': round(total_track_duration, 1),
+                   }
+
+    return squares_row, tau
+
+
+def calculate_tau_and_density_for_recording(
+        experiment_directory: str,
+        df_recording_tracks: pd.DataFrame,
+        min_tracks_for_tau: int,
+        min_r_squared: float,
+        recording_name: str,
+        nr_of_squares_in_row: int,
+        concentration: float,
+        plot_to_file: bool
+) -> tuple:
+    """
+    This function calculates a single Tau and Density for a Recording. It does this by considering only the tracks
+    in the image
+    """
+
+
+    # Within that recording use all the selected squares. Note: no need to filter out squares with Ta < 0
+    # select_squares_with_parameters(
+    #     df_squares=df_squares,
+    #     select_parameters=select_parameters,
+    #     nr_of_squares_in_row=nr_of_squares_in_row,
+    #     only_valid_tau=True)     #ToDo Need to look at labelling, this one needs to be false, but cause things to be out of sync
+    # df_squares_for_single_tau = df_squares[df_squares['Selected']]
+    df_squares_for_single_tau = df_recording_tracks
+
+    # Select only the tracks that fall within these squares.
+    # The following code filters df_tracks to include rows where Square Nr values match those
+    # in df_squares_for_single_tau
+
+    df_tracks_for_tau = df_recording_tracks[
+        df_recording_tracks['Square Nr'].isin(df_squares_for_single_tau['Square Nr'])]
+    nr_of_tracks_for_single_tau = len(df_tracks_for_tau)
 
     # --------------------------------------------------------------------------------------------
-    # At this point, the full df_square dataframe exists. Now some post processing is done
+    # Calculate the Tau
     # --------------------------------------------------------------------------------------------
 
-    # --------------------------------------------------------------------------------------------
-    # Determine the background tracks count and calculate the density ratio calculation
-    # The density ratio can be calculated simply by dividing the tracks in the square by the average tracks
-    # because everything else stays the same (no need to calculate the background density itself)
-    # --------------------------------------------------------------------------------------------
-
-    background_tracks = calc_average_track_count_in_background_squares(df_squares, int(0.1 * nr_total_squares))
-
-    if background_tracks == 0:
-        df_squares['Density Ratio'] = 999.9  # Special code
+    if nr_of_tracks_for_single_tau < min_tracks_for_tau:
+        tau = -1
+        r_squared = 0
     else:
-        df_squares['Density Ratio'] = round(df_squares['Nr Tracks'] / background_tracks, 1)
+        duration_data = compile_duration(df_tracks_for_tau)
+        plt_file = os.path.join(get_tau_plots_dir_path(experiment_directory, recording_name), recording_name + ".png")
+        tau, r_squared = curve_fit_and_plot(
+            plot_data=duration_data, nr_tracks=nr_of_tracks_for_single_tau, plot_max_x=5, plot_title=" ",
+            file=plt_file, plot_to_screen=False, plot_to_file=plot_to_file, verbose=False)
+        if tau == -2:  # Tau calculation failed
+            r_squared = 0
+        tau = int(tau)
+        if r_squared < min_r_squared:  # Tau was calculated, but not reliable
+            tau = -3
 
-    if verbose:
-        write_matrices(recording_path, recording_name, tau_matrix, density_matrix, count_matrix, variability_matrix,
-                       verbose)
+    # --------------------------------------------------------------------------------------------
+    # Calculate the Density
+    # --------------------------------------------------------------------------------------------
 
-    return df_squares, tau_matrix, df_all_tracks
+    area = calc_area_of_square(nr_of_squares_in_row)
+    density = calculate_density(
+        nr_tracks=nr_of_tracks_for_single_tau, area=area, time=100, concentration=concentration, magnification=1000)
 
-
-
+    return tau, r_squared, density
