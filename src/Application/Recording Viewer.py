@@ -24,8 +24,7 @@ from src.Application.Recording_Viewer.Heatmap_Support import (
     get_colormap_colors, get_color_index,
     get_heatmap_data)
 from src.Application.Recording_Viewer.Display_Selected_Squares import (
-    display_selected_squares,
-    mark_selected_squares)
+    display_selected_squares)
 from src.Application.Recording_Viewer.Get_Images import get_images
 from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import (
     test_if_square_is_in_rectangle,
@@ -833,7 +832,7 @@ class RecordingViewer():
             self.squares_in_rectangle.remove(square_nr)
         else:
             self.squares_in_rectangle.append(int(square_nr))
-        self.mark_selected_squares(self.squares_in_rectangle)
+        self.display_selected_squares()
 
     def provide_information_on_square(self, event, label_nr, square_nr):
         """
@@ -913,13 +912,10 @@ class RecordingViewer():
                         square['X0'], square['Y0'], square['X1'], square['Y1'], self.start_x, self.start_y,
                         event.x, event.y):
                     self.squares_in_rectangle.append(int(square['Square Nr']))
-
-        # self.mark_selected_squares(self.squares_in_rectangle)
         self.display_selected_squares()
 
     def mark_selected_squares(self, list_of_squares):
-
-        mark_selected_squares(list_of_squares, self.nr_of_squares_in_row, self.cn_left_image)
+        self.display_selected_squares()
 
     def on_forward_backward(self, direction):
         """
