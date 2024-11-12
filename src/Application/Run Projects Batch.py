@@ -86,7 +86,6 @@ def process_json_configuration_block(paint_source_dir,
     # if not os.path.exists(r_dest_dir):
     #     os.makedirs(r_dest_dir)
 
-
     nr_experiments_processed = process_project(
         project_path=project_path,
         select_parameters=select_parameters,

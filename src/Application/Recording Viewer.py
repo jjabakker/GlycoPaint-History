@@ -833,7 +833,6 @@ class RecordingViewer():
             self.squares_in_rectangle.remove(square_nr)
         else:
             self.squares_in_rectangle.append(int(square_nr))
-
         self.mark_selected_squares(self.squares_in_rectangle)
 
     def provide_information_on_square(self, event, label_nr, square_nr):
