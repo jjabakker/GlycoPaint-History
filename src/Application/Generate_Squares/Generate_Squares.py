@@ -189,9 +189,15 @@ def process_experiment(
     processed = 0
     df_squares = pd.DataFrame()
 
-    paint_logger.info(f"Processing {nr_files:2d} images in {experiment_path}")
+    nr_of_recordings_to_process = len(df_experiment[df_experiment['Process'].isin(['Yes', 'y', 'Y'])])
+    paint_logger.info(f"Processing {nr_of_recordings_to_process:2d} images in {experiment_path}")
 
     for index, experiment_row in df_experiment.iterrows():
+
+        # Skip if not selected for processing
+        if experiment_row['Process'] not in ['Yes', 'yes', 'y', 'Y']:
+            continue
+
         recording_name = experiment_row['Ext Recording Name']
         ext_image_path = os.path.join(experiment_path, experiment_row['Ext Recording Name'])
 
@@ -202,7 +208,7 @@ def process_experiment(
             # Process the Recording
             # --------------------------------------------------------------------------------------------
 
-            paint_logger.debug(f"Processing file {current_image_nr} of {nr_files}: {recording_name}")
+            paint_logger.debug(f"Processing file {current_image_nr} of {nr_of_recordings_to_process}: {recording_name}")
 
             df_squares, tau, r_squared, density = process_recording(
                 df_all_tracks,
