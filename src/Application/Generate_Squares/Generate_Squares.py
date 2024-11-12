@@ -5,7 +5,9 @@ import time
 import numpy as np
 import pandas as pd
 
-from src.Application.Recording_Viewer.Select_Squares import select_squares_with_parameters
+from src.Application.Recording_Viewer.Select_Squares import (
+    select_squares_with_parameters,
+    label_selected_squares_and_tracks)
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
@@ -91,7 +93,7 @@ def process_project(
 
         # Process the experiment
         process_experiment(
-            paint_directory=os.path.join(root_directory, experiment_dir),
+            experiment_path=os.path.join(root_directory, experiment_dir),
             select_parameters=select_parameters,
             nr_of_squares_in_row=nr_of_squares_in_row,
             min_r_squared=min_r_squared,
@@ -105,7 +107,7 @@ def process_project(
 
 
 def process_experiment(
-        paint_directory: str,
+        experiment_path: str,
         select_parameters: dict,
         nr_of_squares_in_row: int,
         min_r_squared: float,
@@ -120,7 +122,6 @@ def process_experiment(
     """
 
     df_all_squares = pd.DataFrame()
-    experiment_path = paint_directory
 
     # Load from the paint configuration file the parameters that are needed
     plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File') or ""
@@ -132,10 +133,10 @@ def process_experiment(
     # Read the All Tracks file and add (or reinitialise two columns for the square and label numbers
     # --------------------------------------------------------------------------------------------
 
-    df_all_tracks = pd.read_csv(os.path.join(paint_directory, 'All Tracks.csv'))
+    df_all_tracks = pd.read_csv(os.path.join(experiment_path, 'All Tracks.csv'))
     df_all_tracks = create_unique_key_for_tracks(df_all_tracks)
     if df_all_tracks is None:
-        paint_logger.error(f"Could not read the 'All Tracks.csv' file in {paint_directory}")
+        paint_logger.error(f"Could not read the 'All Tracks.csv' file in {experiment_path}")
         sys.exit(1)
     df_all_tracks['Square Nr'] = None
     df_all_tracks['Label Nr'] = None
@@ -144,7 +145,7 @@ def process_experiment(
     # Read the All Recordings file, check if it is in the correct format and add the required columns
     # --------------------------------------------------------------------------------------------
 
-    df_experiment = pd.read_csv(os.path.join(paint_directory, 'All Recordings.csv'))
+    df_experiment = pd.read_csv(os.path.join(experiment_path, 'All Recordings.csv'))
     if df_experiment is None:
         paint_logger.error(
             f"Function 'process_experiment' failed: Likely, {experiment_path} is not a valid  \
@@ -199,7 +200,7 @@ def process_experiment(
             continue
 
         recording_name = experiment_row['Ext Recording Name']
-        ext_image_path = os.path.join(experiment_path, experiment_row['Ext Recording Name'])
+        recording_path = os.path.join(experiment_path, experiment_row['Ext Recording Name'])
 
         process = True
         if process:
@@ -214,7 +215,8 @@ def process_experiment(
                 df_all_tracks,
                 select_parameters,
                 experiment_row,
-                ext_image_path,
+                experiment_path,
+                recording_path,
                 recording_name,
                 nr_of_squares_in_row,
                 min_r_squared,
@@ -249,7 +251,7 @@ def process_experiment(
     # Save to the All Tracks file (the square and label columns have been updated)
     # --------------------------------------------------------------------------------------------
 
-    df_all_tracks.to_csv(os.path.join(paint_directory, 'All Tracks.csv'), index=False)
+    df_all_tracks.to_csv(os.path.join(experiment_path, 'All Tracks.csv'), index=False)
 
     # --------------------------------------------------------------------------------------------
     # Save the Experiment file
@@ -271,6 +273,7 @@ def process_recording(
         select_parameters: dict,
         experiment_row: pd.Series,
         experiment_path: str,
+        recording_path: str,
         recording_name: str,
         nr_of_squares_in_row: int,
         min_r_squared: float,
@@ -305,6 +308,7 @@ def process_recording(
     df_squares, tau_matrix = process_squares(
         experiment_row,
         experiment_path,
+        recording_path,
         df_all_tracks,
         df_recording_tracks,
         recording_name,
@@ -322,20 +326,14 @@ def process_recording(
 
     generate_labels_but_very_slow = True
     if generate_labels_but_very_slow:
+
+        # Label just the squares that have a valid Tau
         select_squares_with_parameters(
             df_squares=df_squares,
             select_parameters=select_parameters,
             nr_of_squares_in_row=nr_of_squares_in_row,
-            only_valid_tau=False)
-
-        df_temp = df_squares[df_squares['Label Nr'] != 0]
-        for index, experiment_row in df_temp.iterrows():
-            square = experiment_row['Square Nr']
-            label = experiment_row['Label Nr']
-            df_all_tracks.loc[
-                (df_all_tracks['Square Nr'] == square) &
-                (df_all_tracks['Recording Name'] == recording_name), 'Label Nr'
-            ] = label
+            only_valid_tau=True)
+        label_selected_squares_and_tracks(df_squares, df_all_tracks)
 
     # ----------------------------------------------------------------------------------------------------
     # Now do the single mode processing: determine a single Tau and Density per image, i.e., for all squares and return
@@ -344,7 +342,7 @@ def process_recording(
 
     if process_recording_tau:
         tau, r_squared, density = calculate_tau_and_density_for_recording(
-            experiment_path,
+            recording_path,
             df_recording_tracks,
             min_tracks_for_tau,
             min_r_squared,
@@ -361,17 +359,20 @@ def process_recording(
     return df_squares, tau, r_squared, density
 
 
-def process_squares(experiment_row: pd.Series,
-                    experiment_directory: str,
-                    df_all_tracks: pd.DataFrame,
-                    df_recording_tracks: pd.DataFrame,
-                    recording_name: str,
-                    nr_of_squares_in_row: int,
-                    concentration: float,
-                    min_r_squared: float,
-                    min_tracks_for_tau: int,
-                    process_square_tau: bool,
-                    verbose: bool) -> pd.DataFrame:
+def process_squares(
+        experiment_row: pd.Series,
+        experiment_path: str,
+        recording_path: str,
+        df_all_tracks: pd.DataFrame,
+        df_recording_tracks: pd.DataFrame,
+        recording_name: str,
+        nr_of_squares_in_row: int,
+        concentration: float,
+        min_r_squared: float,
+        min_tracks_for_tau: int,
+        process_square_tau: bool,
+        verbose: bool) -> pd.DataFrame:
+
     # --------------------------------------------------------------------------------------------
     # Set up for processing
     # --------------------------------------------------------------------------------------------
@@ -402,7 +403,8 @@ def process_squares(experiment_row: pd.Series,
 
         squares_row, tau = process_square(
             experiment_row,
-            experiment_directory,
+            experiment_path,
+            recording_path,
             df_all_tracks,
             df_recording_tracks,
             recording_name,
@@ -441,7 +443,8 @@ def process_squares(experiment_row: pd.Series,
 
 def process_square(
     experiment_row: pd.Series,
-    experiment_directory: str,
+    experiment_path: str,
+    recording_path: str,
     df_all_tracks: pd.DataFrame,
     df_recording_tracks: pd.DataFrame,
     recording_name: str,
@@ -498,9 +501,9 @@ def process_square(
         if nr_of_tracks_in_square < 10:
             average_long_track = df_tracks_in_square.iloc[nr_of_tracks_in_square - 1]['Track Duration']
         else:
-            percentage = get_paint_attribute('Generate Squares',
-                                             'Fraction of Squares to Determine Background')
-            nr_tracks_to_average = round(percentage * nr_of_tracks_in_square)
+            fraction = get_paint_attribute('Generate Squares',
+                                             'Fraction of Squares to Determine Background') or 0.1
+            nr_tracks_to_average = round(fraction * nr_of_tracks_in_square)
             average_long_track = df_tracks_in_square.tail(nr_tracks_to_average)['Track Duration'].mean()
 
         # --------------------------------------------------------------------------------------------
@@ -615,24 +618,25 @@ def calculate_tau_and_density_for_recording(
         recording_name: str,
         nr_of_squares_in_row: int,
         concentration: float,
-        plot_to_file: bool
+        df_squares: pd.DataFrame,
+        select_parameters: dict,
         plot_to_file: bool,
         plot_max: int = 5
 ) -> tuple:
     """
-    This function calculates a single Tau and Density for a Recording. It does this by considering only the tracks
-    in the image
+    This function calculates a single Tau and Density for a Recording. It does this by considering all the tracks
+    in the image that meet the selection criteria.
+    Note that also squares are included for which no square Tau could be calculated (provided they meet the selection
+    criteria). The Tau and Density are calculated for the entire image, not for individual squares.
     """
 
-
     # Within that recording use all the selected squares. Note: no need to filter out squares with Ta < 0
-    # select_squares_with_parameters(
-    #     df_squares=df_squares,
-    #     select_parameters=select_parameters,
-    #     nr_of_squares_in_row=nr_of_squares_in_row,
-    #     only_valid_tau=True)     #ToDo Need to look at labelling, this one needs to be false, but cause things to be out of sync
-    # df_squares_for_single_tau = df_squares[df_squares['Selected']]
-    df_squares_for_single_tau = df_recording_tracks
+    select_squares_with_parameters(
+        df_squares=df_squares,
+        select_parameters=select_parameters,
+        nr_of_squares_in_row=nr_of_squares_in_row,
+        only_valid_tau=False)
+    df_squares_for_single_tau = df_squares[df_squares['Selected']]
 
     # Select only the tracks that fall within these squares.
     # The following code filters df_tracks to include rows where Square Nr values match those
