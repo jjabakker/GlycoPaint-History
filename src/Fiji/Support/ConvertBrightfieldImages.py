@@ -9,10 +9,10 @@ from java.lang.System import getProperty
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
 
-from LoggerConfig import paint_logger, change_file_handler
+from LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 
 # Set up logging
-change_file_handler('Convert BF Images.log')
+paint_logger_change_file_handler_name('Convert BF Images.log')
 
 # Import custom functions for asking the user for directories.
 from FijiSupportFunctions import ask_user_for_image_directory
@@ -76,14 +76,14 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
                       count)
 
     # Copy the entire 'Converted BF Images' directory to the paint directory
-    dest_dir = os.path.join(paint_directory, "Converted BF Images")
+    dest_dir = os.path.join(paint_directory, "Brightfield Images")
     if os.path.exists(dest_dir):
         # If the destination directory already exists, remove it before copying
         shutil.rmtree(dest_dir)
 
     try:
         shutil.copytree(bf_jpeg_dir, dest_dir)
-        paint_logger.info("Copied the entire 'Converted BF Images' directory to %s", dest_dir)
+        paint_logger.info("Copied the entire 'Brightfield Images' directory to %s", dest_dir)
     except Exception as e:
         paint_logger.error("Error copying the directory %s to %s: %s", bf_jpeg_dir, dest_dir, str(e))
 

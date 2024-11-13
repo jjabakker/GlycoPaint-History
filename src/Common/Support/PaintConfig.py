@@ -1,7 +1,7 @@
 import json
 import os
 
-from src.Common.Support.LoggerConfig import paint_logger
+#from src.Common.Support.LoggerConfig import paint_logger
 
 
 def get_paint_defaults_file_path():  # ToDo
@@ -41,13 +41,14 @@ def load_paint_config(file_path):
 def get_paint_attribute(application, attribute_name):
     config = load_paint_config(get_paint_defaults_file_path())
     if config is None:
-        paint_logger.error("Error: Configuration file {} not found.".format(get_paint_defaults_file_path()))
+        #paint_logger.error("Error: Configuration file {} not found.".format(get_paint_defaults_file_path()))
         return None
     else:
         application = config.get(application)
         value = application.get(attribute_name, None)
         if value is None:
-            paint_logger.error("Error: Attribute {} not found in configuration file {}.".format(attribute_name, get_paint_defaults_file_path()))
+            pass    #ToDo
+            # paint_logger.error("Error: Attribute {} not found in configuration file {}.".format(attribute_name, get_paint_defaults_file_path()))
         return value
 
 

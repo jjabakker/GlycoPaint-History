@@ -156,7 +156,7 @@ def install():
         copy_file_from_source_to_dest(fiji_grid_source, fiji_grid_dest, file)
 
     print(f"\n\nCopy from {fiji_support_source} to {library_dest}: ")
-    fiji_files = ["FijiSupportFunctions.py", "Trackmate.py"]
+    fiji_files = ["FijiSupportFunctions.py", "Trackmate.py", "ConvertBrightfieldImages.py"]
     for file in fiji_files:
         copy_file_from_source_to_dest(fiji_support_source, library_dest, file)
 

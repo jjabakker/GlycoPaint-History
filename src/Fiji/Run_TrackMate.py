@@ -32,6 +32,8 @@ from LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
 
+from ConvertBrightfieldImages import convert_bf_images
+
 paint_logger_change_file_handler_name('Grid Process Batch.log')
 
 
@@ -168,6 +170,8 @@ def run_trackmate(experiment_directory, recording_source_directory):
             paint_logger.error("Run_Trackmate: Missing expected column in row: {}.format(e)")
             suppress_fiji_output()
             sys.exit(0)
+
+    convert_bf_images(recording_source_directory, experiment_directory, force=True)
 
 
 def process_recording(row, recording_source_directory, experiment_directory):
