@@ -275,8 +275,6 @@ class RecordingViewer:
             self.frame_commands, text='Histogram', command=lambda: self.on_histogram(), width=button_width)
         self.bn_excel = ttk.Button(
             self.frame_commands, text='Excel', command=lambda: self.on_how_excel(), width=button_width)
-        self.bn_output = ttk.Button(
-            self.frame_commands, text='Output', command=lambda: self.on_run_output(), width=button_width)
         self.bn_reset = ttk.Button(
             self.frame_commands, text='Reset', command=lambda: self.on_reset_image(), width=button_width)
 
@@ -284,7 +282,6 @@ class RecordingViewer:
         self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
         self.bn_show_heatmap.grid(column=0, row=2, padx=5, pady=5)
         self.bn_show_define_cells.grid(column=0, row=3, padx=5, pady=5)
-        self.bn_output.grid(column=0, row=4, padx=5, pady=5)
         self.bn_reset.grid(column=0, row=5, padx=5, pady=5)
         self.bn_excel.grid(column=0, row=6, padx=5, pady=5)
 
@@ -756,20 +753,6 @@ class RecordingViewer:
         info3 = f"Min Required Density Ratio: {density_ratio:,} - Max Allowable Variability: {variability}"
         self.text_for_info3.set(info3)
 
-    def on_run_output(self):
-        """
-        Prepares the output files.
-        For specific sets up probes or cell types, specific functions are needed
-        :return:
-        """
-
-        # Generate the graphpad and PDF directories if needed
-        # create_output_directories_for_graphpad(self.experiment_directory)
-
-        # Generate the graphpad info for summary statistics
-        # df_stats = analyse_all_images(self.experiment_directory)
-        # create_summary_graphpad(self.experiment_directory, df_stats)
-
     def provide_report_on_cell(self, _, cell_nr):
         """
         Invoked by right-clicking on a cell radio button. Only when there are actually squares defined for the cell,
@@ -812,13 +795,12 @@ class RecordingViewer:
         return
 
     def select_squares_for_display(self):
-        select_squares(self, only_valid_tau=True)
+        select_squares(self, only_valid_tau=True)     # The function is in the file 'Select_Squares.py'
 
     def display_selected_squares(self):
         display_selected_squares(self)
 
     def square_assigned_to_cell(self, square_nr):
-
         if square_nr in self.squares_in_rectangle:
             self.squares_in_rectangle.remove(square_nr)
         else:
