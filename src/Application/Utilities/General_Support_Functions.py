@@ -192,33 +192,63 @@ def classify_directory(directory_path):
     directory_type = None
     maturity = 'Immature'
 
-    # Check if it is an experiment directory
-    contents = set(os.listdir(directory_path))
-    if experiment_files.issubset(contents) and experiment_subdirs.issubset(contents):
-        directory_type = 'Experiment'
-        # Check for maturity based on the presence of 'All Squares.csv'
-        if mature_experiment_file in contents:
-            maturity = 'Mature'
+    try:
+        # Check if the directory exists
+        if not os.path.exists(directory_path):
+            paint_logger.error(f"Directory '{directory_path}' does not exist.")
+            return directory_type, maturity
 
-    else:
-        # Check if it is a project directory by looking for experiment subdirectories
-        experiment_dirs = [
-            d for d in os.listdir(directory_path)
-            if os.path.isdir(os.path.join(directory_path, d))
-        ]
-        experiment_dir_count = 0
-        for sub_dir in experiment_dirs:
-            sub_dir_path = os.path.join(directory_path, sub_dir)
-            sub_contents = set(os.listdir(sub_dir_path))
-            if experiment_files.issubset(sub_contents) and experiment_subdirs.issubset(sub_contents):
-                experiment_dir_count += 1
+        # Check if the path is a directory
+        if not os.path.isdir(directory_path):
+            paint_logger.error(f"Path '{directory_path}' is not a directory.")
+            return directory_type, maturity
 
-        # If it contains one or more experiment directories, classify as project
-        if experiment_dir_count > 0:
-            directory_type = 'Project'
-            # Check for maturity based on the presence of 'All Squares.csv'
-            if project_files.issubset(contents) and mature_project_file in contents:
-                maturity = 'Mature'
+        # Get directory contents
+        contents = set(os.listdir(directory_path))
+
+        # Check if it is an experiment directory
+        if experiment_files.issubset(contents):
+            missing_subdirs = experiment_subdirs - contents
+            if missing_subdirs:
+                paint_logger.error(f"Not an Experiment: directory '{directory_path}' is missing required subdirectories: {', '.join(missing_subdirs)}")
+            else:
+                directory_type = 'Experiment'
+                # Check for maturity
+                if mature_experiment_file in contents:
+                    maturity = 'Mature'
+                else:
+                    paint_logger.error(f"Nor a mature Project: directory '{directory_path}' is missing the file '{mature_experiment_file}' required for maturity.")
+        else:
+            missing_files = experiment_files - contents
+            paint_logger.error(f"Not an Experiment: directory '{directory_path}' is missing required files: {', '.join(missing_files)}")
+
+        # Check if it is a project directory
+        if directory_type is None:
+            experiment_dirs = [
+                d for d in os.listdir(directory_path)
+                if os.path.isdir(os.path.join(directory_path, d))
+            ]
+            experiment_dir_count = 0
+            for sub_dir in experiment_dirs:
+                sub_dir_path = os.path.join(directory_path, sub_dir)
+                sub_contents = set(os.listdir(sub_dir_path))
+                if experiment_files.issubset(sub_contents) and experiment_subdirs.issubset(sub_contents):
+                    experiment_dir_count += 1
+                else:
+                    paint_logger.error(f"Not an Experiment: Subdirectory '{sub_dir}' is missing required files or subdirectories")
+
+            if experiment_dir_count > 0:
+                directory_type = 'Project'
+                if project_files.issubset(contents) and mature_project_file in contents:
+                    maturity = 'Mature'
+                else:
+                    paint_logger.error(f"Not a Project: directory '{directory_path}' is missing files required for project maturity: {', '.join(project_files - contents) or mature_project_file}")
+            else:
+                paint_logger.error(f"Not a Project: directory '{directory_path}' does not contain any valid experiment subdirectories.")
+
+    except Exception as e:
+        print(f"An error occurred while classifying the directory: {e}")
+        return directory_type, maturity
 
     # Return type and maturity
     return directory_type, maturity
