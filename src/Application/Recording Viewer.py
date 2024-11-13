@@ -47,7 +47,7 @@ paint_logger_change_file_handler_name('Recording Viewer.log')
 # RecordingViewer Class
 # ----------------------------------------------------------------------------------------
 
-class RecordingViewer():
+class RecordingViewer:
 
     def __init__(self, parent, user_specified_directory, user_specified_mode):
 
@@ -344,7 +344,7 @@ class RecordingViewer():
             self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
 
     def on_show_heatmap(self):
-        # If the heatmap is not already  active, then we need to run the heatmap dialog
+        # If the heatmap is not already active, then we need to run the heatmap dialog
 
         if self.is_dialog_active():
             return
@@ -426,7 +426,7 @@ class RecordingViewer():
         # Update 'Cell Id' for all squares in the rectangle
         self.df_squares.loc[self.squares_in_rectangle, 'Cell Id'] = int(cell_id)
 
-        # Set flag and clear the list
+        # Set the flag and clear the list
         self.squares_changed = True
         self.squares_in_rectangle = []
         self.display_selected_squares()
@@ -513,7 +513,7 @@ class RecordingViewer():
             self.show_numbers = self.show_squares  # Set show_numbers based on show_squares
             self.display_selected_squares()
 
-        # Pressing 'o' will generate a pdf file containing all the images
+        # Pressing 'o' will generate a PDF file containing all the images
         elif event.keysym == 'o':
             self.output_pictures_to_pdf()
 
@@ -540,7 +540,7 @@ class RecordingViewer():
 
     def output_pictures_to_pdf(self):
         """
-        The function is triggered by pressing 'o' and will generate a pdf file containing all the images.
+        The function is triggered by pressing 'o' and will generate a PDF file containing all the images.
         :return:
         """
 
@@ -549,7 +549,6 @@ class RecordingViewer():
         os.makedirs(squares_dir, exist_ok=True)
 
         # Cycle through all images
-        save_img_no = self.img_no
         self.img_no = -1
         for img_no in range(len(self.list_images)):
             self.on_forward_backward('FORWARD')
@@ -582,7 +581,7 @@ class RecordingViewer():
             png_images.append(Image.open(png_file))
         pdf_path = os.path.join(squares_dir, 'images.pdf')
 
-        # Create a pdf with a first images and all the other images to it
+        # Create a PDF with a first image and add all the other images to it
         if platform.system() == "Darwin":
             png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
 
@@ -764,7 +763,7 @@ class RecordingViewer():
         :return:
         """
 
-        # Generate the graphpad and pdf directories if needed
+        # Generate the graphpad and PDF directories if needed
         # create_output_directories_for_graphpad(self.experiment_directory)
 
         # Generate the graphpad info for summary statistics
@@ -835,7 +834,7 @@ class RecordingViewer():
         if self.square_info_popup is None:
             self.square_info_popup = Toplevel(root)
             self.square_info_popup.title("Square Info")
-            self.square_info_popup.geometry("280x200")
+            self.square_info_popup.geometry("280x220")
 
             # Position the popup relative to the main window and the event
             x = root.winfo_x()
@@ -847,15 +846,16 @@ class RecordingViewer():
 
             # Define the fields to display
             fields = [
-                ("Label Nr", label_nr),
-                ("Square", square_data['Square Nr']),
+                ("Label Nr", int(label_nr)),
+                ("Square Nr", square_data['Square Nr']),
                 ("Tau", square_data['Tau']),
+                ("R2", square_data['R2']),
                 ("Density", square_data['Density']),
                 ("Number of Tracks", square_data['Nr Tracks']),
                 ("Density Ratio", square_data['Density Ratio']),
                 ("Variability", square_data['Variability']),
                 ("Max Track Duration", square_data['Max Track Duration']),
-                ("Mean Diffusion Coefficient", square_data['Diffusion Coefficient'])
+                ("Mean Diffusion Coefficient", int(square_data['Diffusion Coefficient']))
             ]
             # Fill the popup with labels using a loop
             padx_value = 10
@@ -906,7 +906,7 @@ class RecordingViewer():
                     self.squares_in_rectangle.append(int(square['Square Nr']))
         self.display_selected_squares()
 
-    def mark_selected_squares(self, list_of_squares):
+    def mark_selected_squares(self):
         self.display_selected_squares()
 
     def on_forward_backward(self, direction):
@@ -1032,11 +1032,10 @@ class RecordingViewer():
         # Then display
         # ----------------------------------------------------------------------------
 
+        self.select_squares_for_display()
         if self.heatmap_control_dialog:
-            self.select_squares_for_display()      # @@@@@@@
             self.display_heatmap()
         else:
-            self.select_squares_for_display()
             self.display_selected_squares()
 
         # Reset user change
@@ -1044,7 +1043,7 @@ class RecordingViewer():
 
         # Make sure that there is no user square selection left
         self.squares_in_rectangle = []
-        self.mark_selected_squares(self.squares_in_rectangle)
+        self.mark_selected_squares()
 
     def save_changes(self):
 
