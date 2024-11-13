@@ -65,6 +65,7 @@ def get_images(self, initial=False):
             "Nr Spots": int(experiment_row['Nr Spots']),
             "Min Required Density Ratio": experiment_row['Min Required Density Ratio'],
             "Max Allowable Variability": experiment_row['Max Allowable Variability'],
+            "Min R Squared": experiment_row['Min R Squared'],
             "Neighbour Mode": experiment_row['Neighbour Mode'],
 
             "Tau": tau

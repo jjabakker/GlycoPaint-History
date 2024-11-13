@@ -10,7 +10,7 @@
 def select_squares_with_parameters (df_squares, select_parameters, nr_of_squares_in_row, only_valid_tau):
     """
     Wrapper function to select squares based on defined conditions for density, variability, and track duration,
-    Parameters are passed through a dictionary..
+    Parameters are passed through a dictionary.
     """
 
     _select_squares_actual(
@@ -19,6 +19,7 @@ def select_squares_with_parameters (df_squares, select_parameters, nr_of_squares
         select_parameters['max_allowable_variability'],
         select_parameters['min_track_duration'],
         select_parameters['max_track_duration'],
+        select_parameters['min_r_squared'],
         select_parameters['neighbour_mode'],
         nr_of_squares_in_row,
         only_valid_tau= only_valid_tau)
@@ -35,6 +36,7 @@ def select_squares(self, only_valid_tau=True):
         self.max_allowable_variability,
         self.min_track_duration,
         self.max_track_duration,
+        self.min_r_squared,
         self.neighbour_mode,
         self.nr_of_squares_in_row,
         only_valid_tau=only_valid_tau)
@@ -45,6 +47,7 @@ def _select_squares_actual(
     max_allowable_variability,
     min_track_duration,
     max_track_duration,
+    min_r_squared,
     neighbour_mode,
     nr_of_squares_in_row,
     only_valid_tau=True):
@@ -59,8 +62,8 @@ def _select_squares_actual(
             (df_squares['Density Ratio'] >= min_required_density_ratio) &
             (df_squares['Variability'] <= max_allowable_variability) &
             (df_squares['Max Track Duration'] >= min_track_duration) &
-            (df_squares['Max Track Duration'] <= max_track_duration)
-    )
+            (df_squares['Max Track Duration'] <= max_track_duration) &
+            (df_squares['R2'] >= min_r_squared))
 
     if only_valid_tau:
         df_squares['Selected'] = (

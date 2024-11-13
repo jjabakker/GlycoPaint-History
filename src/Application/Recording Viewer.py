@@ -13,6 +13,7 @@ from tkinter import messagebox
 from tkinter import ttk
 
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as pl
 import pandas as pd
 from PIL import Image
 
@@ -115,6 +116,7 @@ class RecordingViewer:
         self.min_required_density_ratio = None
         self.min_track_duration = None
         self.max_track_duration = None
+        self.min_r_squared = None
         self.neighbour_mode = None
 
         # Variables to hold references to the Dialogs, initially all empty
@@ -375,13 +377,13 @@ class RecordingViewer:
             self.set_dialog_buttons(tk.DISABLED)
             self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
             self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
+            self.min_r_squared = self.list_images[self.img_no]['Min R Squared']
             self.neighbour_mode = self.list_images[self.img_no]['Neighbour Mode']
 
-            self.min_track_duration = 1
+            self.min_track_duration = 1   # ToDo thi does not look ok
             self.max_track_duration = 199
 
             if self.select_square_dialog is None:
-                pass
                 self.select_square_dialog = SelectSquareDialog(
                     self,
                     self.update_select_squares,
@@ -389,6 +391,7 @@ class RecordingViewer:
                     self.max_allowable_variability,
                     self.min_track_duration,
                     self.max_track_duration,
+                    self.min_r_squared,
                     self.neighbour_mode)
 
     def on_show_define_cells(self):
@@ -409,7 +412,7 @@ class RecordingViewer:
     def callback_to_reset_square_selection(self):
         """
         This function is called by the DefineCellsDialog
-        It will empty the list og squares that are currently selected and update the display
+        It will empty the list of squares that are currently selected and update the display
         """
 
         self.squares_in_rectangle = []
@@ -695,13 +698,16 @@ class RecordingViewer:
         self.select_squares_for_display()
         self.display_selected_squares()
 
-    def update_select_squares(self,
-                              setting_type: str,
-                              density_ratio: float,
-                              variability: float,
-                              min_duration: float,
-                              max_duration: float,
-                              neighbour_mode: str) -> None:
+    def update_select_squares(
+            self,
+            setting_type: str,
+            density_ratio: float,
+            variability: float,
+            min_duration: float,
+            max_duration: float,
+            min_r_squared: float,
+            neighbour_mode: str,
+            ) -> None:
         """
         This function is called from the SelectSquareDialog when a control has changed or when the control exists. This
         gives an opportunity to update the settings for the current image
@@ -714,14 +720,17 @@ class RecordingViewer:
             self.max_allowable_variability = variability
             self.list_images[self.img_no]['Max Allowable Variability'] = variability
             self.experiment_changed = True
-        elif setting_type == "Neighbour Mode":
-            self.neighbour_mode = neighbour_mode
-            self.list_images[self.img_no]['Neighbour Mode'] = neighbour_mode
-            self.experiment_changed = True
         elif setting_type == "Min Track Duration":
             self.min_track_duration = min_duration
         elif setting_type == "Max Track Duration":
             self.max_track_duration = max_duration
+        elif setting_type == "Min R Squared":
+            self.min_r_squared = min_r_squared
+            self.list_images[self.img_no]['Min R Squared'] = min_r_squared
+        elif setting_type == "Neighbour Mode":
+            self.neighbour_mode = neighbour_mode
+            self.list_images[self.img_no]['Neighbour Mode'] = neighbour_mode
+            self.experiment_changed = True
         elif setting_type == "Set for All":
             # Set the same settings for all recordings
             self.min_required_density_ratio = density_ratio
@@ -923,7 +932,7 @@ class RecordingViewer:
         # Set the name of the image
         self.image_name = self.list_images[self.img_no]['Left Image Name']
 
-        # Set correct state of Forward and back buttons
+        # Set the correct state of Forward and back buttons
         if self.img_no == len(self.list_images) - 1:
             self.bn_forward.configure(state=DISABLED)
             self.bn_end.configure(state=DISABLED)
@@ -997,17 +1006,22 @@ class RecordingViewer:
             self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
 
             # Set the filter parameters with values retrieved from the experiment file
-            self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']
+            self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']   # ToDo this does not look ok
             self.max_track_duration = 200  # self.df_experiment.loc[self.image_name]['Max Duration']
 
             self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
             self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
+            self.min_r_squared = self.list_images[self.img_no]['Min R Squared']
             self.neighbour_mode = self.list_images[self.img_no]['Neighbour Mode']
 
             if self.select_square_dialog:
                 self.select_square_dialog.initialise_controls(
-                    self.min_required_density_ratio, self.max_allowable_variability, self.min_track_duration,
-                    self.max_track_duration, self.neighbour_mode)
+                    self.min_required_density_ratio,
+                    self.max_allowable_variability,
+                    self.min_track_duration,
+                    self.max_track_duration,
+                    self.min_r_squared,
+                    self.neighbour_mode)
 
         # ----------------------------------------------------------------------------
         # Then display

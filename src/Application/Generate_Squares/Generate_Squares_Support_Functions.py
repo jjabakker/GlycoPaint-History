@@ -348,6 +348,7 @@ def pack_select_parameters(
         max_allowable_variability: float,
         min_track_duration: int,
         max_track_duration: int,
+        min_r_squared: float,
         neighbour_mode: str):
 
     select_parameters = {
@@ -355,6 +356,7 @@ def pack_select_parameters(
         'max_allowable_variability': max_allowable_variability,
         'min_track_duration': min_track_duration,
         'max_track_duration': max_track_duration,
+        'min_r_squared': min_r_squared,
         'neighbour_mode': neighbour_mode
     }
 
