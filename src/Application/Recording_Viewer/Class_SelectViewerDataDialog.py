@@ -88,8 +88,9 @@ class SelectViewerDataDialog:
                 self.proceed = True
                 self.dialog.destroy()
             else:
-                paint_logger.error("The selected directory is an immature experiment directory")
-                paint_messagebox(self.dialog, title='Warning', message="The selected directory is an immature experiment directory")
+                msg = "The selected directory appears to be an Experiment directory but is missing files"
+                paint_logger.error(msg)
+                paint_messagebox(self.dialog, title='Warning', message=msg)
         elif type == 'Project':
             if maturity == 'Mature':
                 # If it is a project directory, check if there are no newer experiments, i.e., when you have forgotten to run Compile Project
@@ -111,7 +112,7 @@ class SelectViewerDataDialog:
             else:
                 paint_logger.error("The selected directory is an immature project directory")
                 paint_messagebox(self.dialog, title='Warning',
-                                 message="The selected directory is an immature experiment directory")
+                                 message="The selected directory is an immature project directory")
 
     def on_exit(self):
         self.proceed = False

@@ -514,7 +514,7 @@ class RecordingViewer:
         elif event.keysym == 'o':
             self.output_pictures_to_pdf()
 
-        # Pressing 't' will toggle the display of valid squares
+        # Pressing 't' will toggle the display of selected squares
         elif event.keysym == 't':
             self.show_squares = not self.show_squares
             self.display_selected_squares()

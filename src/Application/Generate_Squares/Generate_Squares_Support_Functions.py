@@ -312,7 +312,6 @@ def create_unique_key_for_tracks(df):
     return df
 
 
-
 def add_columns_to_experiment(
         df_experiment: pd.DataFrame,
         nr_of_squares_in_row: int,
