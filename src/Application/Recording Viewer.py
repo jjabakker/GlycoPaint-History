@@ -463,16 +463,10 @@ class RecordingViewer:
             f"({current_image['Probe']})"
         )
         self.text_for_info1.set(cell_info)
-
-        # Construct and set additional information texts
-        self.text_for_info2.set(
-            f"Spots: {current_image['Nr Spots']:,} - "
-            f"Threshold: {current_image['Threshold']}"
-        )
-        self.text_for_info3.set(
-            f"Min Required Density Ratio: {current_image['Min Required Density Ratio']:,} - "
-            f"Max Allowable Variability: {current_image['Max Allowable Variability']}"
-        )
+        info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
+        self.text_for_info2.set(info2)
+        info3 = f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
+        self.text_for_info3.set(info3)
 
     def on_exinclude(self):
         """
