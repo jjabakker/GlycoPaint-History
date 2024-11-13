@@ -1,4 +1,5 @@
 import os
+import math
 import platform
 import shutil
 import statistics
@@ -816,7 +817,7 @@ class RecordingViewer:
         if self.square_info_popup is None:
             self.square_info_popup = Toplevel(root)
             self.square_info_popup.title("Square Info")
-            self.square_info_popup.geometry("280x220")
+            self.square_info_popup.geometry("300x230")
 
             # Position the popup relative to the main window and the event
             x = root.winfo_x()
@@ -827,8 +828,12 @@ class RecordingViewer:
             square_data = self.df_squares.loc[square_nr]
 
             # Define the fields to display
+            if math.isnan(label_nr) or label_nr is None:
+                label_nr = "-"
+            else:
+                label_nr = str(int(label_nr))
             fields = [
-                ("Label Nr", int(label_nr)),
+                ("Label Nr", label_nr),
                 ("Square Nr", square_data['Square Nr']),
                 ("Tau", square_data['Tau']),
                 ("R2", square_data['R2']),
