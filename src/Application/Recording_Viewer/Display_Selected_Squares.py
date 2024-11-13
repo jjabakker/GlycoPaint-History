@@ -91,7 +91,7 @@ def draw_single_square(
     square_tag = f'square-{square_nr}'
     text_tag = f'text-{square_nr}'
 
-    if cell_id == -1:  # The square is deleted (for good), stop processing    #ToDo Really?
+    if cell_id == -1:  # The square is deleted (for good), stop processing    # ToDo Really? Who sets it to -1?
         return
 
     if cell_id != 0:  # The square is assigned to a cell, so it should be filled with the colour of the cell
@@ -118,7 +118,19 @@ def draw_single_square(
                     tags=text_tag
                 )
 
-    # For all the selected squares draw the outline without filling the rectangle
+    if label_nr == 0:        # The square is selected but does not have a valid Tau: give it a colour
+        col = colour_table[squares_row['Square Nr'] % 6 + 1][0]
+        canvas.create_rectangle(
+            col_nr * width,
+            row_nr * width,
+            col_nr * width + width,
+            row_nr * height + height,
+            outline='white',
+            fill='#4566A5',      # https://www.webfx.com/web-design/color-picker/4566a5
+            width=0,
+            tags=square_tag)
+
+    # For all the selected squares, assigned to a cell or not draw the outline without filling the rectangle
     canvas.create_rectangle(
         col_nr * width,
         row_nr * width,
