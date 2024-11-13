@@ -61,7 +61,6 @@ class ConvertDialog:
             messagebox.showwarning(title='Warning', message=message)
         else:
             convert_bf_images(self.image_directory, self.paint_directory, force=False)
-            self.on_exit_dialog()
 
     def on_exit_dialog(self):
         self.root.destroy()
