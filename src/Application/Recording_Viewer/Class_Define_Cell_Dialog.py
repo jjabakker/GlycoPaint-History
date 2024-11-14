@@ -21,7 +21,7 @@ class DefineCellDialog:
         self.callback_to_close = callback_to_close
 
         # Set windows properties
-        self.define_cell_dialog = tk.Toplevel(self.image_viewer.dialog)
+        self.define_cell_dialog = tk.Toplevel(self.image_viewer.viewer_dialog)
         self.define_cell_dialog.resizable(False, False)
         self.define_cell_dialog.title("Define Cells")
         self.define_cell_dialog.attributes("-topmost", True)

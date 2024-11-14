@@ -26,7 +26,7 @@ class SelectSquareDialog:
         self.neighbour_mode = None
 
         # Set window properties
-        self.select_square_dialog = tk.Toplevel(self.image_viewer.dialog)
+        self.select_square_dialog = tk.Toplevel(self.image_viewer.viewer_dialog)
         self.select_square_dialog.title("Select Squares")
         self.select_square_dialog.attributes("-topmost", True)
         self.select_square_dialog.resizable(False, False)

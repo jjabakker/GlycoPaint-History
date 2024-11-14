@@ -13,7 +13,6 @@ from tkinter import messagebox
 from tkinter import ttk
 from datetime import datetime
 
-import matplotlib.pyplot as plt
 import pandas as pd
 from PIL import Image
 
@@ -76,10 +75,9 @@ class RecordingViewer:
         self.viewer_dialog.grab_set()  # Prevent interaction with the main window
         self.viewer_dialog.focus_force()  # Bring the dialog to focus
 
-
     def setup_heatmap(self):
-        self.slider_value = tk.DoubleVar()
-
+        # self.slider_value = tk.DoubleVar()
+        #
         self.heatmap_option = tk.IntVar()
         self.heatmap_option.set(1)  # Default selection is the first option
 
@@ -129,7 +127,6 @@ class RecordingViewer:
         self.select_recording_dialog = None
 
         self.squares_in_rectangle = []
-
         self.saved_list_images = []
 
         self.viewer_dialog.title(f'Recording Viewer - {self.user_specified_directory}')
@@ -498,12 +495,12 @@ class RecordingViewer:
             'n': lambda e: self.toggle_show_square_numbers(),
             't': lambda e: self.toggle_selected_squares(),
             'v': lambda e: self.on_toggle_valid_square(),
-            'o': lambda e: self.output_pictures_to_pdf()
+            'o': lambda e: self.output_pictures_to_pdf(),
+            '<Escape>': lambda e: self.on_escape()
         }
 
         for key, action in self.key_bindings.items():
             self.viewer_dialog.bind(key, action)
-
 
     def conditional_navigation(self, event):
         # Navigate to 'START' or 'END' based on a modifier (Shift key), otherwise go 'FORWARD' or 'BACKWARD'.
@@ -515,28 +512,23 @@ class RecordingViewer:
             return
         self.on_forward_backward(direction)
 
-
     def toggle_show_squares(self):
         self.show_squares = not self.show_squares
         self.display_selected_squares()
-
 
     def toggle_show_square_numbers(self):
         self.show_squares_numbers = not self.show_squares_numbers
         self.show_numbers = self.show_squares  # Set show_numbers based on show_squares
         self.display_selected_squares()
 
-
     def toggle_selected_squares(self):
         self.show_squares = not self.show_squares
         self.display_selected_squares()
-
 
     def on_toggle_valid_square(self):
         self.only_valid_tau = not self.only_valid_tau
         select_squares(self, only_valid_tau=self.only_valid_tau)
         self.display_selected_squares()
-
 
     def output_pictures_to_pdf(self):
         # Create the squares directory if it does not exist
@@ -583,6 +575,12 @@ class RecordingViewer:
         # Go back to the image where we were
         self.img_no -= 1
         self.on_forward_backward('FORWARD')
+
+    def on_escape(self):
+
+        if self.square_info_popup:
+            self.square_info_popup.destroy()
+            self.square_info_popup = None
 
 # ----------------------------------------------------------------------------------------
 #

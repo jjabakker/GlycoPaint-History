@@ -19,7 +19,7 @@ class HeatMapDialog:
         self.toggle = False
 
         # Set windows properties
-        self.heatmap_dialog = tk.Toplevel(self.image_viewer.dialog)
+        self.heatmap_dialog = tk.Toplevel(self.image_viewer.viewer_dialog)
         self.heatmap_dialog.title("Heatmap")
         self.heatmap_dialog.resizable(False, False)
         self.heatmap_dialog.geometry("370x420")
@@ -39,7 +39,7 @@ class HeatMapDialog:
     def setup_userinterface(self):
         """
         This function sets up the UI elements for the control window.
-        Three frames are creates.
+        Three frames are created.
         """
 
         # Create a content frame for the control window

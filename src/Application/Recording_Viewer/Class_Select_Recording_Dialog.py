@@ -10,7 +10,7 @@ class SelectRecordingDialog():
 
         self.image_viewer = image_viewer
 
-        self.select_recording_dialog = tk.Toplevel(self.image_viewer.dialog)
+        self.select_recording_dialog = tk.Toplevel(self.image_viewer.viewer_dialog)
         self.select_recording_dialog.title("Select Recordings")
         self.select_recording_dialog.attributes("-topmost", True)
         self.select_recording_dialog.resizable(False, False)
