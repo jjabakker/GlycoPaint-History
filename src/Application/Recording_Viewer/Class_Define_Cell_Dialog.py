@@ -8,7 +8,10 @@ class DefineCellDialog:
     # Setting up
     # --------------------------------------------------------------
 
-    def __init__(self, image_viewer, callback_to_assign_squares_to_cell, callback_to_reset_square_selection,
+    def __init__(self,
+                 image_viewer,
+                 callback_to_assign_squares_to_cell,
+                 callback_to_reset_cell_definition,
                  callback_to_close):
 
         # Create a new top-level window for the controls
@@ -38,7 +41,7 @@ class DefineCellDialog:
     def setup_userinterface(self):
         """
         This function sets up the UI elements for the control window.
-        Three frames are creates.
+        Three frames are created
         """
 
         # Create a content frame for the control window
@@ -125,7 +128,7 @@ class DefineCellDialog:
         pass
 
     def on_reset(self):
-        self.callback_to_reset_square_selection()
+        self.callback_to_reset_cell_definition()
         pass
 
     def on_key_pressed(self, event):
