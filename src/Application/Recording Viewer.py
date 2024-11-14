@@ -54,8 +54,8 @@ class RecordingViewer:
     def __init__(self, parent, user_specified_directory, user_specified_mode):
 
         super().__init__()
-        self.dialog = tk.Toplevel(parent)
-        self.dialog.resizable(False, False)
+        self.viewer_dialog = tk.Toplevel(parent)
+        self.viewer_dialog.resizable(False, False)
 
         # Save the parameters
         self.user_specified_directory = user_specified_directory
@@ -73,11 +73,11 @@ class RecordingViewer:
         parent.bind('<Left>', lambda event: self.on_forward_backward('BACKWARD'))
 
         # Ensure the user can't close the window by clicking the X button
-        self.dialog.protocol("WM_DELETE_WINDOW", self.on_exit_viewer)
+        self.viewer_dialog.protocol("WM_DELETE_WINDOW", self.on_exit_viewer)
 
         # Set dialog focus
-        self.dialog.grab_set()  # Prevent interaction with the main window
-        self.dialog.focus_force()  # Bring the dialog to focus
+        self.viewer_dialog.grab_set()  # Prevent interaction with the main window
+        self.viewer_dialog.focus_force()  # Bring the dialog to focus
 
     def setup_heatmap(self):
         self.slider_value = tk.DoubleVar()
@@ -134,7 +134,7 @@ class RecordingViewer:
 
         self.saved_list_images = []
 
-        self.dialog.title(f'Recording Viewer - {self.user_specified_directory}')
+        self.viewer_dialog.title(f'Recording Viewer - {self.user_specified_directory}')
 
         self.only_valid_tau = True
 
@@ -144,7 +144,7 @@ class RecordingViewer:
         For each frame a setup function is called
         """
 
-        self.content = ttk.Frame(self.dialog, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
+        self.content = ttk.Frame(self.viewer_dialog, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
 
         self.frame_images = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
         self.frame_navigation_buttons = ttk.Frame(self.content, borderwidth=2, relief='groove', padding=(5, 5, 5, 5))
@@ -187,7 +187,7 @@ class RecordingViewer:
         self.cn_left_image.grid(column=0, row=0, padx=5, pady=5)
         self.cn_right_image.grid(column=0, row=0, padx=5, pady=5)
 
-        self.dialog.bind('<Key>', self.on_key_pressed)
+        self.viewer_dialog.bind('<Key>', self.on_key_pressed)
 
         # Define the labels and combobox widgets for the images
         self.list_images = []
@@ -196,20 +196,20 @@ class RecordingViewer:
             self.frame_picture_left, values=self.list_of_image_names, state='readonly', width=30)
 
         # Label for the right image name
-        self.lbl_image_bf_name = StringVar(self.dialog, "")
+        self.lbl_image_bf_name = StringVar(self.viewer_dialog, "")
         lbl_image_bf_name = ttk.Label(self.frame_picture_right, textvariable=self.lbl_image_bf_name)
 
         # Labels for image info
-        self.text_for_info1 = StringVar(self.dialog, "")
+        self.text_for_info1 = StringVar(self.viewer_dialog, "")
         self.lbl_info1 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info1)
 
-        self.text_for_info2 = StringVar(self.dialog, "")
+        self.text_for_info2 = StringVar(self.viewer_dialog, "")
         self.lbl_info2 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
 
-        self.text_for_info3 = StringVar(self.dialog, "")
+        self.text_for_info3 = StringVar(self.viewer_dialog, "")
         self.lbl_info3 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info3)
 
-        self.text_for_info4 = StringVar(self.dialog, "")
+        self.text_for_info4 = StringVar(self.viewer_dialog, "")
         self.lbl_info4 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info4)
 
         # Create a ttk style object
@@ -378,7 +378,7 @@ class RecordingViewer:
         if self.is_dialog_active():
             return
 
-        self.dialog.grab_release()
+        self.viewer_dialog.grab_release()
         self.set_dialog_buttons(tk.DISABLED)
         self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
         self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
@@ -404,7 +404,7 @@ class RecordingViewer:
             return
 
         self.set_dialog_buttons(tk.DISABLED)
-        self.dialog.grab_release()
+        self.viewer_dialog.grab_release()
         self.define_cells_dialog = DefineCellDialog(
             self,
             self.callback_to_assign_squares_to_cell_id,
@@ -842,6 +842,7 @@ class RecordingViewer:
         # Define the popup
         if self.square_info_popup is None:
             self.square_info_popup = Toplevel(root)
+            self.square_info_popup = Toplevel(self.viewer_dialog)
             self.square_info_popup.title("Square Info")
             self.square_info_popup.geometry("300x230")
 
@@ -860,15 +861,15 @@ class RecordingViewer:
                 label_nr = str(int(label_nr))
             fields = [
                 ("Label Nr", label_nr),
-                ("Square Nr", square_data['Square Nr']),
-                ("Tau", square_data['Tau']),
-                ("R2", square_data['R2']),
-                ("Density", square_data['Density']),
-                ("Number of Tracks", square_data['Nr Tracks']),
-                ("Density Ratio", square_data['Density Ratio']),
-                ("Variability", square_data['Variability']),
-                ("Max Track Duration", square_data['Max Track Duration']),
-                ("Mean Diffusion Coefficient", int(square_data['Diffusion Coefficient']))
+                ("Square Nr", squares_row['Square Nr']),
+                ("Tau", squares_row['Tau']),
+                ("R2", squares_row['R2']),
+                ("Density", squares_row['Density']),
+                ("Number of Tracks", squares_row['Nr Tracks']),
+                ("Density Ratio", squares_row['Density Ratio']),
+                ("Variability", squares_row['Variability']),
+                ("Max Track Duration", squares_row['Max Track Duration']),
+                ("Mean Diffusion Coefficient", int(squares_row['Diffusion Coefficient']))
             ]
             # Fill the popup with labels using a loop
             padx_value = 10
@@ -883,7 +884,7 @@ class RecordingViewer:
                                                                                   pady=pady_value)
 
             # Bring the focus back to the root window so the canvas can detect more clicks
-            self.dialog.focus_force()
+            self.viewer_dialog.focus_force()
         else:
             self.square_info_popup.destroy()
             self.square_info_popup = None
@@ -1153,7 +1154,7 @@ class RecordingViewer:
         df_heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode,
                                                              heatmap_global_min_max)
         if df_heatmap_data is None:
-            paint_messagebox(self.dialog, "No data for heatmap", "There is no data for the heatmap")
+            paint_messagebox(self.viewer_dialog, "No data for heatmap", "There is no data for the heatmap")
             return
 
         for index, row in df_heatmap_data.iterrows():
