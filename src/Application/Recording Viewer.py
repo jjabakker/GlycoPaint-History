@@ -385,18 +385,18 @@ class RecordingViewer:
         self.min_r_squared = self.list_images[self.img_no]['Min R Squared']
         self.neighbour_mode = self.list_images[self.img_no]['Neighbour Mode']
 
-            self.min_track_duration = 1   # ToDo thi does not look ok
-            self.max_track_duration = 199
+        self.min_track_duration = 1   # ToDo thi does not look ok
+        self.max_track_duration = 199
 
-            if self.select_square_dialog is None:
-                self.select_square_dialog = SelectSquareDialog(
-                    self,
-                    self.update_select_squares,
-                    self.min_required_density_ratio,
-                    self.max_allowable_variability,
-                    self.min_track_duration,
-                    self.max_track_duration,
-                    self.min_r_squared,
+        if self.select_square_dialog is None:
+            self.select_square_dialog = SelectSquareDialog(
+                self,
+                self.update_select_squares,
+                self.min_required_density_ratio,
+                self.max_allowable_variability,
+                self.min_track_duration,
+                self.max_track_duration,
+                self.min_r_squared,
                     self.neighbour_mode)
 
     def on_show_define_cells(self):
@@ -431,7 +431,8 @@ class RecordingViewer:
         """
 
         # Update 'Cell Id' for all squares in the rectangle
-        self.df_squares.loc[self.squares_in_rectangle, 'Cell Id'] = int(cell_id)
+        if len(self.squares_in_rectangle) > 0:
+            self.df_squares.loc[self.squares_in_rectangle, 'Cell Id'] = int(cell_id)
 
         # Set the flag and clear the list
         self.squares_changed = True
@@ -931,7 +932,7 @@ class RecordingViewer:
         # ----------------------------------------------------------------------------
 
         if self.squares_changed:
-            self.save_changes()
+            self.save_changes(save_experiment=False)
 
         # ----------------------------------------------------------------------------
         # Determine what the next image is, depending on the direction
@@ -1062,7 +1063,7 @@ class RecordingViewer:
         self.squares_in_rectangle = []
         self.mark_selected_squares()
 
-    def save_changes(self):
+    def save_changes(self, save_experiment=True, save_squares=True):
 
         # See if there is anything to save
         if not (self.experiment_changed or self.squares_changed):
@@ -1074,40 +1075,43 @@ class RecordingViewer:
             return False
 
         # There is experiment data to save.
-        if self.experiment_changed:
-            if self.save_state_var.get() == 'Ask':
-                save = self.user_confirms_save('Experiment')
-            else:  # Then must be 'Always'
-                save = True
-            if save:
-                for i in range(len(self.list_images)):
-                    image_name = self.list_images[i]['Left Image Name']
-                    self.df_experiment.loc[image_name, 'Min Required Density Ratio'] = self.list_images[i][
-                        'Min Required Density Ratio']
-                    self.df_experiment.loc[image_name, 'Max Allowable Variability'] = self.list_images[i][
-                        'Max Allowable Variability']
-                    self.df_experiment.loc[image_name, 'Neighbour Mode'] = self.list_images[i]['Neighbour Mode']
-                save_experiment_to_file(self.df_experiment,
-                                        os.path.join(self.user_specified_directory, 'All Recordings.csv'))
-                paint_logger.debug(
-                    f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
-            self.experiment_changed = False
+        if save_experiment:
+            if self.experiment_changed:
+                if self.save_state_var.get() == 'Ask':
+                    save = self.user_confirms_save('Experiment')
+                else:  # Then must be 'Always'
+                    save = True
+                if save:
+                    for i in range(len(self.list_images)):
+                        image_name = self.list_images[i]['Left Image Name']
+                        self.df_experiment.loc[image_name, 'Min Required Density Ratio'] = self.list_images[i][
+                            'Min Required Density Ratio']
+                        self.df_experiment.loc[image_name, 'Max Allowable Variability'] = self.list_images[i][
+                            'Max Allowable Variability']
+                        self.df_experiment.loc[image_name, 'Neighbour Mode'] = self.list_images[i]['Neighbour Mode']
+                    save_experiment_to_file(self.df_experiment,
+                                            os.path.join(self.user_specified_directory, 'All Recordings.csv'))
+                    paint_logger.debug(
+                        f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
+                self.experiment_changed = False
 
         # There is squares data to save.
-        if self.squares_changed:
-            if self.save_state_var.get() == 'Ask':
-                save = self.user_confirms_save('Squares')
-            else:  # Then must be 'Always'
-                save = True
-            if save:
-                self.df_all_squares.set_index(['Unique Key'], inplace=True, drop=False)
-                self.df_squares.set_index(['Unique Key'], inplace=True, drop=False)
-                self.df_all_squares.update(self.df_squares)
-                save_squares_to_file(self.df_all_squares,
-                                     os.path.join(self.user_specified_directory, 'All Squares.csv'))
-                paint_logger.debug(
-                    f"Squares file {os.path.join(self.user_specified_directory, 'All Squares.csv')} was saved.")
-            self.squares_changed = False
+        if save_squares:
+            if self.squares_changed:
+                if self.save_state_var.get() == 'Ask':
+                    save = self.user_confirms_save('Squares')
+                else:  # Then must be 'Always'
+                    save = True
+                if save:
+                    self.df_all_squares.set_index(['Unique Key'], inplace=True, drop=False)
+                    self.df_squares.set_index(['Unique Key'], inplace=True, drop=False)
+                    self.df_all_squares.update(self.df_squares)
+                    save_squares_to_file(self.df_all_squares,
+                                         os.path.join(self.user_specified_directory, 'All Squares.csv'))
+                    paint_logger.debug(
+                        f"Squares file {os.path.join(self.user_specified_directory, 'All Squares.csv')} was saved.")
+                self.squares_changed = False
+
         return save
 
     def user_confirms_save(self, mode):
