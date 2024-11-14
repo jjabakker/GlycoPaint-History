@@ -13,15 +13,14 @@ from tkinter import messagebox
 from tkinter import ttk
 
 import matplotlib.pyplot as plt
-import matplotlib.pyplot as pl
 import pandas as pd
 from PIL import Image
 
-from src.Application.Recording_Viewer.Class_DefineCellDialog import DefineCellDialog
-from src.Application.Recording_Viewer.Class_SelectSquareDialog import SelectSquareDialog
-from src.Application.Recording_Viewer.Class_HeatmapDialog import HeatMapDialog
+from src.Application.Recording_Viewer.Class_Define_Cell_Dialog import DefineCellDialog
+from src.Application.Recording_Viewer.Class_Select_Square_Dialog import SelectSquareDialog
+from src.Application.Recording_Viewer.Class_Heatmap_Dialog import HeatMapDialog
 from src.Application.Recording_Viewer.Class_Select_Recording_Dialog import SelectRecordingDialog
-from src.Application.Recording_Viewer.Class_SelectViewerDataDialog import SelectViewerDataDialog
+from src.Application.Recording_Viewer.Class_Select_Viewer_Data_Dialog import SelectViewerDataDialog
 from src.Application.Recording_Viewer.Heatmap_Support import (
     get_colormap_colors, get_color_index,
     get_heatmap_data)
@@ -132,7 +131,7 @@ class RecordingViewer:
 
         self.parent.title(f'Recording Viewer - {self.user_specified_directory}')
 
-        self.show_tau_valid = True
+        self.only_valid_tau = True
 
     def setup_ui(self):
         """
@@ -277,7 +276,7 @@ class RecordingViewer:
         self.bn_histogram = ttk.Button(
             self.frame_commands, text='Histogram', command=lambda: self.on_histogram(), width=button_width)
         self.bn_excel = ttk.Button(
-            self.frame_commands, text='Excel', command=lambda: self.on_how_excel(), width=button_width)
+            self.frame_commands, text='Squares Data', command=lambda: self.on_how_excel(), width=button_width)
         self.bn_reset = ttk.Button(
             self.frame_commands, text='Reset', command=lambda: self.on_reset_image(), width=button_width)
 
@@ -285,7 +284,7 @@ class RecordingViewer:
         self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
         self.bn_show_heatmap.grid(column=0, row=2, padx=5, pady=5)
         self.bn_show_define_cells.grid(column=0, row=3, padx=5, pady=5)
-        self.bn_reset.grid(column=0, row=5, padx=5, pady=5)
+        # self.bn_reset.grid(column=0, row=5, padx=5, pady=5)
         self.bn_excel.grid(column=0, row=6, padx=5, pady=5)
 
     def setup_frame_save_commands(self):
@@ -585,8 +584,8 @@ class RecordingViewer:
         self.on_forward_backward('FORWARD')
 
     def on_toggle_valid_square(self):
-        self.show_tau_valid = not self.show_tau_valid
-        select_squares(self, only_valid_tau=self.show_tau_valid)
+        self.only_valid_tau = not self.only_valid_tau
+        select_squares(self, only_valid_tau=self.only_valid_tau)
         self.display_selected_squares()
 
     def on_exit_viewer(self):
@@ -799,7 +798,7 @@ class RecordingViewer:
         return
 
     def select_squares_for_display(self):
-        select_squares(self, only_valid_tau=True)     # The function is in the file 'Select_Squares.py'
+        select_squares(self, only_valid_tau=self.only_valid_tau)     # The function is in the file 'Select_Squares.py'
 
     def display_selected_squares(self):
         display_selected_squares(self)

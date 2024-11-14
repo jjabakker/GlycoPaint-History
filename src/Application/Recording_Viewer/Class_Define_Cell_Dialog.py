@@ -8,7 +8,6 @@ class DefineCellDialog:
     # Setting up
     # --------------------------------------------------------------
 
-
     def __init__(self, image_viewer, callback_to_assign_squares_to_cell, callback_to_reset_square_selection,
                  callback_to_close):
 

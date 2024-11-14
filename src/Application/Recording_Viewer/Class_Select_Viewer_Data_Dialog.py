@@ -22,7 +22,7 @@ class SelectViewerDataDialog:
         self.parent = parent
         self.proceed = False
 
-        self.dialog.title('Select Viewer')
+        self.dialog.title('Select a Project or Experiment Directory')
         self.experiment_directory, self.directory, self.images_directory, self.project_file = get_default_locations()
         self.mode = None
 

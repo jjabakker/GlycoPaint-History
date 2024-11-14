@@ -158,7 +158,7 @@ class SelectSquareDialog:
         """
 
         self.min_track_duration = tk.DoubleVar(value=self.min_track_duration)
-        self.lbl_min_track_duration_text = ttk.Label(self.frame_min_duration, text='Min Track\nDuration', width=10)
+        self.lbl_min_track_duration_text = ttk.Label(self.frame_min_duration, text='Min Longest\nTrack Duration', width=10)
         self.sc_min_track_duration = tk.Scale(
             self.frame_min_duration, from_=0, to=200, variable=self.min_track_duration, orient='vertical',
             resolution=0.1)
@@ -174,7 +174,7 @@ class SelectSquareDialog:
         """
 
         self.max_track_duration = tk.DoubleVar(value=self.max_track_duration)
-        self.lbl_max_track_duration_text = ttk.Label(self.frame_max_duration, text='Max Track\nDuration', width = 10)
+        self.lbl_max_track_duration_text = ttk.Label(self.frame_max_duration, text='Max Longest\nTrack Duration', width = 10)
         self.sc_max_track_duration = tk.Scale(
             self.frame_max_duration, from_=0, to=200, variable=self.max_track_duration, orient='vertical',
             resolution=0.1)
