@@ -36,6 +36,10 @@ class SelectSquareDialog:
         # Set up the user interface
         self.setup_userinterface()
 
+        # Set dialog focus
+        self.select_square_dialog.grab_set()  # Prevent interaction with the main window
+        self.select_square_dialog.focus_force()  # Bring the dialog to focus
+
         # Initialise the controls
         self.initialise_controls(
             min_required_density_ratio,
@@ -145,7 +149,7 @@ class SelectSquareDialog:
         self.lbl_min_required_density_ratio_text = ttk.Label(
             self.frame_min_required_density_ratio, text='Min Required\nDensity Ratio', width = 10)
         self.sc_min_required_density_ratio = tk.Scale(
-            self.frame_min_required_density_ratio, from_=1, to=100, variable=self.min_required_density_ratio, orient='vertical', resolution=0.5)
+            self.frame_min_required_density_ratio, from_=1, to=200, variable=self.min_required_density_ratio, orient='vertical', resolution=1)
         self.sc_min_required_density_ratio.bind("<ButtonRelease-1>", lambda event: self.on_filter_changed('Min Required Density Ratio'))
         self.lbl_min_required_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_min_required_density_ratio.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W + tk.E)

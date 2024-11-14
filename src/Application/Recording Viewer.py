@@ -377,12 +377,13 @@ class RecordingViewer:
 
         if self.is_dialog_active():
             return
-        else:
-            self.set_dialog_buttons(tk.DISABLED)
-            self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
-            self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
-            self.min_r_squared = self.list_images[self.img_no]['Min R Squared']
-            self.neighbour_mode = self.list_images[self.img_no]['Neighbour Mode']
+
+        self.dialog.grab_release()
+        self.set_dialog_buttons(tk.DISABLED)
+        self.min_required_density_ratio = self.list_images[self.img_no]['Min Required Density Ratio']
+        self.max_allowable_variability = self.list_images[self.img_no]['Max Allowable Variability']
+        self.min_r_squared = self.list_images[self.img_no]['Min R Squared']
+        self.neighbour_mode = self.list_images[self.img_no]['Neighbour Mode']
 
             self.min_track_duration = 1   # ToDo thi does not look ok
             self.max_track_duration = 199
@@ -403,6 +404,7 @@ class RecordingViewer:
             return
 
         self.set_dialog_buttons(tk.DISABLED)
+        self.dialog.grab_release()
         self.define_cells_dialog = DefineCellDialog(
             self,
             self.callback_to_assign_squares_to_cell_id,

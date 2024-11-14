@@ -31,6 +31,10 @@ class SelectRecordingDialog():
         # Store original unique values for reset functionality
         self.original_values = {col: sorted(self.df[col].unique()) for col in self.filter_columns}
 
+        # Set dialog focus
+        self.select_recording_dialog.grab_set()  # Prevent interaction with the main window
+        self.select_recording_dialog.focus_force()  # Bring the dialog to focus
+
         self.setup_userinterface()
 
     def setup_userinterface(self):
