@@ -19,13 +19,13 @@ class HeatMapDialog:
         self.toggle = False
 
         # Set windows properties
-        self.control_window = tk.Toplevel(self.image_viewer.parent)
-        self.control_window.title("Heatmap")
-        self.control_window.resizable(False, False)
-        self.control_window.geometry("370x420")
-        self.control_window.resizable(False, False)
-        self.control_window.attributes('-topmost', True)
-        self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.heatmap_dialog = tk.Toplevel(self.image_viewer.dialog)
+        self.heatmap_dialog.title("Heatmap")
+        self.heatmap_dialog.resizable(False, False)
+        self.heatmap_dialog.geometry("370x420")
+        self.heatmap_dialog.resizable(False, False)
+        self.heatmap_dialog.attributes('-topmost', True)
+        self.heatmap_dialog.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.setup_userinterface()
 
@@ -39,7 +39,7 @@ class HeatMapDialog:
         """
 
         # Create a content frame for the control window
-        self.content = ttk.Frame(self.control_window, padding=(5, 5, 5, 5))
+        self.content = ttk.Frame(self.heatmap_dialog, padding=(5, 5, 5, 5))
         self.content.grid(row=0, column=0, sticky='nsew')
 
         # Create three frames for the different sections of the control window
@@ -61,7 +61,7 @@ class HeatMapDialog:
         self.content.rowconfigure(0, weight=1)  # Top row with frames
         self.content.rowconfigure(1, weight=0)  # Control frame row does not expand
 
-        self.control_window.bind('<Key>', self.on_key_pressed)
+        self.heatmap_dialog.bind('<Key>', self.on_key_pressed)
 
     def setup_heatmap_variable_buttons(self):
         """
@@ -150,7 +150,7 @@ class HeatMapDialog:
 
         self.image_viewer.set_dialog_buttons(tk.NORMAL)
         self.image_viewer.heatmap_option.set(-1)
-        self.control_window.destroy()
+        self.heatmap_dialog.destroy()
 
     def on_toggle(self):
         """

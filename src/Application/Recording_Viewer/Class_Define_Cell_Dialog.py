@@ -14,20 +14,24 @@ class DefineCellDialog:
         # Create a new top-level window for the controls
         self.image_viewer = image_viewer
         self.callback_to_assign_squares_to_cell = callback_to_assign_squares_to_cell
-        self.callback_to_reset_square_selection = callback_to_reset_square_selection
+        self.callback_to_reset_cell_definition = callback_to_reset_cell_definition
         self.callback_to_close = callback_to_close
 
         # Set windows properties
-        self.control_window = tk.Toplevel(self.image_viewer.parent)
-        self.control_window.resizable(False, False)
-        self.control_window.title("Define Cells")
-        self.control_window.attributes("-topmost", True)
-        self.control_window.geometry("280x350")
-        self.control_window.resizable(False, False)
-        self.control_window.attributes('-topmost', True)
-        self.control_window.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.define_cell_dialog = tk.Toplevel(self.image_viewer.dialog)
+        self.define_cell_dialog.resizable(False, False)
+        self.define_cell_dialog.title("Define Cells")
+        self.define_cell_dialog.attributes("-topmost", True)
+        self.define_cell_dialog.geometry("280x350")
+        self.define_cell_dialog.resizable(False, False)
+        self.define_cell_dialog.attributes('-topmost', True)
+        self.define_cell_dialog.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        self.control_window.bind('<Key>', self.on_key_pressed)
+        self.define_cell_dialog.bind('<Key>', self.on_key_pressed)
+
+        # Set dialog focus
+        # self.define_cell_dialog.grab_set()  # Prevent interaction with the main window
+        # self.define_cell_dialog.focus_force()  # Bring the dialog to focus
 
         self.setup_userinterface()
 
@@ -38,7 +42,7 @@ class DefineCellDialog:
         """
 
         # Create a content frame for the control window
-        self.content = ttk.Frame(self.control_window, padding=(5, 5, 5, 5))
+        self.content = ttk.Frame(self.define_cell_dialog, padding=(5, 5, 5, 5))
         self.content.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         # Create two frames for the different sections of the control window
@@ -114,8 +118,7 @@ class DefineCellDialog:
 
         self.image_viewer.set_dialog_buttons(tk.NORMAL)
         self.callback_to_close()
-        self.on_reset()
-        self.control_window.destroy()
+        self.define_cell_dialog.destroy()
 
     def on_assign(self):
         self.callback_to_assign_squares_to_cell(self.cell_var.get())

@@ -26,12 +26,12 @@ class SelectSquareDialog:
         self.neighbour_mode = None
 
         # Set window properties
-        self.select_dialog = tk.Toplevel(self.image_viewer.parent)
-        self.select_dialog.title("Select Squares")
-        self.select_dialog.attributes("-topmost", True)
-        self.select_dialog.resizable(False, False)
-        self.select_dialog.attributes('-topmost', True)
-        self.select_dialog.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.select_square_dialog = tk.Toplevel(self.image_viewer.dialog)
+        self.select_square_dialog.title("Select Squares")
+        self.select_square_dialog.attributes("-topmost", True)
+        self.select_square_dialog.resizable(False, False)
+        self.select_square_dialog.attributes('-topmost', True)
+        self.select_square_dialog.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # Set up the user interface
         self.setup_userinterface()
@@ -47,7 +47,7 @@ class SelectSquareDialog:
 
     def setup_userinterface(self):
         # Set up the content frame
-        self.content = ttk.Frame(self.select_dialog, padding=(5, 5, 5, 5))
+        self.content = ttk.Frame(self.select_square_dialog, padding=(5, 5, 5, 5))
         self.content.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         # There are two frames in the content frame, one for the filters and one for the exit buttons
@@ -262,7 +262,7 @@ class SelectSquareDialog:
             self.sc_min_r_squared.get(),
             self.neighbour_var.get())
         self.image_viewer.set_dialog_buttons(tk.NORMAL)
-        self.select_dialog.destroy()
+        self.select_square_dialog.destroy()
 
     # --------------------------------------------------------------------------------------------------------
     # Information from the Image Viewer

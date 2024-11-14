@@ -10,12 +10,12 @@ class SelectRecordingDialog():
 
         self.image_viewer = image_viewer
 
-        self.control_window = tk.Toplevel(self.image_viewer.parent)
-        self.control_window.title("Select Recordings")
-        self.control_window.attributes("-topmost", True)
-        self.control_window.resizable(False, False)
-        self.control_window.attributes('-topmost', True)
-        self.control_window.protocol("WM_DELETE_WINDOW", self.on_cancel)
+        self.select_recording_dialog = tk.Toplevel(self.image_viewer.dialog)
+        self.select_recording_dialog.title("Select Recordings")
+        self.select_recording_dialog.attributes("-topmost", True)
+        self.select_recording_dialog.resizable(False, False)
+        self.select_recording_dialog.attributes('-topmost', True)
+        self.select_recording_dialog.protocol("WM_DELETE_WINDOW", self.on_cancel)
 
         self.df = dataframe.copy()
         self.callback = callback
@@ -35,7 +35,7 @@ class SelectRecordingDialog():
 
     def setup_userinterface(self):
         # Frame to hold list boxes and buttons
-        content = ttk.Frame(self.control_window, padding="10")
+        content = ttk.Frame(self.select_recording_dialog, padding="10")
         content.grid(row=0, column=0, sticky="NSEW")
 
         self.listboxes = {}  # Listboxes for each column
@@ -118,12 +118,12 @@ class SelectRecordingDialog():
         self.callback(selected_filters, True)
 
         # Close the dialog
-        self.control_window.destroy()
+        self.select_recording_dialog.destroy()
 
     def on_cancel(self):
         """ Close the dialog without applying any filters. """
         self.callback(None, False)
-        self.control_window.destroy()
+        self.select_recording_dialog.destroy()
 
 
 if __name__ == "__main__":
