@@ -213,6 +213,7 @@ def main():
                 max_allowable_variability=entry['max_allowable_variability'],
                 min_track_duration=get_paint_attribute('Generate Squares', 'Min Track Duration'),
                 max_track_duration=get_paint_attribute('Generate Squares', 'Max Track Duration'),
+                min_r_squared=get_paint_attribute('Generate Squares', 'Min R Squared'),
                 neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode'))
 
             if not process_json_configuration_block(

@@ -191,6 +191,7 @@ class GenerateSquaresDialog:
             max_allowable_variability=self.max_allowable_variability.get(),
             min_track_duration=get_paint_attribute('Generate Squares', 'Min Track Duration') or 0,
             max_track_duration=get_paint_attribute('Generate Squares', 'Max Track Duration') or 10000,
+            min_r_squared=get_paint_attribute('Generate Squares', 'Min R Squared') or 0.9,
             neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode') or 'Free',
         )
         generate_function(

@@ -17,6 +17,7 @@
     "Neighbour Mode":"Free",
     "Min Track Duration": 0,
     "Max Track Duration": 1000000,
+    "Min R Squared": 0.9,
     "logging": {
       "level": "INFO",
       "file": "Generate Squares.log"
