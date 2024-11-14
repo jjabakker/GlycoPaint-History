@@ -616,24 +616,6 @@ class RecordingViewer:
         self.img_no = index - 1
         self.on_forward_backward('FORWARD')
 
-    def on_histogram(self):
-
-        unique_cells = self.df_squares['Cell Id'].unique().tolist()
-        for cell_id in unique_cells:
-            self.provide_report_on_cell(self, cell_id)
-
-            df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_id]
-            df_selection_visible = df_selection[df_selection['Selected']]
-            tau_values_visible = df_selection_visible['Tau'].to_list()
-
-            if len(tau_values_visible) > 0:
-                tau_mean = round(statistics.mean(tau_values_visible), 0)
-                tau_median = round(statistics.median(tau_values_visible), 0)
-                tau_std = round(statistics.stdev(tau_values_visible), 1)
-
-                print(
-                    f"For Cell Id: {cell_id}, the tau mean is {tau_mean}, the tau median is {tau_median} and the tau std is {tau_std}\n")
-
     def on_how_excel(self):
         # Determine the command for opening Excel
         if platform.system() == 'Darwin':
@@ -704,18 +686,6 @@ class RecordingViewer:
         print(f'The mean Tau value:            {tau_mean}')
         print(f'The median Tau value:          {tau_median}')
         print(f'The Tau standard deviation:    {tau_std}')
-
-    # def on_reset_image(self):
-    #     """
-    #     Resets the current image. All squares are displayed, but the variability and density ratio sliders are applied
-    #     :return:
-    #     """
-    #
-    #     self.df_squares['Selected'] = True  # ToDo is this ok?
-    #     self.df_squares['Cell Id'] = 0
-    #
-    #     self.select_squares_for_display()
-    #     self.display_selected_squares()
 
     def update_select_squares(
             self,
