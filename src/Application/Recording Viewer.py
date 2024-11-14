@@ -268,14 +268,14 @@ class RecordingViewer:
             self.frame_commands, text='Select Recordings', command=lambda: self.on_select_recording(),
             width=button_width)
         self.bn_show_heatmap = ttk.Button(
-            self.frame_commands, text='Heatmap', command=lambda: self.on_show_heatmap(), width=button_width)
+            self.frame_commands, text='Heatmap', command=lambda: self.on_heatmap(), width=button_width)
         self.bn_show_select_squares = ttk.Button(
-            self.frame_commands, text='Select Squares', command=lambda: self.on_show_select_squares(),
+            self.frame_commands, text='Select Squares', command=lambda: self.on_select_squares(),
             width=button_width)
         self.bn_show_define_cells = ttk.Button(
-            self.frame_commands, text='Define Cells', command=lambda: self.on_show_define_cells(), width=button_width)
+            self.frame_commands, text='Define Cells', command=lambda: self.on_define_cells(), width=button_width)
         self.bn_excel = ttk.Button(
-            self.frame_commands, text='Squares Data', command=lambda: self.on_how_excel(), width=button_width)
+            self.frame_commands, text='Squares Data', command=lambda: self.on_squares_data(), width=button_width)
 
         self.bn_select_recording.grid(column=0, row=0, padx=5, pady=5)
         self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
@@ -332,13 +332,27 @@ class RecordingViewer:
         self.img_no = -1
         self.on_forward_backward('FORWARD')
 
+    def setup_exclude_button(self):
+        # Find the index of the row matching the image name
+        row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
+
+        # Check the 'Exclude' status and set properties accordingly
+        is_excluded = self.df_experiment.loc[row_index, 'Exclude']
+        self.bn_exclude.config(text='Include' if is_excluded else 'Exclude')
+        self.text_for_info4.set('Excluded' if is_excluded else '')
+        self.lbl_info4.config(style="Red.Label" if is_excluded else "Black.Label")
+
+# ----------------------------------------------------------------------------------------
+# Event Handlers for buttons
+# ----------------------------------------------------------------------------------------
+
     def on_select_recording(self):
         if self.is_dialog_active():
             return
         else:
             self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
 
-    def on_show_heatmap(self):
+    def on_heatmap(self):
         # If the heatmap is not already active, then we need to run the heatmap dialog
 
         if self.is_dialog_active():
@@ -350,20 +364,7 @@ class RecordingViewer:
             self.img_no -= 1
             self.on_forward_backward('FORWARD')
 
-    def set_dialog_buttons(self, state):
-        self.bn_show_heatmap.configure(state=state)
-        self.bn_show_define_cells.configure(state=state)
-        self.bn_show_select_squares.configure(state=state)
-        self.bn_select_recording.configure(state=state)
-
-    def is_dialog_active(self):
-        return any(dialog is not None for dialog in
-                   [self.select_square_dialog,
-                    self.define_cells_dialog,
-                    self.heatmap_control_dialog,
-                    self.select_recording_dialog])
-
-    def on_show_select_squares(self):
+    def on_select_squares(self):
         # If the select square dialog is not already active, then we need to run the select square dialog
 
         if self.is_dialog_active():
@@ -390,7 +391,7 @@ class RecordingViewer:
                 self.min_r_squared,
                     self.neighbour_mode)
 
-    def on_show_define_cells(self):
+    def on_define_cells(self):
         if self.is_dialog_active():
             return
 
@@ -403,119 +404,7 @@ class RecordingViewer:
             self.callback_to_close_define_cells
         )
 
-    def callback_to_close_define_cells(self):
-        self.define_cells_dialog = None
-
-    def callback_to_reset_square_selection(self):
-        """
-        This function is called by the DefineCellsDialog
-        It will empty the list of squares that are currently selected and update the display
-        """
-
-        self.squares_in_rectangle = []
-        self.display_selected_squares()
-
-    def callback_to_assign_squares_to_cell_id(self, cell_id):
-        """
-        This function is called by the DefineCellsDialog when a cell id has been selected to is assigned to a square
-        See if there are any squares selected and if so update the cell id, then update the display
-        """
-
-        # Update 'Cell Id' for all squares in the rectangle
-        if len(self.squares_in_rectangle) > 0:
-            self.df_squares.loc[self.squares_in_rectangle, 'Cell Id'] = int(cell_id)
-
-        # Set the flag and clear the list
-        self.squares_changed = True
-        self.squares_in_rectangle = []
-        self.display_selected_squares()
-
-    def callback_to_reset_cell_definition(self):
-        """
-        This function is called by DefineCellsDialog
-        It will clear all the cell selection and update the display
-        """
-
-        self.df_squares['Cell Id'] = 0
-        self.display_selected_squares()
-        self.squares_changed = True
-
-    def setup_exclude_button(self):
-
-        # Find the index of the row matching the image name
-        row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
-
-        # Check the 'Exclude' status and set properties accordingly
-        is_excluded = self.df_experiment.loc[row_index, 'Exclude']
-        self.bn_exclude.config(text='Include' if is_excluded else 'Exclude')
-        self.text_for_info4.set('Excluded' if is_excluded else '')
-        self.lbl_info4.config(style="Red.Label" if is_excluded else "Black.Label")
-
-    def show_error_and_exit(self, message):
-        paint_logger.error(message)
-        sys.exit()
-
-    def initialise_image_display(self):
-        # Get current image data
-        current_image = self.list_images[self.img_no]
-
-        # Update the image display based on the current image number
-        self.cn_left_image.create_image(0, 0, anchor=tk.NW, image=current_image['Left Image'])
-        self.cn_right_image.create_image(0, 0, anchor=tk.NW, image=current_image['Right Image'])
-
-        # Update labels for image information
-        self.lbl_image_bf_name.set(current_image['Right Image Name'])
-
-        # Construct cell information text
-        cell_info = (
-            f"({current_image['Cell Type']}) - "
-            f"({current_image['Adjuvant']}) - "
-            f"({current_image['Probe Type']}) - "
-            f"({current_image['Probe']})"
-        )
-        self.text_for_info1.set(cell_info)
-        info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
-        self.text_for_info2.set(info2)
-        info3 = f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
-        self.text_for_info3.set(info3)
-
-    def on_exinclude(self):
-        """
-        Toggle the state of the recording. Change the button text and the info text
-        :return:
-        """
-
-        # row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
-        # This was complex code, but the index is already the image name
-
-        row_index = self.image_name
-        is_excluded = self.df_experiment.loc[row_index, 'Exclude'] = not self.df_experiment.loc[row_index, 'Exclude']
-
-        self.bn_exclude.config(text='Include' if is_excluded else 'Exclude')
-        self.text_for_info4.set('Excluded' if is_excluded else '')
-        self.lbl_info4.config(style="Red.Label" if is_excluded else "Black.Label")
-        self.lbl_info4.configure(foreground='red' if is_excluded else 'black')
-
-        self.experiment_changed = True
-
-
-
-
-    def on_exit_viewer(self):
-        if self.experiment_changed or self.squares_changed:
-            status = self.save_changes()
-            if status is None:  # Handle case where save_changes returns None or a non-boolean
-                return
-        root.quit()
-
-    def image_selected(self, _):
-        image_name = self.cb_image_names.get()
-        paint_logger.debug(image_name)
-        index = self.list_of_image_names.index(image_name)
-        self.img_no = index - 1
-        self.on_forward_backward('FORWARD')
-
-    def on_how_excel(self):
+    def on_squares_data(self):
         # Determine the command for opening Excel
         if platform.system() == 'Darwin':
             excel_command = 'open'
@@ -585,6 +474,211 @@ class RecordingViewer:
         print(f'The mean Tau value:            {tau_mean}')
         print(f'The median Tau value:          {tau_median}')
         print(f'The Tau standard deviation:    {tau_std}')
+
+    # --------------------------------------------------------------------------------------------
+    # Key Bindings and associated functions
+    # --------------------------------------------------------------------------------------------
+
+
+    def setup_key_bindings(self):
+        # Key binding dictionary
+        self.key_bindings = {
+            '<Right>': lambda e: self.conditional_navigation(e),
+            '<Left>': lambda e: self.conditional_navigation(e),
+            's': lambda e: self.toggle_show_squares(),
+            'n': lambda e: self.toggle_show_square_numbers(),
+            't': lambda e: self.toggle_selected_squares(),
+            'v': lambda e: self.on_toggle_valid_square(),
+            'o': lambda e: self.output_pictures_to_pdf()
+        }
+
+        for key, action in self.key_bindings.items():
+            self.viewer_dialog.bind(key, action)
+
+
+    def conditional_navigation(self, event):
+        # Navigate to 'START' or 'END' based on a modifier (Shift key), otherwise go 'FORWARD' or 'BACKWARD'.
+        if event.keysym == 'Right':
+            direction = 'END' if event.state & 0x0001 else 'FORWARD'  # Shift modifier check
+        elif event.keysym == 'Left':
+            direction = 'START' if event.state & 0x0001 else 'BACKWARD'
+        else:
+            return
+        self.on_forward_backward(direction)
+
+
+    def toggle_show_squares(self):
+        self.show_squares = not self.show_squares
+        self.display_selected_squares()
+
+
+    def toggle_show_square_numbers(self):
+        self.show_squares_numbers = not self.show_squares_numbers
+        self.show_numbers = self.show_squares  # Set show_numbers based on show_squares
+        self.display_selected_squares()
+
+
+    def toggle_selected_squares(self):
+        self.show_squares = not self.show_squares
+        self.display_selected_squares()
+
+
+    def on_toggle_valid_square(self):
+        self.only_valid_tau = not self.only_valid_tau
+        select_squares(self, only_valid_tau=self.only_valid_tau)
+        self.display_selected_squares()
+
+
+    def output_pictures_to_pdf(self):
+        # Create the squares directory if it does not exist
+        squares_dir = os.path.join(self.user_specified_directory, 'Output', 'Squares')
+        os.makedirs(squares_dir, exist_ok=True)
+
+        # Cycle through all images
+        self.img_no = -1
+        for img_no in range(len(self.list_images)):
+            self.on_forward_backward('FORWARD')
+
+            image_name = self.list_images[self.img_no]['Left Image Name']
+            paint_logger.debug(f"Writing {image_name} to pdf file {os.path.join(squares_dir, image_name)}")
+
+            # Delete the squares and write the canvas with just the tracks
+            self.cn_left_image.delete("all")
+            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
+
+            # Add the squares and write the canvas complete with squares
+            self.select_squares_for_display()
+            self.display_selected_squares()
+            image_name = image_name + '-squares'
+            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
+
+        # Find all the png files and sort them
+        png_files = []
+        files = os.listdir(squares_dir)
+        for file in files:
+            if file.endswith(".png"):
+                png_files.append(os.path.join(squares_dir, file))
+        png_files = sorted(png_files)
+
+        # Create Image objects of all png files
+        png_images = []
+        for png_file in png_files:
+            png_images.append(Image.open(png_file))
+        pdf_path = os.path.join(squares_dir, 'images.pdf')
+
+        # Create a PDF with a first image and add all the other images to it
+        if platform.system() == "Darwin":
+            png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
+
+        # Go back to the image where we were
+        self.img_no -= 1
+        self.on_forward_backward('FORWARD')
+
+# ----------------------------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------------------------
+
+    def callback_to_close_define_cells(self):
+        self.define_cells_dialog = None
+
+    def callback_to_reset_square_selection(self):
+        """
+        This function is called by the DefineCellsDialog
+        It will empty the list of squares that are currently selected and update the display
+        """
+
+        self.squares_in_rectangle = []
+        self.display_selected_squares()
+
+    def callback_to_assign_squares_to_cell_id(self, cell_id):
+        """
+        This function is called by the DefineCellsDialog when a cell id has been selected to is assigned to a square
+        See if there are any squares selected and if so update the cell id, then update the display
+        """
+
+        # Update 'Cell Id' for all squares in the rectangle
+        if len(self.squares_in_rectangle) > 0:
+            self.df_squares.loc[self.squares_in_rectangle, 'Cell Id'] = int(cell_id)
+
+        # Set the flag and clear the list
+        self.squares_changed = True
+        self.squares_in_rectangle = []
+        self.display_selected_squares()
+
+    def callback_to_reset_cell_definition(self):
+        """
+        This function is called by DefineCellsDialog
+        It will clear all the cell selection and update the display
+        """
+
+        self.df_squares['Cell Id'] = 0
+        self.display_selected_squares()
+        self.squares_changed = True
+
+
+
+    def show_error_and_exit(self, message):
+        paint_logger.error(message)
+        sys.exit()
+
+    def initialise_image_display(self):
+        # Get current image data
+        current_image = self.list_images[self.img_no]
+
+        # Update the image display based on the current image number
+        self.cn_left_image.create_image(0, 0, anchor=tk.NW, image=current_image['Left Image'])
+        self.cn_right_image.create_image(0, 0, anchor=tk.NW, image=current_image['Right Image'])
+
+        # Update labels for image information
+        self.lbl_image_bf_name.set(current_image['Right Image Name'])
+
+        # Construct cell information text
+        cell_info = (
+            f"({current_image['Cell Type']}) - "
+            f"({current_image['Adjuvant']}) - "
+            f"({current_image['Probe Type']}) - "
+            f"({current_image['Probe']})"
+        )
+        self.text_for_info1.set(cell_info)
+        info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']}"
+        self.text_for_info2.set(info2)
+        info3 = f"Min Required Density Ratio: {self.list_images[self.img_no]['Min Required Density Ratio']:,} - Max Allowable Variability: {self.list_images[self.img_no]['Max Allowable Variability']}"
+        self.text_for_info3.set(info3)
+
+    def on_exinclude(self):
+        """
+        Toggle the state of the recording. Change the button text and the info text
+        :return:
+        """
+
+        # row_index = self.df_experiment.index[self.df_experiment['Ext Recording Name'] == self.image_name].tolist()[0]
+        # This was complex code, but the index is already the image name
+
+        row_index = self.image_name
+        is_excluded = self.df_experiment.loc[row_index, 'Exclude'] = not self.df_experiment.loc[row_index, 'Exclude']
+
+        self.bn_exclude.config(text='Include' if is_excluded else 'Exclude')
+        self.text_for_info4.set('Excluded' if is_excluded else '')
+        self.lbl_info4.config(style="Red.Label" if is_excluded else "Black.Label")
+        self.lbl_info4.configure(foreground='red' if is_excluded else 'black')
+
+        self.experiment_changed = True
+
+    def on_exit_viewer(self):
+        if self.experiment_changed or self.squares_changed:
+            status = self.save_changes()
+            if status is None:  # Handle case where save_changes returns None or a non-boolean
+                return
+        root.quit()
+
+    def image_selected(self, _):
+        image_name = self.cb_image_names.get()
+        paint_logger.debug(image_name)
+        index = self.list_of_image_names.index(image_name)
+        self.img_no = index - 1
+        self.on_forward_backward('FORWARD')
+
 
     def update_select_squares(
             self,
@@ -823,18 +917,11 @@ class RecordingViewer:
 
         # Set the correct state of Forward and back buttons
         if self.img_no == len(self.list_images) - 1:
-            self.bn_forward.configure(state=DISABLED)
-            self.bn_end.configure(state=DISABLED)
+            self.set_forward_backward_buttons('block_forward')
+        elif self.img_no == 0:
+            self.set_forward_backward_buttons('block_backward')
         else:
-            self.bn_forward.configure(state=NORMAL)
-            self.bn_end.configure(state=NORMAL)
-
-        if self.img_no == 0:
-            self.bn_backward.configure(state=DISABLED)
-            self.bn_start.configure(state=DISABLED)
-        else:
-            self.bn_backward.configure(state=NORMAL)
-            self.bn_start.configure(state=NORMAL)
+            self.set_forward_backward_buttons('allow_both')
 
         # image_name = self.list_images[self.img_no]['Left Image Name']
         self.cb_image_names.set(self.image_name)
@@ -1052,106 +1139,35 @@ class RecordingViewer:
         self.on_forward_backward('START')
 
 
-    #--------------------------------------------------------------------------------------------
-    # Key Bindings and associated functions
-    #--------------------------------------------------------------------------------------------
-
-    def setup_key_bindings(self):
-
-        # Key binding dictionary
-        self.key_bindings = {
-            '<Right>': lambda e: self.conditional_navigation(e),
-            '<Left>': lambda e: self.conditional_navigation(e),
-            's': lambda e: self.toggle_show_squares(),
-            'n': lambda e: self.toggle_show_square_numbers(),
-            't': lambda e: self.toggle_selected_squares(),
-            'v': lambda e: self.on_toggle_valid_square(),
-            'o': lambda e: self.output_pictures_to_pdf()
-        }
-
-        for key, action in self.key_bindings.items():
-            self.viewer_dialog.bind(key, action)
-
-    def conditional_navigation(self, event):
-        # Navigate to 'START' or 'END' based on a modifier (Shift key), otherwise go 'FORWARD' or 'BACKWARD'.
-        if event.keysym == 'Right':
-            direction = 'END' if event.state & 0x0001 else 'FORWARD'  # Shift modifier check
-        elif event.keysym == 'Left':
-            direction = 'START' if event.state & 0x0001 else 'BACKWARD'
-        else:
-            return
-        self.on_forward_backward(direction)
-
-    def toggle_show_squares(self):
-        self.show_squares = not self.show_squares
-        self.display_selected_squares()
-
-    def toggle_show_square_numbers(self):
-        self.show_squares_numbers = not self.show_squares_numbers
-        self.show_numbers = self.show_squares  # Set show_numbers based on show_squares
-        self.display_selected_squares()
-
-    def toggle_selected_squares(self):
-        self.show_squares = not self.show_squares
-        self.display_selected_squares()
-
-    def on_toggle_valid_square(self):
-        self.only_valid_tau = not self.only_valid_tau
-        select_squares(self, only_valid_tau=self.only_valid_tau)
-        self.display_selected_squares()
-
-    def output_pictures_to_pdf(self):
-        """
-        The function is triggered by pressing 'o' and will generate a PDF file containing all the images.
-        :return:
-        """
-
-        # Create the squares directory if it does not exist
-        squares_dir = os.path.join(self.user_specified_directory, 'Output', 'Squares')
-        os.makedirs(squares_dir, exist_ok=True)
-
-        # Cycle through all images
-        self.img_no = -1
-        for img_no in range(len(self.list_images)):
-            self.on_forward_backward('FORWARD')
-
-            image_name = self.list_images[self.img_no]['Left Image Name']
-            paint_logger.debug(f"Writing {image_name} to pdf file {os.path.join(squares_dir, image_name)}")
-
-            # Delete the squares and write the canvas with just the tracks
-            self.cn_left_image.delete("all")
-            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
-
-            # Add the squares and write the canvas complete with squares
-            self.select_squares_for_display()
-            self.display_selected_squares()
-            image_name = image_name + '-squares'
-            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
-
-        # Find all the png files and sort them
-        png_files = []
-        files = os.listdir(squares_dir)
-        for file in files:
-            if file.endswith(".png"):
-                png_files.append(os.path.join(squares_dir, file))
-        png_files = sorted(png_files)
-
-        # Create Image objects of all png files
-        png_images = []
-        for png_file in png_files:
-            png_images.append(Image.open(png_file))
-        pdf_path = os.path.join(squares_dir, 'images.pdf')
-
-        # Create a PDF with a first image and add all the other images to it
-        if platform.system() == "Darwin":
-            png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
-
-        # Go back to the image where we were
-        self.img_no -= 1
-        self.on_forward_backward('FORWARD')
 
 
+# ---------------------------------------------------------------------------------------
+# Utility functions
+# ---------------------------------------------------------------------------------------
+    def set_forward_backward_buttons(self, mode):
+        self.bn_backward.configure(state=tk.NORMAL)
+        self.bn_start.configure(state=tk.NORMAL)
+        self.bn_forward.configure(state=tk.NORMAL)
+        self.bn_end.configure(state=tk.NORMAL)
+        if mode == 'block_backward':
+            self.bn_backward.configure(state=tk.DISABLED)
+            self.bn_start.configure(state=tk.DISABLED)
+        if mode == 'block_forward':
+            self.bn_forward.configure(state=tk.DISABLED)
+            self.bn_end.configure(state=tk.DISABLED)
+
+    def set_dialog_buttons(self, state):
+        self.bn_show_heatmap.configure(state=state)
+        self.bn_show_define_cells.configure(state=state)
+        self.bn_show_select_squares.configure(state=state)
+        self.bn_select_recording.configure(state=state)
+
+    def is_dialog_active(self):
+        return any(dialog is not None for dialog in
+                   [self.select_square_dialog,
+                    self.define_cells_dialog,
+                    self.heatmap_control_dialog,
+                    self.select_recording_dialog])
 
 
 def draw_heatmap_square(
