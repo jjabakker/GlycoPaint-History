@@ -5,11 +5,18 @@ import os
 def get_paint_defaults_file_path():  # ToDo
     return os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'Paint.json')
 
-# This is unusual code. The import is only sup[osed to be done from the Jython environmen.
-# There LoggerConfig will be found. If it is seen in Python it will generate an error, but that does not matter
+# This is unusual code. One import will work in Jython, the other in Python. The other will fail, but the error will
+# be caught.
 
+# Import for Jython
 try:
     from LoggerConfig import paint_logger
+except:
+    pass
+
+# Import forr Python
+try:
+    from src.Common.Support.LoggerConfig import paint_logger
 except:
     pass
 
