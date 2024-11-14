@@ -25,14 +25,6 @@ def display_selected_squares(self):
     if len(self.df_squares) == 0:
         return
 
-    # Ensure up-to-date labelling
-    self.df_squares.sort_values(by='Nr Tracks', inplace=True, ascending=False)
-    label_nr = 1
-    for i in range(0, len(self.df_squares)):
-        if self.df_squares.at[i, 'Selected']:
-            self.df_squares.at[i, 'Label Nr'] = label_nr
-            label_nr += 1
-
     i = 1
 
     # First draw the squares that are selected
