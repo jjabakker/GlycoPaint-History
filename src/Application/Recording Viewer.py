@@ -802,63 +802,57 @@ class RecordingViewer:
 
     def provide_information_on_square(self, event, label_nr, square_nr):
         """
-        After right-clicking on a square, provides information on the square and shows it as a popup
+        Display a popup with information about a square on right-click.
         """
+        # Ensure the canvas has focus
+        self.cn_left_image.focus_set()
 
-        # Define the popup
-        if self.square_info_popup is None:
-            self.square_info_popup = Toplevel(self.viewer_dialog)
-            self.square_info_popup.resizable(False, False)
-            self.square_info_popup.attributes('-topmost', True)
-            self.square_info_popup.title("Square Info")
-            self.square_info_popup.geometry("300x230")
-
-            # Calculate popup position based on the mouse click
-            x = self.viewer_dialog.winfo_rootx() + event.x
-            y = self.viewer_dialog.winfo_rooty() + event.y
-
-            # Adjust position slightly to the right and below the click
-            x += 40  # Move to the right
-            y += 40  # Move down
-            self.square_info_popup.geometry(f"+{x}+{y}")
-
-            # Get the data to display from the dataframe
-            squares_row = self.df_squares.loc[square_nr]
-
-            # Define the fields to display
-            if math.isnan(label_nr) or label_nr is None:
-                label_nr = "-"
-            else:
-                label_nr = str(int(label_nr))
-            fields = [
-                ("Label Nr", label_nr),
-                ("Square Nr", squares_row['Square Nr']),
-                ("Tau", squares_row['Tau']),
-                ("R2", squares_row['R2']),
-                ("Density", squares_row['Density']),
-                ("Number of Tracks", squares_row['Nr Tracks']),
-                ("Density Ratio", squares_row['Density Ratio']),
-                ("Variability", squares_row['Variability']),
-                ("Max Track Duration", squares_row['Max Track Duration']),
-                ("Mean Diffusion Coefficient", int(squares_row['Diffusion Coefficient']))
-            ]
-            # Fill the popup with labels using a loop
-            padx_value = 10
-            pady_value = 1
-            lbl_width = 20
-
-            for idx, (label, value) in enumerate(fields, start=1):
-                ttk.Label(self.square_info_popup, text=label, anchor=W, width=lbl_width).grid(row=idx, column=1,
-                                                                                              padx=padx_value,
-                                                                                              pady=pady_value)
-                ttk.Label(self.square_info_popup, text=str(value), anchor=W).grid(row=idx, column=2, padx=padx_value,
-                                                                                  pady=pady_value)
-
-            # Bring the focus back to the root window so the canvas can detect more clicks
-            self.viewer_dialog.focus_force()
-        else:
+        # Destroy the existing popup if it exists
+        if self.square_info_popup:
             self.square_info_popup.destroy()
             self.square_info_popup = None
+
+        # Define the popup
+        self.square_info_popup = Toplevel(self.viewer_dialog)
+        self.square_info_popup.transient(self.viewer_dialog)
+        self.square_info_popup.resizable(False, False)
+        self.square_info_popup.attributes('-topmost', True)
+        self.square_info_popup.title("Square Info")
+
+        # Calculate popup position based on the mouse click
+        x = self.viewer_dialog.winfo_rootx() + event.x + 40
+        y = self.viewer_dialog.winfo_rooty() + event.y + 40
+        self.square_info_popup.geometry(f"+{x}+{y}")
+
+        # Get the data to display from the dataframe
+        squares_row = self.df_squares.loc[square_nr]
+
+        # Define the fields to display
+        if math.isnan(label_nr) or label_nr is None:
+            label_nr = "-"
+        else:
+            label_nr = str(int(label_nr))
+        fields = [
+            ("Label Nr", label_nr),
+            ("Square Nr", squares_row['Square Nr']),
+            ("Tau", squares_row['Tau']),
+            ("R2", squares_row['R2']),
+            ("Density", squares_row['Density']),
+            ("Number of Tracks", squares_row['Nr Tracks']),
+            ("Density Ratio", squares_row['Density Ratio']),
+            ("Variability", squares_row['Variability']),
+            ("Max Track Duration", squares_row['Max Track Duration']),
+            ("Mean Diffusion Coefficient", int(squares_row['Diffusion Coefficient']))
+        ]
+
+        # Fill the popup with labels using a loop
+
+        for idx, (label, value) in enumerate(fields, start=1):
+            ttk.Label(self.square_info_popup, text=label, anchor=W, width=20).grid(row=idx, column=1, padx=10, pady=2)
+            ttk.Label(self.square_info_popup, text=str(value), anchor=W).grid(row=idx, column=2, padx=10, pady=2)
+
+        # Bring the focus back to the root window so the canvas can detect more clicks
+        self.viewer_dialog.focus_force()
 
     # --------------------------------------------------------------------------------------
     # Rectangle functions
