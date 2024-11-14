@@ -216,35 +216,38 @@ def label_selected_squares(df_squares):
 
 
 def label_selected_squares_and_tracks(df_squares, df_tracks):
-
     """
-    Assigns label numbers to selected squares in descending order of 'Nr Tracks'.
+    Assigns label numbers to selected squares in descending order of 'Nr Tracks'
+    and propagates labels to the corresponding tracks DataFrame.
+
+    Optimized for performance using vectorized operations.
     """
 
-    # Sort by 'Nr Tracks' in descending order
-    df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
+    # Step 1: Sort by 'Nr Tracks' in descending order
     df_squares.set_index('Square Nr', drop=False, inplace=True)
+    df_squares = df_squares.sort_values(by='Nr Tracks', ascending=False).copy()
 
-    # Initialize label number
-    label_nr = 1
+    # Step 2: Generate labels for selected squares
+    df_squares['Label Nr'] = None  # Initialize the column
+    selected_indices = df_squares.loc[df_squares['Selected']].index
+    df_squares.loc[selected_indices, 'Label Nr'] = range(1, len(selected_indices) + 1)
 
-    # Iterate through rows and label selected ones
-    for idx, row in df_squares.iterrows():
-        if row['Selected']:
-            df_squares.at[idx, 'Label Nr'] = label_nr
-            label_nr += 1
-        else:
-            df_squares.at[idx, 'Label Nr'] = None  # Clear label for unselected rows
+    # Step 3: Restore the original order
+    df_squares = df_squares.sort_index()
 
-    # Restore original order
-    df_squares.sort_index(inplace=True)
+    # Step 4: Propagate labels to df_tracks
+    # Merge the Label Nr column with df_tracks using 'Square Nr' and 'Ext Recording Name' as keys
+    df_squares.reset_index(drop=True, inplace=True)
+    df_tracks = df_tracks.merge(
+        df_squares[['Square Nr', 'Ext Recording Name', 'Label Nr']],
+        on=['Square Nr', 'Ext Recording Name'],
+        how='left',
+    suffixes=('', '_from_squares')  # Avoid '_x' and '_y', rename the merged Label Nr
+    )
+    df_tracks['Label Nr'] = df_tracks['Label Nr_from_squares']  # Use the merged Label Nr
+    df_tracks.drop(columns=['Label Nr_from_squares'], inplace=True)  # Remove the extra column
 
-    df_temp = df_squares[df_squares['Label Nr'] != 0]
-    for index, experiment_row in df_temp.iterrows():
-        recording_name = experiment_row['Ext Recording Name']
-        square = experiment_row['Square Nr']
-        label = experiment_row['Label Nr']
-        df_tracks.loc[
-            (df_tracks['Square Nr'] == square) &
-            (df_tracks['Recording Name'] == recording_name), 'Label Nr'
-        ] = label
+    # Step 5: Clean up any unselected rows in df_tracks
+    # df_tracks['Label Nr'] = df_tracks['Label Nr'].fillna(0).astype(int)
+
+    return df_squares, df_tracks
