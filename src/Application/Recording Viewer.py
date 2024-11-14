@@ -67,10 +67,7 @@ class RecordingViewer:
         self.load_images_and_config()
         self.setup_exclude_button()
         self.setup_heatmap()
-
-        # Bind keys for navigation
-        parent.bind('<Right>', lambda event: self.on_forward_backward('FORWARD'))
-        parent.bind('<Left>', lambda event: self.on_forward_backward('BACKWARD'))
+        self.setup_key_bindings()
 
         # Ensure the user can't close the window by clicking the X button
         self.viewer_dialog.protocol("WM_DELETE_WINDOW", self.on_exit_viewer)
@@ -78,6 +75,7 @@ class RecordingViewer:
         # Set dialog focus
         self.viewer_dialog.grab_set()  # Prevent interaction with the main window
         self.viewer_dialog.focus_force()  # Bring the dialog to focus
+
 
     def setup_heatmap(self):
         self.slider_value = tk.DoubleVar()
@@ -187,8 +185,6 @@ class RecordingViewer:
         self.cn_left_image.grid(column=0, row=0, padx=5, pady=5)
         self.cn_right_image.grid(column=0, row=0, padx=5, pady=5)
 
-        self.viewer_dialog.bind('<Key>', self.on_key_pressed)
-
         # Define the labels and combobox widgets for the images
         self.list_images = []
         self.list_of_image_names = []
@@ -280,7 +276,6 @@ class RecordingViewer:
             self.frame_commands, text='Define Cells', command=lambda: self.on_show_define_cells(), width=button_width)
         self.bn_excel = ttk.Button(
             self.frame_commands, text='Squares Data', command=lambda: self.on_how_excel(), width=button_width)
-
 
         self.bn_select_recording.grid(column=0, row=0, padx=5, pady=5)
         self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
@@ -503,104 +498,8 @@ class RecordingViewer:
 
         self.experiment_changed = True
 
-    def on_key_pressed(self, event):
-        """
-        This function is triggered by pressing a key and will perform the required actions
-        """
 
-        self.cn_left_image.focus_set()
 
-        # Displaying squares is toggled by pressing 's'
-        if event.keysym == 's':
-            self.show_squares = not self.show_squares
-            self.display_selected_squares()
-
-        # Displaying square numbers is toggled by pressing 'n'
-        elif event.keysym == 'n':
-            self.show_squares_numbers = not self.show_squares_numbers
-            self.show_numbers = self.show_squares  # Set show_numbers based on show_squares
-            self.display_selected_squares()
-
-        # Pressing 'o' will generate a PDF file containing all the images
-        elif event.keysym == 'o':
-            self.output_pictures_to_pdf()
-
-        # Pressing 't' will toggle the display of selected squares
-        elif event.keysym == 't':
-            self.show_squares = not self.show_squares
-            self.display_selected_squares()
-
-        # Pressing 'h' will generate a histogram of the tau values
-        elif event.keysym == 'h':
-            self.on_histogram()
-
-        # Pressing 'v' will toggle the display of valid squares
-        elif event.keysym == 'v':
-            self.on_toggle_valid_square()
-
-        # Pressing 'right' will either go to the next image or the end of the list
-        elif event.keysym == 'Right':
-            self.on_forward_backward('END' if event.state & 0x0001 else 'FORWARD')
-
-        # Pressing 'left' will either go to the previous image or the start of the list
-        elif event.keysym == 'Left':
-            self.on_forward_backward('START' if event.state & 0x0001 else 'BACKWARD')
-
-    def output_pictures_to_pdf(self):
-        """
-        The function is triggered by pressing 'o' and will generate a PDF file containing all the images.
-        :return:
-        """
-
-        # Create the squares directory if it does not exist
-        squares_dir = os.path.join(self.user_specified_directory, 'Output', 'Squares')
-        os.makedirs(squares_dir, exist_ok=True)
-
-        # Cycle through all images
-        self.img_no = -1
-        for img_no in range(len(self.list_images)):
-            self.on_forward_backward('FORWARD')
-
-            image_name = self.list_images[self.img_no]['Left Image Name']
-            paint_logger.debug(f"Writing {image_name} to pdf file {os.path.join(squares_dir, image_name)}")
-
-            # Delete the squares and write the canvas with just the tracks
-            self.cn_left_image.delete("all")
-            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
-
-            # Add the squares and write the canvas complete with squares
-            self.select_squares_for_display()
-            self.display_selected_squares()
-            image_name = image_name + '-squares'
-            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
-
-        # Find all the png files and sort them
-        png_files = []
-        files = os.listdir(squares_dir)
-        for file in files:
-            if file.endswith(".png"):
-                png_files.append(os.path.join(squares_dir, file))
-        png_files = sorted(png_files)
-
-        # Create Image objects of all png files
-        png_images = []
-        for png_file in png_files:
-            png_images.append(Image.open(png_file))
-        pdf_path = os.path.join(squares_dir, 'images.pdf')
-
-        # Create a PDF with a first image and add all the other images to it
-        if platform.system() == "Darwin":
-            png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
-
-        # Go back to the image where we were
-        self.img_no -= 1
-        self.on_forward_backward('FORWARD')
-
-    def on_toggle_valid_square(self):
-        self.only_valid_tau = not self.only_valid_tau
-        select_squares(self, only_valid_tau=self.only_valid_tau)
-        self.display_selected_squares()
 
     def on_exit_viewer(self):
         if self.experiment_changed or self.squares_changed:
@@ -888,15 +787,16 @@ class RecordingViewer:
     def mark_selected_squares(self):
         self.display_selected_squares()
 
+    # --------------------------------------------------------------------------------------
+    # Navigation
+    # --------------------------------------------------------------------------------------
+
     def on_forward_backward(self, direction):
         """
         The function is called when we switch image
         """
 
-        # ----------------------------------------------------------------------------
         # Check if the user has changed the Cell assignments and if so, ask if they want to save
-        # ----------------------------------------------------------------------------
-
         if self.squares_changed:
             self.save_changes(save_experiment=False)
 
@@ -1150,6 +1050,109 @@ class RecordingViewer:
 
         # Start at the first image
         self.on_forward_backward('START')
+
+
+    #--------------------------------------------------------------------------------------------
+    # Key Bindings and associated functions
+    #--------------------------------------------------------------------------------------------
+
+    def setup_key_bindings(self):
+
+        # Key binding dictionary
+        self.key_bindings = {
+            '<Right>': lambda e: self.conditional_navigation(e),
+            '<Left>': lambda e: self.conditional_navigation(e),
+            's': lambda e: self.toggle_show_squares(),
+            'n': lambda e: self.toggle_show_square_numbers(),
+            't': lambda e: self.toggle_selected_squares(),
+            'v': lambda e: self.on_toggle_valid_square(),
+            'o': lambda e: self.output_pictures_to_pdf()
+        }
+
+        for key, action in self.key_bindings.items():
+            self.viewer_dialog.bind(key, action)
+
+    def conditional_navigation(self, event):
+        # Navigate to 'START' or 'END' based on a modifier (Shift key), otherwise go 'FORWARD' or 'BACKWARD'.
+        if event.keysym == 'Right':
+            direction = 'END' if event.state & 0x0001 else 'FORWARD'  # Shift modifier check
+        elif event.keysym == 'Left':
+            direction = 'START' if event.state & 0x0001 else 'BACKWARD'
+        else:
+            return
+        self.on_forward_backward(direction)
+
+    def toggle_show_squares(self):
+        self.show_squares = not self.show_squares
+        self.display_selected_squares()
+
+    def toggle_show_square_numbers(self):
+        self.show_squares_numbers = not self.show_squares_numbers
+        self.show_numbers = self.show_squares  # Set show_numbers based on show_squares
+        self.display_selected_squares()
+
+    def toggle_selected_squares(self):
+        self.show_squares = not self.show_squares
+        self.display_selected_squares()
+
+    def on_toggle_valid_square(self):
+        self.only_valid_tau = not self.only_valid_tau
+        select_squares(self, only_valid_tau=self.only_valid_tau)
+        self.display_selected_squares()
+
+    def output_pictures_to_pdf(self):
+        """
+        The function is triggered by pressing 'o' and will generate a PDF file containing all the images.
+        :return:
+        """
+
+        # Create the squares directory if it does not exist
+        squares_dir = os.path.join(self.user_specified_directory, 'Output', 'Squares')
+        os.makedirs(squares_dir, exist_ok=True)
+
+        # Cycle through all images
+        self.img_no = -1
+        for img_no in range(len(self.list_images)):
+            self.on_forward_backward('FORWARD')
+
+            image_name = self.list_images[self.img_no]['Left Image Name']
+            paint_logger.debug(f"Writing {image_name} to pdf file {os.path.join(squares_dir, image_name)}")
+
+            # Delete the squares and write the canvas with just the tracks
+            self.cn_left_image.delete("all")
+            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
+
+            # Add the squares and write the canvas complete with squares
+            self.select_squares_for_display()
+            self.display_selected_squares()
+            image_name = image_name + '-squares'
+            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
+
+        # Find all the png files and sort them
+        png_files = []
+        files = os.listdir(squares_dir)
+        for file in files:
+            if file.endswith(".png"):
+                png_files.append(os.path.join(squares_dir, file))
+        png_files = sorted(png_files)
+
+        # Create Image objects of all png files
+        png_images = []
+        for png_file in png_files:
+            png_images.append(Image.open(png_file))
+        pdf_path = os.path.join(squares_dir, 'images.pdf')
+
+        # Create a PDF with a first image and add all the other images to it
+        if platform.system() == "Darwin":
+            png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
+
+        # Go back to the image where we were
+        self.img_no -= 1
+        self.on_forward_backward('FORWARD')
+
+
+
 
 def draw_heatmap_square(
         canvas_to_draw_on,
