@@ -207,7 +207,7 @@ def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_
     # Write the Tracks file
     # ----------------
 
-    fields = ["Recording Name", "Track Label", "Nr Spots", "Track Duration", 'Track X Location', 'Track Y Location',
+    fields = ["Ext Recording Name", "Track Label", "Nr Spots", "Track Duration", 'Track X Location', 'Track Y Location',
               'Diffusion Coefficient']
 
     # Determine write attributes

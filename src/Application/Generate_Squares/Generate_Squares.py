@@ -176,7 +176,7 @@ def process_experiment(
         select_parameters['max_allowable_variability'])
 
     # Determine how many Recordings are in the files
-    nr_files = df_all_tracks['Recording Name'].nunique()
+    nr_files = df_all_tracks['Ext Recording Name'].nunique()
     nr_files1 = len(df_experiment)
     if nr_files1 != nr_files:
         paint_logger.info("All Squares file is not consistent with All Recordings")
@@ -300,7 +300,7 @@ def process_recording(
             delete_files_in_directory(plot_dir)
 
     # Look at squares for the recording, note that at this time Label Nr and Square Nr are not assigned, but not needed
-    df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
+    df_recording_tracks = df_all_tracks[df_all_tracks['Ext Recording Name'] == recording_name]
 
     # -----------------------------------------------------------------------------------------------------
     # A df_squares dataframe is generated and, if the process_square_tau flag is set, for every square the
@@ -340,7 +340,7 @@ def process_recording(
         label_selected_squares_and_tracks(df_squares, df_all_tracks)
 
         # Refresh df_recording_tracks now to pick up Label and Square Nrs
-        df_recording_tracks = df_all_tracks[df_all_tracks['Recording Name'] == recording_name]
+        df_recording_tracks = df_all_tracks[df_all_tracks['Ext Recording Name'] == recording_name]
 
     # ----------------------------------------------------------------------------------------------------
     # Now do the single mode processing: determine a single Tau and Density per image, i.e., for all squares and return
