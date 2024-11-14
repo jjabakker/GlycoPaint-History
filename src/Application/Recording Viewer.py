@@ -11,6 +11,7 @@ import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -621,47 +622,53 @@ class RecordingViewer:
                     f"For Cell Id: {cell_id}, the tau mean is {tau_mean}, the tau median is {tau_median} and the tau std is {tau_std}\n")
 
     def on_how_excel(self):
-        # Path to the Excel application
+        # Determine the command for opening Excel
         if platform.system() == 'Darwin':
-            # On macOS, we use the 'open' command to open applications
             excel_command = 'open'
             excel_args = ['-a', '/Applications/Microsoft Excel.app']
-        else:
-            # On Windows, we directly call the Excel executable
-            excel_command = r'C:\Program Files\Microsoft Office\root\OfficeXX\Excel.exe'  # Update Excel path as needed
+        elif platform.system() == 'Windows':
+            excel_command = os.path.join(os.environ.get('PROGRAMFILES', r'C:\Program Files'),
+                                         'Microsoft Office', 'root', 'OfficeXX', 'Excel.exe')  # Update OfficeXX
+            if not os.path.exists(excel_command):
+                raise FileNotFoundError("Microsoft Excel executable not found. Please check the installation path.")
             excel_args = [excel_command]
+        else:
+            raise OSError("Unsupported operating system")
 
-        # Create a temporary directory manually, so we can control when it's deleted
+        # Create a temporary directory
         temp_dir = tempfile.mkdtemp()
 
+        # Generate a unique file name with timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        temp_file = os.path.join(temp_dir, f'Temporary_All_Squares_{timestamp}.csv')
+
         try:
-            # Define the destination path inside the temporary directory
-            temp_file = os.path.join(temp_dir, 'Temporary All Squares.csv')
+            # Save the squares data to a temporary file
+            self.df_squares.to_csv(temp_file, index=False)
 
-            # Save squares data to the temporary file
-            save_squares_to_file(self.df_squares, temp_file)
-
-            # Make sure the file exists before continuing
+            # Verify that the file exists
             if not os.path.exists(temp_file):
                 raise FileNotFoundError(f"Temporary file {temp_file} does not exist")
 
-            # Print the file path for debugging purposes
             print(f"Opening Excel with file: {temp_file}")
 
-            # Open Excel with the temp file
+            # Open the file in Excel
             if platform.system() == 'Darwin':
-                subprocess.Popen([excel_command] + excel_args + [temp_file])
-            else:
-                subprocess.Popen(excel_args + [temp_file], shell=True)
+                subprocess.run([excel_command] + excel_args + [temp_file], check=True)
+            elif platform.system() == 'Windows':
+                subprocess.run(excel_args + [temp_file], shell=True, check=True)
 
-            # Optionally, wait for Excel to open the file before continuing
-            time.sleep(2)  # Pause to give Excel time to open the file
+            # Allow some time for Excel to process the file
+            time.sleep(2)
 
+        except Exception as e:
+            print(f"An error occurred: {e}")
         finally:
-            # Ensure that the temporary directory is deleted after use
+            # Print the cleanup path and instructions
+            print(f"Temporary file located at: {temp_file}")
             print(f"Cleaning up temporary directory: {temp_dir}")
+            # Use delayed cleanup or instruct the user to delete manually if necessary
             shutil.rmtree(temp_dir)
-
         nr_total_squares = len(self.df_squares)
         tau_values = self.df_squares[self.df_squares['Selected']]['Tau'].tolist()
         nr_visible_squares = len(tau_values)
