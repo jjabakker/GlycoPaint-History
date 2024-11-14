@@ -437,13 +437,13 @@ class RecordingViewer:
 
     def callback_to_reset_cell_definition(self):
         """
-        This function is called by the DefineCellsDialog
+        This function is called by DefineCellsDialog
         It will clear all the cell selection and update the display
         """
 
         self.df_squares['Cell Id'] = 0
         self.display_selected_squares()
-
+        self.squares_changed = True
 
     def setup_exclude_button(self):
 
@@ -843,13 +843,17 @@ class RecordingViewer:
             self.square_info_popup.title("Square Info")
             self.square_info_popup.geometry("300x230")
 
-            # Position the popup relative to the main window and the event
-            x = root.winfo_x()
-            y = root.winfo_y()
-            self.square_info_popup.geometry(f"+{x + event.x + 15}+{y + event.y + 40}")
+            # Calculate popup position based on the mouse click
+            x = self.viewer_dialog.winfo_rootx() + event.x
+            y = self.viewer_dialog.winfo_rooty() + event.y
+
+            # Adjust position slightly to the right and below the click
+            x += 40  # Move to the right
+            y += 40  # Move down
+            self.square_info_popup.geometry(f"+{x}+{y}")
 
             # Get the data to display from the dataframe
-            square_data = self.df_squares.loc[square_nr]
+            squares_row = self.df_squares.loc[square_nr]
 
             # Define the fields to display
             if math.isnan(label_nr) or label_nr is None:
