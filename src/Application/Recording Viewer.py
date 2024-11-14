@@ -273,21 +273,21 @@ class RecordingViewer:
         self.bn_select_recording = ttk.Button(
             self.frame_commands, text='Select Recordings', command=lambda: self.on_select_recording(),
             width=button_width)
-        self.bn_show_heatmap = ttk.Button(
+        self.bn_heatmap = ttk.Button(
             self.frame_commands, text='Heatmap', command=lambda: self.on_heatmap(), width=button_width)
-        self.bn_show_select_squares = ttk.Button(
+        self.bn_select_squares = ttk.Button(
             self.frame_commands, text='Select Squares', command=lambda: self.on_select_squares(),
             width=button_width)
-        self.bn_show_define_cells = ttk.Button(
+        self.bn_define_cells = ttk.Button(
             self.frame_commands, text='Define Cells', command=lambda: self.on_define_cells(), width=button_width)
-        self.bn_excel = ttk.Button(
+        self.bn_square_data = ttk.Button(
             self.frame_commands, text='Squares Data', command=lambda: self.on_squares_data(), width=button_width)
 
         self.bn_select_recording.grid(column=0, row=0, padx=5, pady=5)
-        self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
-        self.bn_show_heatmap.grid(column=0, row=2, padx=5, pady=5)
-        self.bn_show_define_cells.grid(column=0, row=3, padx=5, pady=5)
-        self.bn_excel.grid(column=0, row=6, padx=5, pady=5)
+        self.bn_select_squares.grid(column=0, row=1, padx=5, pady=5)
+        self.bn_heatmap.grid(column=0, row=2, padx=5, pady=5)
+        self.bn_define_cells.grid(column=0, row=3, padx=5, pady=5)
+        self.bn_square_data.grid(column=0, row=6, padx=5, pady=5)
 
     def setup_frame_save_commands(self):
         # Create a StringVar for save state
@@ -485,7 +485,6 @@ class RecordingViewer:
     # Key Bindings and associated functions
     # --------------------------------------------------------------------------------------------
 
-
     def setup_key_bindings(self):
         # Key binding dictionary
         self.key_bindings = {
@@ -622,12 +621,6 @@ class RecordingViewer:
         self.df_squares['Cell Id'] = 0
         self.display_selected_squares()
         self.squares_changed = True
-
-
-
-    def show_error_and_exit(self, message):
-        paint_logger.error(message)
-        sys.exit()
 
     def initialise_image_display(self):
         # Get current image data
@@ -852,7 +845,7 @@ class RecordingViewer:
         self.viewer_dialog.focus_force()
 
     # --------------------------------------------------------------------------------------
-    # Rectangle functions
+    # User square selection rectangle functions
     # --------------------------------------------------------------------------------------
 
     def start_rectangle(self, event):
@@ -866,7 +859,6 @@ class RecordingViewer:
         self.left_image_canvas.coords(self.rect, self.start_x, self.start_y, event.x, event.y)
 
     def close_rectangle(self, event):
-
         # Remove the rectangle
         self.left_image_canvas.delete(self.rect)
 
@@ -1159,9 +1151,9 @@ class RecordingViewer:
             self.bn_end.configure(state=tk.DISABLED)
 
     def set_dialog_buttons(self, state):
-        self.bn_show_heatmap.configure(state=state)
-        self.bn_show_define_cells.configure(state=state)
-        self.bn_show_select_squares.configure(state=state)
+        self.bn_heatmap.configure(state=state)
+        self.bn_define_cells.configure(state=state)
+        self.bn_select_squares.configure(state=state)
         self.bn_select_recording.configure(state=state)
 
     def is_dialog_active(self):
@@ -1170,6 +1162,10 @@ class RecordingViewer:
                     self.define_cells_dialog,
                     self.heatmap_control_dialog,
                     self.select_recording_dialog])
+
+    def show_error_and_exit(self, message):
+        paint_logger.error(message)
+        sys.exit()
 
 
 def draw_heatmap_square(
