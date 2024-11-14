@@ -406,7 +406,7 @@ class RecordingViewer:
         self.define_cells_dialog = DefineCellDialog(
             self,
             self.callback_to_assign_squares_to_cell_id,
-            self.callback_to_reset_square_selection,
+            self.callback_to_reset_cell_definition,
             self.callback_to_close_define_cells
         )
 
@@ -435,6 +435,16 @@ class RecordingViewer:
         self.squares_changed = True
         self.squares_in_rectangle = []
         self.display_selected_squares()
+
+    def callback_to_reset_cell_definition(self):
+        """
+        This function is called by the DefineCellsDialog
+        It will clear all the cell selection and update the display
+        """
+
+        self.df_squares['Cell Id'] = 0
+        self.display_selected_squares()
+
 
     def setup_exclude_button(self):
 
