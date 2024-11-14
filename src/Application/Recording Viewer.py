@@ -278,18 +278,14 @@ class RecordingViewer:
             width=button_width)
         self.bn_show_define_cells = ttk.Button(
             self.frame_commands, text='Define Cells', command=lambda: self.on_show_define_cells(), width=button_width)
-        self.bn_histogram = ttk.Button(
-            self.frame_commands, text='Histogram', command=lambda: self.on_histogram(), width=button_width)
         self.bn_excel = ttk.Button(
             self.frame_commands, text='Squares Data', command=lambda: self.on_how_excel(), width=button_width)
-        self.bn_reset = ttk.Button(
-            self.frame_commands, text='Reset', command=lambda: self.on_reset_image(), width=button_width)
+
 
         self.bn_select_recording.grid(column=0, row=0, padx=5, pady=5)
         self.bn_show_select_squares.grid(column=0, row=1, padx=5, pady=5)
         self.bn_show_heatmap.grid(column=0, row=2, padx=5, pady=5)
         self.bn_show_define_cells.grid(column=0, row=3, padx=5, pady=5)
-        # self.bn_reset.grid(column=0, row=5, padx=5, pady=5)
         self.bn_excel.grid(column=0, row=6, padx=5, pady=5)
 
     def setup_frame_save_commands(self):
@@ -709,17 +705,17 @@ class RecordingViewer:
         print(f'The median Tau value:          {tau_median}')
         print(f'The Tau standard deviation:    {tau_std}')
 
-    def on_reset_image(self):
-        """
-        Resets the current image. All squares are displayed, but the variability and density ratio sliders are applied
-        :return:
-        """
-
-        self.df_squares['Selected'] = True  # ToDo is this ok?
-        self.df_squares['Cell Id'] = 0
-
-        self.select_squares_for_display()
-        self.display_selected_squares()
+    # def on_reset_image(self):
+    #     """
+    #     Resets the current image. All squares are displayed, but the variability and density ratio sliders are applied
+    #     :return:
+    #     """
+    #
+    #     self.df_squares['Selected'] = True  # ToDo is this ok?
+    #     self.df_squares['Cell Id'] = 0
+    #
+    #     self.select_squares_for_display()
+    #     self.display_selected_squares()
 
     def update_select_squares(
             self,
@@ -841,8 +837,9 @@ class RecordingViewer:
 
         # Define the popup
         if self.square_info_popup is None:
-            self.square_info_popup = Toplevel(root)
             self.square_info_popup = Toplevel(self.viewer_dialog)
+            self.square_info_popup.resizable(False, False)
+            self.square_info_popup.attributes('-topmost', True)
             self.square_info_popup.title("Square Info")
             self.square_info_popup.geometry("300x230")
 
@@ -1070,7 +1067,7 @@ class RecordingViewer:
         if not (self.experiment_changed or self.squares_changed):
             return False
 
-        # There is something to save but the Never option is selected
+        # There is something to save, but the Never option is selected
         if self.save_state_var.get() == 'Never':
             paint_logger.debug("Changes were not saved, because the 'Never' option was selected.")
             return False
@@ -1096,7 +1093,7 @@ class RecordingViewer:
                         f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
                 self.experiment_changed = False
 
-        # There is squares data to save.
+        # There is Squares data to save.
         if save_squares:
             if self.squares_changed:
                 if self.save_state_var.get() == 'Ask':
@@ -1138,9 +1135,6 @@ class RecordingViewer:
 
             self.img_no -= 1
             self.on_forward_backward('FORWARD')
-
-        # selected_name = self.option_names[selected_idx - 1]  # Subtract 1 to match the list index
-        # self.lbl_radio_value.config(text=f"Selected Option: {selected_name}")
 
     def display_heatmap(self):
 
