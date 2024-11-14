@@ -167,46 +167,55 @@ class RecordingViewer:
         frame_width = 530
         frame_height = 690
 
-        self.frame_picture_left = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width,
-                                            height=frame_height)
-        self.frame_picture_right = ttk.Frame(self.frame_images, borderwidth=2, relief='groove', width=frame_width,
-                                             height=frame_height)
+        self.left_image_frame = ttk.Frame(
+            self.frame_images,
+            borderwidth=2,
+            relief='groove',
+            width=frame_width,
+            height=frame_height)
+        self.right_image_frame = ttk.Frame(
+            self.frame_images,
+            borderwidth=2,
+            relief='groove',
+            width=frame_width,
+            height=frame_height)
 
-        self.frame_picture_left.grid(column=0, row=0, padx=5, pady=5, sticky=N)
-        self.frame_picture_right.grid(column=1, row=0, padx=5, pady=5, sticky=N)
+        self.left_image_frame.grid(column=0, row=0, padx=5, pady=5, sticky=N)
+        self.right_image_frame.grid(column=1, row=0, padx=5, pady=5, sticky=N)
 
-        self.frame_picture_left.grid_propagate(False)
-        self.frame_picture_right.grid_propagate(False)
+        # Prevent the frames from resizing
+        self.left_image_frame.grid_propagate(False)
+        self.right_image_frame.grid_propagate(False)
 
         # Define the canvas widgets for the images
-        self.cn_left_image = tk.Canvas(self.frame_picture_left, width=512, height=512)
-        self.cn_right_image = tk.Canvas(self.frame_picture_right, width=512, height=512)
+        self.left_image_canvas = tk.Canvas(self.left_image_frame, width=512, height=512)
+        self.right_image_canvas = tk.Canvas(self.right_image_frame, width=512, height=512)
 
-        self.cn_left_image.grid(column=0, row=0, padx=5, pady=5)
-        self.cn_right_image.grid(column=0, row=0, padx=5, pady=5)
+        self.left_image_canvas.grid(column=0, row=0, padx=5, pady=5)
+        self.right_image_canvas.grid(column=0, row=0, padx=5, pady=5)
 
         # Define the labels and combobox widgets for the images
         self.list_images = []
         self.list_of_image_names = []
         self.cb_image_names = ttk.Combobox(
-            self.frame_picture_left, values=self.list_of_image_names, state='readonly', width=30)
+            self.left_image_frame, values=self.list_of_image_names, state='readonly', width=30)
 
         # Label for the right image name
         self.lbl_image_bf_name = StringVar(self.viewer_dialog, "")
-        lbl_image_bf_name = ttk.Label(self.frame_picture_right, textvariable=self.lbl_image_bf_name)
+        lbl_image_bf_name = ttk.Label(self.right_image_frame, textvariable=self.lbl_image_bf_name)
 
         # Labels for image info
         self.text_for_info1 = StringVar(self.viewer_dialog, "")
-        self.lbl_info1 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info1)
+        self.lbl_info1 = ttk.Label(self.left_image_frame, textvariable=self.text_for_info1)
 
         self.text_for_info2 = StringVar(self.viewer_dialog, "")
-        self.lbl_info2 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info2)
+        self.lbl_info2 = ttk.Label(self.left_image_frame, textvariable=self.text_for_info2)
 
         self.text_for_info3 = StringVar(self.viewer_dialog, "")
-        self.lbl_info3 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info3)
+        self.lbl_info3 = ttk.Label(self.left_image_frame, textvariable=self.text_for_info3)
 
         self.text_for_info4 = StringVar(self.viewer_dialog, "")
-        self.lbl_info4 = ttk.Label(self.frame_picture_left, textvariable=self.text_for_info4)
+        self.lbl_info4 = ttk.Label(self.left_image_frame, textvariable=self.text_for_info4)
 
         # Create a ttk style object
         self.style = ttk.Style()
@@ -543,15 +552,15 @@ class RecordingViewer:
             paint_logger.debug(f"Writing {image_name} to pdf file {os.path.join(squares_dir, image_name)}")
 
             # Delete the squares and write the canvas with just the tracks
-            self.cn_left_image.delete("all")
-            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
+            self.left_image_canvas.delete("all")
+            self.left_image_canvas.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+            save_as_png(self.left_image_canvas, os.path.join(squares_dir, image_name))
 
             # Add the squares and write the canvas complete with squares
             self.select_squares_for_display()
             self.display_selected_squares()
             image_name = image_name + '-squares'
-            save_as_png(self.cn_left_image, os.path.join(squares_dir, image_name))
+            save_as_png(self.left_image_canvas, os.path.join(squares_dir, image_name))
 
         # Find all the png files and sort them
         png_files = []
@@ -627,8 +636,8 @@ class RecordingViewer:
         current_image = self.list_images[self.img_no]
 
         # Update the image display based on the current image number
-        self.cn_left_image.create_image(0, 0, anchor=tk.NW, image=current_image['Left Image'])
-        self.cn_right_image.create_image(0, 0, anchor=tk.NW, image=current_image['Right Image'])
+        self.left_image_canvas.create_image(0, 0, anchor=tk.NW, image=current_image['Left Image'])
+        self.right_image_canvas.create_image(0, 0, anchor=tk.NW, image=current_image['Right Image'])
 
         # Update labels for image information
         self.lbl_image_bf_name.set(current_image['Right Image Name'])
@@ -679,7 +688,6 @@ class RecordingViewer:
         self.img_no = index - 1
         self.on_forward_backward('FORWARD')
 
-
     def update_select_squares(
             self,
             setting_type: str,
@@ -720,13 +728,11 @@ class RecordingViewer:
             self.min_track_duration = min_duration
             self.max_track_duration = max_duration
             self.neighbour_mode = neighbour_mode
-
+            self.experiment_changed
             for image in self.list_images:
                 image['Min Required Density Ratio'] = density_ratio
                 image['Max Allowable Variability'] = variability
                 image['Neighbour Mode'] = neighbour_mode
-
-            self.experiment_changed = True
         elif setting_type == "Exit":
             self.select_square_dialog = None
         else:
@@ -739,46 +745,46 @@ class RecordingViewer:
         info3 = f"Min Required Density Ratio: {density_ratio:,} - Max Allowable Variability: {variability}"
         self.text_for_info3.set(info3)
 
-    def provide_report_on_cell(self, _, cell_nr):
-        """
-        Invoked by right-clicking on a cell radio button. Only when there are actually squares defined for the cell,
-        information will be shown, including a histogram of the Tau values
-
-        :param _:
-        :param cell_nr:
-        :return:
-        """
-
-        # See if there are any squares defined for this cell
-        df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
-        df_visible = df_selection[df_selection['Selected']]
-        if len(df_visible) == 0:
-            paint_logger.debug(
-                f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
-        else:
-            # The labels and tau values for the visible squares of that cell are retrieved
-            tau_values = list(df_visible['Tau'])
-            labels = list(df_visible['Label Nr'])
-
-            print(f'There are {len(df_visible)} squares visible for cell {cell_nr}: {labels}')
-            print(f'The tau values for cell {cell_nr} are: {tau_values}')
-
-            cell_ids = list(df_visible['Label Nr'])
-            cell_str_ids = list(map(str, cell_ids))
-            plt.figure(figsize=(5, 5))
-            plt.bar(cell_str_ids, tau_values)
-            plt.ylim(0, 500)
-
-            # Plot the numerical values
-            for i in range(len(tau_values)):
-                plt.text(cell_str_ids[i],
-                         tau_values[i] + 10,
-                         str(tau_values[i]),
-                         horizontalalignment='center',
-                         verticalalignment='center')
-            plt.title(self.image_name + ' - Cell ' + str(cell_nr))
-            plt.show()
-        return
+    # def provide_report_on_cell(self, _, cell_nr):
+    #     """
+    #     Invoked by right-clicking on a cell radio button. Only when there are actually squares defined for the cell,
+    #     information will be shown, including a histogram of the Tau values
+    #
+    #     :param _:
+    #     :param cell_nr:
+    #     :return:
+    #     """
+    #
+    #     # See if there are any squares defined for this cell
+    #     df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
+    #     df_visible = df_selection[df_selection['Selected']]
+    #     if len(df_visible) == 0:
+    #         paint_logger.debug(
+    #             f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
+    #     else:
+    #         # The labels and tau values for the visible squares of that cell are retrieved
+    #         tau_values = list(df_visible['Tau'])
+    #         labels = list(df_visible['Label Nr'])
+    #
+    #         print(f'There are {len(df_visible)} squares visible for cell {cell_nr}: {labels}')
+    #         print(f'The tau values for cell {cell_nr} are: {tau_values}')
+    #
+    #         cell_ids = list(df_visible['Label Nr'])
+    #         cell_str_ids = list(map(str, cell_ids))
+    #         plt.figure(figsize=(5, 5))
+    #         plt.bar(cell_str_ids, tau_values)
+    #         plt.ylim(0, 500)
+    #
+    #         # Plot the numerical values
+    #         for i in range(len(tau_values)):
+    #             plt.text(cell_str_ids[i],
+    #                      tau_values[i] + 10,
+    #                      str(tau_values[i]),
+    #                      horizontalalignment='center',
+    #                      verticalalignment='center')
+    #         plt.title(self.image_name + ' - Cell ' + str(cell_nr))
+    #         plt.show()
+    #     return
 
     def select_squares_for_display(self):
         select_squares(self, only_valid_tau=self.only_valid_tau)     # The function is in the file 'Select_Squares.py'
@@ -798,7 +804,7 @@ class RecordingViewer:
         Display a popup with information about a square on right-click.
         """
         # Ensure the canvas has focus
-        self.cn_left_image.focus_set()
+        self.left_image_canvas.focus_set()
 
         # Destroy the existing popup if it exists
         if self.square_info_popup:
@@ -854,17 +860,17 @@ class RecordingViewer:
     def start_rectangle(self, event):
         self.start_x = event.x
         self.start_y = event.y
-        self.rect = self.cn_left_image.create_rectangle(
+        self.rect = self.left_image_canvas.create_rectangle(
             self.start_x, self.start_y, self.start_x + 1, self.start_y + 1, fill="", outline='white')
 
     def expand_rectangle_size(self, event):
         # Expand rectangle as you drag the mouse
-        self.cn_left_image.coords(self.rect, self.start_x, self.start_y, event.x, event.y)
+        self.left_image_canvas.coords(self.rect, self.start_x, self.start_y, event.x, event.y)
 
     def close_rectangle(self, event):
 
         # Remove the rectangle
-        self.cn_left_image.delete(self.rect)
+        self.left_image_canvas.delete(self.rect)
 
         if self.define_cells_dialog is None:
             pass  # ToDo Maybe open the dialog here
@@ -932,7 +938,7 @@ class RecordingViewer:
         # ----------------------------------------------------------------------------
 
         # Place new image_bf
-        self.cn_right_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Right Image'])
+        self.right_image_canvas.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Right Image'])
         self.lbl_image_bf_name.set(str(self.img_no + 1) + ":  " + self.list_images[self.img_no]['Right Image Name'])
 
         # The information labels are updated
@@ -978,7 +984,7 @@ class RecordingViewer:
 
         else:  # update the regular image
 
-            self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+            self.left_image_canvas.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
             self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
 
             # Set the filter parameters with values retrieved from the experiment file
@@ -1094,7 +1100,7 @@ class RecordingViewer:
     def display_heatmap(self):
 
         # Clear the screen and reshow the picture
-        self.cn_left_image.delete("all")
+        self.left_image_canvas.delete("all")
 
         colors = get_colormap_colors('Blues', 20)
         heatmap_mode = self.heatmap_option.get()
@@ -1107,7 +1113,7 @@ class RecordingViewer:
             return
 
         for index, row in df_heatmap_data.iterrows():
-            draw_heatmap_square(self.cn_left_image, index, self.nr_of_squares_in_row, row['Value'],
+            draw_heatmap_square(self.left_image_canvas, index, self.nr_of_squares_in_row, row['Value'],
                                 min_val, max_val, colors)
 
     # ---------------------------------------------------------------------------------------
@@ -1137,8 +1143,6 @@ class RecordingViewer:
 
         # Start at the first image
         self.on_forward_backward('START')
-
-
 
 
 # ---------------------------------------------------------------------------------------

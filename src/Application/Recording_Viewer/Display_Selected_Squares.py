@@ -10,13 +10,13 @@ def display_selected_squares(self):
     nr_of_squares_in_row = self.nr_of_squares_in_row
 
     # Clear the screen and reshow the picture
-    self.cn_left_image.delete("all")
-    self.cn_left_image.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+    self.left_image_canvas.delete("all")
+    self.left_image_canvas.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
 
     # Bind left buttons for canvas
-    self.cn_left_image.bind('<Button-1>', lambda e: self.start_rectangle(e))
-    self.cn_left_image.bind('<ButtonRelease-1>', lambda e: self.close_rectangle(e))
-    self.cn_left_image.bind('<B1-Motion>', lambda e: self.expand_rectangle_size(e))
+    self.left_image_canvas.bind('<Button-1>', lambda e: self.start_rectangle(e))
+    self.left_image_canvas.bind('<ButtonRelease-1>', lambda e: self.close_rectangle(e))
+    self.left_image_canvas.bind('<B1-Motion>', lambda e: self.expand_rectangle_size(e))
 
     if  not self.show_squares or len(self.df_squares) == 0:
         return
@@ -33,7 +33,7 @@ def display_selected_squares(self):
             draw_single_square(
                 self.show_squares_numbers,
                 self.nr_of_squares_in_row,
-                self.cn_left_image,
+                self.left_image_canvas,
                 row_in_squares,
                 self.square_assigned_to_cell,
                 self.provide_information_on_square)
@@ -46,7 +46,7 @@ def display_selected_squares(self):
         height = 512 / nr_of_squares_in_row
 
         # Draw the outline without filling the rectangle
-        self.cn_left_image.create_rectangle(
+        self.left_image_canvas.create_rectangle(
             col_nr * width,
             row_nr * width,
             col_nr * width + width,
