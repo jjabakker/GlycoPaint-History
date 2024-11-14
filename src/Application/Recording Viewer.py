@@ -75,6 +75,10 @@ class RecordingViewer:
         # Ensure the user can't close the window by clicking the X button
         self.parent.protocol("WM_DELETE_WINDOW", self.on_exit_viewer)
 
+        # Set dialog focus
+        self.dialog.grab_set()  # Prevent interaction with the main window
+        self.dialog.focus_force()  # Bring the dialog to focus
+
     def setup_heatmap(self):
         self.slider_value = tk.DoubleVar()
 
