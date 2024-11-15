@@ -178,6 +178,7 @@ def copy_directory(src, dest):
         paint_logger.error(f"An unexpected error occurred: {e}")
 
 
+# ToDo there may be an Output dirctory but that should be ignored
 def classify_directory(directory_path):
     # Define required files and subdirectories for an experiment directory
     experiment_files = {'All Recordings.csv', 'All Tracks.csv'}
