@@ -35,7 +35,7 @@ def get_images(self, initial=False):
             left_img = ImageTk.PhotoImage(left_img)
             error_count += 1
 
-        # Retrieve Tau from the experiments_squares file, if problem return 0
+        # Retrieve Tau from the experiments_squares file, defaults to 0
         tau = experiment_row['Tau'] if 'Tau' in experiment_row else 0
 
         # Find the corresponding BF

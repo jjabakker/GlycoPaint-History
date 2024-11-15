@@ -304,6 +304,11 @@ class RecordingViewer:
             )
             rb.grid(column=0, row=i, padx=5, pady=5, sticky=tk.W)
 
+
+    # ----------------------------------------------------------------------------------------
+    # Load images and data
+    # ----------------------------------------------------------------------------------------
+
     def load_images_and_config(self):
 
         # Read the All Squares file
@@ -959,23 +964,22 @@ class RecordingViewer:
                 self.text_for_info4.set("")
 
         # ----------------------------------------------------------------------------
-        # Now it depends what control dialog is up
+        # In df_all_squares, the Squares for the all recordings is present.
+        # The Squares information for the current recording is extracted and saved as df_squares
         # ----------------------------------------------------------------------------
+
+        self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
 
         # If the heatmap control dialog is up display the heatmap
         if self.heatmap_control_dialog:
-            self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
             self.display_heatmap()
-
-            # And send the heatmap control dialog a sign that min max values have changed
+            # And Send the heatmap control dialog a sign that min max values have changed
             self.heatmap_control_dialog.on_heatmap_global_local_change()
-
             return
 
         else:  # update the regular image
 
             self.left_image_canvas.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
-            self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
 
             # Set the filter parameters with values retrieved from the experiment file
             self.min_track_duration = 0  # self.df_experiment.loc[self.image_name]['Min Duration']   # ToDo this does not look ok
@@ -995,10 +999,7 @@ class RecordingViewer:
                     self.min_r_squared,
                     self.neighbour_mode)
 
-        # ----------------------------------------------------------------------------
         # Then display
-        # ----------------------------------------------------------------------------
-
         self.select_squares_for_display()
         if self.heatmap_control_dialog:
             self.display_heatmap()
