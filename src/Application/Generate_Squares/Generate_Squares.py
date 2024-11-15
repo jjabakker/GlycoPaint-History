@@ -120,7 +120,7 @@ def process_experiment(
     Recordings need processing
     """
 
-    df_all_squares = pd.DataFrame()
+    df_squares_of_experiment = pd.DataFrame()
 
     # Load from the paint configuration file the parameters that are needed
     plot_to_file = get_paint_attribute('Generate Squares', 'Plot to File') or ""
@@ -132,43 +132,43 @@ def process_experiment(
     # Read the All Tracks file and add (or reinitialise two columns for the square and label numbers
     # --------------------------------------------------------------------------------------------
 
-    df_all_tracks = pd.read_csv(os.path.join(experiment_path, 'All Tracks.csv'))
-    if df_all_tracks is None:
+    df_tracks_of_experiment = pd.read_csv(os.path.join(experiment_path, 'All Tracks.csv'))
+    if df_tracks_of_experiment is None:
         paint_logger.error(f"Could not read the 'All Tracks.csv' file in {experiment_path}")
         sys.exit(1)
-    df_all_tracks = create_unique_key_for_tracks(df_all_tracks)
-    if df_all_tracks is None:
+    df_tracks_of_experiment = create_unique_key_for_tracks(df_tracks_of_experiment)
+    if df_tracks_of_experiment is None:
         paint_logger.error(f"Could not read the 'All Tracks.csv' file in {experiment_path}")
         sys.exit(1)
-    df_all_tracks['Square Nr'] = None
-    df_all_tracks['Label Nr'] = None
+    df_tracks_of_experiment['Square Nr'] = None
+    df_tracks_of_experiment['Label Nr'] = None
 
     # --------------------------------------------------------------------------------------------
     # Read the All Recordings file, check if it is in the correct format and add the required columns
     # --------------------------------------------------------------------------------------------
 
-    df_experiment = pd.read_csv(os.path.join(experiment_path, 'All Recordings.csv'))
-    if df_experiment is None:
+    df_recordings_of_experiment = pd.read_csv(os.path.join(experiment_path, 'All Recordings.csv'))
+    if df_recordings_of_experiment is None:
         paint_logger.error(
             f"Function 'process_experiment' failed: Likely, {experiment_path} is not a valid  \
             directory containing cell image information.")
         sys.exit(1)
-    if len(df_experiment) == 0:
+    if len(df_recordings_of_experiment) == 0:
         paint_logger.error(
             f"Function 'process_experiment' failed: 'All Recordings.csv' in {experiment_path} \
             is empty")
         sys.exit(1)
 
     # Confirm the experiment is in the correct format
-    if not check_experiment_integrity(df_experiment):
+    if not check_experiment_integrity(df_recordings_of_experiment):
         paint_logger.error(
             f"Function 'process_experiment' failed: The experiment file in {experiment_path} is \
             not in the valid format.")
         sys.exit(1)
 
     # Add some parameters that the user just specified to the experiment
-    df_experiment = add_columns_to_experiment(
-        df_experiment,
+    df_recordings_of_experiment = add_columns_to_experiment(
+        df_recordings_of_experiment,
         nr_of_squares_in_row,
         min_tracks_for_tau,
         min_r_squared,
@@ -176,8 +176,8 @@ def process_experiment(
         select_parameters['max_allowable_variability'])
 
     # Determine how many Recordings are in the files
-    nr_files = df_all_tracks['Ext Recording Name'].nunique()
-    nr_files1 = len(df_experiment)
+    nr_files = df_tracks_of_experiment['Ext Recording Name'].nunique()
+    nr_files1 = len(df_recordings_of_experiment)
     if nr_files1 != nr_files:
         paint_logger.info("All Squares file is not consistent with All Recordings")
     if nr_files <= 0:
@@ -192,10 +192,10 @@ def process_experiment(
     processed = 0
     df_squares = pd.DataFrame()
 
-    nr_of_recordings_to_process = len(df_experiment[df_experiment['Process'].isin(['Yes', 'y', 'Y'])])
+    nr_of_recordings_to_process = len(df_recordings_of_experiment[df_recordings_of_experiment['Process'].isin(['Yes', 'y', 'Y'])])
     paint_logger.info(f"Processing {nr_of_recordings_to_process:2d} images in {experiment_path}")
 
-    for index, experiment_row in df_experiment.iterrows():
+    for index, experiment_row in df_recordings_of_experiment.iterrows():
 
         # Skip if not selected for processing
         if experiment_row['Process'] not in ['Yes', 'yes', 'y', 'Y']:
@@ -213,8 +213,8 @@ def process_experiment(
 
             paint_logger.debug(f"Processing file {current_image_nr} of {nr_of_recordings_to_process}: {recording_name}")
 
-            df_squares, tau, r_squared, density = process_recording(
-                df_all_tracks,
+            df_squares_of_recording, tau, r_squared, density = process_recording(
+                df_tracks_of_experiment,
                 select_parameters,
                 experiment_row,
                 experiment_path,
@@ -229,7 +229,7 @@ def process_experiment(
                 plot_max,
                 verbose)
 
-            if df_squares is None:
+            if df_squares_of_recording is None:
                 paint_logger.error("Aborted with error")
                 return None
 
@@ -237,41 +237,41 @@ def process_experiment(
             # Now update the Experiment with the results
             # --------------------------------------------------------------------------------------------
 
-            df_experiment.at[index, 'Ext Recording Name'] = recording_name
-            df_experiment.at[index, 'Tau'] = tau
-            df_experiment.at[index, 'Density'] = density
-            df_experiment.at[index, 'R Squared'] = round(r_squared, 3)
+            df_recordings_of_experiment.at[index, 'Ext Recording Name'] = recording_name
+            df_recordings_of_experiment.at[index, 'Tau'] = tau
+            df_recordings_of_experiment.at[index, 'Density'] = density
+            df_recordings_of_experiment.at[index, 'R Squared'] = round(r_squared, 3)
 
             current_image_nr += 1
             processed += 1
         else:
             paint_logger.debug(f"Squares file already up to date: {recording_name}")
 
-        df_all_squares = pd.concat([df_all_squares, df_squares], ignore_index=True)
+        df_squares_of_experiment = pd.concat([df_squares_of_experiment, df_squares_of_recording], ignore_index=True)
 
     # --------------------------------------------------------------------------------------------
-    # Save to the All Tracks file (the square and label columns have been updated)
+    # Save to the Tracks file (the square and label columns have been updated)
     # --------------------------------------------------------------------------------------------
 
-    df_all_tracks.to_csv(os.path.join(experiment_path, 'All Tracks.csv'), index=False)
+    df_tracks_of_experiment.to_csv(os.path.join(experiment_path, 'All Tracks.csv'), index=False)
 
     # --------------------------------------------------------------------------------------------
     # Save the Experiment file
     # --------------------------------------------------------------------------------------------
 
-    df_experiment.to_csv(os.path.join(experiment_path, "All Recordings.csv"))
+    df_recordings_of_experiment.to_csv(os.path.join(experiment_path, "All Recordings.csv"))
     run_time = round(time.time() - time_stamp, 1)
     paint_logger.info(f"Processed  {nr_files:2d} images in {experiment_path} in {format_time_nicely(run_time)}")
 
     # --------------------------------------------------------------------------------------------
     # Make a unique index and then save the All Squares  file
     # --------------------------------------------------------------------------------------------
-    df_all_squares = create_unique_key_for_squares(df_all_squares)
-    df_all_squares.to_csv(os.path.join(experiment_path, "All Squares.csv"), index=False)
+    df_squares_of_experiment = create_unique_key_for_squares(df_squares_of_experiment)
+    df_squares_of_experiment.to_csv(os.path.join(experiment_path, "All Squares.csv"), index=False)
 
 
 def process_recording(
-        df_all_tracks: pd.DataFrame,
+        df_tracks_of_experiment: pd.DataFrame,
         select_parameters: dict,
         experiment_row: pd.Series,
         experiment_path: str,
@@ -300,19 +300,19 @@ def process_recording(
             delete_files_in_directory(plot_dir)
 
     # Look at squares for the recording, note that at this time Label Nr and Square Nr are not assigned, but not needed
-    df_recording_tracks = df_all_tracks[df_all_tracks['Ext Recording Name'] == recording_name]
+    df_tracks_of_recording = df_tracks_of_experiment[df_tracks_of_experiment['Ext Recording Name'] == recording_name]
 
     # -----------------------------------------------------------------------------------------------------
-    # A df_squares dataframe is generated and, if the process_square_tau flag is set, for every square the
+    # A df_squares_of_recording dataframe is generated and, if the process_square_tau flag is set, for every square the
     # Tau and Density are calculated. The results are stored in 'All Squares'.
     # -----------------------------------------------------------------------------------------------------
 
-    df_squares, tau_matrix = process_squares(
+    df_squares_of_recording, tau_matrix = process_squares(
+        df_tracks_of_experiment,
+        df_tracks_of_recording,
         experiment_row,
         experiment_path,
         recording_path,
-        df_all_tracks,
-        df_recording_tracks,
         recording_name,
         nr_of_squares_in_row,
         float(experiment_row['Concentration']),
@@ -333,14 +333,14 @@ def process_recording(
 
         # Label just the squares that have a valid Tau
         select_squares_with_parameters(
-            df_squares=df_squares,
+            df_squares=df_squares_of_recording,
             select_parameters=select_parameters,
             nr_of_squares_in_row=nr_of_squares_in_row,
             only_valid_tau=True)
-        label_selected_squares_and_tracks(df_squares, df_all_tracks)
+        df_squares_of_recording, df_tracks_of_experiment  = label_selected_squares_and_tracks(df_squares_of_recording, df_tracks_of_experiment)
 
-        # Refresh df_recording_tracks now to pick up Label and Square Nrs
-        df_recording_tracks = df_all_tracks[df_all_tracks['Ext Recording Name'] == recording_name]
+        # Refresh df_tracks_of_recording now to pick up Label and Square Nrs
+        df_tracks_of_recording = df_tracks_of_experiment[df_tracks_of_experiment['Ext Recording Name'] == recording_name]
 
     # ----------------------------------------------------------------------------------------------------
     # Now do the single mode processing: determine a single Tau and Density per image, i.e., for all squares and return
@@ -349,29 +349,29 @@ def process_recording(
 
     if process_recording_tau:
         tau, r_squared, density = calculate_tau_and_density_for_recording(
+            df_squares_of_recording,
             recording_path,
-            df_recording_tracks,
+            df_tracks_of_recording,
             min_tracks_for_tau,
             min_r_squared,
             recording_name,
             nr_of_squares_in_row,
             float(experiment_row['Concentration']),
-            df_squares,
             select_parameters,
             plot_to_file=plot_to_file,
             plot_max=plot_max)
     else:
         tau = r_squared = density = 0
 
-    return df_squares, tau, r_squared, density
+    return df_squares_of_recording, tau, r_squared, density
 
 
 def process_squares(
+        df_all_tracks: pd.DataFrame,
+        df_recording_tracks: pd.DataFrame,
         experiment_row: pd.Series,
         experiment_path: str,
         recording_path: str,
-        df_all_tracks: pd.DataFrame,
-        df_recording_tracks: pd.DataFrame,
         recording_name: str,
         nr_of_squares_in_row: int,
         concentration: float,
@@ -408,11 +408,11 @@ def process_squares(
         row_nr = square_seq_nr // nr_of_squares_in_row
 
         squares_row, tau = process_square(
+            df_all_tracks,
+            df_recording_tracks,
             experiment_row,
             experiment_path,
             recording_path,
-            df_all_tracks,
-            df_recording_tracks,
             recording_name,
             nr_of_squares_in_row,
             concentration,
@@ -449,11 +449,11 @@ def process_squares(
 
 
 def process_square(
+    df_all_tracks: pd.DataFrame,
+    df_recording_tracks: pd.DataFrame,
     experiment_row: pd.Series,
     experiment_path: str,
     recording_path: str,
-    df_all_tracks: pd.DataFrame,
-    df_recording_tracks: pd.DataFrame,
     recording_name: str,
     nr_of_squares_in_row: int,
     concentration: float,
@@ -467,7 +467,6 @@ def process_square(
     plot_to_file: bool,
     plot_max: int,
     verbose: bool) -> pd.Series:
-
 
     # Determine which tracks fall within the square defined by boundaries x0, y0, x1, y1
     x0, y0, x1, y1 = get_square_coordinates(nr_of_squares_in_row, square_seq_nr)
@@ -619,6 +618,7 @@ def process_square(
 
 
 def calculate_tau_and_density_for_recording(
+        df_squares: pd.DataFrame,
         experiment_directory: str,
         df_recording_tracks: pd.DataFrame,
         min_tracks_for_tau: int,
@@ -626,7 +626,6 @@ def calculate_tau_and_density_for_recording(
         recording_name: str,
         nr_of_squares_in_row: int,
         concentration: float,
-        df_squares: pd.DataFrame,
         select_parameters: dict,
         plot_to_file: bool,
         plot_max: int = 5
