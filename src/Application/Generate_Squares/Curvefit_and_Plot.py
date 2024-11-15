@@ -1,4 +1,4 @@
-import sys
+
 import warnings
 
 import matplotlib.pyplot as plt
@@ -29,12 +29,12 @@ def mono_exp(x, m, t, b):
 def compile_duration(tracks):
     """
     The function produces a frequency distribution of the track durations.
-    :param tracks: a dataframe containing the histogram data
-    :return: a dataframe with two columns containing the histogram
+    :param tracks: A dataframe containing the histogram data
+    :return: A dataframe with two columns containing the histogram
     """
 
     # histdata is returned as a Pandas Series, make histdata into a dataframe
-    # The index values are the duration and the first (and only) column is 'Frequency'
+    # The index values are the duration, and the first (and only) column is 'Frequency'
     histdata = tracks.groupby('Track Duration')['Track Duration'].size()
     histdata = pd.DataFrame(histdata)
     histdata.columns = ['Frequency']
@@ -51,21 +51,21 @@ def compile_duration(tracks):
 
 def curve_fit_and_plot(
         plot_data,
-        nr_tracks,
-        plot_max_x,
+        plot_max_x=5,
         plot_title='Duration Histogram',
         file="",
-        plot_to_screen=True,
+        plot_to_screen=False,
         plot_to_file=False,
-        verbose=True):
+        verbose=False):
     """
-    The function fits an exponential decay function to the data and plots the result.
+    The funct ion fits an exponential decay function to the data and plots the result.
     Function = m * np.exp(-t * x) + b
     """
 
     # The curve_fit function expects x and y Numpy arrays
     x = np.asarray(plot_data["Track Duration"])
     y = np.asarray(plot_data["Frequency"])
+    nr_tracks = len(plot_data)
 
     # Perform the fit
     p0 = [2000, 4, 10]  # this is more what we see
