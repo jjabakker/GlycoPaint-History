@@ -1,3 +1,4 @@
+import sys
 import csv
 import os
 
@@ -9,6 +10,11 @@ from src.Common.Support.DirectoriesAndLocations import (
 from src.Common.Support.LoggerConfig import paint_logger
 from src.Common.Support.PaintConfig import get_paint_attribute
 
+from src.Application.Generate_Squares.Curvefit_and_Plot import (
+    compile_duration,
+    curve_fit_and_plot
+)
+
 pd.options.mode.copy_on_write = True
 
 
@@ -17,9 +23,9 @@ def calculate_density(nr_tracks: int, area: float, time: float, concentration: f
     The function implements a simple algorithm to calculate the density of tracks in a square.
     To calculate the density use the actual surface coordinates.
     Assume 2000 frames (100 sec) -  need to check - this is not always the case
-    Multiply by 1000 to get an easier  number
+    Multiply by 1000 to get an easier number
     Area is calculated with Fiji info:
-        Width:  82.0864 microns(512)
+        Width: 82.0864 microns(512)
         Height: 82.0864 microns(512)
     The area of a square then is (82.0854/nr_of_squares_in_row)^2
 
@@ -294,7 +300,7 @@ def create_unique_key_for_squares(df):
     return df
 
 
-def extra_constraints_on_tracksfor_tau_calculation(df_tracks_in_square):
+def extra_constraints_on_tracks_for_tau_calculation(df_tracks_in_square):
     limit_dc = get_paint_attribute('Generate Squares', 'Exclude zero DC tracks from Tau Calculation') or False
     if limit_dc:
         df_tracks_in_square = df_tracks_in_square[df_tracks_in_square['Diffusion Coefficient'] > 0]
@@ -359,6 +365,99 @@ def pack_select_parameters(
         'min_r_squared': min_r_squared,
         'neighbour_mode': neighbour_mode
     }
-
     return select_parameters
 
+def calculate_tau(
+        df_tracks_for_tau: pd.DataFrame,
+        min_tracks_for_tau: int,
+        min_r_squared: float
+) -> tuple:
+
+    """
+    Calculate the Tau for the square if requested. Use error codes:
+       -1: too few points to try to fit
+       -2: curve fitting tries, but failed
+       -3: curve fitting succeeded, but R2 is too low
+    """
+
+    if len(df_tracks_for_tau) < min_tracks_for_tau:  # Too few points to curve fit
+        tau = -1
+        r_squared = 0
+    else:
+        duration_data = compile_duration(df_tracks_for_tau)
+        tau, r_squared = curve_fit_and_plot(plot_data=duration_data)
+        if tau == -2:  # Tau calculation failed
+            r_squared = 0
+        if r_squared < min_r_squared:  # Tau was calculated, but not reliable
+            tau = -3
+            tau = int(tau)
+
+    return tau, r_squared
+
+
+def calculate_average_long_track(df_tracks):
+    """
+    Calculate the average of the long tracks for the square
+    The long tracks are defined as the longest 10% of the tracks
+    If the number of tracks is less than 10, the average long track is set on the full set
+    """
+    nr_of_tracks = len(df_tracks)
+    df_tracks.sort_values(by=['Track Duration'], inplace=True)
+    if nr_of_tracks < 10:
+        average_long_track = df_tracks.iloc[nr_of_tracks - 1]['Track Duration']
+    else:
+        fraction = get_paint_attribute('Generate Squares',
+                                       'Fraction of Squares to Determine Background') or 0.1
+        nr_tracks_to_average = round(fraction * nr_of_tracks)
+        average_long_track = df_tracks.tail(nr_tracks_to_average)['Track Duration'].mean()
+    return average_long_track
+
+
+def read_tracks_of_experiment(experiment_path: str) -> pd.DataFrame:
+    """
+    Read the All Tracks file for an Experiment
+    """
+
+    df_tracks_of_experiment = pd.read_csv(os.path.join(experiment_path, 'All Tracks.csv'))
+    if df_tracks_of_experiment is None:
+        paint_logger.error(f"Could not read the 'All Tracks.csv' file in {experiment_path}")
+        sys.exit(1)
+    df_tracks_of_experiment = create_unique_key_for_tracks(df_tracks_of_experiment)
+    if df_tracks_of_experiment is None:
+        paint_logger.error(f"Could not read the 'All Tracks.csv' file in {experiment_path}")
+        sys.exit(1)
+    df_tracks_of_experiment['Square Nr'] = None
+    df_tracks_of_experiment['Label Nr'] = None
+    return df_tracks_of_experiment
+
+
+def read_recordings_of_experiment(experiment_path: str) -> pd.DataFrame:
+    """
+    Read the All Recordings file for an Experiment
+    """
+    df_recordings_of_experiment = pd.read_csv(os.path.join(experiment_path, 'All Recordings.csv'))
+    if df_recordings_of_experiment is None:
+        paint_logger.error(
+            f"Function 'process_experiment' failed: Likely, {experiment_path} is not a valid  \
+                directory containing cell image information.")
+        sys.exit(1)
+    if len(df_recordings_of_experiment) == 0:
+        paint_logger.error(
+            f"Function 'process_experiment' failed: 'All Recordings.csv' in {experiment_path} \
+                is empty")
+        sys.exit(1)
+
+    # Confirm the experiment is in the correct format
+    if not check_experiment_integrity(df_recordings_of_experiment):
+        paint_logger.error(
+            f"Function 'process_experiment' failed: The experiment file in {experiment_path} is \
+            not in the valid format.")
+        sys.exit(1)
+
+    return df_recordings_of_experiment
+
+
+def get_row_and_column(square_seq_nr: int, nr_of_squares_in_row: int) -> tuple:
+    col_nr = square_seq_nr % nr_of_squares_in_row
+    row_nr = square_seq_nr // nr_of_squares_in_row
+    return row_nr, col_nr

@@ -202,8 +202,7 @@ class GenerateSquaresDialog:
             min_tracks_for_tau=self.min_tracks_for_tau.get(),
             process_recording_tau=self.process_average_tau.get(),
             process_square_tau=self.process_square_specific_tau.get(),
-            paint_force=True,
-            verbose=False
+            paint_force=True
         )
         run_time = time.time() - start_time
         paint_logger.info(f"Total processing time is {format_time_nicely(run_time)}")
