@@ -63,7 +63,7 @@ def _select_squares_actual(
             (df_squares['Variability'] <= max_allowable_variability) &
             (df_squares['Max Track Duration'] >= min_track_duration) &
             (df_squares['Max Track Duration'] <= max_track_duration) &
-            (df_squares['R2'] >= min_r_squared))
+            (df_squares['R Squared'] >= min_r_squared))
 
     if only_valid_tau:
         df_squares['Selected'] = (

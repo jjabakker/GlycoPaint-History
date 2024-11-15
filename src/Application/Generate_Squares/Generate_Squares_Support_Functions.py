@@ -346,6 +346,11 @@ def add_columns_to_experiment(
     df_experiment.loc[mask, 'Exclude'] = False
     df_experiment.loc[mask, 'Neighbour Mode'] = 'Free'
 
+    # Recording specific values
+    df_experiment.loc[mask, 'Tau'] = 0
+    df_experiment.loc[mask, 'Density'] = 0
+    df_experiment.loc[mask, 'R Squared'] = 0.0
+
     return df_experiment
 
 
@@ -366,6 +371,7 @@ def pack_select_parameters(
         'neighbour_mode': neighbour_mode
     }
     return select_parameters
+
 
 def calculate_tau(
         df_tracks_for_tau: pd.DataFrame,
