@@ -47,7 +47,7 @@ if not paint_logger_file_name_assigned:
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
-# Process Project
+#                                       Process Project
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ def process_project(
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
-# Process Experiment
+#                                    Process Experiment
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
@@ -132,6 +132,7 @@ def process_experiment(
     plot_max = get_paint_attribute('Generate Squares', 'Plot Max') or 5
     time_stamp = time.time()
     df_squares_of_experiment = pd.DataFrame()
+    df_tracks_of_experiment_with_labels = pd.DataFrame()
 
     # Read the Tracks file and add (or reinitialise two columns for the square and label numbers)
     df_tracks_of_experiment = read_tracks_of_experiment(experiment_path)
@@ -174,8 +175,10 @@ def process_experiment(
 
         # Process the Recording
         paint_logger.debug(f"Processing file {current_image_nr} of {nr_of_recordings_to_process}: {recording_name}")
-        df_squares_of_recording, recording_tau, recording_r_squared, recording_density = process_recording(
-            df_tracks_of_experiment,
+
+        df_tracks_of_recording = df_tracks_of_experiment[df_tracks_of_experiment['Ext Recording Name'] == recording_name]
+        df_squares_of_recording, df_tracks_of_recording, recording_tau, recording_r_squared, recording_density = process_recording(
+            df_tracks_of_recording,
             select_parameters,
             recording_data,
             experiment_path,
@@ -199,9 +202,10 @@ def process_experiment(
         current_image_nr += 1
         processed += 1
         df_squares_of_experiment = pd.concat([df_squares_of_experiment, df_squares_of_recording], ignore_index=True)
+        df_tracks_of_experiment_with_labels = pd.concat([df_tracks_of_experiment_with_labels, df_tracks_of_recording], ignore_index=True)
 
-    # Save to the Tracks file (the square and label columns have been updated)
-    df_tracks_of_experiment.to_csv(os.path.join(experiment_path, 'All Tracks.csv'), index=False)
+    # Save the updated tracks to the All Tracks file (the square and label columns have been updated)
+    df_tracks_of_experiment_with_labels.to_csv(os.path.join(experiment_path, 'All Tracks.csv'), index=False)
 
     # Save df_squares_of_experiment into the All Recordings file
     df_recordings_of_experiment.to_csv(os.path.join(experiment_path, "All Recordings.csv"))
@@ -217,14 +221,14 @@ def process_experiment(
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
-# Process Recording
+#                                   Process Recording
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
 
 def process_recording(
-        df_tracks_of_experiment: pd.DataFrame,
+        df_tracks_of_recording: pd.DataFrame,
         select_parameters: dict,
         recording_data: pd.Series,
         experiment_path: str,
@@ -247,9 +251,6 @@ def process_recording(
             os.makedirs(plot_dir)
         else:
             delete_files_in_directory(plot_dir)
-
-    # Look at squares for the recording, note that at this time Label Nr and Square Nr are not assigned, but not needed
-    df_tracks_of_recording = df_tracks_of_experiment[df_tracks_of_experiment['Ext Recording Name'] == recording_name]
 
     # -----------------------------------------------------------------------------------------------------
     # A df_squares_of_recording dataframe is generated and, if the process_square_tau flag is set, for every square the
@@ -275,7 +276,7 @@ def process_recording(
         concentration = float(recording_data['Concentration'])
 
         square_data = process_square(
-            df_tracks_of_experiment,
+            df_tracks_of_recording,
             df_tracks_of_recording,
             recording_data,
             nr_of_squares_in_row,
@@ -305,7 +306,7 @@ def process_recording(
         select_parameters=select_parameters,
         nr_of_squares_in_row=nr_of_squares_in_row,
         only_valid_tau=True)
-    df_squares_of_recording, df_tracks_of_experiment  = label_selected_squares_and_tracks(df_squares_of_recording, df_tracks_of_experiment)
+    df_squares_of_recording, df_tracks_of_recording  = label_selected_squares_and_tracks(df_squares_of_recording, df_tracks_of_recording)
 
     # ----------------------------------------------------------------------------------------------------
     # Now do the single mode processing: determine a single Tau and Density per image, i.e., for all squares
@@ -313,7 +314,7 @@ def process_recording(
     # ----------------------------------------------------------------------------------------------------
 
     # Refresh df_tracks_of_recording now to pick up Label and Square Nrs
-    df_tracks_of_recording = df_tracks_of_experiment[df_tracks_of_experiment['Ext Recording Name'] == recording_name]
+    df_tracks_of_recording = df_tracks_of_recording[df_tracks_of_recording['Ext Recording Name'] == recording_name]
 
     if process_recording_tau:
         recording_tau, recording_r_squared, recording_density = calculate_tau_and_density_for_recording(
@@ -327,13 +328,13 @@ def process_recording(
     else:
         recording_tau = recording_r_squared = recording_density = 0
 
-    return df_squares_of_recording, recording_tau, recording_r_squared, recording_density
+    return df_squares_of_recording, df_tracks_of_recording, recording_tau, recording_r_squared, recording_density
 
 
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
-# Process Square
+#                                    Process Square
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------

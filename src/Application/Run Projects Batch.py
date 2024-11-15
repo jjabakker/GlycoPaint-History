@@ -94,8 +94,7 @@ def process_json_configuration_block(paint_source_dir,
         min_tracks_for_tau=min_tracks_for_tau,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
-        paint_force=paint_force,
-        verbose=False)
+        paint_force=paint_force)
 
     # Compile the All Recordings and All Squares files
     if nr_experiments_processed > 0:
