@@ -826,7 +826,7 @@ class RecordingViewer:
             ("Label Nr", label_nr),
             ("Square Nr", squares_row['Square Nr']),
             ("Tau", squares_row['Tau']),
-            ("R2", squares_row['R2']),
+            ("R Squared", squares_row['R Squared']),
             ("Density", squares_row['Density']),
             ("Number of Tracks", squares_row['Nr Tracks']),
             ("Density Ratio", squares_row['Density Ratio']),
