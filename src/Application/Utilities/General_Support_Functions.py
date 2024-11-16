@@ -102,7 +102,7 @@ def read_squares_from_file(squares_file_path):
 
     df_squares['Experiment Date'] = df_squares['Experiment Date'].astype(str)
 
-    df_squares.set_index('Square Nr', inplace=True, drop=False)
+    df_squares.set_index('Unique Key', inplace=True, drop=False)
     return df_squares
 
 
