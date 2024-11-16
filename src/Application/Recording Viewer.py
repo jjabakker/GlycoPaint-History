@@ -804,7 +804,9 @@ class RecordingViewer:
         self.square_info_popup.geometry(f"+{x}+{y}")
 
         # Get the data to display from the dataframe
+        self.df_squares.set_index('Square Nr', inplace=True, drop=False)
         squares_row = self.df_squares.loc[square_nr]
+        self.df_squares.set_index('Unique Key', inplace=True, drop=False)
 
         # Define the fields to display
         if math.isnan(label_nr) or label_nr is None:
