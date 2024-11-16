@@ -446,6 +446,11 @@ def process_square(
     return square_data
 
 
+
+# ----------------------------------------------------------------------------------------------------
+#                        calculate_tau_and_density_for_recording
+# ----------------------------------------------------------------------------------------------------
+
 def calculate_tau_and_density_for_recording(
         df_squares: pd.DataFrame,
         df_recording_tracks: pd.DataFrame,
