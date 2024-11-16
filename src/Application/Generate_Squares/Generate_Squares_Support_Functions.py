@@ -456,8 +456,7 @@ def read_recordings_of_experiment(experiment_path: str) -> pd.DataFrame:
     # Confirm the experiment is in the correct format
     if not check_experiment_integrity(df_recordings_of_experiment):
         paint_logger.error(
-            f"Function 'process_experiment' failed: The experiment file in {experiment_path} is \
-            not in the valid format.")
+            f"Function 'process_experiment' failed: The experiment file in {experiment_path} is not in the valid format.")
         sys.exit(1)
 
     return df_recordings_of_experiment
