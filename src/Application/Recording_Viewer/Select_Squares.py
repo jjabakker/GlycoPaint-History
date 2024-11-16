@@ -223,7 +223,7 @@ def label_selected_squares_and_tracks(df_squares, df_tracks):
     Optimized for performance using vectorized operations.
     """
 
-    # Step 1: Sort by 'Nr Tracks' in descending order
+    # Step 1: Sort by 'Nr Tracks' in descending order             #ToDO Do we handle indices correctly??
     df_squares.set_index('Square Nr', drop=False, inplace=True)
     df_squares = df_squares.sort_values(by='Nr Tracks', ascending=False).copy()
 
@@ -250,4 +250,22 @@ def label_selected_squares_and_tracks(df_squares, df_tracks):
     # Step 5: Clean up any unselected rows in df_tracks
     # df_tracks['Label Nr'] = df_tracks['Label Nr'].fillna(0).astype(int)
 
+    return df_squares, df_tracks
+
+def relabel_tracks(df_squares, df_tracks):
+    """
+    Propagates labels from df_squares to df_tracks based on 'Square Nr' and 'Ext Recording Name'.
+    Requires tracks and squares of the recording to be selected and labeled.
+    """
+    # Merge the Label Nr column with df_tracks using 'Square Nr' and 'Ext Recording Name' as keys
+    df_squares.reset_index(drop=True, inplace=True)
+    df_tracks = df_tracks.merge(
+        df_squares[['Square Nr', 'Ext Recording Name', 'Label Nr']],
+        on=['Square Nr', 'Ext Recording Name'],
+        how='left',
+    suffixes=('', '_from_squares')  # Avoid '_x' and '_y', rename the merged Label Nr
+    )
+    df_tracks['Label Nr'] = df_tracks['Label Nr_from_squares']  # Use the merged Label Nr
+    df_tracks.drop(columns=['Label Nr_from_squares'], inplace=True)  # Remove the extra column
+    df_tracks.set_index('Unique Key', drop=True, inplace=True)
     return df_squares, df_tracks
