@@ -337,10 +337,10 @@ def add_columns_to_experiment(
 
     # User specified parameters
     df_experiment.loc[mask, 'Min Tracks for Tau'] = int(min_tracks_for_tau)
-    df_experiment.loc[mask, 'Min R Squared'] = min_r_squared
+    df_experiment.loc[mask, 'Min R Squared'] = round(min_r_squared, 2)
     df_experiment.loc[mask, 'Nr of Squares in Row'] = int(nr_of_squares_in_row)
-    df_experiment.loc[mask, 'Max Allowable Variability'] = max_allowable_variability
-    df_experiment.loc[mask, 'Min Required Density Ratio'] = min_required_density_ratio
+    df_experiment.loc[mask, 'Max Allowable Variability'] = round(max_allowable_variability, 1)
+    df_experiment.loc[mask, 'Min Required Density Ratio'] = round(min_required_density_ratio, 1)
 
     # Default values
     df_experiment.loc[mask, 'Exclude'] = False
