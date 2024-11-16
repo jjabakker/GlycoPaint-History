@@ -319,7 +319,8 @@ class RecordingViewer:
             self.show_error_and_exit("No 'All Squares.csv.csv' file, Did you select an image directory?")
 
         # Read the 'All Experiments' file
-        self.df_experiment = pd.read_csv(os.path.join(self.user_specified_directory, 'All Recordings.csv'))
+        self.df_experiment = pd.read_csv(os.path.join(self.user_specified_directory, 'All Recordings.csv'),
+                                         dtype={'Max Allowable Variability': float, 'Min Required Density Ratio': float})
         if self.df_experiment is None:
             self.show_error_and_exit("No 'All Recordings' file, Did you select an image directory?")
         self.df_experiment.set_index('Ext Recording Name', drop=False, inplace=True)
@@ -407,7 +408,7 @@ class RecordingViewer:
                 self.min_track_duration,
                 self.max_track_duration,
                 self.min_r_squared,
-                    self.neighbour_mode)
+                self.neighbour_mode)
 
     def on_define_cells(self):
         if self.is_dialog_active():
@@ -714,19 +715,23 @@ class RecordingViewer:
         if setting_type == "Min Required Density Ratio":
             self.min_required_density_ratio = density_ratio
             self.list_images[self.img_no]['Min Required Density Ratio'] = density_ratio
+            self.df_experiment.loc[self.image_name, 'Min Required Density Ratio'] = density_ratio
         elif setting_type == "Max Allowable Variability":
             self.max_allowable_variability = variability
             self.list_images[self.img_no]['Max Allowable Variability'] = variability
+            self.df_experiment.loc[self.image_name, 'Max Allowable Variability'] = variability
         elif setting_type == "Min Track Duration":
             self.min_track_duration = min_duration
-        elif setting_type == "Max Track Duration":
+        elif setting_type == "Max Track Duration":   # ToDo
             self.max_track_duration = max_duration
         elif setting_type == "Min R Squared":
             self.min_r_squared = min_r_squared
             self.list_images[self.img_no]['Min R Squared'] = min_r_squared
+            self.df_experiment.loc[self.image_name, 'Min R Squared'] = min_r_squared
         elif setting_type == "Neighbour Mode":
             self.neighbour_mode = neighbour_mode
             self.list_images[self.img_no]['Neighbour Mode'] = neighbour_mode
+            self.df_experiment.loc[self.image_name, 'Neighbour Mode'] = neighbour_mode
         elif setting_type == "Set for All":
             # Set the same settings for all recordings
             self.min_required_density_ratio = density_ratio
@@ -746,7 +751,7 @@ class RecordingViewer:
         self.select_squares_for_display()
         self.display_selected_squares()
 
-        # Update the Density Ratio and Variability information in te Viewer
+        # Update the Density Ratio and Variability information in the Viewer
         info3 = f"Min Required Density Ratio: {density_ratio:,} - Max Allowable Variability: {variability}"
         self.text_for_info3.set(info3)
 
