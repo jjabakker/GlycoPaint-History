@@ -32,13 +32,17 @@ from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import 
     save_as_png)
 from src.Application.Recording_Viewer.Select_Squares import select_squares
 from src.Application.Utilities.General_Support_Functions import (
-    read_squares_from_file,
-    save_experiment_to_file,
-    save_squares_to_file)
+    read_squares_from_file)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
+from src.Application.Generate_Squares.Generate_Squares_Support_Functions import (
+    calculate_tau,
+    extra_constraints_on_tracks_for_tau_calculation,
+    calc_area_of_square,
+    calculate_density)
+from src.Application.Recording_Viewer.Select_Squares import relabel_tracks
 
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Recording Viewer.log')
@@ -54,7 +58,11 @@ class RecordingViewer:
 
         super().__init__()
         self.viewer_dialog = tk.Toplevel(parent)
+        self.viewer_dialog.title(f'Recording Viewer - {user_specified_directory}')
         self.viewer_dialog.resizable(False, False)
+        self.viewer_dialog.protocol("WM_DELETE_WINDOW", self.on_exit_viewer)
+        self.viewer_dialog.grab_set()  # Prevent interaction with the main window
+        self.viewer_dialog.focus_force()  # Bring the dialog to focus
 
         # Save the parameters
         self.user_specified_directory = user_specified_directory
@@ -67,13 +75,6 @@ class RecordingViewer:
         self.setup_exclude_button()
         self.setup_heatmap()
         self.setup_key_bindings()
-
-        # Ensure the user can't close the window by clicking the X button
-        self.viewer_dialog.protocol("WM_DELETE_WINDOW", self.on_exit_viewer)
-
-        # Set dialog focus
-        self.viewer_dialog.grab_set()  # Prevent interaction with the main window
-        self.viewer_dialog.focus_force()  # Bring the dialog to focus
 
     def setup_heatmap(self):
         # self.slider_value = tk.DoubleVar()
@@ -95,9 +96,11 @@ class RecordingViewer:
         self.img_no = 0
         self.image_directory = None
 
+        # The main data structures
         self.df_all_squares = None
         self.df_squares = None
-        self.squares_file_name = None
+        self.df_all_tracks = None
+        self.df_experiment = None
 
         # UI state variables
         self.start_x = None
@@ -105,8 +108,6 @@ class RecordingViewer:
         self.rect = None
 
         # Variables to keep track if the user changed something
-        self.squares_changed = False
-        self.experiment_changed = False
         self.recording_changed = False
         self.save_on_exit = False
 
@@ -131,9 +132,6 @@ class RecordingViewer:
 
         self.squares_in_rectangle = []
         self.saved_list_images = []
-
-        self.viewer_dialog.title(f'Recording Viewer - {self.user_specified_directory}')
-
         self.only_valid_tau = True
 
     def setup_ui(self):
@@ -314,22 +312,28 @@ class RecordingViewer:
 
     def load_images_and_config(self):
 
-        # Read the All Squares file
+        # Read the 'All Squares' file
         self.df_all_squares = read_squares_from_file(
             os.path.join(self.user_specified_directory, 'All Squares.csv'))
         if self.df_all_squares is None:
             self.show_error_and_exit("No 'All Squares.csv.csv' file, Did you select an image directory?")
 
-        # Read the All Experiments file
+        # Read the 'All Experiments' file
         self.df_experiment = pd.read_csv(os.path.join(self.user_specified_directory, 'All Recordings.csv'))
         if self.df_experiment is None:
-            self.show_error_and_exit("No 'experiment_squares.csv' file, Did you select an image directory?")
+            self.show_error_and_exit("No 'All Recordings' file, Did you select an image directory?")
         self.df_experiment.set_index('Ext Recording Name', drop=False, inplace=True)
 
-        # Check that the two align
+        # Check that the two files align
         if set(self.df_all_squares['Ext Recording Name']) != set(self.df_experiment['Ext Recording Name']):
             self.show_error_and_exit(
                 "The recordings in the 'All Squares' file do not align with the 'All Experiments' file")
+
+        # Read the 'All Tracks' file
+        self.df_all_tracks = pd.read_csv(os.path.join(self.user_specified_directory, 'All Tracks.csv'))
+        if self.df_all_tracks  is None:
+            self.show_error_and_exit("No 'All Tracks' file, Did you select an image directory?")
+        self.df_all_tracks.set_index('Unique Key', inplace=True, drop=False)
 
         self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
 
@@ -415,7 +419,7 @@ class RecordingViewer:
             self,
             self.callback_to_assign_squares_to_cell_id,
             self.callback_to_reset_cell_definition,
-            self.callback_to_close_define_cells
+            self.callback_to_close_define_cells_dialog
         )
 
     def on_squares_data(self):
@@ -593,7 +597,7 @@ class RecordingViewer:
 #
 # ----------------------------------------------------------------------------------------
 
-    def callback_to_close_define_cells(self):
+    def callback_to_close_define_cells_dialog(self):
         self.define_cells_dialog = None
 
     def callback_to_reset_square_selection(self):
@@ -615,7 +619,6 @@ class RecordingViewer:
         self.df_squares.set_index('Square Nr', inplace=True, drop=False)
         if len(self.squares_in_rectangle) > 0:
             self.df_squares.loc[self.squares_in_rectangle, 'Cell Id'] = int(cell_id)
-        self.df_squares.set_index('Unique Key', inplace=True, drop=False)
 
         # Set the flag and clear the list
         self.recording_changed = True
@@ -630,7 +633,7 @@ class RecordingViewer:
 
         self.df_squares['Cell Id'] = 0
         self.display_selected_squares()
-        self.squares_changed = True
+        self.recording_changed = True
 
     def initialise_image_display(self):
         # Get current image data
@@ -676,12 +679,12 @@ class RecordingViewer:
         self.lbl_info4.config(style="Red.Label" if is_excluded else "Black.Label")
         self.lbl_info4.configure(foreground='red' if is_excluded else 'black')
 
-        self.experiment_changed = True
+        self.recording_changed = True    # ToDo
 
     def on_exit_viewer(self):
-        if self.save_on_exit :
+        if self.save_on_exit or self.recording_changed:   # You need to test both!
             status = self.save_changes_on_exit()
-            if status is None:  # Handle case where save_changes_on_recording_change returns None or a non-boolean
+            if status is None:
                 return
         root.quit()
 
@@ -707,6 +710,7 @@ class RecordingViewer:
         gives an opportunity to update the settings for the current image
         """
         self.recording_changed = True
+        self.save_on_exit = True
         if setting_type == "Min Required Density Ratio":
             self.min_required_density_ratio = density_ratio
             self.list_images[self.img_no]['Min Required Density Ratio'] = density_ratio
@@ -746,16 +750,9 @@ class RecordingViewer:
         info3 = f"Min Required Density Ratio: {density_ratio:,} - Max Allowable Variability: {variability}"
         self.text_for_info3.set(info3)
 
-        # Update the Tau information in the Viewer  # ToDo you need code more or less like this
-        # tau, r_squared = calculate_tau(
-        #     seld.df_tracks_for_tau,
-        #     min_tracks_for_tau,
-        #     min_r_squared)
-        #
-        # # Calculate the Density
-        # area = calc_area_of_square(nr_of_squares_in_row)
-        # density = calculate_density(
-        #     nr_tracks=nr_of_tracks_for_single_tau, area=area, time=100, concentration=concentration, magnification=1000)
+        recalc_recording_tau_and_density(self)
+
+
 
     # def provide_report_on_cell(self, _, cell_nr):
     #     """
@@ -925,12 +922,12 @@ class RecordingViewer:
             if self.img_no != 0:
                 self.img_no -= 1
 
-        # Set the name of the image
+        # Set the name of the new image
         self.image_name = self.list_images[self.img_no]['Left Image Name']
 
         # Save and update the Squares info
         if self.recording_changed:
-            self.df_all_squares.update(self.df_squares)
+            self.save_changes_on_recording_change(self)
             self.save_on_exit = True
             self.recording_changed = False
         self.df_squares = self.df_all_squares[self.df_all_squares['Ext Recording Name'] == self.image_name]
@@ -982,8 +979,6 @@ class RecordingViewer:
                 self.bn_exclude.config(text='Exclude')
                 self.text_for_info4.set("")
 
-
-
         # If the heatmap control dialog is up display the heatmap
         if self.heatmap_control_dialog:
             self.display_heatmap()
@@ -1020,23 +1015,27 @@ class RecordingViewer:
         else:
             self.display_selected_squares()
 
-        # Reset user change
-        self.squares_changed = False
-
         # Make sure that there is no user square selection left
         self.squares_in_rectangle = []
         self.mark_selected_squares()
 
     def save_changes_on_recording_change(self, save_experiment=True, save_squares=True):
 
-        # Save the changed df_squres in the df_all_squares for later saving
+        # Save the changes in All Squares
+        self.df_squares.set_index('Unique Key', inplace=True, drop=False)
         self.df_all_squares.update(self.df_squares)
+
+        # Update the labels in All Tracks
+        df_recording_squares = self.df_squares
+        df_recording_tracks = self.df_all_tracks[self.df_all_tracks['Ext Recording Name'] == self.image_name]
+        dfs, dft = relabel_tracks(df_recording_squares, df_recording_tracks)
+        self.df_all_tracks.update(dft)
 
 
     def save_changes_on_exit(self, save_experiment=True, save_squares=True):
 
         # See if there is anything to save
-        if not (self.save_on_exit):
+        if not self.save_on_exit and not self.recording_changed:
             return False
 
         # There is something to save, but the Never option is selected
@@ -1044,46 +1043,26 @@ class RecordingViewer:
             paint_logger.debug("Changes were not saved, because the 'Never' option was selected.")
             return False
 
-        # There is experiment data to save.
-        if save_experiment:
+        if self.save_state_var.get() == 'Ask':
+            save = self.user_confirms_save('Experiment')
+        else:  # Then must be 'Always'
+            save = True
+        if save:
+            # Save the Squares  data
+            self.df_all_squares.to_csv(os.path.join(self.user_specified_directory, 'All Squares.csv'), index=False)
+            self.df_all_tracks.to_csv(os.path.join(self.user_specified_directory, 'All Tracks.csv'), index=False)
+            self.df_experiment.to_csv(os.path.join(self.user_specified_directory, 'All Recordings.csv'), index=False)
 
-            if self.save_state_var.get() == 'Ask':
-                save = self.user_confirms_save('Experiment')
-            else:  # Then must be 'Always'
-                save = True
-            if save:
-                # Save the Squares  data
-                self.df_all_squares.to_csv(os.path.join(self.user_specified_directory, 'All Squares.csv'), index=False)
-
-                for i in range(len(self.list_images)):
-                    image_name = self.list_images[i]['Left Image Name']
-                    self.df_experiment.loc[image_name, 'Min Required Density Ratio'] = self.list_images[i][
-                        'Min Required Density Ratio']
-                    self.df_experiment.loc[image_name, 'Max Allowable Variability'] = self.list_images[i][
-                        'Max Allowable Variability']
-                    self.df_experiment.loc[image_name, 'Neighbour Mode'] = self.list_images[i]['Neighbour Mode']
-                save_experiment_to_file(self.df_experiment,
-                                        os.path.join(self.user_specified_directory, 'All Recordings.csv'))
-                paint_logger.debug(
-                    f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
-            self.save_on_exit = False
-
-        # There is Squares data to save.
-        # if save_squares:
-        #     if self.squares_changed:
-        #         if self.save_state_var.get() == 'Ask':
-        #             save = self.user_confirms_save('Squares')
-        #         else:  # Then must be 'Always'
-        #             save = True
-        #         if save:
-        #             self.df_all_squares.set_index(['Unique Key'], inplace=True, drop=False)
-        #             self.df_squares.set_index(['Unique Key'], inplace=True, drop=False)
-        #             self.df_all_squares.update(self.df_squares)
-        #             save_squares_to_file(self.df_all_squares,
-        #                                  os.path.join(self.user_specified_directory, 'All Squares.csv'))
-        #             paint_logger.debug(
-        #                 f"Squares file {os.path.join(self.user_specified_directory, 'All Squares.csv')} was saved.")
-        #         self.squares_changed = False
+            # for i in range(len(self.list_images)):
+            #     image_name = self.list_images[i]['Left Image Name']
+            #     self.df_experiment.loc[image_name, 'Min Required Density Ratio'] = self.list_images[i][
+            #         'Min Required Density Ratio']
+            #     self.df_experiment.loc[image_name, 'Max Allowable Variability'] = self.list_images[i][
+            #         'Max Allowable Variability']
+            #     self.df_experiment.loc[image_name, 'Neighbour Mode'] = self.list_images[i]['Neighbour Mode']
+            #                 f#                         os.path.join(self.user_specified_directory, 'All Recordings.csv'))
+            paint_logger.debug(
+                f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
 
         return save
 
@@ -1218,6 +1197,49 @@ def draw_heatmap_square(
 
     # Draw the square with the selected color
     canvas_to_draw_on.create_rectangle(x1, y1, x2, y2, fill=color, outline=color)
+
+
+def recalc_recording_tau_and_density(self):
+    """
+    Recalculate the Tau and Density values for the current recording
+    """
+
+    df_squares_for_single_tau = self.df_squares[self.df_squares['Selected']]
+    df_tracks_for_reecording = self.df_all_tracks[self.df_all_tracks['Ext Recording Name'] == self.image_name]
+
+    df_tracks_for_tau = df_tracks_for_reecording[
+        df_tracks_for_reecording['Square Nr'].isin(df_squares_for_single_tau['Square Nr'])]
+    df_tracks_for_tau = extra_constraints_on_tracks_for_tau_calculation(df_tracks_for_tau)
+
+    tau, r_squared = calculate_tau(
+        df_tracks_for_tau,
+        # self.min_tracks_for_tau,
+        10,
+        self.min_r_squared)
+
+    # Calculate the Density values
+    area = calc_area_of_square(self.nr_of_squares_in_row)
+    density = calculate_density(
+        nr_tracks=len(df_tracks_for_tau),
+        area=area,
+        time=100,
+        #concentration=self.concentration,   # ToDO
+        concentration=10,
+        magnification=1000)
+
+    # Update the Tau and Density values in the Viewer
+    self.list_images[self.img_no]['Tau'] = tau
+    self.list_images[self.img_no]['Density'] = density
+
+    self.df_experiment.loc[self.image_name, 'Tau'] = tau
+    self.df_experiment.loc[self.image_name, 'Density'] = density
+    self.df_experiment.loc[self.image_name, 'R Squared'] = r_squared
+
+    # Update the Tau information in the Viewer
+    info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']} - Tau: {int(tau)}"
+    self.text_for_info2.set(info2)
+
+
 
 # ---------------------------------------------------------------------------------------
 # Main
