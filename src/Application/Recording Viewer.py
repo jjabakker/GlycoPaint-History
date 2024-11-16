@@ -77,8 +77,7 @@ class RecordingViewer:
         self.setup_key_bindings()
 
     def setup_heatmap(self):
-        # self.slider_value = tk.DoubleVar()
-        #
+
         self.heatmap_option = tk.IntVar()
         self.heatmap_option.set(1)  # Default selection is the first option
 
@@ -371,15 +370,18 @@ class RecordingViewer:
         else:
             self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
 
+
     def on_heatmap(self):
         # If the heatmap is not already active, then we need to run the heatmap dialog
 
         if self.is_dialog_active():
             return
         else:
+            # HeatMap expects square numbers as index
+            self.df_squares.set_index('Square Nr', inplace=True, drop=False)
+
             self.set_dialog_buttons(tk.DISABLED)
-            self.heatmap_control_dialog = HeatMapDialog(self)
-            self.heatmap_control_dialog.on_heatmap_variable_change()
+            self.heatmap_control_dialog = HeatMapDialog(self, self.on_heatmap_close_callback)
             self.img_no -= 1
             self.on_forward_backward('FORWARD')
 
@@ -1038,20 +1040,15 @@ class RecordingViewer:
 
     def heatmap_type_selection_changed(self, *args):
 
-        selected_idx = self.heatmap_option.get()
-        if selected_idx == -1:
-            self.heatmap_control_dialog = None
-            self.select_squares_for_display()
-            self.display_selected_squares()
-        else:
-
-            self.img_no -= 1
-            self.on_forward_backward('FORWARD')
+        self.img_no -= 1
+        self.on_forward_backward('FORWARD')
 
     def display_heatmap(self):
 
         # Clear the screen and reshow the picture
         self.left_image_canvas.delete("all")
+
+        self.df_squares.set_index('Square Nr', inplace=True, drop=False)
 
         colors = get_colormap_colors('Blues', 20)
         heatmap_mode = self.heatmap_option.get()
@@ -1066,6 +1063,16 @@ class RecordingViewer:
         for index, row in df_heatmap_data.iterrows():
             draw_heatmap_square(self.left_image_canvas, index, self.nr_of_squares_in_row, row['Value'],
                                 min_val, max_val, colors)
+
+    def on_heatmap_close_callback(self):
+
+        self.df_squares.set_index('Square Nr', inplace=True, drop=False)
+
+        self.heatmap_control_dialog = None
+        self.set_dialog_buttons(tk.NORMAL)
+
+        self.select_squares_for_display()
+        self.display_selected_squares()
 
     # ---------------------------------------------------------------------------------------
     # Recording Selection Dialog Interaction

@@ -12,10 +12,11 @@ class HeatMapDialog:
     # Setting up
     # --------------------------------------------------------------
 
-    def __init__(self, image_viewer):
+    def __init__(self, image_viewer, on_close_heatmap_callback):
 
         # Create a new top-level window for the controls
         self.image_viewer = image_viewer
+        self.on_close_heatmap_callback = on_close_heatmap_callback
         self.toggle = False
 
         # Set windows properties
@@ -152,8 +153,7 @@ class HeatMapDialog:
         When the user closes the control window, the Viewer dialog is notified, and the dialog is destroyed.
         """
 
-        self.image_viewer.set_dialog_buttons(tk.NORMAL)
-        self.image_viewer.heatmap_option.set(-1)
+        self.on_close_heatmap_callback()
         self.heatmap_dialog.destroy()
 
     def on_toggle(self):
