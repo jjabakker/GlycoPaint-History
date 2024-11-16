@@ -208,7 +208,7 @@ def process_experiment(
     df_tracks_of_experiment_with_labels.to_csv(os.path.join(experiment_path, 'All Tracks.csv'), index=False)
 
     # Save df_squares_of_experiment into the All Recordings file
-    df_recordings_of_experiment.to_csv(os.path.join(experiment_path, "All Recordings.csv"))
+    df_recordings_of_experiment.to_csv(os.path.join(experiment_path, "All Recordings.csv"), index=False)
 
     # Make a unique index and then save df_squares_of_experiment into the All Squares file
     df_squares_of_experiment = create_unique_key_for_squares(df_squares_of_experiment)
