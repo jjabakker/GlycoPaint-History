@@ -599,6 +599,10 @@ class RecordingViewer:
 # ----------------------------------------------------------------------------------------
 
     def callback_to_close_define_cells_dialog(self):
+        # Now update All Squares
+        if self.recording_changed:
+            self.df_all_squares.update(self.df_squares)
+            self.save_on_exit = True
         self.define_cells_dialog = None
 
     def callback_to_reset_square_selection(self):
@@ -687,7 +691,10 @@ class RecordingViewer:
             status = self.save_changes_on_exit()
             if status is None:
                 return
-        root.quit()
+            else:
+                root.quit()
+        else:
+            root.quit()
 
     def image_selected(self, _):
         image_name = self.cb_image_names.get()
@@ -756,49 +763,6 @@ class RecordingViewer:
         self.text_for_info3.set(info3)
 
         recalc_recording_tau_and_density(self)
-
-
-
-    # def provide_report_on_cell(self, _, cell_nr):
-    #     """
-    #     Invoked by right-clicking on a cell radio button. Only when there are actually squares defined for the cell,
-    #     information will be shown, including a histogram of the Tau values
-    #
-    #     :param _:
-    #     :param cell_nr:
-    #     :return:
-    #     """
-    #
-    #     # See if there are any squares defined for this cell
-    #     df_selection = self.df_squares[self.df_squares['Cell Id'] == cell_nr]
-    #     df_visible = df_selection[df_selection['Selected']]
-    #     if len(df_visible) == 0:
-    #         paint_logger.debug(
-    #             f'There are {len(df_selection)} squares defined for cell {cell_nr}, but none are visible')
-    #     else:
-    #         # The labels and tau values for the visible squares of that cell are retrieved
-    #         tau_values = list(df_visible['Tau'])
-    #         labels = list(df_visible['Label Nr'])
-    #
-    #         print(f'There are {len(df_visible)} squares visible for cell {cell_nr}: {labels}')
-    #         print(f'The tau values for cell {cell_nr} are: {tau_values}')
-    #
-    #         cell_ids = list(df_visible['Label Nr'])
-    #         cell_str_ids = list(map(str, cell_ids))
-    #         plt.figure(figsize=(5, 5))
-    #         plt.bar(cell_str_ids, tau_values)
-    #         plt.ylim(0, 500)
-    #
-    #         # Plot the numerical values
-    #         for i in range(len(tau_values)):
-    #             plt.text(cell_str_ids[i],
-    #                      tau_values[i] + 10,
-    #                      str(tau_values[i]),
-    #                      horizontalalignment='center',
-    #                      verticalalignment='center')
-    #         plt.title(self.image_name + ' - Cell ' + str(cell_nr))
-    #         plt.show()
-    #     return
 
     def select_squares_for_display(self):
         select_squares(self, only_valid_tau=self.only_valid_tau)     # The function is in the file 'Select_Squares.py'
@@ -1058,17 +1022,6 @@ class RecordingViewer:
             self.df_all_tracks.to_csv(os.path.join(self.user_specified_directory, 'All Tracks.csv'), index=False)
             self.df_experiment.to_csv(os.path.join(self.user_specified_directory, 'All Recordings.csv'), index=False)
 
-            # for i in range(len(self.list_images)):
-            #     image_name = self.list_images[i]['Left Image Name']
-            #     self.df_experiment.loc[image_name, 'Min Required Density Ratio'] = self.list_images[i][
-            #         'Min Required Density Ratio']
-            #     self.df_experiment.loc[image_name, 'Max Allowable Variability'] = self.list_images[i][
-            #         'Max Allowable Variability']
-            #     self.df_experiment.loc[image_name, 'Neighbour Mode'] = self.list_images[i]['Neighbour Mode']
-            #                 f#                         os.path.join(self.user_specified_directory, 'All Recordings.csv'))
-            paint_logger.debug(
-                f"Experiment file {os.path.join(self.user_specified_directory, 'All Recordings.csv')} was saved.")
-
         return save
 
     def user_confirms_save(self, mode):
@@ -1076,7 +1029,7 @@ class RecordingViewer:
         Ask the user if they want to save the changes
         :return: True if the user wants to save, False if not
         """
-        answer = messagebox.askyesno("Save Changes", f"Do you want to save the {mode} changes?")
+        answer = messagebox.askyesnocancel("Save Changes", f"Do you want to save the {mode} changes?")
         return answer
 
     # ---------------------------------------------------------------------------------------
