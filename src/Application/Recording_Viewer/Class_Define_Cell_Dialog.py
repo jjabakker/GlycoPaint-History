@@ -92,6 +92,7 @@ class DefineCellDialog:
         """
         self.cell_var.set(value)
         self.update_square_highlight(value)
+        self.on_assign()
 
     def update_square_highlight(self, selected_value):
         """
