@@ -12,13 +12,13 @@ class DefineCellDialog:
                  image_viewer,
                  callback_to_assign_squares_to_cell,
                  callback_to_reset_cell_definition,
-                 callback_to_close):
+                 callback_to_close_define_cells_dialog):
 
         # Create a new top-level window for the controls
         self.image_viewer = image_viewer
         self.callback_to_assign_squares_to_cell = callback_to_assign_squares_to_cell
         self.callback_to_reset_cell_definition = callback_to_reset_cell_definition
-        self.callback_to_close = callback_to_close
+        self.callback_to_close_define_cells_dialog = callback_to_close_define_cells_dialog
 
         # Set windows properties
         self.define_cell_dialog = tk.Toplevel(self.image_viewer.viewer_dialog)
@@ -27,7 +27,6 @@ class DefineCellDialog:
         self.define_cell_dialog.attributes("-topmost", True)
         self.define_cell_dialog.geometry("280x350")
         self.define_cell_dialog.resizable(False, False)
-        self.define_cell_dialog.attributes('-topmost', True)
         self.define_cell_dialog.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.define_cell_dialog.bind('<Key>', self.on_key_pressed)
@@ -61,10 +60,9 @@ class DefineCellDialog:
         self.frame_controls.grid(row=1, column=0, padx=5, pady=10)
 
     def setup_frame_cells(self):
+        self.cell_var = tk.IntVar(value=0)
+        self.squares = []  # List to store square widgets for visual feedback
 
-        self.cell_var = tk.StringVar(value=1)
-
-        # Define colors for each cell
         cell_options = [
             ("Not on cell", "white", 0),
             ("On cell 1", "red", 1),
@@ -75,27 +73,35 @@ class DefineCellDialog:
             ("On cell 6", "black", 6)
         ]
 
-        # Variable to store the selected value
-        self.cell_var = tk.IntVar(value=0)
-
-        # Create radio buttons with colored squares
         for i, (text, color, value) in enumerate(cell_options):
-            # Create and place the radio button
             rb = tk.Radiobutton(self.frame_cells, text=text, variable=self.cell_var, value=value)
             rb.grid(row=i, column=0, padx=10, pady=5, sticky=tk.W)
 
-            # Create and place the colored square
             color_square = tk.Label(self.frame_cells, bg=color, width=2, height=1, relief="solid", borderwidth=1)
             color_square.grid(row=i, column=1, padx=10, pady=5)
+            color_square.bind('<Button-1>', lambda event, val=value: self.on_square_click(val))
 
-    # Bind the right mouse click
-    # self.rb_cell1.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 1))
-    # self.rb_cell2.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 2))
-    # self.rb_cell3.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 3))
-    # self.rb_cell4.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 4))
-    # self.rb_cell5.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 5))
-    # self.rb_cell6.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 6))
-    # self.rb_cell0.bind('<Button-2>', lambda e: self.provide_report_on_cell(e, 0))
+            rb.bind('<Button-2>', lambda e: self.on_provide_report_on_cell(e, i))
+            color_square.bind('<Button-2>', lambda e, idx=i: self.on_provide_report_on_cell(e, idx))
+
+            self.squares.append((color_square, value))  # Store square and value pair
+
+    def on_square_click(self, value):
+        """
+        Handles clicks on the colored squares and updates visual feedback.
+        """
+        self.cell_var.set(value)
+        self.update_square_highlight(value)
+
+    def update_square_highlight(self, selected_value):
+        """
+        Highlights the selected square and resets others.
+        """
+        for square, value in self.squares:
+            if value == selected_value:
+                square.config(relief="sunken", borderwidth=2)
+            else:
+                square.config(relief="solid", borderwidth=1)
 
     def setup_frame_controls(self):
         """
@@ -120,7 +126,7 @@ class DefineCellDialog:
         """
 
         self.image_viewer.set_dialog_buttons(tk.NORMAL)
-        self.callback_to_close()
+        self.callback_to_close_define_cells_dialog()
         self.define_cell_dialog.destroy()
 
     def on_assign(self):
@@ -136,3 +142,7 @@ class DefineCellDialog:
             self.on_assign()
         elif event.char == 'r':
             self.on_reset()
+
+    def on_provide_report_on_cell(self, event, i):
+        print(f"User requested report on cell {i}")
+        pass
