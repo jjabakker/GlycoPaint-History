@@ -1182,7 +1182,7 @@ def recalc_recording_tau_and_density(self):
         df_tracks_for_tau,
         # self.min_tracks_for_tau,
         10,
-        self.min_r_squared)
+        self.min_allowable_r_squared)
 
     # Calculate the Density values
     area = calc_area_of_square(self.nr_of_squares_in_row)

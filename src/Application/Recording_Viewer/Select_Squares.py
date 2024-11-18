@@ -36,7 +36,7 @@ def select_squares(self, only_valid_tau=True):
         self.max_allowable_variability,
         self.min_track_duration,
         self.max_track_duration,
-        self.min_r_squared,
+        self.min_allowable_r_squared,
         self.neighbour_mode,
         self.nr_of_squares_in_row,
         only_valid_tau=only_valid_tau)
