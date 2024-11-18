@@ -45,9 +45,9 @@ class GenerateSquaresDialog:
         process_recording_tau = get_paint_attribute('Generate Squares', 'Process Recording Tau')
         process_square_tau = get_paint_attribute('Generate Squares', 'Process Square Tau')
 
-        self.project_directory = get_paint_attribute('User Directories', 'Project')
-        self.experiment_directory = get_paint_attribute('User Directories', 'Experiment')
-        self.images_directory = get_paint_attribute('User Directories', 'Images')
+        self.project_directory = get_paint_attribute('User Directories', 'Project Directory')
+        self.experiment_directory = get_paint_attribute('User Directories', 'Experiment Directory')
+        self.images_directory = get_paint_attribute('User Directories', 'Images Directory')
         self.level = get_paint_attribute('User Directories', 'Level')
 
         if self.level == 'Project':
@@ -240,9 +240,9 @@ class GenerateSquaresDialog:
         update_paint_attribute('Generate Squares', 'Process Recording Tau', self.process_average_tau.get())
         update_paint_attribute('Generate Squares', 'Process Square Tau', self.process_square_specific_tau.get())
 
-        update_paint_attribute('User Directories', 'Project', self.project_directory)
-        update_paint_attribute('User Directories', 'Experiment', self.experiment_directory)
-        update_paint_attribute('User Directories', 'Images', self.images_directory)
+        update_paint_attribute('User Directories', 'Project Directory', self.project_directory)
+        update_paint_attribute('User Directories', 'Experiment Directory', self.experiment_directory)
+        update_paint_attribute('User Directories', 'Images Directory', self.images_directory)
         update_paint_attribute('User Directories', 'Level', self.level)
 
 if __name__ == "__main__":

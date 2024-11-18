@@ -37,9 +37,9 @@ default_data = {
         }
     },
     "User Directories": {
-        "Project": "~",
-        "Experiment": "~",
-        "Images": "~",
+        "Project Directory": "~",
+        "Experiment Directory": "~",
+        "Images Directory": "~",
         "Level": "Experiment"
     },
     "Generate Squares": {
@@ -159,7 +159,7 @@ def update_paint_attribute(application, attribute_name, value):
             json.dump(config, file, indent=4)
 
     except Exception as e:
-        paint_logger.error(f"An unexpected error occurred: {e}")
+        paint_logger.error("An unexpected error occurred: {}.format(e)")
 
 if __name__ == '__main__':
     config = load_paint_config(os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'paint.json'))

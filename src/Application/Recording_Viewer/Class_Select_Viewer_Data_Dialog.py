@@ -26,8 +26,8 @@ class SelectViewerDataDialog:
         self.proceed = False
 
         self.dialog.title('Select a Project or Experiment Directory')
-        self.experiment_directory = get_paint_attribute('User Directories', 'Experiment')
-        self.project_directory = get_paint_attribute('User Directories', 'Project')
+        self.experiment_directory = get_paint_attribute('User Directories', 'Experiment Directory')
+        self.project_directory = get_paint_attribute('User Directories', 'Project Directory')
         self.level = get_paint_attribute('User Directories', 'Level')
 
         self.mode = None
@@ -73,11 +73,11 @@ class SelectViewerDataDialog:
         if self.directory:
             self.lbl_experiment_dir.config(text=self.directory)
             if classify_directory(self.directory) == 'Project':
-                update_paint_attribute('User Directories', 'Level', 'Project')
-                update_paint_attribute('User Directories', 'Project', self.directory)
+                update_paint_attribute('User Directories', 'Level', self.level)
+                update_paint_attribute('User Directories', 'Project Directory', self.directory)
             else:
-                update_paint_attribute('User Directories', 'Level', 'Experiment')
-                update_paint_attribute('User Directories', 'Experiment', self.directory)
+                update_paint_attribute('User Directories', 'Level', self.level)
+                update_paint_attribute('User Directories', 'Experiment Directory', self.directory)
 
 
     def on_view(self) -> None:

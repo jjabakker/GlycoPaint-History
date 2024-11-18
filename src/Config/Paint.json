@@ -10,9 +10,9 @@
     }
   },
   "User Directories": {
-    "Project": "~",
-    "Experiment": "~",
-    "Images": "~",
+    "Project Directory": "~",
+    "Experiment Directory": "~",
+    "Images Directory": "~",
     "Level": "Experiment"
   },
   "Generate Squares": {
