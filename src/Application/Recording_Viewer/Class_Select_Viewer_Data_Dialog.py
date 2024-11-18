@@ -4,8 +4,7 @@ from tkinter import filedialog, messagebox
 from tkinter import ttk
 
 from src.Application.Utilities.General_Support_Functions import (
-    get_default_locations,
-    save_default_locations, classify_directory,
+    classify_directory,
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
@@ -13,6 +12,10 @@ from src.Common.Support.LoggerConfig import paint_logger
 from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import (
     only_one_nr_of_squares_in_row,
     nr_recordings)
+from src.Common.Support.PaintConfig import (
+    get_paint_attribute,
+    update_paint_attribute)
+
 
 class SelectViewerDataDialog:
 
@@ -23,7 +26,10 @@ class SelectViewerDataDialog:
         self.proceed = False
 
         self.dialog.title('Select a Project or Experiment Directory')
-        self.experiment_directory, self.directory, self.images_directory, self.project_file = get_default_locations()
+        self.experiment_directory = get_paint_attribute('User Directories', 'Experiment')
+        self.project_directory = get_paint_attribute('User Directories', 'Project')
+        self.level = get_paint_attribute('User Directories', 'Level')
+
         self.mode = None
 
         # Main content frame
@@ -63,11 +69,16 @@ class SelectViewerDataDialog:
         self.lbl_experiment_dir.grid(column=2, row=0, padx=5, pady=5)
 
     def on_change_dir(self) -> None:
-        self.directory = filedialog.askdirectory(initialdir=self.directory)
+        self.directory = filedialog.askdirectory(initialdir=self.experiment_directory)
         if self.directory:
             self.lbl_experiment_dir.config(text=self.directory)
-            save_default_locations(self.directory, self.experiment_directory, self.images_directory,
-                                   self.project_file)
+            if classify_directory(self.directory) == 'Project':
+                update_paint_attribute('User Directories', 'Level', 'Project')
+                update_paint_attribute('User Directories', 'Project', self.directory)
+            else:
+                update_paint_attribute('User Directories', 'Level', 'Experiment')
+                update_paint_attribute('User Directories', 'Experiment', self.directory)
+
 
     def on_view(self) -> None:
         self.directory = self.lbl_experiment_dir.cget('text')
