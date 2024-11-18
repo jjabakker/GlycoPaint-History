@@ -27,7 +27,6 @@ from Trackmate import execute_trackmate_in_Fiji
 from FijiSupportFunctions import (
     fiji_get_file_open_write_attribute,
     fiji_get_file_open_append_attribute,
-    ask_user_for_image_directory,
     suppress_fiji_output,
     format_time_nicely)
 
@@ -289,7 +288,6 @@ def create_gui():
     frame.setLayout(GridLayout(3, 1))
 
     # Get the default drectories
-    # root_dir, experiment_dir, images_dir, level = get_default_locations()
     experiment_dir = get_paint_attribute('User Directories', 'Experiment Directory')
     images_dir = get_paint_attribute('User Directories', 'Images Directory')
 
@@ -385,26 +383,5 @@ def create_gui():
 if __name__ == "__main__":
     # Call the function to create the GUI
 
-    new_method = True
+    create_gui()
 
-    if new_method:
-        create_gui()
-    else:
-        experiment_directory = ask_user_for_image_directory("Specify the Experiment directory", 'Paint')
-        if len(experiment_directory) == 0:
-            paint_logger.warning("User aborted the batch processing.")
-            suppress_fiji_output()
-            exit(0)
-
-        # Get the directory where the recordings are located
-        recordings_directory = ask_user_for_image_directory("Specify the Image Source directory", 'Images')
-        if len(recordings_directory) == 0:
-            paint_logger.warning("User aborted the batch processing.")
-            suppress_fiji_output()
-            exit(0)
-
-        time_stamp = time.time()
-        run_trackmate(recordings_directory, experiment_directory, )
-        run_time = time.time() - time_stamp
-        run_time = round(run_time, 1)
-        paint_logger.info("\nProcessing completed in " + str(run_time) + " seconds")

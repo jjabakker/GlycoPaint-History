@@ -166,11 +166,10 @@ def install():
         copy_file_from_source_to_dest(common_support_source, library_dest, file)
 
     # Create the Trackmate Data and Paint profile directories
-    profile_dir = os.path.join(os.path.expanduser('~'), "Paint", "Profile")
     logging_dir = os.path.join(os.path.expanduser('~'), "Paint", "Logger")
-    config_dir = os.path.join(os.path.expanduser('~'), "Paint", "Defaults")
+    defaults_dir = os.path.join(os.path.expanduser('~'), "Paint", "Defaults")
 
-    dirs_to_create = [profile_dir, logging_dir]
+    dirs_to_create = [logging_dir, defaults_dir]
     for directory in dirs_to_create:
         if not os.path.isdir(directory):
             print("\nCreated directory {dir}")
@@ -183,8 +182,8 @@ def install():
         print("\n\nError: Failed to parse JSON file.")
         return
 
-    shutil.copyfile(config_file, os.path.join(config_dir, 'Paint.json'))
-    print(f'\nCopied config Paint.json to {config_dir}')
+    shutil.copyfile(config_file, os.path.join(defaults_dir, 'Paint.json'))
+    print(f'\nCopied config Paint.json to {defaults_dir}')
 
 
 if __name__ == '__main__':

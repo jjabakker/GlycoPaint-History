@@ -14,9 +14,6 @@ from LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 # Set up logging
 paint_logger_change_file_handler_name('Convert BF Images.log')
 
-# Import custom functions for asking the user for directories.
-from FijiSupportFunctions import ask_user_for_image_directory
-
 
 def convert_bf_images(image_source_directory, paint_directory, force=False):
     """
@@ -87,19 +84,3 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
     except Exception as e:
         paint_logger.error("Error copying the directory %s to %s: %s", bf_jpeg_dir, dest_dir, str(e))
 
-
-if __name__ == "__main__":
-    # Ask user for Paint directory
-    paint_directory = ask_user_for_image_directory("Specify the Paint directory", 'Paint')
-    if not paint_directory:
-        paint_logger.info("User aborted the batch processing.")
-        sys.exit(0)
-
-    # Ask user for the source directory of images
-    images_source_directory = ask_user_for_image_directory("Specify the Image Source directory", 'Images')
-    if not images_source_directory:
-        logging.info("User aborted the batch processing.")
-        sys.exit(0)
-
-    # Run the conversion with user-specified directories
-    convert_bf_images(images_source_directory, paint_directory, force=False)

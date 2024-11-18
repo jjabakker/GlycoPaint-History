@@ -13,7 +13,6 @@ paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + 
 sys.path.append(paint_dir)
 
 # from Trackmate import paint_trackmate
-from Run_TrackMate import run_trackmate
 from Trackmate import execute_trackmate_in_Fiji
 
 

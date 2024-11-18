@@ -34,6 +34,6 @@ def update_csv_columns(directory):
 
 
 # Usage: Replace 'your_directory_path' with the path of the directory you want to traverse
-directory = '/Users/hans/Paint Demo Set/Paint Demo'
+directory = '/Users/hans/Paint Data - v23'
 
 update_csv_columns(directory)

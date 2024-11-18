@@ -32,7 +32,6 @@ default_data = {
         "Directory Locations": {
             "Root": "~/Paint",
             "Logger": "Logger",
-            "Profile": "Profile",
             "Defaults": "Defaults"
         }
     },

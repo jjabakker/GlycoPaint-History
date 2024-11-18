@@ -55,89 +55,9 @@ def _get_paint_configuration_directory(sub_dir):
     return conf_dir
 
 
-def get_paint_profile_directory():
-    sub_dir = 'Profile'
-    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
-
-
 def get_paint_logger_directory():
     sub_dir = 'Logger'
     return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir)
-
-
-def get_paint_defaults_file_path():
-    sub_dir = 'Defaults'
-    return os.path.join(_get_paint_configuration_directory(sub_dir), sub_dir, 'Paint.json')
-    return path
-
-
-def get_default_locations():
-    default_locations_file_path = os.path.join(get_paint_profile_directory(), "default_locations.csv")
-
-    # Set the default directories so that you can return something in any case
-    image_directory = os.path.expanduser('~')
-    paint_directory = os.path.expanduser('~')
-    root_directory = os.path.expanduser('~')
-    level = os.path.expanduser('~')
-
-    try:
-        # Check if the file exists
-        if not os.path.exists(default_locations_file_path):
-            return root_directory, paint_directory, image_directory, level
-
-        # Open and read the CSV file
-        with open(default_locations_file_path, mode='r') as file:
-            reader = csv.DictReader(file)  # Use DictReader to access columns by header names
-
-            # Ensure required columns are present
-            required_columns = ['images_directory', 'paint_directory', 'root_directory', 'level']
-            for col in required_columns:
-                if col not in reader.fieldnames:
-                    # raise KeyError(f"Required column '{col}' is missing from the CSV file.")
-                    return root_directory, paint_directory, image_directory, level
-
-            # Ensure file is not empty
-            rows = list(reader)  # Read all rows into a list to check content
-            if not rows:
-                return root_directory, paint_directory, image_directory, level
-
-            # Access the first row of data
-            row = rows[0]
-            return row['root_directory'], row['paint_directory'], row['images_directory'], row['level']
-
-    except KeyError as e:
-        print("Error: {}".format(e))
-    except ValueError as e:
-        print("Error: {}".format(e))
-    except Exception as e:
-        print("An unexpected error occurred: {}".format(e))
-    return root_directory, paint_directory, image_directory, level
-
-
-def save_default_locations(root_directory, paint_directory, images_directory, level):
-    default_locations_file_path = os.path.join(get_paint_profile_directory(), "default_locations.csv")
-
-    try:
-
-        fieldnames = ['images_directory', 'paint_directory', 'root_directory', 'level']
-
-        # Open the file in write mode ('w') and overwrite any existing content
-        with open(default_locations_file_path, mode='w') as file:
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-
-            # Write the header
-            writer.writeheader()
-
-            # Write the data as a row
-            writer.writerow({
-                'images_directory': images_directory,
-                'paint_directory': paint_directory,
-                'root_directory': root_directory,
-                'level': level
-            })
-
-    except Exception as e:
-        print("An error occurred while writing to the file: {}".format(e))  # TODO: Add logging
 
 
 def delete_files_in_directory(directory_path):
@@ -164,13 +84,12 @@ def get_default_image_directory():
     """
     Determine where the root is. We are looking for something like /Users/xxxx/Trackmate Data
     The only thing that can vary is the username.
-    If the directory does not exist just warn and abort
+    If the directory does not exist, just warn and abort
     :return:  the image root directory
     """
 
     image_directory = os.path.expanduser('~') + os.sep + "Trackmate Data"
     if not os.path.isdir(image_directory):
-        print("\nPlease ensure that a directory /User/***/Trackmate Data exists (with xxx the user name)")
-        sys.exit()
+        makedirs(image_directory)
     else:
         return image_directory

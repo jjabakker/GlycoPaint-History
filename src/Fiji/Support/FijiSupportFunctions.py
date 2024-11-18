@@ -11,41 +11,6 @@ from javax.swing import JFileChooser
 paint_code__dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_code__dir)
 
-from DirectoriesAndLocations import get_default_locations, save_default_locations
-
-
-def ask_user_for_image_directory(prompt='Select Folder', directory='Paint'):
-    """
-    Ask the user to specify the user image directory. Present the last used value as default.
-    Save the user choice.
-    :param prompt:
-    :param directory:
-    :return:
-    """
-    root_dir, paint_dir, images_dir, level = get_default_locations()
-
-    if directory == 'Paint':
-        def_dir = paint_dir
-    else:
-        def_dir = images_dir
-
-    file_chooser = JFileChooser(def_dir)
-    file_chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
-
-    # Show the dialog and get the result
-    result = file_chooser.showDialog(None, prompt)
-
-    # Check if the user selected a directory
-    if result == JFileChooser.APPROVE_OPTION:
-        selected_directory = file_chooser.getSelectedFile()
-        if directory == 'Paint':
-            paint_dir = selected_directory
-        else:
-            images_dir = selected_directory
-        save_default_locations(root_dir, paint_dir, images_dir, level)
-        return selected_directory.getAbsolutePath()
-    else:
-        return ""
 
 
 def ask_user_for_file(prompt='Select File'):
@@ -55,8 +20,6 @@ def ask_user_for_file(prompt='Select File'):
     :param prompt:
     :return:
     """
-
-    # root_dir, paint_dir, images_dir = get_default_directories()
 
     file_chooser = JFileChooser('~')
     file_chooser.setFileSelectionMode(JFileChooser.FILES_ONLY)

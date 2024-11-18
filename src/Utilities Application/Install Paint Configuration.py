@@ -12,7 +12,6 @@ def install_paint_configuration():
 
     # Create the directories of needed
     home_dir = os.path.expanduser('~')
-    os.makedirs(os.path.join(home_dir, 'Paint', 'Profile'), exist_ok=True)
     os.makedirs(os.path.join(home_dir, 'Paint', 'Logger'), exist_ok=True)
     os.makedirs(os.path.join(home_dir, 'Paint', 'Defaults'), exist_ok=True)
 
