@@ -10,9 +10,9 @@ from src.Application.Utilities.General_Support_Functions import (
     classify_directory
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-from src.Common.Support.DirectoriesAndLocations import (
-    get_default_locations,
-    save_default_locations)
+from src.Common.Support.PaintConfig import (
+    get_paint_attribute,
+    update_paint_attribute)
 
 # -------------------------------------------------------------------------------------
 # Configure logging
@@ -81,7 +81,7 @@ class InspectDialog:
     def __init__(self, _root):
         self.root = _root
         self.root.title('Inspect Experiments Files')
-        self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
+        self.project_directory = get_paint_attribute('User Directories', 'Project Directory')
 
         # Set up the UI layout
         self.root.geometry("800x140")
@@ -109,7 +109,7 @@ class InspectDialog:
 
         # Fill the directory frame
         btn_root_dir = ttk.Button(frame_directory, text='Project Directory', width=15, command=self.change_root_dir)
-        self.lbl_root_dir = ttk.Label(frame_directory, text=self.root_directory, width=60)
+        self.lbl_root_dir = ttk.Label(frame_directory, text=self.project_directory, width=60)
 
         btn_root_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_root_dir.grid(column=1, row=0, padx=20, pady=5, sticky="ew")
@@ -118,19 +118,19 @@ class InspectDialog:
         """
         Allows the user to select a new root directory.
         """
-        self.root_directory = filedialog.askdirectory(initialdir=self.root_directory)
-        if self.root_directory:
-            save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
-            self.lbl_root_dir.config(text=self.root_directory)
+        self.project_directory = filedialog.askdirectory(initialdir=self.project_directory)
+        if self.project_directory:
+            update_paint_attribute('User Directories', 'Project Directory', self.project_directory)
+            self.lbl_root_dir.config(text=self.project_directory)
 
     def process(self):
         """
         Starts the Experiments file inspection process.
         """
 
-        dir_type, _ = classify_directory(self.root_directory)
+        dir_type, _ = classify_directory(self.project_directory)
         if dir_type == 'Project':
-            inspect_experiment_squares_files(root_dir=self.root_directory)
+            inspect_experiment_squares_files(root_dir=self.project_directory)
             root.destroy()
         elif dir_type == 'Experiment':
             msg = "The selected directory does not seem to be a project directory, but an experiment directory"
