@@ -7,12 +7,8 @@ from src.Application.Generate_Squares.Generate_Squares import (
     process_project,
     process_experiment)
 from src.Application.Generate_Squares.Generate_Squares_Support_Functions import (
-    get_grid_defaults_from_file,
-    save_grid_defaults_to_file,
     pack_select_parameters)
 from src.Application.Utilities.General_Support_Functions import (
-    get_default_locations,
-    save_default_locations,
     format_time_nicely,
     classify_directory
 )
@@ -22,7 +18,10 @@ from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
-from src.Common.Support.PaintConfig import load_paint_config, get_paint_attribute
+from src.Common.Support.PaintConfig import (
+    load_paint_config,
+    get_paint_attribute,
+    update_paint_attribute)
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Generate Squares.log')
@@ -38,15 +37,36 @@ class GenerateSquaresDialog:
 
     def load_saved_parameters(self):
         """Load parameters from disk or use default values if unavailable."""
-        values = get_grid_defaults_from_file()
-        self.nr_of_squares_in_row = tk.IntVar(value=values.get('nr_of_squares_in_row', 10))
-        self.min_tracks_for_tau = tk.IntVar(value=values.get('min_tracks_for_tau', 10))
-        self.min_r_squared = tk.DoubleVar(value=values.get('min_r_squared', 0.5))
-        self.min_required_density_ratio = tk.DoubleVar(value=values.get('min_required_density_ratio', 0.5))
-        self.max_allowable_variability = tk.DoubleVar(value=values.get('max_allowable_variability', 0.5))
-        self.process_average_tau = tk.IntVar(value=values.get('process_recording_tau', 0))
-        self.process_square_specific_tau = tk.IntVar(value=values.get('process_square_tau', 1))
-        self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
+        #values = get_grid_defaults_from_file()
+        nr_of_squares_in_row = get_paint_attribute('Generate Squares', 'Nr of Squares in Row')
+        min_tracks_to_calculate_tau = get_paint_attribute('Generate Squares', 'Min Tracks to Calculate Tau')
+        min_allowable_r_squared = get_paint_attribute('Generate Squares', 'Min Allowable R Squared')
+        min_required_density_ratio = get_paint_attribute('Generate Squares', 'Min Required Density Ratio')
+        max_allowable_variability = get_paint_attribute('Generate Squares', 'Max Allowable Variability')
+        process_recording_tau = get_paint_attribute('Generate Squares', 'Process Recording Tau')
+        process_square_tau = get_paint_attribute('Generate Squares', 'Process Square Tau')
+
+        self.project_directory = get_paint_attribute('User Directories', 'Project')
+        self.experiment_directory = get_paint_attribute('User Directories', 'Experiment')
+        self.images_directory = get_paint_attribute('User Directories', 'Images')
+        self.level = get_paint_attribute('User Directories', 'Level')
+
+        if self.level == 'Project':
+            self.paint_directory = self.project_directory
+        elif self.level == 'Experiment':
+            self.paint_directory = self.experiment_directory
+        else:
+            self.paint_directory = self.project_directory
+
+        self.nr_of_squares_in_row = tk.IntVar(value=nr_of_squares_in_row)
+        self.min_tracks_for_tau = tk.IntVar(value=min_tracks_to_calculate_tau)
+        self.min_allowable_r_squared = tk.DoubleVar(value=min_allowable_r_squared)
+        self.min_required_density_ratio = tk.DoubleVar(value=min_required_density_ratio)
+        self.max_allowable_variability = tk.DoubleVar(value=max_allowable_variability)
+        self.process_average_tau = tk.IntVar(value=process_recording_tau)
+        self.process_square_specific_tau = tk.IntVar(value=process_square_tau)
+
+        # self.root_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
 
     def create_ui(self, _root):
         """Create and layout the UI components."""
@@ -96,7 +116,7 @@ class GenerateSquaresDialog:
         params = [
             ("Nr of Squares in Row", self.nr_of_squares_in_row, 1, msg_nr_of_squares),
             ("Minimum tracks to calculate Tau", self.min_tracks_for_tau, 2, msg_min_tracks),
-            ("Min allowable R-squared", self.min_r_squared, 3, msg_min_r_squared),
+            ("Min allowable R-squared", self.min_allowable_r_squared, 3, msg_min_r_squared),
             ("Min Required Density Ratio", self.min_required_density_ratio, 4, msg_min_required_density_ratio),
             ("Max Allowable Variability", self.max_allowable_variability, 5, msg_max_allowable_variability),
         ]
@@ -118,7 +138,6 @@ class GenerateSquaresDialog:
 
         msg_square_tau = "If checked, the program will calculate a Tau for each square individually."
         msg_recording_tau = "If checked, the program will calculate one Tau for all visible squares combined."
-        msg_all_tracks = "If checked, the program will generate an All Tracks file and calculate an average Diffusion Coefficient for each square (necessary if you wish to see a heatmap"
 
         self.create_checkbox(frame, "Square Tau", self.process_square_specific_tau, 0, tooltip=msg_square_tau)
         self.create_checkbox(frame, "Recording Tau", self.process_average_tau, 1, tooltip=msg_recording_tau)
@@ -158,6 +177,10 @@ class GenerateSquaresDialog:
     def on_change_dir(self):
         """Change the paint directory through a dialog."""
         paint_directory = filedialog.askdirectory(initialdir=self.paint_directory)
+        if classify_directory(paint_directory) == 'Project':
+            self.project_directory = paint_directory
+        else:
+            self.experiment_directory = paint_directory
         if paint_directory:
             self.paint_directory = paint_directory
             self.lbl_directory.config(text=paint_directory)
@@ -175,11 +198,13 @@ class GenerateSquaresDialog:
             paint_messagebox(self.root, title='Warning', message="The selected directory does not exist")
             return
 
-        dir_type, _ = classify_directory(self.paint_directory)
-        if dir_type == 'Project':
+        self.level, _ = classify_directory(self.paint_directory)
+        if self.level == 'Project':
             generate_function = process_project
-        elif dir_type == 'Experiment':
+            self.project_directory = self.paint_directory
+        elif self.level == 'Experiment':
             generate_function = process_experiment
+            self.experiment_directory = self.paint_directory
         else:
             msg = "The selected directory does not seem to be a project directory, nor an experiment directory"
             paint_logger.error(msg)
@@ -191,14 +216,14 @@ class GenerateSquaresDialog:
             max_allowable_variability=self.max_allowable_variability.get(),
             min_track_duration=get_paint_attribute('Generate Squares', 'Min Track Duration') or 0,
             max_track_duration=get_paint_attribute('Generate Squares', 'Max Track Duration') or 10000,
-            min_r_squared=get_paint_attribute('Generate Squares', 'Min R Squared') or 0.9,
+            min_r_squared=get_paint_attribute('Generate Squares', 'Min Allowable R Squared') or 0.9,
             neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode') or 'Free',
         )
         generate_function(
             self.paint_directory,
             select_parameters=select_parameters,
             nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
-            min_r_squared=self.min_r_squared.get(),
+            min_r_squared=self.min_allowable_r_squared.get(),
             min_tracks_for_tau=self.min_tracks_for_tau.get(),
             process_recording_tau=self.process_average_tau.get(),
             process_square_tau=self.process_square_specific_tau.get(),
@@ -210,17 +235,18 @@ class GenerateSquaresDialog:
         self.on_exit_pressed()
 
     def save_parameters(self):
-        save_grid_defaults_to_file(
-            nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
-            min_tracks_for_tau=self.min_tracks_for_tau.get(),
-            min_r_squared=self.min_r_squared.get(),
-            min_required_density_ratio=self.min_required_density_ratio.get(),
-            max_allowable_variability=self.max_allowable_variability.get(),
-            process_recording_tau=self.process_average_tau.get(),
-            process_square_tau=self.process_square_specific_tau.get()
-        )
-        save_default_locations(self.root_directory, self.paint_directory, self.images_directory, self.level)
+        update_paint_attribute('Generate Squares', 'Nr of Squares in Row', self.nr_of_squares_in_row.get())
+        update_paint_attribute('Generate Squares', 'Min Tracks to Calculate Tau', self.min_tracks_for_tau.get())
+        update_paint_attribute('Generate Squares', 'Min Allowable R Squared', self.min_allowable_r_squared.get())
+        update_paint_attribute('Generate Squares', 'Min Required Density Ratio', self.min_required_density_ratio.get())
+        update_paint_attribute('Generate Squares', 'Max Allowable Variability', self.max_allowable_variability.get())
+        update_paint_attribute('Generate Squares', 'Process Recording Tau', self.process_average_tau.get())
+        update_paint_attribute('Generate Squares', 'Process Square Tau', self.process_square_specific_tau.get())
 
+        update_paint_attribute('User Directories', 'Project', self.project_directory)
+        update_paint_attribute('User Directories', 'Experiment', self.experiment_directory)
+        update_paint_attribute('User Directories', 'Images', self.images_directory)
+        update_paint_attribute('User Directories', 'Level', self.level)
 
 if __name__ == "__main__":
     paint_config = load_paint_config('/src/Config/Paint.json')
