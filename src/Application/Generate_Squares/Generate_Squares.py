@@ -121,7 +121,8 @@ def process_experiment(
         min_r_squared: float,
         min_tracks_for_tau: int,
         process_recording_tau: bool = True,
-        process_square_tau: bool = True) -> None:
+        process_square_tau: bool = True,
+        paint_force: bool = False) -> None:
     """
     This function processes all Recordings in an Experiment.
     It reads the All Recordings file to find out which Recordings need processing
