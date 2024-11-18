@@ -5,8 +5,6 @@ import os
 import numpy as np
 import pandas as pd
 
-from src.Common.Support.DirectoriesAndLocations import (
-    get_paint_profile_directory)
 from src.Common.Support.LoggerConfig import paint_logger
 from src.Common.Support.PaintConfig import get_paint_attribute
 

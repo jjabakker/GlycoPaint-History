@@ -212,7 +212,7 @@ def main():
                 max_allowable_variability=entry['max_allowable_variability'],
                 min_track_duration=get_paint_attribute('Generate Squares', 'Min Track Duration'),
                 max_track_duration=get_paint_attribute('Generate Squares', 'Max Track Duration'),
-                min_allowable_r_squared=get_paint_attribute('Generate Squares', 'Min R Squared'),
+                min_allowable_r_squared=get_paint_attribute('Generate Squares', 'Min Allowable R Squared'),
                 neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode'))
 
             if not process_json_configuration_block(
@@ -234,7 +234,7 @@ def main():
                     drop_empty_squares=drop_empty_squares):
                 error_count += 1
 
-    # Report the time it took in hours minutes seconds
+    # Report the time it took in hours, minutes, seconds
     run_time = time.time() - main_stamp
     format_time_nicely(run_time)
 
