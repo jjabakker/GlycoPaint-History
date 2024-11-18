@@ -12,8 +12,6 @@ import pandas as pd
 
 from src.Application.Utilities.Compille_All_tracks import compile_all_tracks
 from src.Application.Utilities.General_Support_Functions import (
-    get_default_locations,
-    save_default_locations,
     read_experiment_file,
     read_squares_from_file,
     format_time_nicely,
@@ -25,6 +23,9 @@ from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
+from src.Common.Support.PaintConfig import (
+    get_paint_attribute,
+    update_paint_attribute)
 
 if not paint_logger_file_name_assigned:
     paint_logger_change_file_handler_name('Compile Output.log')
@@ -66,7 +67,7 @@ def compile_project_output(
             sys.exit()
         df_all_recordings = pd.concat([df_all_recordings, df_experiment])
 
-        # Read the squares file
+        # Read the Squares file
         df_squares = read_squares_from_file(os.path.join(experiment_dir_path, 'All Squares.csv'))
 
         if df_squares is None:
@@ -119,8 +120,7 @@ class CompileDialog:
         self.root = _root
 
         self.root.title('Compile Project')
-
-        self.project_directory, self.paint_directory, self.images_directory, self.level = get_default_locations()
+        self.project_directory = get_paint_attribute('User Directories', 'Project Directory')
 
         content = ttk.Frame(self.root)
         frame_buttons = ttk.Frame(content, borderwidth=5, relief='ridge')
@@ -138,20 +138,24 @@ class CompileDialog:
         btn_exit.grid(column=0, row=2)
 
         # Fill the directory frame
-        btn_root_dir = ttk.Button(frame_directory, text='Project Directory', width=15, command=self.change_root_dir)
-        self.lbl_root_dir = ttk.Label(frame_directory, text=self.project_directory, width=80)
+        btn_project_dir = ttk.Button(frame_directory, text='Project Directory', width=15, command=self.change_root_dir)
+        self.lbl_project_dir = ttk.Label(frame_directory, text=self.project_directory, width=80)
 
         tooltip = "Specify a Project directory here, i.e. a directory that holds Experiment directories."
-        ToolTip(btn_root_dir, tooltip, wraplength=400)
+        ToolTip(btn_project_dir, tooltip, wraplength=400)
 
-        btn_root_dir.grid(column=0, row=0, padx=10, pady=5)
-        self.lbl_root_dir.grid(column=1, row=0, padx=20, pady=5)
+        btn_project_dir.grid(column=0, row=0, padx=10, pady=5)
+        self.lbl_project_dir.grid(column=1, row=0, padx=20, pady=5)
 
     def change_root_dir(self) -> None:
         self.project_directory = filedialog.askdirectory(initialdir=self.project_directory)
-        save_default_locations(self.project_directory, self.paint_directory, self.images_directory, self.level)
         if len(self.project_directory) != 0:
-            self.lbl_root_dir.config(text=self.project_directory)
+            self.lbl_project_dir.config(text=self.project_directory)
+        dir_type, _ = classify_directory(self.project_directory)
+        if dir_type == 'Project':
+            update_paint_attribute('User Directories', 'Project Directory', self.project_directory)
+        else:
+            paint_messagebox(self.root, title='Warning', message='The selected directory does not seem to be a project directory.')
 
     def on_compile_pressed(self) -> None:
 
@@ -161,8 +165,7 @@ class CompileDialog:
             return
 
         # Determine if it indeed is a project directory
-        dir_type, maturity = classify_directory(self.project_directory)
-
+        dir_type, _ = classify_directory(self.project_directory)
         if dir_type == 'Project':   # Project directory, so proceed
             compile_project_output(project_dir=self.project_directory, verbose=True)
             self.root.destroy()
