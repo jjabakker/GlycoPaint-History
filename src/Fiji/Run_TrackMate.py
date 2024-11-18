@@ -10,15 +10,18 @@ from java.io import File
 from java.lang.System import getProperty
 from javax.swing import JFrame, JPanel, JButton, JTextField, JFileChooser, JOptionPane, BorderFactory
 
+
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
 
 from DirectoriesAndLocations import (
     get_experiment_info_file_path,
-    get_experiment_tm_file_path,
-    get_default_locations,
-    save_default_locations)
+    get_experiment_tm_file_path)
 
+from PaintConfig import (
+    get_paint_attribute,
+    update_paint_attribute
+)
 from Trackmate import execute_trackmate_in_Fiji
 
 from FijiSupportFunctions import (
@@ -286,14 +289,16 @@ def create_gui():
     frame.setLayout(GridLayout(3, 1))
 
     # Get the default drectories
-    root_dir, paint_dir, images_dir, level = get_default_locations()
+    # root_dir, experiment_dir, images_dir, level = get_default_locations()
+    experiment_dir = get_paint_attribute('User Directories', 'Experiment Directory')
+    images_dir = get_paint_attribute('User Directories', 'Images Directory')
 
     # Add padding around the frame content
     frame.getRootPane().setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20))
 
     # Panel for directory 1
     panel1 = JPanel(FlowLayout(FlowLayout.LEFT))
-    browseButton1 = JButton("Recordings  Directory")
+    browseButton1 = JButton("Images  Directory")
     browseButton1.setPreferredSize(Dimension(180, 20))
     textField1 = JTextField(40)
     textField1.setEditable(False)
@@ -325,9 +330,9 @@ def create_gui():
     def browse_action2(event):
         chooser = JFileChooser()
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
-        chooser.setCurrentDirectory(File(paint_dir))
+        chooser.setCurrentDirectory(File(experiment_dir))
         chooser.rescanCurrentDirectory()  # Ensures the directory tree is refreshed
-        textField2.setText(paint_dir)
+        textField2.setText(experiment_dir)
         result = chooser.showOpenDialog(frame)
         if result == JFileChooser.APPROVE_OPTION:
             selected_dir = chooser.getSelectedFile().getAbsolutePath()
@@ -348,7 +353,9 @@ def create_gui():
         recordings_directory = textField1.getText()
         experiment_directory = textField2.getText()
 
-        save_default_locations(root_dir, experiment_directory, recordings_directory, level)
+        # save_default_locations(root_dir, experiment_directory, recordings_directory, level)
+        update_paint_attribute('User Directories', 'Experiment Directory', experiment_directory)
+        update_paint_attribute('User Directories', 'Images Directory', recordings_directory)
 
         frame.dispose()
 
