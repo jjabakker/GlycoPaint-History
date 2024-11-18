@@ -54,7 +54,8 @@ paint_logger.addHandler(file_handler)
 def get_paint_logger_directory():
     sub_dir = 'Logger'
     conf_dir = os.path.join(os.path.expanduser('~'), 'Paint')
-    os.makedirs(os.path.join(conf_dir, sub_dir), exist_ok=True)
+    if not os.path.exists(os.path.join(conf_dir, sub_dir)):
+        os.makedirs(os.path.join(conf_dir, sub_dir))
     return os.path.join(conf_dir, sub_dir)
 
 
