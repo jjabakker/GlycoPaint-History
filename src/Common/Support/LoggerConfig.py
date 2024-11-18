@@ -33,7 +33,8 @@ console_handler.setFormatter(formatter)
 # Set up the file handler
 #----------------------------------------------------------
 
-file_handler = logging.FileHandler(path.join(get_paint_logger_directory(), 'paint.log'), mode='w')  # Logs to a file
+# file_handler = logging.FileHandler(os.path.join(get_paint_logger_directory(), 'paint.log'), mode='w')  # Logs to a file
+file_handler = logging.FileHandler(os.path.join(os.path.expanduser('~'), 'Paint', 'Logger', 'paint.log'), mode='w')  # Logs to a file   #ToDo
 file_handler.setLevel(logging.INFO)  # All logs at INFO level or higher go to the console
 file_handler.setFormatter(formatter)
 
@@ -75,7 +76,7 @@ def paint_logger_console_handle_set_level(level):
     else:
         console_handler.setLevel(level)
 
-# Change the fike name of the file logger
+# Change the file name of the file logger
 def paint_logger_change_file_handler_name(file_name):
     global file_handler
     global paint_logger_file_name_assigned
