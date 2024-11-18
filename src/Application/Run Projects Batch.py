@@ -61,7 +61,7 @@ def process_json_configuration_block(paint_source_dir,
     paint_logger.info(f"Min Track Duration          : {select_parameters['min_track_duration']}")
     paint_logger.info(f"Max Track Duration          : {select_parameters['max_track_duration']}")
     paint_logger.info(f"Neighbour Mode              : {select_parameters['neighbour_mode']}")
-    paint_logger.info(f"Min R squared               : {min_allowable_r_squared}")
+    paint_logger.info(f"Min Allowable R squared     : {min_allowable_r_squared}")
     paint_logger.info(f"Min tracks for tau          : {min_tracks_for_tau}")
     paint_logger.info(f"Paint Force                 : {paint_force}")
     paint_logger.info(f"Drop Empty Squares          : {drop_empty_squares}")
@@ -137,6 +137,7 @@ def main():
     # Load the configuration file
 
     conf_file = '../Config/Process Project.json'
+
     try:
         with open(conf_file, 'r') as file:
             process_project_params_list = json.load(file)
@@ -187,6 +188,7 @@ def main():
     paint_logger.info("")
     paint_logger.info(f"New Run - {'Debug' if PAINT_DEBUG else 'Production'} mode")
     paint_logger.info("")
+    paint_logger.info(f"Started the whole process at: {datetime.now()}")
     paint_logger.info(f"The configuration file is               : {conf_file}")
     paint_logger.info(f"The Paint Source directory is           : {paint_source}")
     paint_logger.info(f"The Paint Data directory is             : {paint_data}")
@@ -223,7 +225,7 @@ def main():
                     probe=entry['probe'],
                     nr_of_squares_in_row=entry['nr_of_squares'],
                     nr_to_process=nr_to_process,
-                    current_process=current_process_seq_nr,
+                     current_process=current_process_seq_nr,
                     select_parameters=select_parameters,
                     min_allowable_r_squared=entry['min_allowable_r_squared'],
                     min_tracks_for_tau=entry['min_tracks_for_tau'],
