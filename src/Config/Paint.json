@@ -9,6 +9,12 @@
       "Defaults": "Defaults"
     }
   },
+  "User Directories": {
+    "Project": "~",
+    "Experiment": "~",
+    "Images": "~",
+    "Level": "Experiment"
+  },
   "Generate Squares": {
     "Plot to File": false,
     "Plot Max": 5,
@@ -17,7 +23,13 @@
     "Neighbour Mode":"Free",
     "Min Track Duration": 0,
     "Max Track Duration": 1000000,
-    "Min R Squared": 0.9,
+    "Nr of Squares in Row": 20,
+    "Min Tracks to Calculate Tau": 20,
+    "Min Allowable R Squared": 0.9,
+    "Min Required Density Ratio": 2.0,
+    "Max Allowable Variability": 10.0,
+    "Process Recording Tau": true,
+    "Process Square Tau": true,
     "logging": {
       "level": "INFO",
       "file": "Generate Squares.log"
