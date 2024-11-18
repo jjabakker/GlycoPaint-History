@@ -37,7 +37,7 @@ def process_json_configuration_block(paint_source_dir,
                                      nr_of_squares_in_row: int,
                                      nr_to_process: int,
                                      current_process: int,
-                                     min_r_squared: float,
+                                     min_allowable_r_squared: float,
                                      min_tracks_for_tau: int,
                                      process_recording_tau: bool,
                                      process_square_tau: bool,
@@ -61,7 +61,7 @@ def process_json_configuration_block(paint_source_dir,
     paint_logger.info(f"Min Track Duration          : {select_parameters['min_track_duration']}")
     paint_logger.info(f"Max Track Duration          : {select_parameters['max_track_duration']}")
     paint_logger.info(f"Neighbour Mode              : {select_parameters['neighbour_mode']}")
-    paint_logger.info(f"Min R squared               : {min_r_squared}")
+    paint_logger.info(f"Min R squared               : {min_allowable_r_squared}")
     paint_logger.info(f"Min tracks for tau          : {min_tracks_for_tau}")
     paint_logger.info(f"Paint Force                 : {paint_force}")
     paint_logger.info(f"Drop Empty Squares          : {drop_empty_squares}")
@@ -90,7 +90,7 @@ def process_json_configuration_block(paint_source_dir,
         project_path=project_path,
         select_parameters=select_parameters,
         nr_of_squares_in_row=nr_of_squares_in_row,
-        min_r_squared=min_r_squared,
+        min_allowable_r_squared=min_allowable_r_squared,
         min_tracks_for_tau=min_tracks_for_tau,
         process_recording_tau=process_recording_tau,
         process_square_tau=process_square_tau,
@@ -212,7 +212,7 @@ def main():
                 max_allowable_variability=entry['max_allowable_variability'],
                 min_track_duration=get_paint_attribute('Generate Squares', 'Min Track Duration'),
                 max_track_duration=get_paint_attribute('Generate Squares', 'Max Track Duration'),
-                min_r_squared=get_paint_attribute('Generate Squares', 'Min R Squared'),
+                min_allowable_r_squared=get_paint_attribute('Generate Squares', 'Min R Squared'),
                 neighbour_mode=get_paint_attribute('Generate Squares', 'Neighbour Mode'))
 
             if not process_json_configuration_block(
@@ -225,7 +225,7 @@ def main():
                     nr_to_process=nr_to_process,
                     current_process=current_process_seq_nr,
                     select_parameters=select_parameters,
-                    min_r_squared=entry['min_r_squared'],
+                    min_allowable_r_squared=entry['min_allowable_r_squared'],
                     min_tracks_for_tau=entry['min_tracks_for_tau'],
                     process_recording_tau=entry['process_recording_tau'],
                     process_square_tau=entry['process_square_tau'],

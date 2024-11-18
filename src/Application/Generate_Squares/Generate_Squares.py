@@ -56,7 +56,7 @@ def process_project(
         project_path: str,
         select_parameters: dict,
         nr_of_squares_in_row: int,
-        min_r_squared: float,
+        min_allowable_r_squared: float,
         min_tracks_for_tau: int,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
@@ -96,7 +96,7 @@ def process_project(
             os.path.join(project_path, experiment_dir),
             select_parameters=select_parameters,
             nr_of_squares_in_row=nr_of_squares_in_row,
-            min_r_squared=min_r_squared,
+            min_allowable_r_squared=min_allowable_r_squared,
             min_tracks_for_tau=min_tracks_for_tau,
             process_recording_tau=process_recording_tau,
             process_square_tau=process_square_tau)
@@ -118,7 +118,7 @@ def process_experiment(
         experiment_path: str,
         select_parameters: dict,
         nr_of_squares_in_row: int,
-        min_r_squared: float,
+        min_allowable_r_squared: float,
         min_tracks_for_tau: int,
         process_recording_tau: bool = True,
         process_square_tau: bool = True,
@@ -146,7 +146,7 @@ def process_experiment(
         df_recordings_of_experiment,
         nr_of_squares_in_row,
         min_tracks_for_tau,
-        min_r_squared,
+        min_allowable_r_squared,
         select_parameters['min_required_density_ratio'],
         select_parameters['max_allowable_variability'])
 
@@ -185,7 +185,7 @@ def process_experiment(
             experiment_path,
             recording_name,
             nr_of_squares_in_row,
-            min_r_squared,
+            min_allowable_r_squared,
             min_tracks_for_tau,
             process_recording_tau,
             process_square_tau,
@@ -235,7 +235,7 @@ def process_recording(
         experiment_path: str,
         recording_name: str,
         nr_of_squares_in_row: int,
-        min_r_squared: float,
+        min_allowable_r_squared: float,
         min_tracks_for_tau: int,
         process_recording_tau: bool,
         process_square_tau: bool,
@@ -282,7 +282,7 @@ def process_recording(
             recording_data,
             nr_of_squares_in_row,
             concentration,
-            min_r_squared,
+            min_allowable_r_squared,
             min_tracks_for_tau,
             process_square_tau,
             square_area,
@@ -322,7 +322,7 @@ def process_recording(
             df_squares_of_recording,
             df_tracks_of_recording,
             min_tracks_for_tau,
-            min_r_squared,
+            min_allowable_r_squared,
             nr_of_squares_in_row,
             float(recording_data['Concentration']),
             select_parameters)
@@ -346,7 +346,7 @@ def process_square(
     recording_data: pd.Series,
     nr_of_squares_in_row: int,
     concentration: float,
-    min_r_squared: float,
+    min_allowable_r_squared: float,
     min_tracks_for_tau: int,
     process_square_tau: bool,
     square_area: float,
@@ -394,7 +394,7 @@ def process_square(
             tau, r_squared = calculate_tau(
                 df_tracks_for_tau,
                 min_tracks_for_tau,
-                min_r_squared)
+                min_allowable_r_squared)
 
         # Calculate the density for the square-
         density = calculate_density(
@@ -456,7 +456,7 @@ def calculate_tau_and_density_for_recording(
         df_squares: pd.DataFrame,
         df_recording_tracks: pd.DataFrame,
         min_tracks_for_tau: int,
-        min_r_squared: float,
+        min_allowable_r_squared: float,
         nr_of_squares_in_row: int,
         concentration: float,
         select_parameters: dict
@@ -488,7 +488,7 @@ def calculate_tau_and_density_for_recording(
     tau, r_squared = calculate_tau(
         df_tracks_for_tau,
         min_tracks_for_tau,
-        min_r_squared)
+        min_allowable_r_squared)
 
     # Calculate the Density
     area = calc_area_of_square(nr_of_squares_in_row)

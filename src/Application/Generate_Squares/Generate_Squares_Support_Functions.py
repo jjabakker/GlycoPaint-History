@@ -238,7 +238,7 @@ def add_columns_to_experiment(
         df_experiment: pd.DataFrame,
         nr_of_squares_in_row: int,
         min_tracks_for_tau: int,
-        min_r_squared: float,
+        min_allowable_r_squared: float,
         min_required_density_ratio: float,
         max_allowable_variability: float):
     """
@@ -253,7 +253,7 @@ def add_columns_to_experiment(
 
     # User specified parameters
     df_experiment.loc[mask, 'Min Tracks for Tau'] = int(min_tracks_for_tau)
-    df_experiment.loc[mask, 'Min R Squared'] = round(min_r_squared, 2)
+    df_experiment.loc[mask, 'Min Allowable R Squared'] = round(min_allowable_r_squared, 2)
     df_experiment.loc[mask, 'Nr of Squares in Row'] = int(nr_of_squares_in_row)
     df_experiment.loc[mask, 'Max Allowable Variability'] = round(max_allowable_variability, 1)
     df_experiment.loc[mask, 'Min Required Density Ratio'] = round(min_required_density_ratio, 1)
@@ -275,7 +275,7 @@ def pack_select_parameters(
         max_allowable_variability: float,
         min_track_duration: int,
         max_track_duration: int,
-        min_r_squared: float,
+        min_allowable_r_squared: float,
         neighbour_mode: str):
 
     select_parameters = {
@@ -283,7 +283,7 @@ def pack_select_parameters(
         'max_allowable_variability': max_allowable_variability,
         'min_track_duration': min_track_duration,
         'max_track_duration': max_track_duration,
-        'min_r_squared': min_r_squared,
+        'min_allowable_r_squared': min_allowable_r_squared,
         'neighbour_mode': neighbour_mode
     }
     return select_parameters
@@ -292,7 +292,7 @@ def pack_select_parameters(
 def calculate_tau(
         df_tracks_for_tau: pd.DataFrame,
         min_tracks_for_tau: int,
-        min_r_squared: float
+        min_allowable_r_squared: float
 ) -> tuple:
 
     """
@@ -310,7 +310,7 @@ def calculate_tau(
         tau, r_squared = curve_fit_and_plot(plot_data=duration_data)
         if tau == -2:  # Tau calculation failed
             r_squared = 0
-        if r_squared < min_r_squared:  # Tau was calculated, but not reliable
+        if r_squared < min_allowable_r_squared:  # Tau was calculated, but not reliable
             tau = -3
             tau = int(tau)
 
