@@ -13,28 +13,28 @@ from src.Common.Support.LoggerConfig import paint_logger
 pd.options.mode.copy_on_write = True
 
 
-def ask_user_for_paint_directory(title='Select Folder'):
-    """
-    Asks the user for the paint directory.
-    Present the previous used value and then save the users choice.
-    :param title:
-    :return:
-    """
-
-    # Retrieve the default from file
-    root_dir, paint_dir, images_dir, level = get_default_locations()
-
-    # If that fails, select a reasonable default
-    if not os.path.isdir(paint_dir):
-        paint_dir = os.path.expanduser('~')
-
-    # Ask the user
-    image_directory = askdirectory(title=title, initialdir=paint_dir)
-
-    # If the user returned something, save it to file
-    if len(image_directory) != 0:
-        save_default_locations(root_dir, paint_dir, images_dir, level)
-    return image_directory
+# def ask_user_for_paint_directory(title='Select Folder'):
+#     """
+#     Asks the user for the paint directory.
+#     Present the previous used value and then save the users choice.
+#     :param title:
+#     :return:
+#     """
+#
+#     # Retrieve the default from file
+#     root_dir, paint_dir, images_dir, level = get_default_locations()
+#
+#     # If that fails, select a reasonable default
+#     if not os.path.isdir(paint_dir):
+#         paint_dir = os.path.expanduser('~')
+#
+#     # Ask the user
+#     image_directory = askdirectory(title=title, initialdir=paint_dir)
+#
+#     # If the user returned something, save it to file
+#     if len(image_directory) != 0:
+#         save_default_locations(root_dir, paint_dir, images_dir, level)
+#     return image_directory
 
 
 def save_experiment_to_file(df_experiment, experiment_file_path):
@@ -85,7 +85,7 @@ def correct_all_images_column_types(df_experiment):
         df_experiment['Experiment Date'] = df_experiment['Experiment Date'].astype(str)
         df_experiment['Threshold'] = df_experiment['Threshold'].astype(int)
         df_experiment['Min Tracks for Tau'] = df_experiment['Min Tracks for Tau'].astype(int)
-        df_experiment['Min R Squared'] = df_experiment['Min R Squared'].astype(float)
+        df_experiment['Min Allowable R Squared'] = df_experiment['Min Allowable R Squared'].astype(float)
         df_experiment['Nr of Squares in Row'] = df_experiment['Nr of Squares in Row'].astype(int)
 
     except (ValueError, TypeError):
