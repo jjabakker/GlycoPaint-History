@@ -8,7 +8,7 @@ class SelectSquareDialog:
     # Setting up
     # --------------------------------------------------------------------------------------------------------
 
-    def __init__(self, image_viewer, callback, min_required_density_ratio, max_allowable_variability,
+    def __init__(self, image_viewer, callback_update_select_squares, min_required_density_ratio, max_allowable_variability,
                  min_track_duration, max_track_duration, min_allowable_r_squared, neighbour_mode):
         """
         The callback function that is called is self.update_select_squares
@@ -16,7 +16,7 @@ class SelectSquareDialog:
 
         # Create a new top-level window
         self.image_viewer = image_viewer
-        self.callback = callback  # This is the callback function the UI calls when the sliders are changed
+        self.callback = callback_update_select_squares  # This is the callback function the UI calls when the sliders are changed
 
         self.min_required_density_ratio = None
         self.max_allowable_variability = None
@@ -207,15 +207,15 @@ class SelectSquareDialog:
         self.rb_neighbour_label = ttk.Label(self.frame_neighbours, text="Neighbour\nMode", width=10)
 
         # Create three radio buttons for the neighbour mode
-        self.neighbour_var = tk.StringVar(value="")
+        self.neighbour_mode = tk.StringVar(value="")
         self.rb_neighbour_free = tk.Radiobutton(
-            self.frame_neighbours, text="Free", variable=self.neighbour_var, width=10, value="Free",
+            self.frame_neighbours, text="Free", variable=self.neighbour_mode, width=10, value="Free",
             command=lambda: self.on_filter_changed('Neighbour Mode'), anchor=tk.W)
         self.rb_neighbour_strict = tk.Radiobutton(
-            self.frame_neighbours, text="Strict", variable=self.neighbour_var, value="Strict",
+            self.frame_neighbours, text="Strict", variable=self.neighbour_mode, value="Strict",
             command=lambda: self.on_filter_changed('Neighbour Mode'), anchor=tk.W)
         self.rb_neighbour_relaxed = tk.Radiobutton(
-            self.frame_neighbours, text="Relaxed", variable=self.neighbour_var, value="Relaxed",
+            self.frame_neighbours, text="Relaxed", variable=self.neighbour_mode, value="Relaxed",
             command=lambda: self.on_filter_changed('Neighbour Mode'), anchor=tk.W)
 
         # Place the radio buttons and button in the grid
@@ -241,7 +241,7 @@ class SelectSquareDialog:
             self.sc_min_track_duration.get(),
             self.sc_max_track_duration.get(),
             self.sc_min_allowable_r_squared.get(),
-            self.neighbour_var.get())
+            self.neighbour_mode.get())
 
     def on_set_for_all(self):
         self.callback("Set for All",
@@ -250,6 +250,7 @@ class SelectSquareDialog:
                       self.sc_min_track_duration,
                       self.sc_max_track_duration,
                       self.neighbour_var)    # @@@@
+                      self.neighbour_mode.get())
         pass
 
     def on_close(self):
@@ -265,7 +266,7 @@ class SelectSquareDialog:
             self.sc_min_track_duration.get(),
             self.sc_max_track_duration.get(),
             self.sc_min_allowable_r_squared.get(),
-            self.neighbour_var.get())
+            self.neighbour_mode.get())
         self.image_viewer.set_dialog_buttons(tk.NORMAL)
         self.select_square_dialog.destroy()
 
@@ -288,4 +289,4 @@ class SelectSquareDialog:
         self.min_track_duration.set(min_track_duration)
         self.max_track_duration.set(max_track_duration)
         self.min_allowable_r_squared.set(min_allowable_r_squared)
-        self.neighbour_var.set(neighbour_mode)
+        self.neighbour_mode.set(neighbour_mode)
