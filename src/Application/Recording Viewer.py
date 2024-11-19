@@ -447,7 +447,7 @@ class RecordingViewer:
         temp_file = os.path.join(temp_dir, f'Temporary_All_Squares_{timestamp}.csv')
 
         try:
-            # Save the squares data to a temporary file
+            # Save the Squares data to a temporary file
             self.df_squares.to_csv(temp_file, index=False)
 
             # Verify that the file exists
@@ -732,7 +732,7 @@ class RecordingViewer:
         elif setting_type == "Min Allowable R Squared":
             self.min_allowable_r_squared = min_allowable_r_squared
             self.list_images[self.img_no]['Min Allowable R Squared'] = min_allowable_r_squared
-            self.df_experiment.loc[self.image_name, 'Min Allowable  Squared'] = min_allowable_r_squared
+            self.df_experiment.loc[self.image_name, 'Min Allowable R Squared'] = min_allowable_r_squared
         elif setting_type == "Neighbour Mode":
             self.neighbour_mode = neighbour_mode
             self.list_images[self.img_no]['Neighbour Mode'] = neighbour_mode
@@ -744,6 +744,12 @@ class RecordingViewer:
             self.min_track_duration = min_duration
             self.max_track_duration = max_duration
             self.neighbour_mode = neighbour_mode
+            self.min_allowable_r_squared = min_allowable_r_squared
+
+            self.df_experiment.loc[self.image_name, 'Min Required Density Ratio'] = min_required_density_ratio
+            self.df_experiment.loc[self.image_name, 'Max Allowable Variability'] = max_allowable_variability
+            self.df_experiment.loc[self.image_name, 'Min Allowable R Squared'] = min_allowable_r_squared
+
             for image in self.list_images:
                 image['Min Required Density Ratio'] = min_required_density_ratio
                 image['Max Allowable Variability'] = max_allowable_variability
