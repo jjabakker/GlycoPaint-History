@@ -34,7 +34,7 @@ class HeatMapDialog:
         self.on_heatmap_variable_change()
 
         # Set dialog focus
-        self.heatmap_dialog.grab_set()  # Prevent interaction with the main window
+        #self.heatmap_dialog.grab_set()  # Prevent interaction with the main window
         self.heatmap_dialog.focus_force()  # Bring the dialog to focus
 
     def setup_userinterface(self):
