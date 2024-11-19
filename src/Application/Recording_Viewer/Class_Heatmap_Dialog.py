@@ -67,6 +67,7 @@ class HeatMapDialog:
         self.content.rowconfigure(1, weight=0)  # Control frame row does not expand
 
         self.heatmap_dialog.bind('<Key>', self.on_key_pressed)
+        self.heatmap_dialog.bind('<Escape>',lambda event: self.on_close())
 
     def setup_heatmap_variable_buttons(self):
         """
@@ -202,3 +203,6 @@ class HeatMapDialog:
 
         if event.char == 't':
             self.on_toggle()
+
+        if event.char == 'c':
+            self.on_close()
