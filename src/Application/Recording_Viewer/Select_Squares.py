@@ -72,6 +72,7 @@ def _select_squares_actual(
         )
 
     # Eliminate isolated squares based on neighborhood rules
+    df_squares.set_index('Square Nr', drop=False, inplace=True)
     if neighbour_mode == 'Free':
         pass
     elif neighbour_mode == 'Strict':
@@ -80,6 +81,7 @@ def _select_squares_actual(
         select_squares_neighbour_relaxed(df_squares, nr_of_squares_in_row)
     else:
         raise ValueError(f"Neighbour mode '{neighbour_mode}' not recognized.")
+    df_squares.set_index('Unique Key', drop=False, inplace=True)
 
 
 def select_squares_neighbour_strict(df_squares, nr_of_squares_in_row):
