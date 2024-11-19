@@ -747,9 +747,16 @@ class RecordingViewer:
             self.min_track_duration = min_duration
             self.max_track_duration = max_duration
 
+            for index, row in self.df_experiment.iterrows():
+                self.df_experiment.loc[index, 'Min Required Density Ratio'] = min_required_density_ratio
+                self.df_experiment.loc[index, 'Max Allowable Variability'] = max_allowable_variability
+                self.df_experiment.loc[index, 'Min Allowable R Squared'] = min_allowable_r_squared
+                self.df_experiment.loc[index, 'Neighbour Mode'] = neighbour_mode
+
             self.df_experiment.loc[self.image_name, 'Min Required Density Ratio'] = min_required_density_ratio
             self.df_experiment.loc[self.image_name, 'Max Allowable Variability'] = max_allowable_variability
             self.df_experiment.loc[self.image_name, 'Min Allowable R Squared'] = min_allowable_r_squared
+            self.df_experiment.loc[self.image_name, 'Neighbour Mode'] = neighbour_mode
 
             for image in self.list_images:
                 image['Min Required Density Ratio'] = min_required_density_ratio
