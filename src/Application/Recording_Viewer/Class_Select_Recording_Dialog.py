@@ -10,16 +10,15 @@ class SelectRecordingDialog():
 
         self.image_viewer = image_viewer
 
+        # Set windows properties
         self.select_recording_dialog = tk.Toplevel(self.image_viewer.viewer_dialog)
         self.select_recording_dialog.title("Select Recordings")
         self.select_recording_dialog.attributes("-topmost", True)
         self.select_recording_dialog.resizable(False, False)
-        self.select_recording_dialog.attributes('-topmost', True)
         self.select_recording_dialog.protocol("WM_DELETE_WINDOW", self.on_cancel)
 
         self.df = dataframe.copy()
         self.callback = callback
-        self.parent = image_viewer
 
 
         # Only filter on these specific columns
@@ -31,8 +30,8 @@ class SelectRecordingDialog():
         # Store original unique values for reset functionality
         self.original_values = {col: sorted(self.df[col].unique()) for col in self.filter_columns}
 
-        # Set dialog focus
-        # self.select_recording_dialog.grab_set()  # Prevent interaction with the main window
+        # For this dialog, it is not important to have access to the parent window
+        self.select_recording_dialog.grab_set()  # Prevent interaction with the main window
         self.select_recording_dialog.focus_force()  # Bring the dialog to focus
 
         self.setup_userinterface()

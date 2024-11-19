@@ -1003,6 +1003,8 @@ class RecordingViewer:
         self.squares_in_rectangle = []
         self.mark_selected_squares()
 
+
+
     def save_changes_on_recording_change(self, save_experiment=True, save_squares=True):
 
         # Save the changes in All Squares

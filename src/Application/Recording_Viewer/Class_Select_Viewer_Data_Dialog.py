@@ -48,8 +48,8 @@ class SelectViewerDataDialog:
 
         # Make the dialog modal
         self.dialog.transient(parent)    # Link it to the main root window
-        self.dialog.grab_set()           # Grab all input focus
-        parent.wait_window(self.dialog)  # Wait until dialog is closed
+        # self.dialog.grab_set()           # Grab all input focus   # ToDo not sure why this would be needed
+        parent.wait_window(self.dialog)  # Wait until the dialog is closed
 
     def setup_frame_buttons(self, frame_buttons):
         btn_process = ttk.Button(frame_buttons, text='View', command=self.on_view)
@@ -78,7 +78,6 @@ class SelectViewerDataDialog:
             else:
                 update_paint_attribute('User Directories', 'Level', self.level)
                 update_paint_attribute('User Directories', 'Experiment Directory', self.directory)
-
 
     def on_view(self) -> None:
         self.directory = self.lbl_experiment_dir.cget('text')
@@ -133,7 +132,6 @@ class SelectViewerDataDialog:
         return self.proceed, getattr(self, 'directory', None), getattr(self, 'mode', None)
 
     def test_project_up_to_date(self, project_directory):
-
         out_of_date = []
         time_stamp_project = os.path.getmtime(os.path.join(project_directory, 'All Recordings.csv'))
 
