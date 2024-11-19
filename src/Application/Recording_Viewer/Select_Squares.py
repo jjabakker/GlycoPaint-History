@@ -121,37 +121,40 @@ def select_squares_neighbour_strict(df_squares, nr_of_squares_in_row):
 
 def select_squares_neighbour_relaxed(df_squares, nr_of_squares_in_row):
     """
-    Updates visibility of squares based on relaxed neighborhood conditions.
+    Updates visibility of squares based on relaxed neighborhood conditions,
+    ensuring isolated border squares are eliminated.
     """
+    # Keep track of squares that remain selected
     list_of_squares = []
 
     for index, square in df_squares.iterrows():
         if not square['Selected']:
-            continue
+            continue  # Skip unselected squares
 
         row, col = square['Row Nr'], square['Col Nr']
         square_nr = square['Square Nr']
 
-        # Define neighboring squares in all eight directions for relaxed conditions
+        # Get neighbors
         neighbours = get_relaxed_neighbours(row, col, nr_of_squares_in_row)
 
-        # Count visible neighbors
-        visible_neighbors = 0
+        # Check visibility of neighbors
+        has_visible_neighbors = False
         for nb in neighbours:
-            # Calculate the neighbor index
-            neighbor_index = int((nb[0] - 1) * nr_of_squares_in_row + (nb[1] - 1))
+            # Calculate neighbor index
+            neighbor_index = (nb[0] - 1) * nr_of_squares_in_row + (nb[1] - 1)
 
-            # Check if the neighbor exists and is visible
+            # Ensure the neighbor exists in the grid and is selected
             if neighbor_index in df_squares.index and df_squares.loc[neighbor_index, 'Selected']:
-                visible_neighbors += 1
+                has_visible_neighbors = True
+                break  # Exit early if any visible neighbor is found
 
-        # Update 'Selected' based on initial visibility and neighbors' visibility
-        df_squares.at[square_nr, 'Selected'] = visible_neighbors > 0 and square['Selected']
-        if visible_neighbors > 0:
+        # Update 'Selected' status based on neighbors
+        if has_visible_neighbors:
             list_of_squares.append(square_nr)
+        else:
+            df_squares.at[square_nr, 'Selected'] = False  # Mark as not visible
 
     return df_squares, list_of_squares
-
 
 def get_strict_neighbours(row, col, nr_of_squares_in_row):
     """
@@ -178,19 +181,30 @@ def get_strict_neighbours(row, col, nr_of_squares_in_row):
 
 def get_relaxed_neighbours(row, col, nr_of_squares_in_row):
     """
-    Returns all eight possible neighboring positions for relaxed neighborhood rule.
+    Returns all eight possible neighboring positions for relaxed neighborhood rule,
+    strictly considering grid boundaries.
     """
-    return [
-        (row, max(col - 1, 1)),  # Left
-        (row, min(col + 1, nr_of_squares_in_row)),  # Right
-        (max(row - 1, 1), col),  # Above
-        (min(row + 1, nr_of_squares_in_row), col),  # Below
-        (min(row + 1, nr_of_squares_in_row), max(col - 1, 1)),  # Below Left
-        (min(row + 1, nr_of_squares_in_row), min(col + 1, nr_of_squares_in_row)),  # Below Right
-        (max(row - 1, 1), max(col - 1, 1)),  # Above Left
-        (max(row - 1, 1), min(col + 1, nr_of_squares_in_row))  # Above Right
+    neighbours = []
+    max_row, max_col = nr_of_squares_in_row, nr_of_squares_in_row
+
+    # Potential neighbor positions
+    potential_neighbours = [
+        (row, col - 1),  # Left
+        (row, col + 1),  # Right
+        (row - 1, col),  # Above
+        (row + 1, col),  # Below
+        (row + 1, col - 1),  # Below Left
+        (row + 1, col + 1),  # Below Right
+        (row - 1, col - 1),  # Above Left
+        (row - 1, col + 1),  # Above Right
     ]
 
+    # Filter valid positions within bounds
+    for nb_row, nb_col in potential_neighbours:
+        if 1 <= nb_row <= max_row and 1 <= nb_col <= max_col:
+            neighbours.append((nb_row, nb_col))
+
+    return neighbours
 
 def label_selected_squares(df_squares):
 
