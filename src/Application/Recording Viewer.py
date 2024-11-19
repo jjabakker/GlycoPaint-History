@@ -1,5 +1,5 @@
-import os
 import math
+import os
 import platform
 import shutil
 import statistics
@@ -8,28 +8,34 @@ import sys
 import tempfile
 import time
 import tkinter as tk
+from datetime import datetime
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-from datetime import datetime
 
 import pandas as pd
 from PIL import Image
 
+from src.Application.Generate_Squares.Generate_Squares_Support_Functions import (
+    calculate_tau,
+    extra_constraints_on_tracks_for_tau_calculation,
+    calc_area_of_square,
+    calculate_density)
 from src.Application.Recording_Viewer.Class_Define_Cell_Dialog import DefineCellDialog
-from src.Application.Recording_Viewer.Class_Select_Square_Dialog import SelectSquareDialog
 from src.Application.Recording_Viewer.Class_Heatmap_Dialog import HeatMapDialog
 from src.Application.Recording_Viewer.Class_Select_Recording_Dialog import SelectRecordingDialog
+from src.Application.Recording_Viewer.Class_Select_Square_Dialog import SelectSquareDialog
 from src.Application.Recording_Viewer.Class_Select_Viewer_Data_Dialog import SelectViewerDataDialog
-from src.Application.Recording_Viewer.Heatmap_Support import (
-    get_colormap_colors, get_color_index,
-    get_heatmap_data)
 from src.Application.Recording_Viewer.Display_Selected_Squares import (
     display_selected_squares)
 from src.Application.Recording_Viewer.Get_Images import get_images
+from src.Application.Recording_Viewer.Heatmap_Support import (
+    get_colormap_colors, get_color_index,
+    get_heatmap_data)
 from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import (
     test_if_square_is_in_rectangle,
     save_as_png)
+from src.Application.Recording_Viewer.Select_Squares import relabel_tracks
 from src.Application.Recording_Viewer.Select_Squares import select_squares
 from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file)
@@ -37,12 +43,6 @@ from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
-from src.Application.Generate_Squares.Generate_Squares_Support_Functions import (
-    calculate_tau,
-    extra_constraints_on_tracks_for_tau_calculation,
-    calc_area_of_square,
-    calculate_density)
-from src.Application.Recording_Viewer.Select_Squares import relabel_tracks
 
 # Log to an appropriately named file
 paint_logger_change_file_handler_name('Recording Viewer.log')
@@ -454,8 +454,6 @@ class RecordingViewer:
             if not os.path.exists(temp_file):
                 raise FileNotFoundError(f"Temporary file {temp_file} does not exist")
 
-            print(f"Opening Excel with file: {temp_file}")
-
             # Open the file in Excel
             if platform.system() == 'Darwin':
                 subprocess.run([excel_command] + excel_args + [temp_file], check=True)
@@ -468,9 +466,7 @@ class RecordingViewer:
         except Exception as e:
             print(f"An error occurred: {e}")
         finally:
-            # Print the cleanup path and instructions
-            print(f"Temporary file located at: {temp_file}")
-            print(f"Cleaning up temporary directory: {temp_dir}")
+
             # Use delayed cleanup or instruct the user to delete manually if necessary
             shutil.rmtree(temp_dir)
         nr_total_squares = len(self.df_squares)
