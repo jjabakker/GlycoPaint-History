@@ -245,11 +245,11 @@ class SelectSquareDialog:
 
     def on_set_for_all(self):
         self.callback("Set for All",
-                      self.sc_min_required_density_ratio,
-                      self.sc_max_allowable_variability,
-                      self.sc_min_track_duration,
-                      self.sc_max_track_duration,
-                      self.neighbour_var)    # @@@@
+                      self.sc_min_required_density_ratio.get(),
+                      self.sc_max_allowable_variability.get(),
+                      self.sc_min_track_duration.get(),
+                      self.sc_max_track_duration.get(),
+                      self.min_allowable_r_squared.get(),
                       self.neighbour_mode.get())
         pass
 
