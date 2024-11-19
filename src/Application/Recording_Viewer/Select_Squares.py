@@ -81,8 +81,8 @@ def _select_squares_actual(
         select_squares_neighbour_relaxed(df_squares, nr_of_squares_in_row)
     else:
         raise ValueError(f"Neighbour mode '{neighbour_mode}' not recognized.")
-    df_squares.set_index('Unique Key', drop=False, inplace=True)
-
+    if 'Unique Key' in df_squares.columns:
+        df_squares.set_index('Unique Key', drop=True, inplace=True)
 
 def select_squares_neighbour_strict(df_squares, nr_of_squares_in_row):
     """
