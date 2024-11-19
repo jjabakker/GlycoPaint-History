@@ -741,10 +741,11 @@ class RecordingViewer:
             # Set the same settings for all recordings
             self.min_required_density_ratio = min_required_density_ratio
             self.max_allowable_variability = max_allowable_variability
+            self.min_allowable_r_squared = min_allowable_r_squared
+            self.neighbour_mode = neighbour_mode
+
             self.min_track_duration = min_duration
             self.max_track_duration = max_duration
-            self.neighbour_mode = neighbour_mode
-            self.min_allowable_r_squared = min_allowable_r_squared
 
             self.df_experiment.loc[self.image_name, 'Min Required Density Ratio'] = min_required_density_ratio
             self.df_experiment.loc[self.image_name, 'Max Allowable Variability'] = max_allowable_variability
@@ -754,6 +755,7 @@ class RecordingViewer:
                 image['Min Required Density Ratio'] = min_required_density_ratio
                 image['Max Allowable Variability'] = max_allowable_variability
                 image['Neighbour Mode'] = neighbour_mode
+                image['Min Allowable R Squared'] = min_allowable_r_squared
         elif setting_type == "Exit":
             self.select_square_dialog = None
         else:
