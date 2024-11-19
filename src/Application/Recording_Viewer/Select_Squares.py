@@ -72,7 +72,7 @@ def _select_squares_actual(
         )
 
     # Eliminate isolated squares based on neighborhood rules
-    df_squares.set_index('Square Nr', drop=False, inplace=True)
+    df_squares.set_index('Square Nr', inplace=True, drop=False)
     if neighbour_mode == 'Free':
         pass
     elif neighbour_mode == 'Strict':
@@ -82,7 +82,7 @@ def _select_squares_actual(
     else:
         raise ValueError(f"Neighbour mode '{neighbour_mode}' not recognized.")
     if 'Unique Key' in df_squares.columns:
-        df_squares.set_index('Unique Key', drop=True, inplace=True)
+        df_squares.set_index('Unique Key', inplace=True, drop=True)
 
 def select_squares_neighbour_strict(df_squares, nr_of_squares_in_row):
     """
@@ -214,7 +214,7 @@ def label_selected_squares(df_squares):
 
     # Sort by 'Nr Tracks' in descending order
     df_squares.sort_values(by=['Nr Tracks'], inplace=True, ascending=False)
-    df_squares.set_index('Square Nr', drop=False, inplace=True)
+    df_squares.set_index('Square Nr', inplace=True, drop=False)
 
     # Initialize label number
     label_nr = 1
@@ -283,5 +283,5 @@ def relabel_tracks(df_squares, df_tracks):
     )
     df_tracks['Label Nr'] = df_tracks['Label Nr_from_squares']  # Use the merged Label Nr
     df_tracks.drop(columns=['Label Nr_from_squares'], inplace=True)  # Remove the extra column
-    df_tracks.set_index('Unique Key', drop=True, inplace=True)
+    df_tracks.set_index('Unique Key', inplace=True, drop=True)
     return df_squares, df_tracks
