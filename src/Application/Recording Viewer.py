@@ -704,8 +704,8 @@ class RecordingViewer:
     def update_select_squares(
             self,
             setting_type: str,
-            density_ratio: float,
-            variability: float,
+            min_required_density_ratio: float,
+            max_allowable_variability: float,
             min_duration: float,
             max_duration: float,
             min_allowable_r_squared: float,
@@ -718,13 +718,13 @@ class RecordingViewer:
         self.recording_changed = True
         self.save_on_exit = True
         if setting_type == "Min Required Density Ratio":
-            self.min_required_density_ratio = density_ratio
-            self.list_images[self.img_no]['Min Required Density Ratio'] = density_ratio
-            self.df_experiment.loc[self.image_name, 'Min Required Density Ratio'] = density_ratio
+            self.min_required_density_ratio = min_required_density_ratio
+            self.list_images[self.img_no]['Min Required Density Ratio'] = min_required_density_ratio
+            self.df_experiment.loc[self.image_name, 'Min Required Density Ratio'] = min_required_density_ratio
         elif setting_type == "Max Allowable Variability":
-            self.max_allowable_variability = variability
-            self.list_images[self.img_no]['Max Allowable Variability'] = variability
-            self.df_experiment.loc[self.image_name, 'Max Allowable Variability'] = variability
+            self.max_allowable_variability = max_allowable_variability
+            self.list_images[self.img_no]['Max Allowable Variability'] = max_allowable_variability
+            self.df_experiment.loc[self.image_name, 'Max Allowable Variability'] = max_allowable_variability
         elif setting_type == "Min Track Duration":
             self.min_track_duration = min_duration
         elif setting_type == "Max Track Duration":   # ToDo
@@ -739,14 +739,14 @@ class RecordingViewer:
             self.df_experiment.loc[self.image_name, 'Neighbour Mode'] = neighbour_mode
         elif setting_type == "Set for All":
             # Set the same settings for all recordings
-            self.min_required_density_ratio = density_ratio
-            self.max_allowable_variability = variability
+            self.min_required_density_ratio = min_required_density_ratio
+            self.max_allowable_variability = max_allowable_variability
             self.min_track_duration = min_duration
             self.max_track_duration = max_duration
             self.neighbour_mode = neighbour_mode
             for image in self.list_images:
-                image['Min Required Density Ratio'] = density_ratio
-                image['Max Allowable Variability'] = variability
+                image['Min Required Density Ratio'] = min_required_density_ratio
+                image['Max Allowable Variability'] = max_allowable_variability
                 image['Neighbour Mode'] = neighbour_mode
         elif setting_type == "Exit":
             self.select_square_dialog = None
@@ -757,7 +757,7 @@ class RecordingViewer:
         self.display_selected_squares()
 
         # Update the Density Ratio and Variability information in the Viewer
-        info3 = f"Min Required Density Ratio: {density_ratio:,} - Max Allowable Variability: {variability}"
+        info3 = f"Min Required Density Ratio: {min_required_density_ratio:,} - Max Allowable Variability: {max_allowable_variability}"
         self.text_for_info3.set(info3)
 
         recalc_recording_tau_and_density(self)
