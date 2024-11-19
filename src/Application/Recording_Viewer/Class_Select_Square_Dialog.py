@@ -37,7 +37,7 @@ class SelectSquareDialog:
         self.setup_userinterface()
 
         # Set dialog focus
-        self.select_square_dialog.grab_set()  # Prevent interaction with the main window
+        # self.select_square_dialog.grab_set()  # Prevent interaction with the main window
         self.select_square_dialog.focus_force()  # Bring the dialog to focus
 
         # Initialise the controls
