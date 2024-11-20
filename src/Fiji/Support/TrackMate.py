@@ -33,8 +33,9 @@ sys.path.append(paint_dir)
 
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
 from LoggerConfig import paint_logger
-from PaintConfig import load_paint_config
-from DirectoriesAndLocations import get_paint_defaults_file_path
+from PaintConfig import (
+    load_paint_config,
+    get_paint_defaults_file_path)
 
 
 def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_filename, kas_special):
