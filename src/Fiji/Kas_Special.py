@@ -144,7 +144,7 @@ def square_analysis():
         print("No image selected")
         model.getLogger().log("No image selected")
         return -1
-    image_title = imp.getTitle().replace(".nd2", "")
+    image_title = imp.getTitle().split('.')[0]
 
     # Prepare the directory structure
     create_directories(image_directory + os.sep + image_title, True)

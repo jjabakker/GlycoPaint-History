@@ -10,6 +10,7 @@ from src.Application.Process_Projects.Convert_BF_from_nd2_to_jpg import convert_
 from src.Common.Support.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
+from src.Common.Support.PaintConfig import get_paint_attribute
 
 
 def prepare_experiment_info_file(image_source_directory, experiment_directory):
@@ -21,20 +22,21 @@ def prepare_experiment_info_file(image_source_directory, experiment_directory):
     all_recordings = os.listdir(image_source_directory)
     all_recordings.sort()
     format_problem = False
+    img_file_ext = get_paint_attribute('Paint', 'Image File Extension')
 
-    # Check if this is a likely correct directory. There should be lots of nd2 files
+    # Check if this is a likely correct directory. There should be lots of image files
     count = 0
     count_bf = 0
     for recording_name in all_recordings:
-        if recording_name.endswith(".nd2"):
+        if recording_name.endswith(img_file_ext):
             if recording_name.find("BF") == -1:
                 count += 1
             else:
                 count_bf += 1
 
-    # If there are less than 10 files ask the user
+    # If there are less than 10 files, ask the user
     if count < 10:
-        txt = f"There were {count + count_bf} nd2 files found, of which {count_bf} are brightfield.\n"
+        txt = f"There were {count + count_bf} {img_file_ext} files found, of which {count_bf} are brightfield.\n"
         txt += "\nDo you want to continue?"
         proceed = messagebox.askyesno(title=txt, message=txt)
         if not proceed:
@@ -53,7 +55,7 @@ def prepare_experiment_info_file(image_source_directory, experiment_directory):
     for recording_name in all_recordings:
 
         # Skip files starting with .
-        if recording_name.startswith(('._', '.DS')) or not recording_name.endswith(".nd2"):
+        if recording_name.startswith(('._', '.DS')) or not recording_name.endswith(img_file_ext):
             continue
 
         # Check the filename format of both the film and the BF
@@ -71,13 +73,13 @@ def prepare_experiment_info_file(image_source_directory, experiment_directory):
             replicate_nr = match.group('replicate_nr')
             exp_date = match.group('exp_date')
 
-        # For further processing skip the BF file
+        # For further processing, skip the BF file
         if recording_name.find("BF") != -1:
             continue
 
         paint_logger.info(f'Processing file: {recording_name}')
 
-        recording_name = recording_name.replace(".nd2", "")
+        recording_name = recording_name.replace(img_file_ext, "")
 
         row = {'Recording Sequence Nr': seq_nr,
                'Recording Name': recording_name,

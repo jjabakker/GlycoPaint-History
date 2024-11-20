@@ -26,14 +26,9 @@ paint_configuration = None
 
 # Default JSON structure
 default_data = {
-    "Application": {
-        "App Name": "Paint",
+    "Paint": {
         "Version": "1.0",
-        "Directory Locations": {
-            "Root": "~/Paint",
-            "Logger": "Logger",
-            "Defaults": "Defaults"
-        }
+        "Image File Extension": ".nd2"
     },
     "User Directories": {
         "Project Directory": "~",

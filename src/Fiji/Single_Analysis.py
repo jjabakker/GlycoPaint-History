@@ -14,16 +14,11 @@ sys.path.append(paint_dir)
 
 # from Trackmate import paint_trackmate
 from Trackmate import execute_trackmate_in_Fiji
-
-
 from DirectoriesAndLocations import (
     create_directories,
     get_default_image_directory)
-
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
-
 from fiji.util.gui import GenericDialogPlus
-
 from LoggerConfig import paint_logger
 
 
@@ -143,7 +138,7 @@ def square_analysis():
         print("No image selected")
         model.getLogger().log("No image selected")
         return -1
-    image_title = imp.getTitle().replace(".nd2", "")
+    image_title = imp.getTitle().split('.')[0]
 
     # Prepare the directory structure
     create_directories(image_directory + os.sep + image_title, True)

@@ -6,10 +6,11 @@ from PIL import Image
 from nd2reader import ND2Reader
 
 from src.Common.Support.LoggerConfig import paint_logger
+from src.Common.Support.PaintConfig import get_paint_attribute
 
 
-def _convert_nd2_to_jpg(nd2_file_path, output_file):
-    with ND2Reader(nd2_file_path) as images:
+def _convert_native_to_jpg(native_file_path, output_file):
+    with ND2Reader(native_file_path) as images:
 
         frame = images[0]
         # Check if the frame is in 16-bit format
@@ -33,13 +34,16 @@ def _convert_nd2_to_jpg(nd2_file_path, output_file):
 
 def convert_bf_images(image_source_directory, paint_directory, force=False):
     """
-    Convert .nd2 BF images to JPEG and store them in a specified directory.
+    Convert BF images to JPEG and store them in a specified directory.
 
     Args:
-        image_source_directory (str): Directory containing the .nd2 images.
+        image_source_directory (str): Directory containing the  images.
         paint_directory (str): Directory to store the converted JPEGs.
         force (bool): Force overwrite of existing JPEG files, even if up to date.
     """
+
+    img_file_ext = get_paint_attribute('Paint', 'Image File Extension')
+
     # Create a 'Brightfield Images' directory if it doesn't exist
     bf_jpeg_dir = os.path.join(image_source_directory, "Brightfield Images")
     if not os.path.isdir(bf_jpeg_dir):
@@ -52,7 +56,7 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
 
     for image_name in all_images:
         # Skip hidden files or system files
-        if image_name.startswith('._') or not image_name.endswith('.nd2'):
+        if image_name.startswith('._') or not image_name.endswith(img_file_ext):
             continue
 
         count += 1
@@ -62,7 +66,7 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
             found += 1
             display_name = image_name.ljust(30, ' ')  # Align name in log for readability
             input_file = os.path.join(image_source_directory, image_name)
-            output_file = os.path.join(bf_jpeg_dir, image_name.replace('.nd2', '.jpg'))
+            output_file = os.path.join(bf_jpeg_dir, image_name.replace(img_file_ext, '.jpg'))
 
             # Determine if the image needs to be converted (force flag or file modification check)
             convert = force or not os.path.isfile(output_file) or os.path.getmtime(output_file) < os.path.getmtime(
@@ -70,7 +74,7 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
 
             if convert:
                 try:
-                    _convert_nd2_to_jpg(input_file, output_file)
+                    _convert_native_to_jpg(input_file, output_file)
                     paint_logger.info("Image %s was updated.", display_name)
                     converted += 1
                 except Exception as e:
@@ -80,7 +84,7 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
 
     # Log the conversion summary
     paint_logger.info('')
-    paint_logger.info("Converted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found,
+    paint_logger.info("Converted %d BF images, out of %d BF images from %d total images.", converted, found,
                       count)
 
     # Copy the entire 'Converted BF Images' directory to the paint directory

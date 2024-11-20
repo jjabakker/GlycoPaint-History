@@ -9,7 +9,10 @@ from java.lang.System import getProperty
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)
 
-from LoggerConfig import paint_logger, paint_logger_change_file_handler_name
+from LoggerConfig import (
+    paint_logger,
+    paint_logger_change_file_handler_name)
+from PaintConfig import get_paint_attribute
 
 # Set up logging
 paint_logger_change_file_handler_name('Convert BF Images.log')
@@ -17,13 +20,16 @@ paint_logger_change_file_handler_name('Convert BF Images.log')
 
 def convert_bf_images(image_source_directory, paint_directory, force=False):
     """
-    Convert .nd2 BF images to JPEG and store them in a specified directory.
+    Convert BF images to JPEG and store them in a specified directory.
 
     Args:
-        image_source_directory (str): Directory containing the .nd2 images.
+        image_source_directory (str): Directory containing the  images.
         paint_directory (str): Directory to store the converted JPEGs.
         force (bool): Force overwrite of existing JPEG files, even if up to date.
     """
+
+    img_file_ext = get_paint_attribute('Paint', 'Image File Extension')
+
     # Create a 'Converted BF Images' directory if it doesn't exist
     bf_jpeg_dir = os.path.join(image_source_directory, "Converted BF Images")
     if not os.path.isdir(bf_jpeg_dir):
@@ -39,8 +45,8 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
         if image_name.startswith('._'):
             continue
 
-        # Check if the file is a .nd2 file
-        if image_name.endswith('.nd2'):
+        # Check if the file is of the expected file format
+        if image_name.endswith(img_file_ext):
             count += 1
 
             # Only process Bright Field (BF) images
@@ -48,7 +54,7 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
                 found += 1
                 display_name = image_name.ljust(30, ' ')  # Align name in log for readability
                 input_file = os.path.join(image_source_directory, image_name)
-                output_file = os.path.join(bf_jpeg_dir, image_name.replace('.nd2', '.jpg'))
+                output_file = os.path.join(bf_jpeg_dir, image_name.replace(img_file_ext, '.jpg'))
 
                 # Determine if the image needs to be converted (force flag or file modification check)
                 convert = force or not os.path.isfile(output_file) or os.path.getmtime(output_file) < os.path.getmtime(
@@ -69,7 +75,7 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
                     paint_logger.info("Image %s does not require updating.", display_name)
 
     # Log the conversion summary
-    paint_logger.info("\nConverted %d BF images, out of %d BF images from %d total .nd2 images.", converted, found,
+    paint_logger.info("\nConverted %d BF images, out of %d BF images from %d total images.", converted, found,
                       count)
 
     # Copy the entire 'Converted BF Images' directory to the paint directory

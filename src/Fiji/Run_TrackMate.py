@@ -129,7 +129,7 @@ def run_trackmate(experiment_directory, recording_source_directory):
                 JOptionPane.showMessageDialog(None, msg, "Warning", JOptionPane.WARNING_MESSAGE)
 
             # -----------------------------------------------------------------------------
-            # Concatenate the tracks file with the existing one
+            # Concatenate the Tracks file with the existing one
             # -----------------------------------------------------------------------------
 
             # Define the directory to search in
@@ -184,7 +184,8 @@ def process_recording(row, recording_source_directory, experiment_directory):
     if row['Adjuvant'] == 'None':
         row['Adjuvant'] = 'No'
 
-    recording_file_name = os.path.join(recording_source_directory, recording_name + '.nd2')
+    img_file_ext = get_paint_attribute('Paint', 'Image File Extension')
+    recording_file_name = os.path.join(recording_source_directory, recording_name + img_file_ext)
 
     if not os.path.exists(recording_file_name):
         paint_logger.warning("Processing: Failed to open recording: " + recording_file_name)

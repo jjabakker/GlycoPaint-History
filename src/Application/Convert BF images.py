@@ -9,7 +9,7 @@ class ConvertDialog:
 
     def __init__(self, root):
         self.root = root
-        self.root.title('Convert BF Images from .nd2 to .jpg')
+        self.root.title('Convert BF Images from native format to .jpg')
 
         self.image_directory = ""
         self.paint_directory = ""
