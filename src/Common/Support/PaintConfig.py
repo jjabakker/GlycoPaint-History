@@ -27,7 +27,8 @@ paint_configuration = None
 default_data = {
     "Paint": {
         "Version": "1.0",
-        "Image File Extension": ".nd2"
+        "Image File Extension": ".nd2",
+        "Fiji Path": "/Applications/Fiji.app"
     },
     "User Directories": {
         "Project Directory": "~",
