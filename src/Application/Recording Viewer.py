@@ -504,7 +504,8 @@ class RecordingViewer:
             'n': lambda e: self.toggle_show_square_numbers(),
             't': lambda e: self.toggle_selected_squares(),
             'v': lambda e: self.on_toggle_valid_square(),
-            'o': lambda e: self.output_pictures_to_pdf(),
+            'o': lambda e: self.output_picture(),
+            'p': lambda e: self.output_pictures_to_pdf(),
             '<Escape>': lambda e: self.on_escape()
         }
 
@@ -562,6 +563,47 @@ class RecordingViewer:
             self.display_selected_squares()
             image_name = image_name + '-squares'
             save_as_png(self.left_image_canvas, os.path.join(squares_dir, image_name))
+
+        # Find all the png files and sort them
+        png_files = []
+        files = os.listdir(squares_dir)
+        for file in files:
+            if file.endswith(".png"):
+                png_files.append(os.path.join(squares_dir, file))
+        png_files = sorted(png_files)
+
+        # Create Image objects of all png files
+        png_images = []
+        for png_file in png_files:
+            png_images.append(Image.open(png_file))
+        pdf_path = os.path.join(squares_dir, 'images.pdf')
+
+        # Create a PDF with a first image and add all the other images to it
+        if platform.system() == "Darwin":
+            png_images[0].save(pdf_path, "PDF", resolution=200.0, save_all=True, append_images=png_images[1:])
+
+        # Go back to the image where we were
+        self.img_no -= 1
+        self.on_forward_backward('FORWARD')
+
+    def output_picture(self):
+        # Create the squares directory if it does not exist
+        squares_dir = os.path.join(self.user_specified_directory, 'Output', 'Squares')
+        os.makedirs(squares_dir, exist_ok=True)
+
+        image_name = self.list_images[self.img_no]['Left Image Name']
+        paint_logger.debug(f"Writing {image_name} to pdf file {os.path.join(squares_dir, image_name)}")
+
+        # Delete the squares and write the canvas with just the tracks
+        self.left_image_canvas.delete("all")
+        self.left_image_canvas.create_image(0, 0, anchor=NW, image=self.list_images[self.img_no]['Left Image'])
+        save_as_png(self.left_image_canvas, os.path.join(squares_dir, image_name))
+
+        # Add the squares and write the canvas complete with squares
+        self.select_squares_for_display()
+        self.display_selected_squares()
+        image_name = image_name + '-squares'
+        save_as_png(self.left_image_canvas, os.path.join(squares_dir, image_name))
 
         # Find all the png files and sort them
         png_files = []
