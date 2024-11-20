@@ -246,8 +246,6 @@ class GenerateSquaresDialog:
         update_paint_attribute('User Directories', 'Level', self.level)
 
 if __name__ == "__main__":
-    paint_config = load_paint_config('/src/Config/Paint.json')
-
     root = tk.Tk()
     root.eval('tk::PlaceWindow . center')
     GenerateSquaresDialog(root)

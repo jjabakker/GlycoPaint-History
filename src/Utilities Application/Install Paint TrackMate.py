@@ -175,16 +175,6 @@ def install():
             print("\nCreated directory {dir}")
             os.makedirs(directory)
 
-    config_file = os.path.join(source_root, 'Config', 'Paint.json')
-
-    config = load_paint_config(config_file)
-    if config is None:
-        print("\n\nError: Failed to parse JSON file.")
-        return
-
-    shutil.copyfile(config_file, os.path.join(defaults_dir, 'Paint.json'))
-    print(f'\nCopied config Paint.json to {defaults_dir}')
-
 
 if __name__ == '__main__':
     install()
