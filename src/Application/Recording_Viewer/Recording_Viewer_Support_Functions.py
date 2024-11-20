@@ -1,4 +1,5 @@
 import os
+import shutil
 from tkinter import *
 
 import pandas as pd
@@ -67,3 +68,26 @@ def only_one_nr_of_squares_in_row(directory):
 def nr_recordings(directory):
     df_experiment = pd.read_csv(os.path.join(directory, 'All Recordings.csv'))
     return len(df_experiment)
+
+
+def find_excel_executable():
+    """Locate the Microsoft Excel executable on Windows."""
+    # First, try to find Excel in the system PATH
+    excel_command = shutil.which("Excel.exe")
+    if excel_command:
+        return excel_command
+
+    # If not found, search common installation directories
+    possible_paths = [
+        os.path.join(os.environ.get("PROGRAMFILES", "C:\\Program Files"), "Microsoft Office"),
+        os.path.join(os.environ.get("PROGRAMFILES(X86)", "C:\\Program Files (x86)"), "Microsoft Office"),
+        "C:\\Program Files\\Microsoft Office",
+        "C:\\Program Files (x86)\\Microsoft Office"
+    ]
+
+    for base_path in possible_paths:
+        for root, _, files in os.walk(base_path):
+            if "Excel.exe" in files:
+                return os.path.join(root, "Excel.exe")
+
+    raise FileNotFoundError("Microsoft Excel executable not found. Please check your installation.")

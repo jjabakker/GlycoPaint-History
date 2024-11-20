@@ -34,7 +34,8 @@ from src.Application.Recording_Viewer.Heatmap_Support import (
     get_heatmap_data)
 from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import (
     test_if_square_is_in_rectangle,
-    save_as_png)
+    save_as_png,
+    find_excel_executable)
 from src.Application.Recording_Viewer.Select_Squares import relabel_tracks
 from src.Application.Recording_Viewer.Select_Squares import select_squares
 from src.Application.Utilities.General_Support_Functions import (
@@ -425,33 +426,31 @@ class RecordingViewer:
         )
 
     def on_squares_data(self):
-        # Determine the command for opening Excel
-        if platform.system() == 'Darwin':
-            excel_command = 'open'
-            excel_args = ['-a', '/Applications/Microsoft Excel.app']
-        elif platform.system() == 'Windows':
-            excel_command = os.path.join(os.environ.get('PROGRAMFILES', r'C:\Program Files'),
-                                         'Microsoft Office', 'root', 'OfficeXX', 'Excel.exe')  # Update OfficeXX
-            if not os.path.exists(excel_command):
-                raise FileNotFoundError("Microsoft Excel executable not found. Please check the installation path.")
-            excel_args = [excel_command]
-        else:
-            raise OSError("Unsupported operating system")
-
-        # Create a temporary directory
-        temp_dir = tempfile.mkdtemp()
-
-        # Generate a unique file name with timestamp
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        temp_file = os.path.join(temp_dir, f'Temporary_All_Squares_{timestamp}.csv')
-
+        """Exports square data to a temporary CSV file and opens it in Excel."""
         try:
+            # Ensure the DataFrame exists and is valid
+            if not hasattr(self, 'df_squares') or self.df_squares.empty:
+                raise ValueError("The DataFrame 'df_squares' is either missing or empty.")
+
+            # Determine the command for opening Excel
+            if platform.system() == 'Darwin':
+                excel_command = 'open'
+                excel_args = ['-a', '/Applications/Microsoft Excel.app']
+            elif platform.system() == 'Windows':
+                excel_command = find_excel_executable()
+                excel_args = [excel_command]
+            else:
+                raise OSError("Unsupported operating system.")
+
+            # Create a temporary file
+            temp_dir = tempfile.mkdtemp()
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            temp_file = os.path.join(temp_dir, f'Temporary_All_Squares_{timestamp}.csv')
+
             # Save the Squares data to a temporary file
             self.df_squares.to_csv(temp_file, index=False)
-
-            # Verify that the file exists
             if not os.path.exists(temp_file):
-                raise FileNotFoundError(f"Temporary file {temp_file} does not exist")
+                raise FileNotFoundError(f"Failed to create temporary file: {temp_file}")
 
             # Open the file in Excel
             if platform.system() == 'Darwin':
@@ -462,26 +461,35 @@ class RecordingViewer:
             # Allow some time for Excel to process the file
             time.sleep(2)
 
+        except ValueError as ve:
+            print(f"Data validation error: {ve}")
+        except FileNotFoundError as fe:
+            print(f"File error: {fe}")
+        except subprocess.SubprocessError as se:
+            print(f"Error launching Excel: {se}")
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"An unexpected error occurred: {e}")
         finally:
+            # Clean up the temporary directory
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
 
-            # Use delayed cleanup or instruct the user to delete manually if necessary
-            shutil.rmtree(temp_dir)
+        # Process square data statistics
         nr_total_squares = len(self.df_squares)
         tau_values = self.df_squares[self.df_squares['Selected']]['Tau'].tolist()
         nr_visible_squares = len(tau_values)
 
-        # Initialize tau values as '-'
+        # Initialize Tau statistics
         tau_min = tau_max = tau_mean = tau_median = tau_std = '-'
 
-        if nr_visible_squares != 0:
+        if nr_visible_squares > 0:
             tau_min = min(tau_values)
             tau_max = max(tau_values)
             tau_mean = round(statistics.mean(tau_values), 0)
             tau_median = round(statistics.median(tau_values), 0)
             tau_std = round(statistics.stdev(tau_values), 1)
 
+        # Display statistics
         print('\n\n')
         print(f'The total number of squares:   {nr_total_squares}')
         print(f'The visible number of squares: {nr_visible_squares}')
@@ -490,7 +498,6 @@ class RecordingViewer:
         print(f'The mean Tau value:            {tau_mean}')
         print(f'The median Tau value:          {tau_median}')
         print(f'The Tau standard deviation:    {tau_std}')
-
     # --------------------------------------------------------------------------------------------
     # Key Bindings and associated functions
     # --------------------------------------------------------------------------------------------
