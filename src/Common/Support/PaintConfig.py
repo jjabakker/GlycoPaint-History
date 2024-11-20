@@ -15,7 +15,7 @@ try:
 except:
     pass
 
-# Import forr Python
+# Import for Python
 try:
     from src.Common.Support.LoggerConfig import paint_logger
 except:
