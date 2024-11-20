@@ -1,0 +1,7 @@
+matplotlib~=3.9.2
+numpy~=2.1.2
+pandas~=2.2.3
+xattr~=1.1.0
+pillow~=10.4.0
+scipy~=1.14.1
+nd2reader~=3.3.0

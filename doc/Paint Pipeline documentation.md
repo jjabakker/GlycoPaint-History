@@ -1,31 +1,44 @@
-**GlycoPaint Pipeline**
+<div style="text-align: center;"> 
+<span style="font-size: 72px;">GlycoPaint Pipeline</span>
 
-Functional description
+<span style="font-size: 36px;">Functional description</span>
 
-<figure>
-  <div align='center'>
-    <img src= Images/image1.png >
-  </div>
+</div>
+
+
+
+<figure style="text-align: center;">
+  <img src="Images/image1.png" alt="Image Description" width="500">
 </figure>
 
+
+<br>
+<br>
+
+<div style="text-align: center;"> 
 November 2024
+</div>
+
+<br>
+<br>
 
 
 # Overview - The Dataflow in the GlycoPaint pipeline
 
-Cells are observed under a microscope for 100 seconds, capturing 2000
-images during this interval. Bright spots, which represent fluorophores,
-are visible in these images. These spots may move and often disappear
-after a short period. Their appearance signifies that a fluorophore has
-remained stationary long enough to be detected by the camera. In the
-GlycoPaint method, such events are interpreted as glycans (attached to
+Cells are observed under a microscope for 100 seconds, capturing 2000 images
+during this interval. Bright spots, which
+represent fluorophores, are visible in these images. These spots may move and
+often disappear after a short period. Their appearance signifies
+that a fluorophore has remained stationary long enough to be detected by the
+camera. In the GlycoPaint method, such events are interpreted as glycans (
+attached to
 fluorophores) binding to lectins on the cell surface. A key challenge is
-distinguishing these biologically relevant events from non-specific
-fluorophore sticking.
+distinguishing these biologically relevant events from non-specific fluorophore
+sticking.
 
-Using the Fiji plugin TrackMate, spots are detected in each frame, and
+With the Fiji plugin TrackMate, spots are detected in each frame, and
 their positions registered. Tracks are then created by connecting spots
-across consecutive frames. Each track is characterized by features such
+across consecutive frames. Each track is characterised by features such
 as its duration, average x and y positions, and distance travelled. If a
 lectin-glycan pair were completely stationary, the resulting track would
 consist of a series of spots in the same location, with no movement.
@@ -47,11 +60,11 @@ In the GlycoPaint pipeline, the primary unit of analysis is not an
 individual recording but a set of recordings grouped into an Experiment.
 Data processing generates two main datasets:
 
--   **All Squares**: A table containing summarised information on all
-    tracks across all recordings in the experiment.
+- **All Squares**: A table containing summarised information on all
+  tracks across all recordings in the experiment.
 
--   **All Tracks**: A table containing detailed information on every
-    track in the experiment.
+- **All Tracks**: A table containing detailed information on every
+  track in the experiment.
 
 Both datasets serve as the foundation for further analysis.
 
@@ -77,17 +90,10 @@ Binding events show up as bright spots under a fluorescent microscope.
 Analysis of the location and duration of spots reveal information about
 single binding events.
 
-<figure>
-  <img src = 'Images/image2.png')>
-  <figcaption> 
-    The Paint work flow
-  </figcaption>
-</figure>
-
 **Recording**
 
-The central concept in PAINT is the
-recording of binding events. A recording consists of a brightfield image
+The central concept in PAINT is the recording of binding events. A recording
+consists of a brightfield image
 to identify the position of cells and a multi-frame image in which the
 spots, indicative of binding events, are recorded. In our experiments,
 we observe cells for 100 seconds, with 2000 frames at 50 milli-second
@@ -118,20 +124,20 @@ used. For example, from the name '240116-Ex1-1-A1-1', the following can
 be derived:
 
 240116-Exp-1-A1-1: Part of experiment 240116
-
 240116-Exp-[1]{.underline}-A1-1: Operating condition 1
-
 240116-Exp-1-A1-1: Microscopic plate well A1
-
 240116-Exp-1-A1-1: Replicate 1
 
 # Process Flow
 
 ## Overview
 
-![A diagram of a process Description automatically
-generated](Images/image3.png){width="2.498611111111111in"
-height="4.720138888888889in"}The Glyco-Paint process starts with a
+<figure style="text-align: center;">
+  <img src="Images/image3.png" alt="Paint Process" width="300">
+  <figcaption>This is the caption for the image.</figcaption>
+</figure>
+
+The GlycoPaint process starts with a
 **microscopy experiment**, in which binding events are observed under a
 fluorescent microscope. Such an experiment leads to a set of recordings,
 each consisting of a bright field image and a multi-frame image.
@@ -169,25 +175,31 @@ The Paint processing pipeline contains a 'Prepare Experiments Info'
 utility to prepare this file. The user provides two parameters: the
 directory that contains the recordings and the location of the Paint
 Experiment directory where the Experiment Info file (and all subsequent
-data) will be written (Figure 1).
+data) will be written.
 
-> Figure 1 The Prepare Experiments Info dialog box that will trigger the
-> creation of an empty experiments.csv file
+<figure style="text-align: center;">
+  <img src="Images/image4.png"  width="500">
+</figure>
+
 
 After this has been done for both demo experiments, two directories have
-been created each with an 'Experiment Info' file (Figure 2).
+been created each with an 'Experiment Info' file.
 
-> Figure 2 The content of the Project Directory with two Experiment
-> directories, which at this point contain only the Experiment Info
-> files.
+<figure style="text-align: center;">
+  <img src="Images/image5.png"  width="350">
+</figure>
 
 If the Paint file naming convention is used, columns such as Experiment
 Date, Experiment Name, Condition Nr and Replicate Nr will be filled in
-automatically, if not the user has to provide this information (Figure
-3).
+automatically, if not the user has to provide this information 
+
+<figure style="text-align: center;">
+  <img src="Images/image6.png"  width="800">
+</figure>
 
 ![A table with numbers and lines Description automatically
-generated](Images/image6.png){width="6.268055555555556in"
+generated](/Users/hans/Paint Code Local/media/image6.png){width="
+6.268055555555556in"
 height="2.584722222222222in"}
 
 > Figure 3 An experiment Info file created by 'Prepare Experiments Info
@@ -201,7 +213,8 @@ processing (refer to next section). The 'Process' flag indicates whether
 a recording is processed or ignored.
 
 ![A screenshot of a table Description automatically
-generated](Images/image7.png){width="6.268055555555556in"
+generated](/Users/hans/Paint Code Local/media/image7.png){width="
+6.268055555555556in"
 height="2.39375in"}
 
 > Figure 4 An experiment Info file in which the user has supplied
@@ -233,7 +246,7 @@ box to select the Recordings Directory and Experiment Directory is
 displayed (Figure 5).
 
 <figure>
-<img src="Images/image8.png"
+<img src="/Users/hans/Paint Code Local/media/image8.png"
 style="width:4.72441in;height:1.81496in"
 alt="A screenshot of a computer Description automatically generated" />
 <figcaption><blockquote>
@@ -260,7 +273,7 @@ of spots and track duration. In addition, the diffusion coefficient (a
 measure of the displacement from the origin) has been calculated. An
 example is shown below in Figure 7.
 
-![](Images/image10.png){width="6.268055555555556in"
+![](/Users/hans/Paint Code Local/media/image10.png){width="6.268055555555556in"
 height="2.740972222222222in"}
 
 > Figure 7 An example of a tracks file containing data on the tracks
@@ -269,7 +282,8 @@ height="2.740972222222222in"}
 The Project directory contents just after TrackMate has been run for the
 230531 experiment is shown in Figure 8.
 
-> ![](Images/image11.png){width="2.3622047244094486in"
+> ![](/Users/hans/Paint Code Local/media/image11.png){width="
+> 2.3622047244094486in"
 > height="3.0236220472440944in"}
 >
 > Figure 8 The contents of the Project directory, just after TrackMate
@@ -313,23 +327,24 @@ limit to how the required quality of fit.
 
 For all squares in each recording, several attributes are calculated:
 
--   The number of tracks
+- The number of tracks
 
--   The duration of the longest track
+- The duration of the longest track
 
--   The average duration of the longest 10 tracks
+- The average duration of the longest 10 tracks
 
--   The total track duration
+- The total track duration
 
--   The Tau (provided that the squares meet the selection criteria
+- The Tau (provided that the squares meet the selection criteria
 
--   The R^2^ indicating the quality of the Tau curve fitting
+- The R^2^ indicating the quality of the Tau curve fitting
 
 With the 'Generate Squares' function run, the directory structure is
 shown in Figure 10.
 
 ![A screenshot of a computer Description automatically
-generated](Images/image13.png){width="2.3622047244094486in"
+generated](/Users/hans/Paint Code Local/media/image13.png){width="
+2.3622047244094486in"
 height="3.204724409448819in"}
 
 > Figure 10 The directory structure after 'Generate Tracks' has been
@@ -343,14 +358,15 @@ the project are compiled and an 'All Recordings', 'All Squares' and 'All
 Tracks' file is generated (Figure 12).
 
 ![A screenshot of a computer Description automatically
-generated](Images/image14.png){width="6.268055555555556in"
+generated](/Users/hans/Paint Code Local/media/image14.png){width="
+6.268055555555556in"
 height="1.5743055555555556in"}
 
 > Figure 11 With the Compile Project utility, the data from multiple
 > experiments in the project is compiled.
 
 <figure>
-<img src="Images/image15.png"
+<img src="/Users/hans/Paint Code Local/media/image15.png"
 style="width:2.3622in;height:3.50394in" />
 <figcaption><blockquote>
 <p>Figure 12 The directory structure shows ‘All Recordings’, ‘All
@@ -365,7 +381,7 @@ Viewer. A straightforward dialogue enables the selection of the Project
 or Experiment directory (Figure 13).
 
 <figure>
-<img src="Images/image16.png"
+<img src="/Users/hans/Paint Code Local/media/image16.png"
 style="width:4.72441in;height:1.29921in"
 alt="A screenshot of a computer Description automatically generated" />
 <figcaption><blockquote>
@@ -398,7 +414,8 @@ followed by 'Apply All Filters' to display only the relevant recordings.
 'Reset All' undoes any selections previously made.
 
 ![A screenshot of a computer Description automatically
-generated](Images/image18.png){width="4.724409448818897in"
+generated](/Users/hans/Paint Code Local/media/image18.png){width="
+4.724409448818897in"
 height="3.015748031496063in"}
 
 > Figure 15 The Select Recordings dialogue that allows the range of
@@ -424,7 +441,7 @@ to Save' that determine if the changes are saved or not when the user
 closes the Recording Viewer.
 
 <figure>
-<img src="Images/image18.png"
+<img src="/Users/hans/Paint Code Local/media/image18.png"
 style="width:4.72441in;height:3.01575in"
 alt="A screenshot of a computer Description automatically generated" />
 <figcaption><blockquote>
@@ -445,7 +462,7 @@ Any changes made will be saved in the 'All Squares' file, depending on
 the selected save options.
 
 <figure>
-<img src="Images/image19.png"
+<img src="/Users/hans/Paint Code Local/media/image19.png"
 style="width:4.72441in;height:3.02756in"
 alt="A screenshot of a computer Description automatically generated" />
 <figcaption><blockquote>
@@ -468,7 +485,8 @@ Whilst the Heatmap dialogue is displayed, the user can scroll through
 images.
 
 ![A screenshot of a computer Description automatically
-generated](Images/image20.png){width="4.724409448818897in"
+generated](/Users/hans/Paint Code Local/media/image20.png){width="
+4.724409448818897in"
 height="3.078740157480315in"}
 
 The 'Toggle' function, which can also be invoked by pressing 't',
@@ -481,179 +499,181 @@ switches between the heatmap and regular display.
 Holding information on an experiment
 
   --------------------------------------------------------------------------
+
        **Experiment    **All           **All Recordings - **Comment**
        Info**          Recordings -    2**                
                        1**                                
+
   ---- --------------- --------------- ------------------ ------------------
-  1    Recording Seq.  Recording Seq.  Recording Sequence Factors for
-       Nr              Nr              Nr                 selection
+1 Recording Seq. Recording Seq. Recording Sequence Factors for
+Nr Nr Nr selection
 
-  2    Recording Name  Recording Name  Recording Name     Factors for
-                                                          selection
+2 Recording Name Recording Name Recording Name Factors for
+selection
 
-  3    Experiment Date Experiment Date Experiment Date    Factors for
-                                                          selection
+3 Experiment Date Experiment Date Experiment Date Factors for
+selection
 
-  4    Experiment Name Experiment Name Experiment Name    Factors for
-                                                          selection
+4 Experiment Name Experiment Name Experiment Name Factors for
+selection
 
-  5    Condition Nr    Condition Nr    Condition Nr       Factors for
-                                                          selection
+5 Condition Nr Condition Nr Condition Nr Factors for
+selection
 
-  6    Replicate Nr    Replicate Nr    Replicate Nr       Factors for
-                                                          selection
+6 Replicate Nr Replicate Nr Replicate Nr Factors for
+selection
 
-  7    Probe           Probe           Probe              Meta Data
+7 Probe Probe Probe Meta Data
 
-  8    Probe Type      Probe Type      Probe Type         Meta Data
+8 Probe Type Probe Type Probe Type Meta Data
 
-  9    Cell Type       Cell Type       Cell Type          Meta Data
+9 Cell Type Cell Type Cell Type Meta Data
 
-  10   Adjuvant        Adjuvant        Adjuvant           Meta Data
+10 Adjuvant Adjuvant Adjuvant Meta Data
 
-  11   Concentration   Concentration   Concentration      Meta Data
+11 Concentration Concentration Concentration Meta Data
 
-  12   Threshold       Threshold       Threshold          TrackMate
+12 Threshold Threshold Threshold TrackMate
 
-  13   Process         Process         Process            TrackMate
+13 Process Process Process TrackMate
 
-  14                   Nr Spots        Nr Spots           TrackMate
+14 Nr Spots Nr Spots TrackMate
 
-  15                   Nr Tracks       Nr Tracks          TrackMate
+15 Nr Tracks Nr Tracks TrackMate
 
-  16                   Run Time        Run Time           TrackMate
+16 Run Time Run Time TrackMate
 
-  17                   Ext Rec. Name   Ext Recording Name Factors for
-                                                          selection
+17 Ext Rec. Name Ext Recording Name Factors for
+selection
 
-  18                   Recording Size  Recording Size     TrackMate
+18 Recording Size Recording Size TrackMate
 
-  19                   Time Stamp      Time Stamp         TrackMate
+19 Time Stamp Time Stamp TrackMate
 
-  20                                   Min Tracks for Tau User specified
+20 Min Tracks for Tau User specified
 
-  21                                   Min Allowable R    User specified
-                                       Squared            
+21 Min Allowable R User specified
+Squared
 
-  22                                   Nr of Squares in   User specified
-                                       Row                
+22 Nr of Squares in User specified
+Row
 
-  23                                   Max Allowable      User specified
-                                       Variability        
+23 Max Allowable User specified
+Variability
 
-  24                                   Min Req. Density   User specified
-                                       Ratio              
+24 Min Req. Density User specified
+Ratio
 
-  25                                   Exclude            User specified
+25 Exclude User specified
 
-  26                                   Neighbour Mode     User specified
+26 Neighbour Mode User specified
 
-  27                                   Tau                Calculated
+27 Tau Calculated
 
-  28                                   Density            Calculated
+28 Density Calculated
 
-  29                                   R Squared          Calculated
-  --------------------------------------------------------------------------
+29                                   R Squared          Calculated
+--------------------------------------------------------------------------
 
-## All Squares format 
+## All Squares format
 
 Holding information on a single square
 
   -----------------------------------------------------------------------
-  1        Unique Key
+1 Unique Key
   -------- --------------------------------------------------------------
-  2        Recording Sequence Nr
+2 Recording Sequence Nr
 
-  3        Ext Recording Name
+3 Ext Recording Name
 
-  4        Experiment Name
+4 Experiment Name
 
-  5        Experiment Date
+5 Experiment Date
 
-  6        Condition Nr
+6 Condition Nr
 
-  7        Replicate Nr
+7 Replicate Nr
 
-  8        Square Nr
+8 Square Nr
 
-  9        Probe
+9 Probe
 
-  10       Probe Type
+10 Probe Type
 
-  11       Cell Type
+11 Cell Type
 
-  12       Adjuvant
+12 Adjuvant
 
-  13       Concentration
+13 Concentration
 
-  14       Threshold
+14 Threshold
 
-  15       Row Nr
+15 Row Nr
 
-  16       Col Nr
+16 Col Nr
 
-  17       Label Nr
+17 Label Nr
 
-  18       Cell Id
+18 Cell Id
 
-  19       Nr Spots
+19 Nr Spots
 
-  20       Nr Tracks
+20 Nr Tracks
 
-  21       X0
+21 X0
 
-  22       Y0
+22 Y0
 
-  23       X1
+23 X1
 
-  24       Y1
+24 Y1
 
-  25       Selected
+25 Selected
 
-  26       Variability
+26 Variability
 
-  27       Density
+27 Density
 
-  28       Density Ratio
+28 Density Ratio
 
-  29       Tau
+29 Tau
 
-  30       R2
+30 R2
 
-  31       Diffusion Coefficient
+31 Diffusion Coefficient
 
-  32       Average Long Track Duration
+32 Average Long Track Duration
 
-  33       Max Track Duration
+33 Max Track Duration
 
-  34       Total Track Duration
-  -----------------------------------------------------------------------
+34       Total Track Duration
+-----------------------------------------------------------------------
 
 ## All Tracks
 
 Holding information on all tracks in a recording
 
   -----------------------------------------------------------------------
-  1          Unique Key
+1 Unique Key
   ---------- ------------------------------------------------------------
-  2          Ext Recording Name
+2 Ext Recording Name
 
-  3          Track Label
+3 Track Label
 
-  4          Nr Spots
+4 Nr Spots
 
-  5          Track Duration
+5 Track Duration
 
-  6          Track X Location
+6 Track X Location
 
-  7          Track Y Location
+7 Track Y Location
 
-  8          Diffusion Coefficient
+8 Diffusion Coefficient
 
-  9          Square Nr
+9 Square Nr
 
-  10         Label Nr
-  -----------------------------------------------------------------------
+10         Label Nr
+-----------------------------------------------------------------------
 
 # Algorithms
 
@@ -677,7 +697,7 @@ density ratio, maximum allowable variability, minimum and maximum track
 durations, and neighbour state - are considered.
 
 <figure>
-<img src="Images/image21.png"
+<img src="/Users/hans/Paint Code Local/media/image21.png"
 style="width:3.3289in;height:2.77421in" />
 <figcaption><p>Figure 18 An example of curve fitting track durations to
 determine the Tau</p></figcaption>
@@ -692,7 +712,7 @@ standard deviation and the mean of the grid track numbers. In Figure 19
 the variability for four fictional squares is shown.
 
 <figure>
-<img src="Images/image22.png"
+<img src="/Users/hans/Paint Code Local/media/image22.png"
 style="width:6.26806in;height:2.11042in"
 alt="A table of numbers with numbers on each side Description automatically generated with medium confidence" />
 <figcaption><blockquote>
@@ -701,7 +721,7 @@ in a square.</p>
 </blockquote></figcaption>
 </figure>
 
-## 
+##    
 
 ## Square Density
 
@@ -852,11 +872,11 @@ regular text editor or dynamically with the MacOS Console application.
 
 **Process Project**
 
-1.  Start project processing and log the project path.
+1. Start project processing and log the project path.
 
-2.  List and sort all experiment directories.
+2. List and sort all experiment directories.
 
-3.  For each experiment directory:
+3. For each experiment directory:
 
 > • Skip if it is not a directory or if it's an "Output" directory.
 >
@@ -864,19 +884,19 @@ regular text editor or dynamically with the MacOS Console application.
 >
 > • Call process_experiment for unprocessed experiments.
 
-4.  Return the number of experiments processed.
+4. Return the number of experiments processed.
 
 **Process Experiment**
 
-1.  Initialize variables for tracking and logging.
+1. Initialize variables for tracking and logging.
 
-2.  Load tracks and recordings into DataFrames.
+2. Load tracks and recordings into DataFrames.
 
-3.  Validate consistency between tracks and recordings.
+3. Validate consistency between tracks and recordings.
 
-4.  Log the number of recordings to process.
+4. Log the number of recordings to process.
 
-5.  For each recording:
+5. For each recording:
 
 > • Retrieve recording details.
 >
@@ -884,15 +904,15 @@ regular text editor or dynamically with the MacOS Console application.
 >
 > • Update experiment-level metrics with results from recording.
 
-6.  Save updated tracks, recordings, and squares data to files.
+6. Save updated tracks, recordings, and squares data to files.
 
-7.  Log total processing time for the experiment.
+7. Log total processing time for the experiment.
 
 **Process Recording**
 
-1.  Initialize processing variables.
+1. Initialize processing variables.
 
-2.  Loop through all squares in the grid:
+2. Loop through all squares in the grid:
 
 > • Calculate square coordinates.
 >
@@ -902,28 +922,28 @@ regular text editor or dynamically with the MacOS Console application.
 >
 > • Append square data to the main DataFrame.
 
-3.  Compute density ratio for the squares.
+3. Compute density ratio for the squares.
 
-4.  Apply selection filters using select_squares_with_parameters.
+4. Apply selection filters using select_squares_with_parameters.
 
-5.  Label selected squares and propagate labels to tracks.
+5. Label selected squares and propagate labels to tracks.
 
-6.  Return processed squares, tracks, and recording-level metrics.
+6. Return processed squares, tracks, and recording-level metrics.
 
 **Process Square**
 
-1.  Calculate square boundaries based on grid coordinates.
+1. Calculate square boundaries based on grid coordinates.
 
-2.  Filter tracks within the square.
+2. Filter tracks within the square.
 
-3.  If no tracks:
+3. If no tracks:
 
 > • Assign default values for metrics (e.g., Tau, Density = 0).
 
-4.  If tracks exist:
+4. If tracks exist:
 
 > • Compute metrics (Tau, R-squared, Density, Variability, etc.).
 
-5.  Return a dictionary containing square-level data.
+5. Return a dictionary containing square-level data.
 
 å
