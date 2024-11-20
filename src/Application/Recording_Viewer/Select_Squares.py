@@ -137,7 +137,7 @@ def select_squares_neighbour_relaxed(df_squares, nr_of_squares_in_row):
         # Get neighbors
         neighbours = get_relaxed_neighbours(row, col, nr_of_squares_in_row)
 
-        # Check visibility of neighbors
+        # Check the visibility of neighbors
         has_visible_neighbors = False
         for nb in neighbours:
             # Calculate neighbor index
