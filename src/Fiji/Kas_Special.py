@@ -13,9 +13,7 @@ paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + 
 sys.path.append(paint_dir)
 
 # from Trackmate import paint_trackmate
-from Run_TrackMate import run_trackmate
 from Trackmate import execute_trackmate_in_Fiji
-
 
 from DirectoriesAndLocations import (
     create_directories,
@@ -49,7 +47,8 @@ def process_full_image(threshold, image_directory, image_name, cell_type, probe,
     full_tracks_filename = os.path.join(image_directory, image_name, image_name + "-full-tracks.csv")
     tiff_filename = os.path.join(image_directory, image_name, image_name + ".tiff")
 
-    nr_spots, total_tracks, long_tracks = execute_trackmate_in_Fiji('single', threshold, full_tracks_filename, tiff_filename, True)
+    nr_spots, total_tracks, long_tracks = execute_trackmate_in_Fiji('single', threshold, full_tracks_filename,
+                                                                    tiff_filename, True)
     if nr_spots == -1:
         paint_logger.error("\n'Process full image' did not manage to run 'paint_trackmate'")
         paint_logger.error(getframeinfo(currentframe()).filename, getframeinfo(currentframe()).lineno)

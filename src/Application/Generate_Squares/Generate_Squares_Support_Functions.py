@@ -1,17 +1,15 @@
-import sys
-import csv
 import os
+import sys
 
 import numpy as np
 import pandas as pd
-
-from src.Common.Support.LoggerConfig import paint_logger
-from src.Common.Support.PaintConfig import get_paint_attribute
 
 from src.Application.Generate_Squares.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot
 )
+from src.Common.Support.LoggerConfig import paint_logger
+from src.Common.Support.PaintConfig import get_paint_attribute
 
 pd.options.mode.copy_on_write = True
 
@@ -275,7 +273,6 @@ def pack_select_parameters(
         max_track_duration: int,
         min_allowable_r_squared: float,
         neighbour_mode: str):
-
     select_parameters = {
         'min_required_density_ratio': min_required_density_ratio,
         'max_allowable_variability': max_allowable_variability,
@@ -292,7 +289,6 @@ def calculate_tau(
         min_tracks_for_tau: int,
         min_allowable_r_squared: float
 ) -> tuple:
-
     """
     Calculate the Tau for the square if requested. Use error codes:
        -1: too few points to try to fit

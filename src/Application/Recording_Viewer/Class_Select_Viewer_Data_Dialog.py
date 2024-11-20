@@ -3,15 +3,15 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 
+from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import (
+    only_one_nr_of_squares_in_row,
+    nr_recordings)
 from src.Application.Utilities.General_Support_Functions import (
     classify_directory,
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 from src.Common.Support.LoggerConfig import paint_logger
-from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import (
-    only_one_nr_of_squares_in_row,
-    nr_recordings)
 from src.Common.Support.PaintConfig import (
     get_paint_attribute,
     update_paint_attribute)
@@ -47,7 +47,7 @@ class SelectViewerDataDialog:
         frame_buttons.grid(column=0, row=2, padx=5, pady=5)
 
         # Make the dialog modal
-        self.dialog.transient(parent)    # Link it to the main root window
+        self.dialog.transient(parent)  # Link it to the main root window
         # self.dialog.grab_set()           # Grab all input focus   # ToDo not sure why this would be needed
         parent.wait_window(self.dialog)  # Wait until the dialog is closed
 
@@ -144,6 +144,8 @@ class SelectViewerDataDialog:
             if time_stamp_project < time_stamp_experiment:
                 out_of_date.append(experiment)
         if out_of_date and len(out_of_date) > 0:
-            paint_messagebox(self.dialog, title='Warning', message="The following experiments are out of date: " + ", ".join(out_of_date) +  ". You may want to run Compile Project.")
+            paint_messagebox(self.dialog, title='Warning',
+                             message="The following experiments are out of date: " + ", ".join(
+                                 out_of_date) + ". You may want to run Compile Project.")
 
         return len(out_of_date) == 0

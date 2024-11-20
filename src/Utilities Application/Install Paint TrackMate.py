@@ -4,7 +4,6 @@ import shutil
 import subprocess
 
 from src.Common.Support.DirectoriesAndLocations import delete_files_in_directory
-from src.Common.Support.PaintConfig import load_paint_config
 
 
 # import winreg

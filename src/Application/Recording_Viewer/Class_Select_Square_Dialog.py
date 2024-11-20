@@ -8,8 +8,9 @@ class SelectSquareDialog:
     # Setting up
     # --------------------------------------------------------------------------------------------------------
 
-    def __init__(self, image_viewer, callback_update_select_squares, min_required_density_ratio, max_allowable_variability,
-                 min_track_duration, max_track_duration, min_allowable_r_squared, neighbour_mode):
+    def __init__(self, image_viewer, callback_update_select_squares, min_required_density_ratio,
+                 max_allowable_variability, min_track_duration, max_track_duration, min_allowable_r_squared,
+                 neighbour_mode):
         """
         The callback function that is called is self.update_select_squares
         """
@@ -63,11 +64,12 @@ class SelectSquareDialog:
         # Place the frames in the content frame
         self.frame_filter.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
 
-
     def setup_frame_filter(self):
         # Create frames for the sliders
-        self.frame_min_required_density_ratio = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
-        self.frame_max_allowable_variability = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
+        self.frame_min_required_density_ratio = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove',
+                                                          padding=(5, 5, 5, 5))
+        self.frame_max_allowable_variability = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove',
+                                                         padding=(5, 5, 5, 5))
         self.frame_min_duration = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_max_duration = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove', padding=(5, 5, 5, 5))
         self.frame_min_allowable_r_squared = ttk.Frame(self.frame_filter, borderwidth=1, relief='groove',
@@ -131,10 +133,13 @@ class SelectSquareDialog:
         """
 
         self.max_allowable_variability = tk.DoubleVar(value=self.max_allowable_variability)
-        self.lbl_max_allowable_variability_text = ttk.Label(self.frame_max_allowable_variability, text='Max Allowable\nVariability')
-        self.sc_max_allowable_variability = tk.Scale(self.frame_max_allowable_variability, from_=1.5, to=10, variable=self.max_allowable_variability,
+        self.lbl_max_allowable_variability_text = ttk.Label(self.frame_max_allowable_variability,
+                                                            text='Max Allowable\nVariability')
+        self.sc_max_allowable_variability = tk.Scale(self.frame_max_allowable_variability, from_=1.5, to=10,
+                                                     variable=self.max_allowable_variability,
                                                      orient='vertical', resolution=0.5)
-        self.sc_max_allowable_variability.bind("<ButtonRelease-1>", lambda event: self.on_filter_changed('Max Allowable Variability'))
+        self.sc_max_allowable_variability.bind("<ButtonRelease-1>",
+                                               lambda event: self.on_filter_changed('Max Allowable Variability'))
         self.lbl_max_allowable_variability_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_max_allowable_variability.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W + tk.E)
 
@@ -147,10 +152,12 @@ class SelectSquareDialog:
 
         self.min_required_density_ratio = tk.DoubleVar(value=self.min_required_density_ratio)
         self.lbl_min_required_density_ratio_text = ttk.Label(
-            self.frame_min_required_density_ratio, text='Min Required\nDensity Ratio', width = 10)
+            self.frame_min_required_density_ratio, text='Min Required\nDensity Ratio', width=10)
         self.sc_min_required_density_ratio = tk.Scale(
-            self.frame_min_required_density_ratio, from_=1, to=200, variable=self.min_required_density_ratio, orient='vertical', resolution=1)
-        self.sc_min_required_density_ratio.bind("<ButtonRelease-1>", lambda event: self.on_filter_changed('Min Required Density Ratio'))
+            self.frame_min_required_density_ratio, from_=1, to=200, variable=self.min_required_density_ratio,
+            orient='vertical', resolution=1)
+        self.sc_min_required_density_ratio.bind("<ButtonRelease-1>",
+                                                lambda event: self.on_filter_changed('Min Required Density Ratio'))
         self.lbl_min_required_density_ratio_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_min_required_density_ratio.grid(column=0, row=1, padx=5, pady=5, sticky=tk.W + tk.E)
 
@@ -162,7 +169,8 @@ class SelectSquareDialog:
         """
 
         self.min_track_duration = tk.DoubleVar(value=self.min_track_duration)
-        self.lbl_min_track_duration_text = ttk.Label(self.frame_min_duration, text='Min Longest\nTrack Duration', width=10)
+        self.lbl_min_track_duration_text = ttk.Label(self.frame_min_duration, text='Min Longest\nTrack Duration',
+                                                     width=10)
         self.sc_min_track_duration = tk.Scale(
             self.frame_min_duration, from_=0, to=200, variable=self.min_track_duration, orient='vertical',
             resolution=0.1)
@@ -178,7 +186,8 @@ class SelectSquareDialog:
         """
 
         self.max_track_duration = tk.DoubleVar(value=self.max_track_duration)
-        self.lbl_max_track_duration_text = ttk.Label(self.frame_max_duration, text='Max Longest\nTrack Duration', width = 10)
+        self.lbl_max_track_duration_text = ttk.Label(self.frame_max_duration, text='Max Longest\nTrack Duration',
+                                                     width=10)
         self.sc_max_track_duration = tk.Scale(
             self.frame_max_duration, from_=0, to=200, variable=self.max_track_duration, orient='vertical',
             resolution=0.1)
@@ -193,11 +202,13 @@ class SelectSquareDialog:
 
         """
         self.min_allowable_r_squared = tk.DoubleVar(value=0.9)  # Default value
-        self.lbl_min_allowable_r_squared_text = ttk.Label(self.frame_min_allowable_r_squared, text='Min\nR Squared', width=10)
+        self.lbl_min_allowable_r_squared_text = ttk.Label(self.frame_min_allowable_r_squared, text='Min\nR Squared',
+                                                          width=10)
         self.sc_min_allowable_r_squared = tk.Scale(
             self.frame_min_allowable_r_squared, from_=0, to=1.0, variable=self.min_allowable_r_squared,
             orient='vertical', resolution=0.01)
-        self.sc_min_allowable_r_squared.bind("<ButtonRelease-1>", lambda event: self.on_filter_changed('Min Allowable R Squared'))
+        self.sc_min_allowable_r_squared.bind("<ButtonRelease-1>",
+                                             lambda event: self.on_filter_changed('Min Allowable R Squared'))
 
         self.lbl_min_allowable_r_squared_text.grid(column=0, row=0, padx=5, pady=5)
         self.sc_min_allowable_r_squared.grid(column=0, row=1, padx=5, pady=5)
@@ -282,7 +293,6 @@ class SelectSquareDialog:
             max_track_duration,
             min_allowable_r_squared,
             neighbour_mode):
-
         # Set the sliders to the initial values
         self.min_required_density_ratio.set(min_required_density_ratio)
         self.max_allowable_variability.set(max_allowable_variability)

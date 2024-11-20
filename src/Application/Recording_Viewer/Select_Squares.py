@@ -1,5 +1,3 @@
-
-
 # -------------------------------------------------------------------------------------------------------------
 # There are two ways to run the select squares files, either by calling  select_squares_with_parameters or by calling
 # select_squares.
@@ -7,7 +5,7 @@
 # Both functions call select_squares_actual which is the main function that selects squares based on defined conditions
 # -------------------------------------------------------------------------------------------------------------
 
-def select_squares_with_parameters (df_squares, select_parameters, nr_of_squares_in_row, only_valid_tau):
+def select_squares_with_parameters(df_squares, select_parameters, nr_of_squares_in_row, only_valid_tau):
     """
     Wrapper function to select squares based on defined conditions for density, variability, and track duration,
     Parameters are passed through a dictionary.
@@ -22,7 +20,8 @@ def select_squares_with_parameters (df_squares, select_parameters, nr_of_squares
         select_parameters['min_allowable_r_squared'],
         select_parameters['neighbour_mode'],
         nr_of_squares_in_row,
-        only_valid_tau= only_valid_tau)
+        only_valid_tau=only_valid_tau)
+
 
 def select_squares(self, only_valid_tau=True):
     """
@@ -41,17 +40,17 @@ def select_squares(self, only_valid_tau=True):
         self.nr_of_squares_in_row,
         only_valid_tau=only_valid_tau)
 
-def _select_squares_actual(
-    df_squares,
-    min_required_density_ratio,
-    max_allowable_variability,
-    min_track_duration,
-    max_track_duration,
-    min_allowable_r_squared,
-    neighbour_mode,
-    nr_of_squares_in_row,
-    only_valid_tau=True):
 
+def _select_squares_actual(
+        df_squares,
+        min_required_density_ratio,
+        max_allowable_variability,
+        min_track_duration,
+        max_track_duration,
+        min_allowable_r_squared,
+        neighbour_mode,
+        nr_of_squares_in_row,
+        only_valid_tau=True):
     """
     Select squares based on defined conditions for density, variability, and track duration,
     and apply visibility rules based on neighborhood states. This is the function that does the actual work
@@ -83,6 +82,7 @@ def _select_squares_actual(
         raise ValueError(f"Neighbour mode '{neighbour_mode}' not recognized.")
     if 'Unique Key' in df_squares.columns:
         df_squares.set_index('Unique Key', inplace=True, drop=False)
+
 
 def select_squares_neighbour_strict(df_squares, nr_of_squares_in_row):
     """
@@ -156,6 +156,7 @@ def select_squares_neighbour_relaxed(df_squares, nr_of_squares_in_row):
 
     return df_squares, list_of_squares
 
+
 def get_strict_neighbours(row, col, nr_of_squares_in_row):
     """
     Returns neighboring positions for strict neighborhood rule.
@@ -206,8 +207,8 @@ def get_relaxed_neighbours(row, col, nr_of_squares_in_row):
 
     return neighbours
 
-def label_selected_squares(df_squares):
 
+def label_selected_squares(df_squares):
     """
     Assigns label numbers to selected squares in descending order of 'Nr Tracks'.
     """
@@ -258,7 +259,7 @@ def label_selected_squares_and_tracks(df_squares, df_tracks):
         df_squares[['Square Nr', 'Ext Recording Name', 'Label Nr']],
         on=['Square Nr', 'Ext Recording Name'],
         how='left',
-    suffixes=('', '_from_squares')  # Avoid '_x' and '_y', rename the merged Label Nr
+        suffixes=('', '_from_squares')  # Avoid '_x' and '_y', rename the merged Label Nr
     )
     df_tracks['Label Nr'] = df_tracks['Label Nr_from_squares']  # Use the merged Label Nr
     df_tracks.drop(columns=['Label Nr_from_squares'], inplace=True)  # Remove the extra column
@@ -267,6 +268,7 @@ def label_selected_squares_and_tracks(df_squares, df_tracks):
     # df_tracks['Label Nr'] = df_tracks['Label Nr'].fillna(0).astype(int)
 
     return df_squares, df_tracks
+
 
 def relabel_tracks(df_squares, df_tracks):
     """
@@ -279,7 +281,7 @@ def relabel_tracks(df_squares, df_tracks):
         df_squares[['Square Nr', 'Ext Recording Name', 'Label Nr']],
         on=['Square Nr', 'Ext Recording Name'],
         how='left',
-    suffixes=('', '_from_squares')  # Avoid '_x' and '_y', rename the merged Label Nr
+        suffixes=('', '_from_squares')  # Avoid '_x' and '_y', rename the merged Label Nr
     )
     df_tracks['Label Nr'] = df_tracks['Label Nr_from_squares']  # Use the merged Label Nr
     df_tracks.drop(columns=['Label Nr_from_squares'], inplace=True)  # Remove the extra column

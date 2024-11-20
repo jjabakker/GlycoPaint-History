@@ -10,7 +10,6 @@ from java.io import File
 from java.lang.System import getProperty
 from javax.swing import JFrame, JPanel, JButton, JTextField, JFileChooser, JOptionPane, BorderFactory
 
-
 paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
 sys.path.append(paint_dir)
 
@@ -385,4 +384,3 @@ if __name__ == "__main__":
     # Call the function to create the GUI
 
     create_gui()
-

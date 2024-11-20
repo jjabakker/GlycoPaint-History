@@ -12,7 +12,6 @@ paint_code__dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "P
 sys.path.append(paint_code__dir)
 
 
-
 def ask_user_for_file(prompt='Select File'):
     """
     Ask the user to specify the user image directory. Present the last used value as default.

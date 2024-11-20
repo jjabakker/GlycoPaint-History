@@ -8,7 +8,6 @@ pd.options.mode.copy_on_write = True
 
 
 def save_as_png(canvas, file_name, size_pixels=(512, 512)):
-
     canvas.config(width=size_pixels[0], height=size_pixels[1])
 
     # First save as a postscript file
@@ -24,7 +23,6 @@ def save_as_png(canvas, file_name, size_pixels=(512, 512)):
     # Then let PIL convert to a png file
     img = Image.open(file_name + '.ps')
     img.save(f"{file_name}.png", 'png')
-
 
 
 def test_if_square_is_in_rectangle(x0, y0, x1, y1, xr0, yr0, xr1, yr1):

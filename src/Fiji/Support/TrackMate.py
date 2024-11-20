@@ -9,7 +9,6 @@ import csv
 import os
 import sys
 
-from ij.plugin.frame import RoiManager
 import fiji.plugin.trackmate.features.FeatureFilter as FeatureFilter
 import fiji.plugin.trackmate.visualization.hyperstack.HyperStackDisplayer as HyperStackDisplayer
 from fiji.plugin.trackmate import (
@@ -26,8 +25,8 @@ from fiji.plugin.trackmate.tracking.jaqaman import SparseLAPTrackerFactory
 from fiji.plugin.trackmate.util import LogRecorder
 from ij import WindowManager
 from ij.io import FileSaver
+from ij.plugin.frame import RoiManager
 from java.lang.System import getProperty
-
 
 paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
 sys.path.append(paint_dir)

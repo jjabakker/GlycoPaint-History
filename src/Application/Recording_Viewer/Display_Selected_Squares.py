@@ -1,5 +1,7 @@
 from tkinter import *
+
 import pandas as pd
+
 
 def display_selected_squares(self):
     """
@@ -18,7 +20,7 @@ def display_selected_squares(self):
     self.left_image_canvas.bind('<ButtonRelease-1>', lambda e: self.close_rectangle(e))
     self.left_image_canvas.bind('<B1-Motion>', lambda e: self.expand_rectangle_size(e))
 
-    if  not self.show_squares or len(self.df_squares) == 0:
+    if not self.show_squares or len(self.df_squares) == 0:
         return
 
     # If there are no squares, or if squares are not to be shown, you can stop here
@@ -120,7 +122,7 @@ def draw_single_square(
                     tags=text_tag
                 )
 
-    if label_nr == 0:        # The square is selected but does not have a valid Tau: give it a colour
+    if label_nr == 0:  # The square is selected but does not have a valid Tau: give it a colour
         col = colour_table[squares_row['Square Nr'] % 6 + 1][0]
         canvas.create_rectangle(
             col_nr * width,
@@ -128,7 +130,7 @@ def draw_single_square(
             col_nr * width + width,
             row_nr * height + height,
             outline='white',
-            fill='#4566A5',      # https://www.webfx.com/web-design/color-picker/4566a5
+            fill='#4566A5',  # https://www.webfx.com/web-design/color-picker/4566a5
             width=0,
             tags=square_tag)
 
@@ -167,5 +169,5 @@ def draw_single_square(
         fill="",
         tags=f"invisible-{square_nr}")
     canvas.tag_bind(invisible_rect, '<Button-1>', lambda e: square_assigned_to_cell(square_nr))
-    canvas.tag_bind(invisible_rect, '<Button-2>', lambda e: provide_information_on_square(e, squares_row['Label Nr'], square_nr))
-
+    canvas.tag_bind(invisible_rect, '<Button-2>',
+                    lambda e: provide_information_on_square(e, squares_row['Label Nr'], square_nr))

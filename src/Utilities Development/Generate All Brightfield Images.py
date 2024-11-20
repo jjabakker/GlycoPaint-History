@@ -19,7 +19,6 @@ def generate_directory_tree_third_level_directories_only(start_path, output_file
 # generate_directory_tree_third_level_directories_only('/Users/hans/Paint Source', 'directory_tree.txt')
 
 
-
 new_probes = [
     240924,
     240923,

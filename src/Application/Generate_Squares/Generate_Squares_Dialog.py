@@ -19,7 +19,6 @@ from src.Common.Support.LoggerConfig import (
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
 from src.Common.Support.PaintConfig import (
-    load_paint_config,
     get_paint_attribute,
     update_paint_attribute)
 
@@ -244,6 +243,7 @@ class GenerateSquaresDialog:
         update_paint_attribute('User Directories', 'Experiment Directory', self.experiment_directory)
         update_paint_attribute('User Directories', 'Images Directory', self.images_directory)
         update_paint_attribute('User Directories', 'Level', self.level)
+
 
 if __name__ == "__main__":
     root = tk.Tk()

@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def csv_file_identical(file1, file2, columns=None):
     try:
         # Load the CSV files into DataFrames
@@ -50,8 +51,6 @@ def csv_file_identical(file1, file2, columns=None):
 
 
 if __name__ == '__main__':
-
-
     version_old = 'v19'
     version_new = 'v20'
 

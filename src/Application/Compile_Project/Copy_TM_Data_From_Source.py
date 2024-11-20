@@ -60,4 +60,3 @@ def copy_tm_data_from_paint_source_with_images(source_dir, destination_dir):
                 dest_folder_path = os.path.join(dest_path, folder)
                 if os.path.exists(src_folder_path):
                     copy_with_overwrite(src_folder_path, dest_folder_path)
-

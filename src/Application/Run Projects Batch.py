@@ -6,7 +6,6 @@ import time
 from datetime import datetime
 
 from src.Application.Compile_Project.Compile_Project import compile_project_output
-from src.Common.Support.PaintConfig import get_paint_attribute
 from src.Application.Compile_Project.Copy_TM_Data_From_Source import copy_tm_data_from_paint_source_with_images
 from src.Application.Generate_Squares.Generate_Squares import process_project
 from src.Application.Generate_Squares.Generate_Squares_Support_Functions import pack_select_parameters
@@ -21,6 +20,7 @@ from src.Common.Support.LoggerConfig import (
     get_paint_logger_directory,
     DEBUG as PAINT_DEBUG
 )
+from src.Common.Support.PaintConfig import get_paint_attribute
 
 paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
@@ -44,7 +44,6 @@ def process_json_configuration_block(paint_source_dir,
                                      time_string: str,
                                      paint_force: bool,
                                      drop_empty_squares: bool) -> bool:
-
     time_stamp = time.time()
     msg = f"{current_process} of {nr_to_process} - Processing {project_name}"
     paint_logger.info("")
@@ -225,7 +224,7 @@ def main():
                     probe=entry['probe'],
                     nr_of_squares_in_row=entry['nr_of_squares'],
                     nr_to_process=nr_to_process,
-                     current_process=current_process_seq_nr,
+                    current_process=current_process_seq_nr,
                     select_parameters=select_parameters,
                     min_allowable_r_squared=entry['min_allowable_r_squared'],
                     min_tracks_for_tau=entry['min_tracks_for_tau'],

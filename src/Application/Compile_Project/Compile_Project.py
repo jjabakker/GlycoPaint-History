@@ -155,7 +155,8 @@ class CompileDialog:
         if dir_type == 'Project':
             update_paint_attribute('User Directories', 'Project Directory', self.project_directory)
         else:
-            paint_messagebox(self.root, title='Warning', message='The selected directory does not seem to be a project directory.')
+            paint_messagebox(self.root, title='Warning',
+                             message='The selected directory does not seem to be a project directory.')
 
     def on_compile_pressed(self) -> None:
 
@@ -166,14 +167,14 @@ class CompileDialog:
 
         # Determine if it indeed is a project directory
         dir_type, _ = classify_directory(self.project_directory)
-        if dir_type == 'Project':   # Project directory, so proceed
+        if dir_type == 'Project':  # Project directory, so proceed
             compile_project_output(project_dir=self.project_directory, verbose=True)
             self.root.destroy()
-        elif dir_type == 'Experiment':   # Experiment directory, so warn
+        elif dir_type == 'Experiment':  # Experiment directory, so warn
             msg = "The selected directory does not seem to be a project directory, but an experiment directory."
             paint_logger.error(msg)
             paint_messagebox(self.root, title='Warning', message=msg)
-        else:   # Just any directory, so warn
+        else:  # Just any directory, so warn
             msg = "The selected directory does not seem to be a project directory, nor an experiment directory."
             paint_logger.error(msg)
             paint_messagebox(self.root, title='Warning', message=msg)

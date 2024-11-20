@@ -1,10 +1,10 @@
 import json
 import os
-from wsgiref.util import application_uri
 
 
 def get_paint_defaults_file_path():  # ToDo
     return os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'Paint.json')
+
 
 # This is unusual code. One import will work in Jython, the other in Python. The other will fail, but the error will
 # be caught.
@@ -22,7 +22,6 @@ except:
     pass
 
 paint_configuration = None
-
 
 # Default JSON structure
 default_data = {
@@ -93,6 +92,7 @@ default_data = {
     }
 }
 
+
 def load_paint_config(file_path):
     global paint_configuration
 
@@ -122,6 +122,7 @@ def load_paint_config(file_path):
         paint_logger.error("Error: Problem with configuration file {}.".format(file_path))
         return None
 
+
 def get_paint_attribute(application, attribute_name):
     config = load_paint_config(get_paint_defaults_file_path())
     if config is None:
@@ -131,13 +132,13 @@ def get_paint_attribute(application, attribute_name):
         application = config.get(application)
         value = application.get(attribute_name, None)
         if value is None:
-            pass    #ToDo
-            paint_logger.error("Error: Attribute {} not found in configuration file {}.".format(attribute_name, get_paint_defaults_file_path()))
+            pass  # ToDo
+            paint_logger.error("Error: Attribute {} not found in configuration file {}.".format(attribute_name,
+                                                                                                get_paint_defaults_file_path()))
         return value
 
 
 def update_paint_attribute(application, attribute_name, value):
-
     try:
         config = load_paint_config(get_paint_defaults_file_path())
 
@@ -154,6 +155,7 @@ def update_paint_attribute(application, attribute_name, value):
 
     except Exception as e:
         paint_logger.error("An unexpected error occurred: {}.format(e)")
+
 
 if __name__ == '__main__':
     config = load_paint_config(os.path.join(os.path.expanduser('~'), 'Paint', 'Defaults', 'paint.json'))

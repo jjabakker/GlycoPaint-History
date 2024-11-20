@@ -304,7 +304,6 @@ class RecordingViewer:
             )
             rb.grid(column=0, row=i, padx=5, pady=5, sticky=tk.W)
 
-
     # ----------------------------------------------------------------------------------------
     # Load images and data
     # ----------------------------------------------------------------------------------------
@@ -319,7 +318,8 @@ class RecordingViewer:
 
         # Read the 'All Experiments' file
         self.df_experiment = pd.read_csv(os.path.join(self.user_specified_directory, 'All Recordings.csv'),
-                                         dtype={'Max Allowable Variability': float, 'Min Required Density Ratio': float})
+                                         dtype={'Max Allowable Variability': float,
+                                                'Min Required Density Ratio': float})
         if self.df_experiment is None:
             self.show_error_and_exit("No 'All Recordings' file, Did you select an image directory?")
         self.df_experiment.set_index('Ext Recording Name', drop=False, inplace=True)
@@ -331,7 +331,7 @@ class RecordingViewer:
 
         # Read the 'All Tracks' file
         self.df_all_tracks = pd.read_csv(os.path.join(self.user_specified_directory, 'All Tracks.csv'))
-        if self.df_all_tracks  is None:
+        if self.df_all_tracks is None:
             self.show_error_and_exit("No 'All Tracks' file, Did you select an image directory?")
         self.df_all_tracks.set_index('Unique Key', inplace=True, drop=False)
 
@@ -360,16 +360,15 @@ class RecordingViewer:
         self.text_for_info4.set('Excluded' if is_excluded else '')
         self.lbl_info4.config(style="Red.Label" if is_excluded else "Black.Label")
 
-# ----------------------------------------------------------------------------------------
-# Event Handlers for buttons
-# ----------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------
+    # Event Handlers for buttons
+    # ----------------------------------------------------------------------------------------
 
     def on_select_recording(self):
         if self.is_dialog_active():
             return
         else:
             self.select_recording_dialog = SelectRecordingDialog(self, self.df_experiment, self.on_recording_selection)
-
 
     def on_heatmap(self):
         # If the heatmap is not already active, then we need to run the heatmap dialog
@@ -398,7 +397,7 @@ class RecordingViewer:
         self.min_allowable_r_squared = self.list_images[self.img_no]['Min Allowable R Squared']
         self.neighbour_mode = self.list_images[self.img_no]['Neighbour Mode']
 
-        self.min_track_duration = 1   # ToDo thi does not look ok
+        self.min_track_duration = 1  # ToDo thi does not look ok
         self.max_track_duration = 199
 
         if self.select_square_dialog is None:
@@ -592,9 +591,9 @@ class RecordingViewer:
             self.square_info_popup.destroy()
             self.square_info_popup = None
 
-# ----------------------------------------------------------------------------------------
-#
-# ----------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------
+    #
+    # ----------------------------------------------------------------------------------------
 
     def callback_to_close_define_cells_dialog(self):
         # Now update All Squares
@@ -682,10 +681,10 @@ class RecordingViewer:
         self.lbl_info4.config(style="Red.Label" if is_excluded else "Black.Label")
         self.lbl_info4.configure(foreground='red' if is_excluded else 'black')
 
-        self.recording_changed = True    # ToDo
+        self.recording_changed = True  # ToDo
 
     def on_exit_viewer(self):
-        if self.save_on_exit or self.recording_changed:   # You need to test both!
+        if self.save_on_exit or self.recording_changed:  # You need to test both!
             status = self.save_changes_on_exit()
             if status is None:
                 return
@@ -710,7 +709,7 @@ class RecordingViewer:
             max_duration: float,
             min_allowable_r_squared: float,
             neighbour_mode: str,
-            ) -> None:
+    ) -> None:
         """
         This function is called from the SelectSquareDialog when a control has changed or when the control exists. This
         gives an opportunity to update the settings for the current image
@@ -727,7 +726,7 @@ class RecordingViewer:
             self.df_experiment.loc[self.image_name, 'Max Allowable Variability'] = max_allowable_variability
         elif setting_type == "Min Track Duration":
             self.min_track_duration = min_duration
-        elif setting_type == "Max Track Duration":   # ToDo
+        elif setting_type == "Max Track Duration":  # ToDo
             self.max_track_duration = max_duration
         elif setting_type == "Min Allowable R Squared":
             self.min_allowable_r_squared = min_allowable_r_squared
@@ -778,7 +777,7 @@ class RecordingViewer:
         recalc_recording_tau_and_density(self)
 
     def select_squares_for_display(self):
-        select_squares(self, only_valid_tau=self.only_valid_tau)     # The function is in the file 'Select_Squares.py'
+        select_squares(self, only_valid_tau=self.only_valid_tau)  # The function is in the file 'Select_Squares.py'
 
     def display_selected_squares(self):
         display_selected_squares(self)
@@ -1003,8 +1002,6 @@ class RecordingViewer:
         self.squares_in_rectangle = []
         self.mark_selected_squares()
 
-
-
     def save_changes_on_recording_change(self, save_experiment=True, save_squares=True):
 
         # Save the changes in All Squares
@@ -1016,7 +1013,6 @@ class RecordingViewer:
         df_recording_tracks = self.df_all_tracks[self.df_all_tracks['Ext Recording Name'] == self.image_name]
         dfs, dft = relabel_tracks(df_recording_squares, df_recording_tracks)
         self.df_all_tracks.update(dft)
-
 
     def save_changes_on_exit(self, save_experiment=True, save_squares=True):
 
@@ -1117,10 +1113,9 @@ class RecordingViewer:
         # Start at the first image
         self.on_forward_backward('START')
 
-
-# ---------------------------------------------------------------------------------------
-# Utility functions
-# ---------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------
+    # Utility functions
+    # ---------------------------------------------------------------------------------------
     def set_forward_backward_buttons(self, mode):
         self.bn_backward.configure(state=tk.NORMAL)
         self.bn_start.configure(state=tk.NORMAL)
@@ -1159,7 +1154,6 @@ def draw_heatmap_square(
         min_value,
         max_value,
         colors):
-
     # Calculate column, row, and square dimensions
     col_nr = square_nr % nr_of_squares_in_row
     row_nr = square_nr // nr_of_squares_in_row
@@ -1203,7 +1197,7 @@ def recalc_recording_tau_and_density(self):
         nr_tracks=len(df_tracks_for_tau),
         area=area,
         time=100,
-        #concentration=self.concentration,   # ToDO
+        # concentration=self.concentration,   # ToDO
         concentration=10,
         magnification=1000)
 
@@ -1218,7 +1212,6 @@ def recalc_recording_tau_and_density(self):
     # Update the Tau information in the Viewer
     info2 = f"Spots: {self.list_images[self.img_no]['Nr Spots']:,} - Threshold: {self.list_images[self.img_no]['Threshold']} - Tau: {int(tau)}"
     self.text_for_info2.set(info2)
-
 
 
 # ---------------------------------------------------------------------------------------

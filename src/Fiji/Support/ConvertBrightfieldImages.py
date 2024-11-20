@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 import sys
@@ -89,4 +88,3 @@ def convert_bf_images(image_source_directory, paint_directory, force=False):
         paint_logger.info("Copied the entire 'Brightfield Images' directory to %s", dest_dir)
     except Exception as e:
         paint_logger.error("Error copying the directory %s to %s: %s", bf_jpeg_dir, dest_dir, str(e))
-

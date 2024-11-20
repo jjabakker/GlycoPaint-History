@@ -1,13 +1,13 @@
 import os
 import re
 import shutil
-from tkinter.filedialog import askdirectory
 
 import pandas as pd
 
 from src.Common.Support.LoggerConfig import paint_logger
 
 pd.options.mode.copy_on_write = True
+
 
 def save_experiment_to_file(df_experiment, experiment_file_path):
     df_experiment.to_csv(experiment_file_path, index=False)
@@ -185,17 +185,20 @@ def classify_directory(directory_path):
         if experiment_files.issubset(contents):
             missing_subdirs = experiment_subdirs - contents
             if missing_subdirs:
-                observations.append(f"Experiment directory '{directory_path}' is missing required subdirectories: {', '.join(missing_subdirs)}")
+                observations.append(
+                    f"Experiment directory '{directory_path}' is missing required subdirectories: {', '.join(missing_subdirs)}")
             else:
                 directory_type = 'Experiment'
                 # Check for maturity
                 if mature_experiment_file in contents:
                     maturity = 'Mature'
                 else:
-                    observations.append(f"Nor a mature Project: directory '{directory_path}' is missing the file '{mature_experiment_file}' required for maturity.")
+                    observations.append(
+                        f"Nor a mature Project: directory '{directory_path}' is missing the file '{mature_experiment_file}' required for maturity.")
         else:
             missing_files = experiment_files - contents
-            observations.append(f"Not an Experiment: directory '{directory_path}' is missing required files: {', '.join(missing_files)}")
+            observations.append(
+                f"Not an Experiment: directory '{directory_path}' is missing required files: {', '.join(missing_files)}")
 
         # Check if it is a project directory
         if directory_type is None:
@@ -210,16 +213,19 @@ def classify_directory(directory_path):
                 if experiment_files.issubset(sub_contents) and experiment_subdirs.issubset(sub_contents):
                     experiment_dir_count += 1
                 else:
-                    observations.append(f"Not an Experiment: Subdirectory '{sub_dir}' is missing required files or subdirectories")
+                    observations.append(
+                        f"Not an Experiment: Subdirectory '{sub_dir}' is missing required files or subdirectories")
 
             if experiment_dir_count > 0:
                 directory_type = 'Project'
                 if project_files.issubset(contents) and mature_project_file in contents:
                     maturity = 'Mature'
                 else:
-                    observations.append(f"Not a Project: directory '{directory_path}' is missing files required for project maturity: {', '.join(project_files - contents) or mature_project_file}")
+                    observations.append(
+                        f"Not a Project: directory '{directory_path}' is missing files required for project maturity: {', '.join(project_files - contents) or mature_project_file}")
             else:
-                observations.append(f"Not a Project: directory '{directory_path}' does not contain any valid experiment subdirectories.")
+                observations.append(
+                    f"Not a Project: directory '{directory_path}' does not contain any valid experiment subdirectories.")
 
     except Exception as e:
         paint_logger.error(f"An error occurred while classifying the directory: {e}")

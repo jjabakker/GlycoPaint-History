@@ -34,7 +34,7 @@ class HeatMapDialog:
         self.on_heatmap_variable_change()
 
         # Set dialog focus
-        #self.heatmap_dialog.grab_set()  # Prevent interaction with the main window
+        # self.heatmap_dialog.grab_set()  # Prevent interaction with the main window
         self.heatmap_dialog.focus_force()  # Bring the dialog to focus
 
     def setup_userinterface(self):
@@ -67,7 +67,7 @@ class HeatMapDialog:
         self.content.rowconfigure(1, weight=0)  # Control frame row does not expand
 
         self.heatmap_dialog.bind('<Key>', self.on_key_pressed)
-        self.heatmap_dialog.bind('<Escape>',lambda event: self.on_close())
+        self.heatmap_dialog.bind('<Escape>', lambda event: self.on_close())
 
     def setup_heatmap_variable_buttons(self):
         """
@@ -143,7 +143,6 @@ class HeatMapDialog:
         # Grid the buttons in the container frame
         toggle_button.grid(row=0, column=0, padx=5, pady=5)
         close_button.grid(row=0, column=1, padx=5, pady=5)
-
 
     # --------------------------------------------------------------
     # Event Handlers

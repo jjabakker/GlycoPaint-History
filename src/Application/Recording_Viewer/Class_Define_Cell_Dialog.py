@@ -188,4 +188,3 @@ class DefineCellDialog:
     #         plt.title(self.image_name + ' - Cell ' + str(cell_nr))
     #         plt.show()
     #     return
-

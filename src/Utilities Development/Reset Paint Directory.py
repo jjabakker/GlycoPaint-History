@@ -2,10 +2,13 @@ import os
 import shutil
 from tkinter import *
 from tkinter import ttk, filedialog, messagebox
+
 from src.Application.Utilities.ToolTips import ToolTip
 
+
 def reset_root(root_dir):
-    files_to_remove = ['All Recordings.csv', 'All Squares.csv', 'All Tracks.csv', 'Experiment TM.csv']  # Add file names you want to remove
+    files_to_remove = ['All Recordings.csv', 'All Squares.csv', 'All Tracks.csv',
+                       'Experiment TM.csv']  # Add file names you want to remove
     directories_to_remove = ['Brightfield Images', 'TrackMate Images']  # Add directory names you want to remove
 
     for dirpath, dirnames, filenames in os.walk(root_dir):
@@ -28,6 +31,7 @@ def reset_root(root_dir):
                     print(f"Deleted directory {dir_path}")
                 except Exception as e:
                     print(f"Failed to delete directory {dir_path}: {e}")
+
 
 class Dialog:
 
@@ -76,6 +80,7 @@ class Dialog:
 
     def exit_dialog(self):
         root.destroy()
+
 
 root = Tk()
 root.eval('tk::PlaceWindow . center')

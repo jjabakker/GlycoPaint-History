@@ -20,7 +20,6 @@ class SelectRecordingDialog():
         self.df = dataframe.copy()
         self.callback = callback
 
-
         # Only filter on these specific columns
         self.filter_columns = ['Probe Type', 'Probe', 'Cell Type', 'Adjuvant', 'Concentration']
 
