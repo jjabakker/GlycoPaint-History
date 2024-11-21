@@ -337,6 +337,8 @@ class RecordingViewer:
         self.df_all_tracks = pd.read_csv(os.path.join(self.user_specified_directory, 'All Tracks.csv'))
         if self.df_all_tracks is None:
             self.show_error_and_exit("No 'All Tracks' file, Did you select an image directory?")
+        if 'Unique Key' not in self.df_all_tracks.columns:
+            self.show_error("No 'Unique Key' in the All Tracks file. Did you run Generate Squares?")
         self.df_all_tracks.set_index('Unique Key', inplace=True, drop=False)
 
         self.nr_of_squares_in_row = int(self.df_experiment.iloc[0]['Nr of Squares in Row'])
