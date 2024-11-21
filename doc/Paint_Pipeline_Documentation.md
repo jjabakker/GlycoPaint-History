@@ -22,23 +22,23 @@ November 2024
 <br>
 <br>
 
-# Overview - The Dataflow in the GlycoPaint pipeline
+# Overview - The Dataflow in the GlycoPaint Pipeline
 
-Cells are observed under a microscope for 100 seconds capturing 2000 images during this interval. Bright spots, which  represent fluorophores, are visible in these images. These spots may move and often disappear after a short period. Their appearance signifies that a fluorophore has remained stationary long enough to be detected by the camera. In the GlycoPaint method, such events are interpreted as glycans (attached to fluorophores) binding to lectins on the cell surface. A key challenge is distinguishing these biologically relevant events from non-specific fluorophore sticking.
+Cells are observed under a microscope for 100 seconds capturing 2000 images during this interval. Bright spots, which  represent fluorophores, are visible in these images. These spots may move and often disappear after a short period. Spots appear because a fluorophore has remained stationary long enough to be detected by the camera. In the GlycoPaint method, spots are interpreted as glycans (with fluorophores attached) binding to lectins on the cell surface. A key challenge is distinguishing these biologically relevant events from non-specific fluorophore sticking.
 
-With the Fiji plugin TrackMate, spots are detected in each frame, and their positions registered. Tracks are then created by connecting spots across consecutive frames. Each track is characterised by features such as its duration, average x and y positions, and distance travelled. If a lectin-glycan pair were completely stationary, the resulting track would consist of a series of spots in the same location, with no movement. However, lectin-glycan pairs typically move slightly within the cell membrane, resulting in tracks that resemble small 'wriggles'. These tracks  are not evenly distributed across the image but are typically concentrated on the cell surface and show heterogeneous patterns within a cell.
+With the Fiji plugin TrackMate, spots are detected in each frame, and their positions are registered. Tracks are then created by connecting spots across consecutive frames. Each track is characterised by features such as its duration, average x and y positions, and distance travelled. If a lectin-glycan pair were completely stationary, the resulting track would consist of a series of spots in the same location, with no movement. However, lectin-glycan pairs typically move slightly within the cell membrane, resulting in tracks that resemble small 'wriggles'. These tracks  are not evenly distributed across the image but are typically concentrated on the cell surface and show heterogeneous patterns within a cell.  
 
-An average recording may contain around 800,000 spots, from which approximately 50,000 tracks are constructed. A grid is then overlaid on the recording, commonly using a 20x20 or 30x30 grid, dividing the image into 400 or 900 squares. Each track, based on its x and y coordinates, is assigned to a square. Diving the image into squares allows for the investigation of differences between cells or between regions within a cell.
+A grid is overlaid on the recording, commonly a 20x20 or 30x30 grid, dividing the image into 400 or 900 squares. Dividing the image into squares allows for the investigation of differences between cells or between regions within a cell.
 
-In the GlycoPaint pipeline, the primary unit of analysis is not an individual recording but a set of recordings grouped into an Experiment. Data processing generates two main datasets:
+In the GlycoPaint Pipeline, the primary unit of analysis is not an individual recording but a set of recordings grouped into an Experiment. Data processing generates two main datasets:
 
 - **All Squares**: A table containing summarised information on all tracks across all recordings in the experiment.
-
 - **All Tracks**: A table containing detailed information on every track in the experiment.
+  
+The two datasets provide the foundation for further analysis.
 
-Both datasets serve as the foundation for further analysis.
+A lot of data is generated. For an order of magnitude, an average recording may contain around 800,000 spots, from which approximately 50,000 tracks are constructed. A 20x20 or 30x30 grid divides the image into 400 or 900 squares. One of demo experiments, with 14 recordings and a 20x20 grid, has an All Squares table containing 5600 rows (or 12,600 rows for a 30x30 grid) and the All Tracks table contains nearly 180,000 tracks.  
 
-A lot of data is generated. For an experiment with 14 recordings and a 20x20 grid, the All Squares table would contain 5600 rows (or 12,600 rows for a 30x30 grid) and the All Tracks table might contain between 100,000 and 400,000 rows.
 
 The scope of the GlycoPaint pipeline is to extract information from the Recordings and to extract the maximum amount of meaningful summary information from the images for subsequent processing.
 
@@ -50,7 +50,7 @@ The Paint Pipeline was developed to analyse (bulk) data from Glyco-PAINT experim
 
 **Recording**
 
-The central concept in PAINT is the recording of binding events. A recording  consists of a brightfield image to identify the position of cells and a multi-frame image in which the spots, indicative of binding events, are recorded. In our experiments, we observe cells for 100 seconds, with 2000 frames at 50 milli-second intervals.
+The central concept in PAINT is the recording of binding events. A recording  consists of a brightfield image to identify the position of cells and a multi-frame image in which the spots, indicative of binding events, are recorded. In our experiments, we observe cells for 100 seconds, with 2,000 frames at 50 milli-second intervals.
 
 **Experiment**
 
@@ -59,7 +59,7 @@ and several replicates are recorded for each condition.
 
 **Project**
 
-A project is a set of experiments, that together are analysed.  Experiments in a project may be replicates of earlier conducted experiments or introduce new combinations of cell types, probes or adjuvants.
+A project is a set of experiments that together are analysed.  Experiments in a project may be replicates of earlier conducted experiments or introduce new combinations of cell types, probes or adjuvants.
 
 For example, a hierarchy is shown of a project consisting of two experiments, with 4 recordings each.
 
@@ -94,7 +94,10 @@ With the tracks available, the **Generate Squares** step overlays a fine grid of
 
 These tables are used in the **R Analysis** phase where the data is selected, processed and presented in line with research objectives.
 
-**Visual Inspection** of the results is possible at any time after the squares have been generated, both recordings in an experiment or allrecordings in a project.
+**Visual Inspection** of the results is possible at any time after the squares have been generated, both either for recordings in an experiment or for all recordings in a project.
+
+The steps will be described in detail in coming sections, using demo data that can be downloaded from: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14196381.svg)](https://doi.org/10.5281/zenodo.14196381)
+
 
 ## Prepare Experiment Info
 
@@ -122,21 +125,18 @@ An example of a fully specified Experiment Info file, with values for Probe, Pro
   <img src="Images/experiments_info_with_metadata.png"  width="800">
 </figure>
 
-The 'Brightfield Images' directory holds JPG versions of the Brightfield images, converted from the original Nikon '.nd2' format. These files  will be needed later in the Visual Inspection phase.
 
 ## Run TrackMate
 
 The Trackmate plugin in the Fiji environment is used to analyse the recordings, detect spots and connect spots to tracks where possible.
 
-The Experiment info 'Threshold' parameter determines the spot detection sensitivity. With a low threshold value, even not very well-defined  spots are detected. With a high threshold value, poorly defined spots are ignored. Experience indicates that with 1,000,000 plus spots, processing becomes very lengthy and does not lead to usable results. The user chooses for each recording a threshold value in an iterative process. The threshold should be set so that the number of spots preferably is in the 300,000 to 800,000 range. A good starting value for the Threshold is 20.
+The Experiment Info 'Threshold' parameter determines the spot detection sensitivity. With a low threshold value, even not very well-defined  spots are detected. With a high threshold value, poorly defined spots are ignored. Experience indicates that with 1,000,000 plus spots, processing takes very long and does not lead to usable results. The user chooses for each recording a threshold value in an iterative process. The threshold should be set so that the number of spots preferably is in the 300,000 to 800,000 range. A good starting value for the Threshold is 20.
 
-The 'Run Trackmate' procedure is started from Fiji by selecting from the 'Plugins' menu the Paint group and in there 'Run Trackmate'. A dialog box to select the Recordings Directory and Experiment Directory is displayed.
+The 'Run Trackmate' procedure is started from Fiji by selecting from the 'Plugins' menu the Paint group and in there 'Run Trackmate'. A dialog box to select the Recordings Directory and Experiment Directory (previoulsy created) is displayed.
 
 <figure style="text-align: center;">
   <img src="Images/run_trackmate_dialog.png"  width="500">
 </figure>
-
-
 
 Upon successful processing, the system generates for each recording an image. A representative example of an image is shown below.
 
@@ -145,13 +145,13 @@ Upon successful processing, the system generates for each recording an image. A 
 </figure>
 
 
-For the set of recordings in the experiment, the system generates one 'All Tracks' and one 'All Recordings' file with attributes such as Nr Spots, Nr Tracks, Run Time and a Time Stamp. The 'All Tracks' file contains, for every track, the average x and y position, and the number of spots and track duration. In addition, the diffusion coefficient (a measure of the displacement from the origin) has been calculated. An example is shown below.
+For the set of recordings in the experiment, the system generates one 'All Tracks' and one 'All Recordings' file with attributes such as Nr Spots, Nr Tracks, Run Time and a Time Stamp. The 'All Tracks' file contains, for every track, the average x and y position, and the number of spots and track duration. In addition, the diffusion coefficient (a measure of the displacement from the origin) has been calculated. An example of aan All Tracks file is shown below.
 
 <figure style="text-align: center;">
   <img src="Images/experiments_info_after_generate_squares.png"  width="800">
 </figure>
 
-The Project directory contents just after TrackMate has been run for the 241116 experiment is shown below.
+The Project directory contents just after TrackMate has been run for both the 240104 and 241116 experiment is shown below.
 
 <figure style="text-align: center;">
   <img src="Images/demo_project_after_trackmate.png"  width="350">
@@ -159,19 +159,17 @@ The Project directory contents just after TrackMate has been run for the 241116 
 
 ## Generate Squares
 
-With the tracks for the experiment available in the 'All Tracks' file, the recordings in the Exepriment folder (or for all experiments in a Project folder) are analysed by superimposing a grid over the image and determining the characteristics of each square. The user interface to invoke this function is shown below.
+With the tracks for the experiment available in the 'All Tracks' file, the recordings in the Experiment folder (or for all experiments in a Project folder) are analysed by superimposing a grid over the image and determining the characteristics of each square. The user interface to invoke this function is shown below.
 
 <figure style="text-align: center;">
   <img src="Images/generate_squares.png"  width="700">
 </figure>
 
-The Number of Squares in a Row (and Column) determines the size of the squares in the grid (typical values are 20 or  30). The number of tracks is determined for each square. The 10% least dense squares determin a 'background' density. All square densities are compared to this background density. If the ratio exceeds the 'Minimum Required Density  Ratio', squares are interpreted to be sufficiently distinct from the background to be of interest. 
-
-The homogeneity of squares is also determined and, if requested, the lack of homogeneity, i.e., the variability, can be limited.
+The Number of Squares in a Row (and Column) determines the size of the squares in the grid (typical values are 20 or  30). The number of tracks is then determined for each square. The 10% least dense squares determine a 'background' density. All square densities are compared to this background density. If the density ratio exceeds the 'Minimum Required Density  Ratio', squares are interpreted to be sufficiently distinct from the background to be of interest, otherwise they are ignored. The homogeneity of squares is also determined and, if requested, the lack of homogeneity, i.e., the variability, can be limited, exclusing squares with too much variability.
 
 A histogram of track durations is generated for each square that meets the specified density and variability criteria. Tau is then calculated through curve fitting. To ensure accurate curve fitting, a minimum number of data points (tracks) is required. The user can define this threshold with the 'Minimum Tracks to Calculate Tau' parameter.
 
-The quality of curve fitting is expressed in an R<sup>2</sup> parameter. An R<sup>2</sup> value of 1 indicates a perfect fit, values lower than 0.5 that a fit was difficult. The user-specified 'Min allowable R-squared' parameter sets a limit to how the required quality of fit.
+The quality of curve fitting is expressed in an R<sup>2</sup> parameter. An R<sup>2</sup> value of 1 indicates a perfect fit, values lower than 0.5 that a fit was difficult. The user-specified 'Min allowable R-squared' parameter sets a limit to acceptable quality of fit.
 
 For all squares in each recording, several attributes are calculated:
 
@@ -182,8 +180,7 @@ For all squares in each recording, several attributes are calculated:
 - The Tau (provided that the squares meet the selection criteria
 - The R<sup>2</sup> indicating the quality of the Tau curve fitting
 
-With the 'Generate Squares' function run, the directory structure is
-shown below.
+With the 'Generate Squares' function run, the directory structure is shown below (with now additional the All Squares files.).
 
 <figure style="text-align: center;">
   <img src="Images/demo_project_after_generate_squares.png"  width="350">
@@ -191,7 +188,7 @@ shown below.
 
 ## Compile Project
 
-Typically, data to be analysed comes from more than one experiment. With the Compile project option (Figure 11), the data from the experiments in the project are compiled and an 'All Recordings', 'All Squares' and 'All Tracks' file is generated (Figure 12).
+Typically, data to be analysed comes from more than one experiment. With the Compile project option, the data from the experiments in the project are compiled and an 'All Recordings', 'All Squares' and 'All Tracks' file on project level is generated.
 
 <figure style="text-align: center;">
   <img src="Images/compile_project_dialog.png"  width="700">
@@ -209,9 +206,9 @@ Once the squares are generated, the results can be reviewed in the Image Viewer.
   <img src="Images/select_viewer_dialog.png"  width="700">
 </figure>
 
-The Viewer dialogue appears, showing on the left the image with tracks and squares, and on the right the corresponding bright field image. Through scroll buttons at the bottom (or the combo box immediately under the 'Squares' window, different recordings can be selected. Information on the recording in view is displayed below the 'Squares' window.
+The Viewer dialogue appears, showing on the left the image with tracks and squares, and on the right the corresponding bright field image. Through scroll buttons at the bottom (or the combo box immediately under the 'Squares' window, different recordings can be selected.
 
-Metadata of the recording in view is displayed below the Squares image. To better view the underlying cells and tracks, keyboard options allow toggling between showing squares or not(key 't') or showing numbers or not (key 'n').
+Metadata of the recording in view is displayed below the Squares image. To better view the underlying cells and tracks, keyboard options allow toggling between showing squares or not (key 'ts') or showing numbers or not (key 'n').
 
 <figure style="text-align: center;">
   <img src="Images/recording_viewer.png"  width="900">
@@ -219,7 +216,7 @@ Metadata of the recording in view is displayed below the Squares image. To bette
 
 ### Select Recordings
 
-The 'Select Recordings' dialogue allows users to narrow down the recordings being viewed. In the example provided, recordings are available for two Cell Types and Probes. If the user is only interested in CHO-MR recordings, they can select 'CHO-MR,' then click 'Filter' followed by 'Apply All Filters' to display only the relevant recordings. 'Reset All' undoes any selections previously made.
+The 'Select Recordings' dialogue allows users to narrow down the recordings being viewed. In the example provided, recordings are available for two Cell Types and three Probes. If the user is only interested in BMDC recordings, they can select 'BMDC,' then click 'Filter' followed by 'Apply All Filters' to display only the relevant recordings. 'Reset All' undoes any selections previously made.
 
 <figure style="text-align: center;">
   <img src="Images/select_recordings.png"  width="900">
@@ -227,11 +224,11 @@ The 'Select Recordings' dialogue allows users to narrow down the recordings bein
 
 ### Select Squares
 
-The selection of squares of interest for each recording can be adjusted using the Select Squares dialogue. Sliders enable you to set the values for Max Allowable Variability, Min Required Density, and Min and Max Track Duration. Squares that no longer meet the selection criteria will disappear, while those that meet them will appear.
+The selection of squares of interest for each recording can be adjusted using the Select Squares dialogue. Sliders enable you to set the values for Max Allowable Variability, Min Required Density, and Min and Max Longest Track Duration. Squares that no longer meet the selection criteria will disappear, while those that meet them will be visible.
 
 The 'Neighbour' mode defines limitations in the spatial distribution of squares. There are no restrictions in 'Free' mode; in 'Relaxed' mode, squares must touch at least at the corners; and in 'Restricted' mode, they must be adjacent along the edges. The 'Set All' button applies the current selection criteria to all recordings in the set.
 
-Changes made are reflected in the 'All Recordings' date. The Recording Viewer dialogue has three options 'Always Save', 'Never Save' and 'Ask to Save' that determine if the changes are saved or not when the user closes the Recording Viewer.
+The Recording Viewer dialogue has three options 'Always Save', 'Never Save' and 'Ask to Save' that determine if the changes are saved or not when the user closes the Recording Viewer.
 
 <figure style="text-align: center;">
   <img src="Images/select_squares_dialog.png"  width="900">
@@ -239,9 +236,9 @@ Changes made are reflected in the 'All Recordings' date. The Recording Viewer di
 
 ### Define Cells
 
-In the Define Cells dialogue it is possible to assign squares to cells. The user selects squares by drawing a rectangle with the mouse, selecting a cell (colour) and pressing 'Assign'. The 'Toggle' function, which can also be invoked by pressing 't', switches between the heatmap and regular display.
+In the Define Cells dialogue it is possible to assign squares to cells. The user selects squares by drawing a rectangle with the mouse, selecting a cell (colour) and pressing 'Assign'. 
 
-Any changes made will be saved in the 'All Squares' file, depending on the selected save options.
+Any changes made will be saved when the user exits the recorisng Viewer, depending on the selected save options.
 
 <figure style="text-align: center;">
   <img src="Images/define_cells_dialog.png"  width="900">
@@ -249,7 +246,7 @@ Any changes made will be saved in the 'All Squares' file, depending on the selec
 
 ### Show Heatmap
 
-The Heatmap dialogue allows properties of squares to be viewed relative to each other. Five properties are available: Tau, Density, Average Diffusion Coefficient, Max Track Duration and Cumulative Track Duration. A colour range of 20 steps is used to display values. The minimum and maximum value is limited to the current recording unless the 'global' option is checked and the minimum and maximum are determined for the current set of recordings.
+The Heatmap dialogue allows properties of squares to be viewed relative to each other. Five properties are available: Tau, Density, Average Diffusion Coefficient, Longest Track Duration and Cumulative Track Duration. A colour range of 20 steps is used to display values. The minimum and maximum value is limited to the current recording unless the 'global' option is checked and the minimum and maximum are determined for the current set of recordings. The 'Toggle' function, which can also be invoked by pressing 't', switches between the heatmap and regular display.
 
 Whilst the Heatmap dialogue is displayed, the user can scroll through images.
 
@@ -257,7 +254,6 @@ Whilst the Heatmap dialogue is displayed, the user can scroll through images.
   <img src="Images/heatmap_dialog.png"  width="800">
 </figure>
 
-The 'Toggle' function, which can also be invoked by pressing 't', switches between the heatmap and regular display.
 
 # Data formats
 

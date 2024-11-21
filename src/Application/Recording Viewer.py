@@ -1144,6 +1144,8 @@ class RecordingViewer:
         # Clear the dialog reference
         self.select_recording_dialog = None
 
+
+
         # Return early if nothing was selected
         if not selected or not selection:
             return
