@@ -26,10 +26,7 @@ from fiji.plugin.trackmate.util import LogRecorder
 from ij import WindowManager
 from ij.io import FileSaver
 from ij.plugin.frame import RoiManager
-from java.lang.System import getProperty
 
-paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
-sys.path.append(paint_dir)
 
 from FijiSupportFunctions import fiji_get_file_open_write_attribute
 from LoggerConfig import paint_logger

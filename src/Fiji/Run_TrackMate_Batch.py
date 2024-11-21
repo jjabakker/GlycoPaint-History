@@ -3,7 +3,6 @@ import os
 import sys
 import time
 
-from java.lang.System import getProperty
 from javax.swing import JOptionPane
 
 from LoggerConfig import (
@@ -13,10 +12,6 @@ from LoggerConfig import (
 from FijiSupportFunctions import (
     ask_user_for_file,
     format_time_nicely)
-
-# This is necessary to import the Grid_Process_Batch module
-paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint", "Grid")
-sys.path.append(paint_dir)
 
 from Run_TrackMate import run_trackmate
 

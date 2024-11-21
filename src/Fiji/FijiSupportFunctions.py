@@ -5,11 +5,7 @@ import time
 import java.lang
 from java.io import PrintStream, ByteArrayOutputStream
 from java.lang import System
-from java.lang.System import getProperty
 from javax.swing import JFileChooser
-
-paint_code__dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
-sys.path.append(paint_code__dir)
 
 
 def ask_user_for_file(prompt='Select File'):

@@ -1,12 +1,8 @@
 import os
 import shutil
-import sys
 
 from ij import IJ
-from java.lang.System import getProperty
 
-paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
-sys.path.append(paint_dir)
 
 from LoggerConfig import (
     paint_logger,
