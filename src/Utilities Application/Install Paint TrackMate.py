@@ -19,7 +19,7 @@ def setup_logging():
 
 def find_app_path_macos(app_name="Fiji.app"):
     """Finds the installation path of a macOS application."""
-    common_paths = ['/Applications', os.path.expanduser('~/Applications'), '/System/Applications']
+    common_paths = [os.path.expanduser('~/Applications'), '/Applications', '/System/Applications']
     for directory in common_paths:
         app_path = os.path.join(directory, app_name)
         if os.path.exists(app_path):
