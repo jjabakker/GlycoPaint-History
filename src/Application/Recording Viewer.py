@@ -41,7 +41,7 @@ from src.Application.Recording_Viewer.Select_Squares import select_squares
 from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-from src.Common.Support.LoggerConfig import (
+from src.Fiji.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
 

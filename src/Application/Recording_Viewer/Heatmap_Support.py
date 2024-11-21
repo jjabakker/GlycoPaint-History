@@ -2,7 +2,7 @@ import sys
 
 import matplotlib.pyplot as plt
 
-from src.Common.Support.LoggerConfig import paint_logger
+from src.Fiji.LoggerConfig import paint_logger
 
 heatmap_modes = {
     1: 'Tau',

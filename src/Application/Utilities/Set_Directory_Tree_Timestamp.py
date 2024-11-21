@@ -1,7 +1,7 @@
 import os
 import time
 
-from src.Common.Support.LoggerConfig import paint_logger
+from src.Fiji.LoggerConfig import paint_logger
 
 
 def set_directory_tree_timestamp(dir_to_change, timestamp=None):

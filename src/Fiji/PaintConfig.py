@@ -17,7 +17,7 @@ except:
 
 # Import for Python
 try:
-    from src.Common.Support.LoggerConfig import paint_logger
+    from src.Fiji.LoggerConfig import paint_logger
 except:
     pass
 

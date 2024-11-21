@@ -7,10 +7,10 @@ from tkinter import ttk, filedialog
 import pandas as pd
 
 from src.Application.Process_Projects.Convert_BF_from_nd2_to_jpg import convert_bf_images
-from src.Common.Support.LoggerConfig import (
+from src.Fiji.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
-from src.Common.Support.PaintConfig import get_paint_attribute
+from src.Fiji.PaintConfig import get_paint_attribute
 
 
 def prepare_experiment_info_file(image_source_directory, experiment_directory):

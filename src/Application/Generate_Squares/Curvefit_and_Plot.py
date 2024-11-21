@@ -6,7 +6,7 @@ import pandas as pd
 from scipy.optimize import OptimizeWarning
 from scipy.optimize import curve_fit
 
-from src.Common.Support.LoggerConfig import paint_logger
+from src.Fiji.LoggerConfig import paint_logger
 
 
 def mono_exp(x, m, t, b):

@@ -7,7 +7,7 @@ import pandas as pd
 from src.Application.Recording_Viewer.Select_Squares import (
     select_squares_with_parameters,
     label_selected_squares_and_tracks)
-from src.Common.Support.LoggerConfig import (
+from src.Fiji.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
@@ -34,10 +34,10 @@ from src.Application.Generate_Squares.Generate_Squares_Support_Functions import 
 from src.Application.Utilities.General_Support_Functions import (
     format_time_nicely)
 
-from src.Common.Support.DirectoriesAndLocations import (
+from src.Fiji.DirectoriesAndLocations import (
     delete_files_in_directory)
 
-from src.Common.Support.PaintConfig import (
+from src.Fiji.PaintConfig import (
     get_paint_attribute)
 
 if not paint_logger_file_name_assigned:

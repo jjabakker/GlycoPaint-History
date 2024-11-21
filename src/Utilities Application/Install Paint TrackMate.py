@@ -4,7 +4,7 @@ import subprocess
 import logging
 import platform
 
-from src.Common.Support.PaintConfig import get_paint_attribute
+from src.Fiji.PaintConfig import get_paint_attribute
 
 if platform.system() == "Windows":
     import winreg

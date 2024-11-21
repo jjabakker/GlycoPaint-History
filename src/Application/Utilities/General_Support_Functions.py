@@ -4,7 +4,7 @@ import shutil
 
 import pandas as pd
 
-from src.Common.Support.LoggerConfig import paint_logger
+from src.Fiji.LoggerConfig import paint_logger
 
 pd.options.mode.copy_on_write = True
 

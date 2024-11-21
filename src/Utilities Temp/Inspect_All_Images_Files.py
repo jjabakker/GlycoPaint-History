@@ -5,7 +5,7 @@ import sys
 
 import pandas as pd
 
-from src.Common.Support.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
+from src.Fiji.LoggerConfig import paint_logger, paint_logger_change_file_handler_name
 
 PROJECT_LEVEL = '/Users/hans/Paint Source/paint data generation - production.json'
 PAINT_SOURCE = '/Users/hans/Paint Source'

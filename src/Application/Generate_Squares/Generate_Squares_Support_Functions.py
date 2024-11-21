@@ -8,8 +8,8 @@ from src.Application.Generate_Squares.Curvefit_and_Plot import (
     compile_duration,
     curve_fit_and_plot
 )
-from src.Common.Support.LoggerConfig import paint_logger
-from src.Common.Support.PaintConfig import get_paint_attribute
+from src.Fiji.LoggerConfig import paint_logger
+from src.Fiji.PaintConfig import get_paint_attribute
 
 pd.options.mode.copy_on_write = True
 

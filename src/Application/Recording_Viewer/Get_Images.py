@@ -4,7 +4,7 @@ from tkinter import *
 
 from PIL import Image, ImageTk
 
-from src.Common.Support.LoggerConfig import paint_logger
+from src.Fiji.LoggerConfig import paint_logger
 
 
 def get_images(self, initial=False):

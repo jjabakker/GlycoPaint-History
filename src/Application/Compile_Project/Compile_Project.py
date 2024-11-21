@@ -19,11 +19,11 @@ from src.Application.Utilities.General_Support_Functions import (
     classify_directory)
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
-from src.Common.Support.LoggerConfig import (
+from src.Fiji.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)
-from src.Common.Support.PaintConfig import (
+from src.Fiji.PaintConfig import (
     get_paint_attribute,
     update_paint_attribute)
 

@@ -10,7 +10,7 @@ from src.Application.Utilities.General_Support_Functions import (
     classify_directory
 )
 from src.Application.Utilities.Paint_Messagebox import paint_messagebox
-from src.Common.Support.PaintConfig import (
+from src.Fiji.PaintConfig import (
     get_paint_attribute,
     update_paint_attribute)
 

@@ -8,7 +8,7 @@ from src.Application.Generate_Squares.Generate_Squares_Support_Functions import 
     get_square_coordinates)
 from src.Application.Utilities.General_Support_Functions import (
     format_time_nicely)
-from src.Common.Support.LoggerConfig import (
+from src.Fiji.LoggerConfig import (
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned, paint_logger)
 

@@ -4,7 +4,7 @@ import time
 
 from src.Application.Utilities.General_Support_Functions import (
     format_time_nicely)
-from src.Common.Support.LoggerConfig import (
+from src.Fiji.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_file_name_assigned)

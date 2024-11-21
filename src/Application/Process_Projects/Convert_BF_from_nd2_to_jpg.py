@@ -5,8 +5,8 @@ import numpy as np
 from PIL import Image
 from nd2reader import ND2Reader
 
-from src.Common.Support.LoggerConfig import paint_logger
-from src.Common.Support.PaintConfig import get_paint_attribute
+from src.Fiji.LoggerConfig import paint_logger
+from src.Fiji.PaintConfig import get_paint_attribute
 
 
 def _convert_native_to_jpg(native_file_path, output_file):

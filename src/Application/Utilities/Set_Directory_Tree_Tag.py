@@ -3,7 +3,7 @@ import plistlib
 
 import xattr
 
-from src.Common.Support.LoggerConfig import paint_logger
+from src.Fiji.LoggerConfig import paint_logger
 
 
 def set_finder_tags(path, tags):

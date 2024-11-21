@@ -13,14 +13,14 @@ from src.Application.Utilities.General_Support_Functions import format_time_nice
 from src.Application.Utilities.Set_Directory_Tree_Timestamp import (
     set_directory_tree_timestamp,
     get_timestamp_from_string)
-from src.Common.Support.LoggerConfig import (
+from src.Fiji.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name,
     paint_logger_console_handle_set_level,
     get_paint_logger_directory,
     DEBUG as PAINT_DEBUG
 )
-from src.Common.Support.PaintConfig import get_paint_attribute
+from src.Fiji.PaintConfig import get_paint_attribute
 
 paint_logger_change_file_handler_name('Process All Projects.log')
 paint_logger_console_handle_set_level(PAINT_DEBUG)
