@@ -7,11 +7,7 @@ import time
 from ij import IJ
 from java.awt import GridLayout, Dimension, FlowLayout
 from java.io import File
-from java.lang.System import getProperty
 from javax.swing import JFrame, JPanel, JButton, JTextField, JFileChooser, JOptionPane, BorderFactory
-
-paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
-sys.path.append(paint_dir)
 
 from DirectoriesAndLocations import (
     get_experiment_info_file_path,

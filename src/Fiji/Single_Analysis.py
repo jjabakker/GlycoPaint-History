@@ -7,10 +7,7 @@ from fiji.plugin.trackmate import Logger
 from fiji.plugin.trackmate import Model
 from ij import IJ
 from ij.plugin.frame import RoiManager
-from java.lang.System import getProperty
 
-paint_dir = getProperty('fiji.dir') + os.sep + "scripts" + os.sep + "Plugins" + os.sep + "Paint"
-sys.path.append(paint_dir)
 
 # from Trackmate import paint_trackmate
 from Trackmate import execute_trackmate_in_Fiji

@@ -6,10 +6,6 @@ import time
 from java.lang.System import getProperty
 from javax.swing import JOptionPane
 
-# This is necessary to import the FijiSupport and LoggerConfig module
-paint_dir = os.path.join(getProperty('fiji.dir'), "scripts", "Plugins", "Paint")
-sys.path.append(paint_dir)
-
 from LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
