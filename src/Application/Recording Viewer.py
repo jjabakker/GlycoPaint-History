@@ -489,7 +489,7 @@ class RecordingViewer:
             tau_median = round(statistics.median(tau_values), 0)
             tau_std = round(statistics.stdev(tau_values), 1)
 
-        # Display statistics
+        # Display statistics   #ToDo print statements are not good
         print('\n\n')
         print(f'The total number of squares:   {nr_total_squares}')
         print(f'The visible number of squares: {nr_visible_squares}')
@@ -498,6 +498,8 @@ class RecordingViewer:
         print(f'The mean Tau value:            {tau_mean}')
         print(f'The median Tau value:          {tau_median}')
         print(f'The Tau standard deviation:    {tau_std}')
+
+
     # --------------------------------------------------------------------------------------------
     # Key Bindings and associated functions
     # --------------------------------------------------------------------------------------------
