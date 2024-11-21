@@ -135,6 +135,7 @@ class RecordingViewer:
         self.only_valid_tau = True
 
         self.selected_values = []
+        self.filter_applied = []
 
     def setup_ui(self):
         """
@@ -375,7 +376,8 @@ class RecordingViewer:
                 self,
                 self.df_experiment,
                 self.on_recording_selection,
-                self.selected_values)
+                self.selected_values,
+                self.filter_applied)
 
     def on_heatmap(self):
         # If the heatmap is not already active, then we need to run the heatmap dialog
@@ -1146,16 +1148,15 @@ class RecordingViewer:
     # Recording Selection Dialog Interaction
     # ---------------------------------------------------------------------------------------
 
-    def on_recording_selection(self, selection, selected):
+    def on_recording_selection(self, selection, selected, filter_applied):
         # Clear the dialog reference
         self.select_recording_dialog = None
-
-
 
         # Return early if nothing was selected
         if not selected or not selection:
             return
         self.selected_values = selection
+        self.filter_applied = filter_applied
 
         # Filter the list of images based on the selection criteria
         self.list_images = [

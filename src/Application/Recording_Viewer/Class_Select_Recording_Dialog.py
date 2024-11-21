@@ -14,7 +14,7 @@ def enable_button(button):
 
 class SelectRecordingDialog():
 
-    def __init__(self, image_viewer, df_experiment, callback, selected_values=None):
+    def __init__(self, image_viewer, df_experiment, callback, selected_values=None, filter_applied=None):
 
         self.image_viewer = image_viewer
 
@@ -24,6 +24,10 @@ class SelectRecordingDialog():
         self.select_recording_dialog.attributes("-topmost", True)
         self.select_recording_dialog.resizable(False, False)
         self.select_recording_dialog.protocol("WM_DELETE_WINDOW", self.on_cancel)
+
+        # For this dialog, it is not important to have access to the parent window
+        self.select_recording_dialog.grab_set()  # Prevent interaction with the main window
+        self.select_recording_dialog.focus_force()  # Bring the dialog to focus
 
         self.df = df_experiment.copy()
         self.callback = callback
@@ -39,12 +43,16 @@ class SelectRecordingDialog():
 
         # Restore previous selections or initialize with empty selections
         self.selected_values = selected_values if selected_values else {col: [] for col in self.filter_columns}
+        self.filter_applied = filter_applied if filter_applied else {col: False for col in self.filter_columns}
 
-        # For this dialog, it is not important to have access to the parent window
-        self.select_recording_dialog.grab_set()  # Prevent interaction with the main window
-        self.select_recording_dialog.focus_force()  # Bring the dialog to focus
+        self.df_filtered = self.df.copy()
+        for col in self.filter_applied:
+            if self.filter_applied[col]:
+                self.df_filtered = self.df_filtered[self.df_filtered[col].isin(self.selected_values[col])]
 
         self.setup_userinterface()
+
+
 
     def setup_userinterface(self):
         # Frame to hold list boxes and buttons
@@ -108,6 +116,8 @@ class SelectRecordingDialog():
         self.populate_listbox(col)  # Restore original values for this column
 
         self.selected_values[col] = []  # Clear selected values for this column
+        self.filter_applied[col] = False
+
         self.filtered_df = self.df.copy()
         for c, lb in self.listboxes.items():
             selected_values = self.selected_values[c]
@@ -139,7 +149,9 @@ class SelectRecordingDialog():
         """ Clear all selections in all listboxes and restore their content. """
         for col in self.filter_columns:
             self.listboxes[col].selection_clear(0, tk.END)  # Clear selections
+            self.selected_values[col] = []  # Clear selected values
             self.populate_listbox(col)  # Restore original values
+            self.filter_applied[col] = False
 
         self.filtered_df = self.df.copy()  # Reset the filtered DataFrame
 
@@ -148,6 +160,7 @@ class SelectRecordingDialog():
         listbox = self.listboxes[col]
         selected_values = [listbox.get(i) for i in listbox.curselection()]
         self.selected_values[col] = selected_values
+        self.filter_applied[col] = True
 
         if selected_values:
             # Trigger filtering when the button is pressed
@@ -175,14 +188,14 @@ class SelectRecordingDialog():
                 selected_filters[col] = current_values
 
         # Pass the selected filters to the main window through the callback
-        self.callback(selected_filters, True)
+        self.callback(selected_filters, True, self.filter_applied)
 
         # Close the dialog
         self.select_recording_dialog.destroy()
 
     def on_cancel(self):
         """ Close the dialog without applying any filters. """
-        self.callback(None, False)
+        self.callback(None, False, self.filter_applied)
         self.select_recording_dialog.destroy()
 
 
