@@ -122,7 +122,8 @@ class SelectRecordingDialog():
         for c, lb in self.listboxes.items():
             selected_values = self.selected_values[c]
             if selected_values:
-                self.filtered_df = self.filtered_df[self.df[c].isin(selected_values)]
+                # self.filtered_df = self.filtered_df[self.df[c].isin(selected_values)]
+                self.filtered_df = self.filtered_df[self.filtered_df[c].isin(selected_values)]
 
         # Update each listbox with filtered unique values
         for c, lb in self.listboxes.items():
