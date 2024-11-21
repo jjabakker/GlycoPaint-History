@@ -40,9 +40,9 @@ The resulting environment, displayed below, should be able to run the pipeline.
 The pipeline also uses R for the data analysis. R Studio can be downloaded from [https://rstudio.com/products/rstudio/download/](https://rstudio.com/products/rstudio/download/). You may have to install R also - instructions to do that are on the site. Examples of R scripts are available from the GitHub repository
 
 
-# Running the Pipeline
+# Available scripts to run the pipeline
 
-With Pycharm installed, the environment set up, and the code cloned from the repository, you are ready to run the pipeline. The Python scripts are in the src directory under Applications
+With Pycharm installed, the environment set up, and the code cloned from the repository, you are ready to run the pipeline. There is a collection of scripts and support files, but for just tunning thr piepline a smnall number if scripts are needed. They are found in the src directory under Applications
 
 <figure style="text-align: center;">
   <img src="Images/python_scripts.png" >
