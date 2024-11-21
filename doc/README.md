@@ -1,15 +1,10 @@
 # Paint Processing Pipeline
 
-Glycopaint experiments generate multi frame images from which data needs to be retrieved. The Paint Processing Pipeline
-uses the Trackmate plugin to construct tracks that represents binding events.
 
-The pipeline has been developed as a special purpose tool to process glyco binding experiments in Leiden. With the code
-as provided, adjustments can be relatively easily made to adjust to different, similar, requirements.
+The GlycoPaint is a research method to study interactions of glycans on lectins on live cells.
 
-References:
+The GlycoPaint pipeline is a research application to extract information from the GlycoPaint refcordings. The pipeline is a collection of Python and R scripts and depends heavily on Fiji and TrackMate.
 
-Leiden Paint Paper
+To assist with installing the components of the pipeline, [Installation instructions](Installation) are provided.
 
-Ershov, D., Phan, M.-S., Pylvänäinen, J. W., Rigaud, S. U., Le Blanc, L., Charles-Orszag, A., … Tinevez, J.-Y. (2022).
-TrackMate 7: integrating state-of-the-art segmentation algorithms into tracking pipelines. Nature Methods, 19(7),
-829–832. doi:10.1038/s41592-022-01507-1
+An overview of the functionbality of the pipeline and how to use it is provided in the [Paint Pipeline documentation.md](Paint_Pipeline_documentation.md)
