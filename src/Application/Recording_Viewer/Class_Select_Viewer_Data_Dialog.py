@@ -113,7 +113,7 @@ class SelectViewerDataDialog:
                 # Ok, it all looks good. Check if very many recordings are requested and warn the user
                 nr = nr_recordings(self.directory)
                 if nr_recordings(self.directory) > 100:
-                    msg = f"You are about to view a {nr} recordings. This may take a while."
+                    msg = f"You are about to view {nr} recordings. This may take a while."
                     paint_logger.info(msg)
                     messagebox.showinfo('Warning', msg)
                 self.mode = type
