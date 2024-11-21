@@ -8,7 +8,7 @@ src/Config/Paint\ Data\ Generation.json
 *.iml
 *.csv
 src/Demo/
-
+.idea/
 
 
 # Byte-compiled / optimized / DLL files
