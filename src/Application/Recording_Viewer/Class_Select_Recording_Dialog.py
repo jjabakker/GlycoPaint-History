@@ -4,9 +4,17 @@ from tkinter import ttk
 import pandas as pd
 
 
+def disable_button(button):
+    """Disable the button and apply the custom disabled style."""
+    button.state(["disabled"])
+
+def enable_button(button):
+    """Enable the button and restore the normal style."""
+    button.state(["!disabled"])
+
 class SelectRecordingDialog():
 
-    def __init__(self, image_viewer, dataframe, callback):
+    def __init__(self, image_viewer, df_experiment, callback, selected_values=None):
 
         self.image_viewer = image_viewer
 
@@ -17,7 +25,7 @@ class SelectRecordingDialog():
         self.select_recording_dialog.resizable(False, False)
         self.select_recording_dialog.protocol("WM_DELETE_WINDOW", self.on_cancel)
 
-        self.df = dataframe.copy()
+        self.df = df_experiment.copy()
         self.callback = callback
 
         # Only filter on these specific columns
@@ -28,6 +36,9 @@ class SelectRecordingDialog():
 
         # Store original unique values for reset functionality
         self.original_values = {col: sorted(self.df[col].unique()) for col in self.filter_columns}
+
+        # Restore previous selections or initialize with empty selections
+        self.selected_values = selected_values if selected_values else {col: [] for col in self.filter_columns}
 
         # For this dialog, it is not important to have access to the parent window
         self.select_recording_dialog.grab_set()  # Prevent interaction with the main window
@@ -40,10 +51,11 @@ class SelectRecordingDialog():
         content = ttk.Frame(self.select_recording_dialog, padding="10")
         content.grid(row=0, column=0, sticky="NSEW")
 
+        self.reset_buttons = {}
         self.listboxes = {}  # Listboxes for each column
         self.filtered_df = self.df.copy()  # DataFrame to store the filtered results
 
-        # Generate a listbox and filter button for each column
+        # Generate a listbox, filter button, and reset button for each column
         for i, col in enumerate(self.filter_columns):
             # Label for the column name
             ttk.Label(content, text=col).grid(row=0, column=i, padx=5, sticky="W")
@@ -58,11 +70,27 @@ class SelectRecordingDialog():
 
             # Create a filter button below the listbox
             filter_button = ttk.Button(content, text="Filter", command=lambda c=col: self.apply_filter(c))
-            filter_button.grid(row=2, column=i, padx=(5, 2), pady=5, sticky="EW")
+            filter_button.grid(row=2, column=i, padx=(5, 2), pady=(5, 2), sticky="EW")
 
-        # Buttons to reset, apply, and cancel at the bottom center
+            # Create a reset button below the filter button
+
+            # Create a custom style
+            style = ttk.Style()
+            style.configure("Custom.TButton",
+                            font=("Helvetica", 14),
+                            padding=10)
+            style.map("Custom.TButton",
+                      background=[("disabled", "lightgray")],  # Background when disabled
+                      foreground=[("disabled", "gray")])  # Text color when disabled
+
+            reset_button = ttk.Button(content, text="Reset", style="Custom.TButton", command=lambda c=col: self.reset_filter(c))
+            reset_button.grid(row=3, column=i, padx=(5, 2), pady=(2, 5), sticky="EW")
+            disable_button(reset_button)
+            self.reset_buttons[col] = reset_button
+
+        # Buttons to reset all, apply all, and cancel at the bottom center
         button_frame = ttk.Frame(content)  # Frame for the buttons
-        button_frame.grid(row=3, column=0, columnspan=len(self.filter_columns), pady=10)
+        button_frame.grid(row=4, column=0, columnspan=len(self.filter_columns), pady=10)
 
         reset_all_button = ttk.Button(button_frame, text="Reset All", command=self.reset_all_filters)
         reset_all_button.pack(side=tk.LEFT, padx=5)
@@ -73,12 +101,39 @@ class SelectRecordingDialog():
         cancel_button = ttk.Button(button_frame, text="Cancel", command=self.on_cancel)
         cancel_button.pack(side=tk.LEFT, padx=5)
 
+    def reset_filter(self, col):
+        """ Clear the selection and restore original values for a specific column. """
+        listbox = self.listboxes[col]
+        listbox.selection_clear(0, tk.END)  # Clear current selections
+        self.populate_listbox(col)  # Restore original values for this column
+
+        self.selected_values[col] = []  # Clear selected values for this column
+        self.filtered_df = self.df.copy()
+        for c, lb in self.listboxes.items():
+            selected_values = self.selected_values[c]
+            if selected_values:
+                self.filtered_df = self.filtered_df[self.df[c].isin(selected_values)]
+
+        # Update each listbox with filtered unique values
+        for c, lb in self.listboxes.items():
+            current_values = sorted(self.filtered_df[c].unique())
+            lb.delete(0, tk.END)  # Clear existing values
+            for value in current_values:
+                lb.insert(tk.END, value)
+
+        disable_button(self.reset_buttons[col])
+
+
     def populate_listbox(self, col):
         """ Populate the listbox with original unique values from the column. """
         listbox = self.listboxes[col]
         listbox.delete(0, tk.END)  # Clear existing values
-        for value in self.original_values[col]:
-            listbox.insert(tk.END, value)
+        if self.selected_values[col]:
+            for value in self.selected_values[col]:
+                listbox.insert(tk.END, value)
+        else:
+            for value in self.original_values[col]:
+                listbox.insert(tk.END, value)
 
     def reset_all_filters(self):
         """ Clear all selections in all listboxes and restore their content. """
@@ -92,6 +147,7 @@ class SelectRecordingDialog():
         """ Apply filter based on selected values in the specified listbox. """
         listbox = self.listboxes[col]
         selected_values = [listbox.get(i) for i in listbox.curselection()]
+        self.selected_values[col] = selected_values
 
         if selected_values:
             # Trigger filtering when the button is pressed
@@ -106,6 +162,8 @@ class SelectRecordingDialog():
                 lb.delete(0, tk.END)  # Clear existing values
                 for value in current_values:
                     lb.insert(tk.END, value)
+
+        enable_button(self.reset_buttons[col])
 
     def apply_all_filters(self):
         """ Collect selected values for all listboxes and apply filters. """
@@ -162,7 +220,6 @@ if __name__ == "__main__":
             filter_text = ", ".join(f"{k}: {v}" for k, v in selected_filters.items())
             self.result_label.config(text=f"Filtered Data: {filter_text}")
 
-# Run the main window
-if __name__ == "__main__":
+
     main_app = MainWindow()
     main_app.mainloop()
