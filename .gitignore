@@ -1,6 +1,5 @@
 # My own stuff
 src/Old/
-
 src/Config/Process\ Project.json
 src/Config/Paint\ Data\ Generation.json
 .DS_Store
@@ -9,6 +8,7 @@ src/Config/Paint\ Data\ Generation.json
 *.csv
 src/Demo/
 .idea/
+*.jar
 
 
 # Byte-compiled / optimized / DLL files
