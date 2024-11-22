@@ -310,7 +310,6 @@ def process_recording(
     # Refresh df_tracks_of_recording now to pick up Label and Square Nrs
     df_tracks_of_recording = df_tracks_of_recording[df_tracks_of_recording['Ext Recording Name'] == recording_name]
 
-
     recording_tau, recording_r_squared, recording_density = calculate_tau_and_density_for_recording(
         df_squares_of_recording,
         df_tracks_of_recording,
