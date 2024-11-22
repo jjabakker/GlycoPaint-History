@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import logging
 import platform
+from os.path import exists
 
 from src.Fiji.PaintConfig import get_paint_attribute
 
@@ -127,42 +128,35 @@ def install():
             logging.critical("Please make sure that Fiji is installed and specify the path to the Fiji application in the paint.json file.")
             return
 
-    dest_root = os.path.join(fiji_app, 'scripts', 'Plugins')
+    dest_root = os.path.join(fiji_app, 'Plugins', 'GlycoPaint')
+    os.makedirs(dest_root, exist_ok=True)
     source_root = os.path.dirname(os.getcwd())
 
     source_directories = {
         "fiji_source": os.path.join(source_root, 'Fiji'),
-        "support_source": os.path.join(source_root, 'Fiji', 'Support'),
-        "common_support": os.path.join(source_root, 'Common', 'Support'),
     }
 
     dest_directories = {
-        "fiji_dest": os.path.join(dest_root, 'Paint'),
-        "library_dest": os.path.join(dest_root, 'Paint'),
+        "fiji_dest": dest_root
     }
 
-    for directory in dest_directories.values():
-        os.makedirs(directory, exist_ok=True)
-
     file_groups = {
-        # source_directories["fiji_source"]: ["Run_TrackMate.py", "Run_TrackMate_Batch.py", "Single_Analysis.py", "Kas_Special.py"],
-        source_directories["fiji_source"]: ["Run_TrackMate.py", "Run_TrackMate_Batch.py", "Single_Analysis.py"],
-        source_directories["support_source"]: ["FijiSupportFunctions.py", "Trackmate.py", "ConvertBrightfieldImages.py"],
-        source_directories["common_support"]: ["LoggerConfig.py", "DirectoriesAndLocations.py", "PaintConfig.py"],
+        source_directories["fiji_source"]: [
+            "Run_TrackMate.py",
+            "Run_TrackMate_Batch.py",
+            "Single_Analysis.py",
+            "FijiSupportFunctions.py",
+            "Trackmate.py",
+            "ConvertBrightfieldImages.py",
+            "LoggerConfig.py",
+            "DirectoriesAndLocations.py",
+            "PaintConfig.py"],
     }
 
     for src_dir, files in file_groups.items():
-        dest_dir = dest_directories["library_dest"]
+        dest_dir = dest_directories["fiji_dest"]
         for file in files:
             copy_file(src_dir, dest_dir, file)
-
-    user_dirs = [
-        os.path.join(os.path.expanduser('~'), "Paint", "Logger"),
-        os.path.join(os.path.expanduser('~'), "Paint", "Defaults"),
-    ]
-    for directory in user_dirs:
-        os.makedirs(directory, exist_ok=True)
-        logging.info(f"Ensured directory exists: {directory}")
 
 
 if __name__ == '__main__':
