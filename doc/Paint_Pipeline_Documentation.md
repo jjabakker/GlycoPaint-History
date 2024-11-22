@@ -433,8 +433,8 @@ The core of the data processing takes place in Generate Squares. To facilitate s
        - Compute metrics (Tau, Density, Variability, etc.).
        - Append square data to the main DataFrame.
     3. Compute the density ratio for the squares.
-    4. Apply selection filters using select_squares_with_parameters.
-    5. Label selected squares and propagate labels to tracks.
+    4. Label selected squares and propagate labels to tracks.
+    5. Calculate the recording level Tau and Density
     6. Return processed squares, tracks, and recording-level metrics.
 
 <br>
