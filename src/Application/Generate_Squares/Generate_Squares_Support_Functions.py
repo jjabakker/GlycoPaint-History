@@ -315,16 +315,15 @@ def calculate_average_long_track(df_tracks):
     """
     Calculate the average of the long tracks for the square
     The long tracks are defined as the longest 10% of the tracks
-    If the number of tracks is less than 10, the average long track is set on the full set
     """
     nr_of_tracks = len(df_tracks)
-    df_tracks.sort_values(by=['Track Duration'], inplace=True)
-    if nr_of_tracks < 10:
-        average_long_track = df_tracks.iloc[nr_of_tracks - 1]['Track Duration']
+    if nr_of_tracks == 0:
+        average_long_track = 0
     else:
+        df_tracks.sort_values(by=['Track Duration'], inplace=True)
         fraction = get_paint_attribute('Generate Squares',
                                        'Fraction of Squares to Determine Background') or 0.1
-        nr_tracks_to_average = round(fraction * nr_of_tracks)
+        nr_tracks_to_average = max(round(fraction * nr_of_tracks),  1)
         average_long_track = df_tracks.tail(nr_tracks_to_average)['Track Duration'].mean()
     return average_long_track
 
