@@ -58,7 +58,7 @@ def execute_trackmate_in_Fiji(recording_name, threshold, tracks_filename, image_
     target_channel = trackmate_config['TARGET_CHANNEL']
     do_median_filtering = trackmate_config['DO_MEDIAN_FILTERING']
 
-    min_number_of_spots = trackmate_config['MIN_NUMBER_OF_SPOTS']
+    min_number_of_spots = trackmate_config['MIN_NR_SPOTS_IN_TRACK']
 
     track_colouring = trackmate_config['TRACK_COLOURING']
     if track_colouring != 'TRACK_DURATION' and track_colouring != 'TRACK_INDEX':

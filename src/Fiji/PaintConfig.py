@@ -87,7 +87,6 @@ default_data = {
         "RADIUS": 0.5,
         "TARGET_CHANNEL": 1,
         "DO_MEDIAN_FILTERING": False,
-        "MIN_NUMBER_OF_SPOTS": 3,
         "TRACK_COLOURING": "TRACK_DURATION"
     }
 }
