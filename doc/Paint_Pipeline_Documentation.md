@@ -332,7 +332,7 @@ $$Diffusion\ Coefficient = \frac{MSD}{(2\ *n*t)}$$
 The operation of the Paint Pipeline can be tuned with parameters that are kept in 'Paint.json' file.
 
 <figure style="text-align: center;">
-  <img src="Images/paint_json.png" width="1200">
+  <img src="Images/paint_json.png" width="900">
 </figure>
 
 
@@ -433,8 +433,8 @@ The core of the data processing takes place in Generate Squares. To facilitate s
        - Compute metrics (Tau, Density, Variability, etc.).
        - Append square data to the main DataFrame.
     3. Compute the density ratio for the squares.
-    4. Apply selection filters using select_squares_with_parameters.
-    5. Label selected squares and propagate labels to tracks.
+    4. Label selected squares and propagate labels to tracks.
+    5. Calculate the recording level Tau and Density
     6. Return processed squares, tracks, and recording-level metrics.
 
 <br>
@@ -448,3 +448,6 @@ The core of the data processing takes place in Generate Squares. To facilitate s
     4. If tracks exist:
        - Compute metrics (Tau, R-squared, Density, Variability, etc.).
     5. Return a dictionary containing square-level data.
+
+
+<video src='recording.mov' width="320" height="240" controls></video>
