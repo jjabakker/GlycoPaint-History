@@ -335,20 +335,60 @@ The operation of the Paint Pipeline can be tuned with parameters that are kept i
   <img src="Images/paint_json.png" width="1200">
 </figure>
 
+
+### Paint
+
+Two parameters are of interest:
+- Image File Extension: Specifies the extension nof the images gebereatd by the microscope. For example, for Nikon it is '.nb2'. Generally speaking, any tiff compatible format is suitable. 
+
+- Fiji Path: Under normal circumstances, this does not have to be specified,as the software will detect the location of Fiji itself.  
+
+
+### User Directories
+In this section directories previoulsy specified by the user are stored. so they can be offered as defaults in a nect compinent of the pipeline.
+
+
+### Generate Squares
+
+In this section parameters are stored that are used by the Generate Squares app.
+
+- Five parameters, Nr of Squares in Row, Min Tracks to Calculate Tau, Min Allowable R Squared, Min Required Density Ratio and Max Allowable Variability,  have been entered previously by the user in the Generate Squares dialog and stored so they can be presented in the next invocation of Generate Squares.
+
+- Three other parameters, Neighbour Mode, Min Track Duration and Max Track Duration, provide values that cannot be specified in the user interfaces. The defaukts are chosen so that no squares are eliminated.
+
+- Fraction of Squares to Determine Background: Specifies the fraction of squares that are used to avarege the background.
+
+### TrackMate
+
+In this section parameters are stored that are used by TrackMate. The [TrackMate documentation pages](https://imagej.net/software/fiji/) contain much useful information on TrackMate.
+
+Parameters that are of particular importance in the GlycoPaint application are:
+
+- RADIUS (0.5)
+- LINKING_MAX_DISTANCE (0.6)
+- GAP_CLOSING_MAX_DISTANCE (1.2)
+
+Not parameterised, but important choices for TrackMate, are the 'LoG detector' model for spot detection and the 'Simple LAP tracker' model for tracking.
+
+The MIN_NR_SPOTS_IN_TRACK parameter is specific for GlycoPaint, and with its default setting of 3, ignores the shortest possible tracks, consisting of only 2 spots, as they are considered imaging noise.
+
+The TRACK_COLOURING parameter determines what track characteristic is used for colouring the tracks. Valid choices are specified in the TrackMate documentation. Options currently supported are TRACK_ID
+and TRACK_DURATION.
+
+
 # Paint directories
 
 The Paint pipeline creates a 'Paint' directory in the user's home directory, with two subdirectories: 'Defaults' and 'Logger'.
 
-In the 'Defaults' directory, a 'Paint.json' holds the parameters that are used by the various components of the Paint pipeline. For regular use, parameters do not need to be changed, but the option to change is provided (but requires detailed insight into the pipeline's operation). The parameters are explained in the next section.
+- In the 'Defaults' directory, a 'Paint.json' holds the parameters that are used by the various components of the Paint pipeline. For regular use, parameters do not need to be changed, but the option to change is provided (but requires detailed insight into the pipeline's operation). The parameters are explained in the next section.
 
-In the 'Logger' directory, the system writes log files, that provide information about the progress of operations in the pipeline and if any difficulties encountered. The log files can be statically viewed with a regular text editor or dynamically with the MacOS Console application.
-
-# Logging
-The pipeline provides detailed output on the progress of operations in the pipeline. The log files are written to the 'Logger' directory in the 'Paint' directory. The log files can be viewed with a regular text editor or dynamically with the macOS Console application.
+- In the 'Logger' directory, the system writes log files, that provide information about the progress of operations in the pipeline and if any difficulties encountered. The log files can be statically viewed with a regular text editor or dynamically with the MacOS Console application. 
 
 # Structure of Generate Squares
 
-**Generate Squares**
+The core of the data processing takes place in Generate Squares. To facilitate stuyding the cose, some high level pseudo code is presented hers.
+
+**Generate Squares manin structure**
 
     For all the Experiments in the Project (Process Project)
         For all the Recordings in the Experiment (Process Experiment)
@@ -359,53 +399,52 @@ The pipeline provides detailed output on the progress of operations in the pipel
 
 **Process Project**
 
-1. Start project processing and log the project path.
-2. List and sort all experiment directories.
-3. For each experiment directory:
-    - Skip if it is not a directory or if it's an "Output" directory.
-    - Skip if already processed, unless forced by a paint_force flag.
-    - Call process_experiment for unprocessed experiments.
-4. Return the number of experiments processed.
+    1. Start project processing and log the project path.
+    2. List and sort all experiment directories.
+    3. For each directory:
+      - Skip if it is not an experiment directory (e.g. if it is an 'Output' directory.
+      - Skip if already processed, unless forced by a paint_force flag.
+      - Call process_experiment for each unprocessed experiments.
+    4. Return the number of experiments processed.
 
 <br>
 
 **Process Experiment**
 
-1. Initialize variables for tracking and logging.
-2. Load tracks and recordings into DataFrames.
-3. Validate consistency between tracks and recordings.
-4. Log the number of recordings to process.
-5. For each recording
-    - Retrieve recording details.
-    - Call process_recording to process data.
-    - Update experiment-level metrics with results from recording.
-6. Save updated tracks, recordings, and squares data to files.
-7. Log total processing time for the experiment.
+    1. Initialize variables for tracking and logging.
+    2. Load tracks and recordings data into DataFrames.
+    3. Validate consistency between tracks and recordings data
+    4. Log the number of recordings to process.
+    5. For each recording
+       - Retrieve recording details.
+       - Call process_recording to process data.
+       - Update experiment-level metrics with results from recording.
+    6. Save updated tracks, recordings, and squares data to files.
+    7. Log total processing time for the experiment.
 
 <br>
 
 **Process Recording**
 
-1. Initialize processing variables.
-2. Loop through all squares in the grid:
-    - Calculate square coordinates.
-    - Filter tracks within square boundaries.
-    - Compute metrics (Tau, Density, Variability, etc.).
-    - Append square data to the main DataFrame.
-3. Compute the density ratio for the squares.
-4. Apply selection filters using select_squares_with_parameters.
-5. Label selected squares and propagate labels to tracks.
-6. Return processed squares, tracks, and recording-level metrics.
+    1. Initialize processing variables.
+    2. Loop through all squares in the grid:
+       - Calculate square coordinates.
+       - Filter tracks within square boundaries.
+       - Compute metrics (Tau, Density, Variability, etc.).
+       - Append square data to the main DataFrame.
+    3. Compute the density ratio for the squares.
+    4. Apply selection filters using select_squares_with_parameters.
+    5. Label selected squares and propagate labels to tracks.
+    6. Return processed squares, tracks, and recording-level metrics.
 
 <br>
 
 **Process Square**
 
-1. Calculate square boundaries based on grid coordinates.
-2. Filter tracks within the square.
-3. If no tracks:
-    - Assign default values for metrics (e.g., Tau, Density = 0).
-4. If tracks exist:
-    - Compute metrics (Tau, R-squared, Density, Variability, etc.).
-5. Return a dictionary containing square-level data.
-
+    1. Calculate square boundaries based on grid coordinates.
+    2. Filter tracks within the square.
+    3. If no tracks:
+       - Assign default values for metrics (e.g., Tau, Density = 0).
+    4. If tracks exist:
+       - Compute metrics (Tau, R-squared, Density, Variability, etc.).
+    5. Return a dictionary containing square-level data.
