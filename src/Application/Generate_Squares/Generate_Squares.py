@@ -58,8 +58,6 @@ def process_project(
         nr_of_squares_in_row: int,
         min_allowable_r_squared: float,
         min_tracks_for_tau: int,
-        process_recording_tau: bool = True,
-        process_square_tau: bool = True,
         paint_force: bool = False) -> None:
     """
     This function processes all Recordings in a Project.
@@ -97,9 +95,7 @@ def process_project(
             select_parameters=select_parameters,
             nr_of_squares_in_row=nr_of_squares_in_row,
             min_allowable_r_squared=min_allowable_r_squared,
-            min_tracks_for_tau=min_tracks_for_tau,
-            process_recording_tau=process_recording_tau,
-            process_square_tau=process_square_tau)
+            min_tracks_for_tau=min_tracks_for_tau)
         nr_experiments_processed += 1
 
     return nr_experiments_processed
@@ -120,8 +116,6 @@ def process_experiment(
         nr_of_squares_in_row: int,
         min_allowable_r_squared: float,
         min_tracks_for_tau: int,
-        process_recording_tau: bool = True,
-        process_square_tau: bool = True,
         paint_force: bool = False) -> None:
     """
     This function processes all Recordings in an Experiment.
@@ -189,8 +183,6 @@ def process_experiment(
             nr_of_squares_in_row,
             min_allowable_r_squared,
             min_tracks_for_tau,
-            process_recording_tau,
-            process_square_tau,
             plot_to_file)
         if df_squares_of_recording is None:
             paint_logger.error("Aborted with error")
@@ -240,8 +232,6 @@ def process_recording(
         nr_of_squares_in_row: int,
         min_allowable_r_squared: float,
         min_tracks_for_tau: int,
-        process_recording_tau: bool,
-        process_square_tau: bool,
         plot_to_file: False) -> tuple:
     """
     This function processes a single Recording in an Experiment. It creates a grid of squares.
@@ -286,7 +276,6 @@ def process_recording(
             concentration,
             min_allowable_r_squared,
             min_tracks_for_tau,
-            process_square_tau,
             square_area,
             square_seq_nr,
             row_nr,
@@ -321,17 +310,15 @@ def process_recording(
     # Refresh df_tracks_of_recording now to pick up Label and Square Nrs
     df_tracks_of_recording = df_tracks_of_recording[df_tracks_of_recording['Ext Recording Name'] == recording_name]
 
-    if process_recording_tau:
-        recording_tau, recording_r_squared, recording_density = calculate_tau_and_density_for_recording(
-            df_squares_of_recording,
-            df_tracks_of_recording,
-            min_tracks_for_tau,
-            min_allowable_r_squared,
-            nr_of_squares_in_row,
-            float(recording_data['Concentration']),
-            select_parameters)
-    else:
-        recording_tau = recording_r_squared = recording_density = 0
+
+    recording_tau, recording_r_squared, recording_density = calculate_tau_and_density_for_recording(
+        df_squares_of_recording,
+        df_tracks_of_recording,
+        min_tracks_for_tau,
+        min_allowable_r_squared,
+        nr_of_squares_in_row,
+        float(recording_data['Concentration']),
+        select_parameters)
 
     return df_squares_of_recording, df_tracks_of_recording, recording_tau, recording_r_squared, recording_density
 
@@ -352,7 +339,6 @@ def process_square(
         concentration: float,
         min_allowable_r_squared: float,
         min_tracks_for_tau: int,
-        process_square_tau: bool,
         square_area: float,
         square_seq_nr: int,
         row_nr: int,
@@ -373,7 +359,7 @@ def process_square(
         average_long_track = 0
         max_track_duration = 0
         r_squared = 0
-        tau = -1 if process_square_tau else 0
+        tau = -1
         density = 0
         variability = 0
         dc_mean = 0
@@ -392,12 +378,11 @@ def process_square(
         # Calculate the Tau and R squared for the square
         tau = 0
         r_squared = 0
-        if process_square_tau:
-            df_tracks_for_tau = extra_constraints_on_tracks_for_tau_calculation(df_tracks_of_square)
-            tau, r_squared = calculate_tau(
-                df_tracks_for_tau,
-                min_tracks_for_tau,
-                min_allowable_r_squared)
+        df_tracks_for_tau = extra_constraints_on_tracks_for_tau_calculation(df_tracks_of_square)
+        tau, r_squared = calculate_tau(
+            df_tracks_for_tau,
+            min_tracks_for_tau,
+            min_allowable_r_squared)
 
         # Calculate the density for the square-
         density = calculate_density(

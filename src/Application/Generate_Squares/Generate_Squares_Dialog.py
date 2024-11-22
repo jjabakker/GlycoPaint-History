@@ -41,8 +41,6 @@ class GenerateSquaresDialog:
         min_allowable_r_squared = get_paint_attribute('Generate Squares', 'Min Allowable R Squared')
         min_required_density_ratio = get_paint_attribute('Generate Squares', 'Min Required Density Ratio')
         max_allowable_variability = get_paint_attribute('Generate Squares', 'Max Allowable Variability')
-        process_recording_tau = get_paint_attribute('Generate Squares', 'Process Recording Tau')
-        process_square_tau = get_paint_attribute('Generate Squares', 'Process Square Tau')
 
         self.project_directory = get_paint_attribute('User Directories', 'Project Directory')
         self.experiment_directory = get_paint_attribute('User Directories', 'Experiment Directory')
@@ -61,22 +59,18 @@ class GenerateSquaresDialog:
         self.min_allowable_r_squared = tk.DoubleVar(value=min_allowable_r_squared)
         self.min_required_density_ratio = tk.DoubleVar(value=min_required_density_ratio)
         self.max_allowable_variability = tk.DoubleVar(value=max_allowable_variability)
-        self.process_average_tau = tk.IntVar(value=process_recording_tau)
-        self.process_square_specific_tau = tk.IntVar(value=process_square_tau)
 
     def create_ui(self, _root):
         """Create and layout the UI components."""
         content = ttk.Frame(_root)
 
         # Define frames
-        frame_parameters = self.create_frame(content, 30)
-        frame_processing = self.create_frame(content)
+        frame_parameters = self.create_frame(content)
         frame_directory = self.create_frame(content)
         frame_buttons = self.create_frame(content)
 
         # Create controls in frames
         self.create_parameter_controls(frame_parameters)
-        self.create_processing_controls(frame_processing)
         self.create_directory_controls(frame_directory)
         self.create_button_controls(frame_buttons)
 
@@ -88,11 +82,8 @@ class GenerateSquaresDialog:
         _root.grid_columnconfigure(0, weight=1)  # Center horizontally
 
         # Layout the frames
-        frame_parameters.grid(column=0, row=0, padx=5, pady=5, sticky="nsew")
-        frame_processing.grid(column=1, row=0, padx=5, pady=5, sticky="nsew")
+        frame_parameters.grid(column=0, row=0, columnspan=2, padx=5, pady=5, sticky="nsew")
         frame_directory.grid(column=0, row=1, columnspan=2, padx=5, pady=5, sticky="nsew")
-
-        # Center the button frame exactly in the middle
         frame_buttons.grid(column=0, row=2, columnspan=2, padx=5, pady=5, sticky="nsew")
         _root.grid_rowconfigure(2, weight=1)
         _root.grid_columnconfigure(0, weight=1)
@@ -135,21 +126,10 @@ class GenerateSquaresDialog:
         msg_square_tau = "If checked, the program will calculate a Tau for each square individually."
         msg_recording_tau = "If checked, the program will calculate one Tau for all visible squares combined."
 
-        self.create_checkbox(frame, "Square Tau", self.process_square_specific_tau, 0, tooltip=msg_square_tau)
-        self.create_checkbox(frame, "Recording Tau", self.process_average_tau, 1, tooltip=msg_recording_tau)
-
-    def create_checkbox(self, frame, text, var, row, tooltip=None):
-        """Helper method to create a labeled checkbox."""
-        checkbox = ttk.Checkbutton(frame, text=text, variable=var)
-        checkbox.grid(column=0, row=row, padx=5, pady=10, sticky=tk.W)
-        checkbox.config(padding=(10, 0, 0, 0))
-        if tooltip:
-            ToolTip(checkbox, tooltip, wraplength=400)
-
     def create_directory_controls(self, frame):
         """Create controls for directory management."""
         btn_change_dir = ttk.Button(frame, text='Change Directory', width=15, command=self.on_change_dir)
-        self.lbl_directory = ttk.Label(frame, text=self.paint_directory, width=80)
+        self.lbl_directory = ttk.Label(frame, text=self.paint_directory, width=60)
         btn_change_dir.grid(column=0, row=0, padx=10, pady=5)
         self.lbl_directory.grid(column=1, row=0, padx=20, pady=5)
 
@@ -221,8 +201,6 @@ class GenerateSquaresDialog:
             nr_of_squares_in_row=self.nr_of_squares_in_row.get(),
             min_allowable_r_squared=self.min_allowable_r_squared.get(),
             min_tracks_for_tau=self.min_tracks_for_tau.get(),
-            process_recording_tau=self.process_average_tau.get(),
-            process_square_tau=self.process_square_specific_tau.get(),
             paint_force=True
         )
         run_time = time.time() - start_time
@@ -236,8 +214,6 @@ class GenerateSquaresDialog:
         update_paint_attribute('Generate Squares', 'Min Allowable R Squared', self.min_allowable_r_squared.get())
         update_paint_attribute('Generate Squares', 'Min Required Density Ratio', self.min_required_density_ratio.get())
         update_paint_attribute('Generate Squares', 'Max Allowable Variability', self.max_allowable_variability.get())
-        update_paint_attribute('Generate Squares', 'Process Recording Tau', self.process_average_tau.get())
-        update_paint_attribute('Generate Squares', 'Process Square Tau', self.process_square_specific_tau.get())
 
         update_paint_attribute('User Directories', 'Project Directory', self.project_directory)
         update_paint_attribute('User Directories', 'Experiment Directory', self.experiment_directory)

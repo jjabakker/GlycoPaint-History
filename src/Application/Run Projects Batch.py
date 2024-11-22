@@ -39,8 +39,6 @@ def process_json_configuration_block(paint_source_dir,
                                      current_process: int,
                                      min_allowable_r_squared: float,
                                      min_tracks_for_tau: int,
-                                     process_recording_tau: bool,
-                                     process_square_tau: bool,
                                      time_string: str,
                                      paint_force: bool,
                                      drop_empty_squares: bool) -> bool:
@@ -52,8 +50,6 @@ def process_json_configuration_block(paint_source_dir,
     paint_logger.info(msg)
     paint_logger.info("")
     paint_logger.info(f"Probe Series                : {probe}")
-    paint_logger.info(f"Process Square Tau          : {process_square_tau}")
-    paint_logger.info(f"Process Recording Tau       : {process_recording_tau}")
     paint_logger.info(f"Number of squares           : {nr_of_squares_in_row}")
     paint_logger.info(f"Min Required Density Ratio  : {select_parameters['min_required_density_ratio']}")
     paint_logger.info(f"Max Allowable Variability   : {select_parameters['max_allowable_variability']}")
@@ -91,8 +87,6 @@ def process_json_configuration_block(paint_source_dir,
         nr_of_squares_in_row=nr_of_squares_in_row,
         min_allowable_r_squared=min_allowable_r_squared,
         min_tracks_for_tau=min_tracks_for_tau,
-        process_recording_tau=process_recording_tau,
-        process_square_tau=process_square_tau,
         paint_force=paint_force)
 
     # Compile the All Recordings and All Squares files
@@ -228,8 +222,6 @@ def main():
                     select_parameters=select_parameters,
                     min_allowable_r_squared=entry['min_allowable_r_squared'],
                     min_tracks_for_tau=entry['min_tracks_for_tau'],
-                    process_recording_tau=entry['process_recording_tau'],
-                    process_square_tau=entry['process_square_tau'],
                     time_string=time_string,
                     paint_force=paint_force,
                     drop_empty_squares=drop_empty_squares):

@@ -49,8 +49,7 @@ default_data = {
         'Min Allowable R Squared': 0.9,
         "Min Required Density Ratio": 2.0,
         "Max Allowable Variability": 10.0,
-        "Process Recording Tau": True,
-        "Process Square Tau": True,
+
         "logging": {
             "level": "INFO",
             "file": "Generate Squares.log"
