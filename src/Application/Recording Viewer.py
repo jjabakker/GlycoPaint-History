@@ -36,10 +36,12 @@ from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import 
     test_if_square_is_in_rectangle,
     save_as_png,
     find_excel_executable)
-from src.Application.Recording_Viewer.Select_Squares import relabel_tracks
-from src.Application.Recording_Viewer.Select_Squares import select_squares
+from src.Application.Recording_Viewer.Select_Squares import (
+    relabel_tracks,
+    select_squares)
 from src.Application.Utilities.General_Support_Functions import (
-    read_squares_from_file)
+    read_squares_from_file,
+    set_application_icon)
 from src.Fiji.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
@@ -1287,9 +1289,9 @@ def recalc_recording_tau_and_density(self):
 if __name__ == '__main__':
     root = tk.Tk()
     root.geometry("1x1")  # Ensure root is visible
-    root.deiconify()
-    root.iconbitmap('path_to_your_icon.ico')
 
+    root = set_application_icon(root)
+    root.deiconify()
     dialog = SelectViewerDataDialog(root)
     proceed, directory, mode = dialog.get_result()
 

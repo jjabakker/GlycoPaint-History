@@ -3,6 +3,7 @@ from pathlib import Path
 import re
 import shutil
 import pandas as pd
+from PIL import Image, ImageTk
 
 from src.Fiji.LoggerConfig import paint_logger
 
@@ -332,3 +333,21 @@ def classify_directory(directory_path):
         return 'Unknown', ''
     else:
         return result['type'], result['maturity']
+
+
+def set_application_icon(root):
+
+    icon_file = "../images/paint1.png"
+    # For macOS Load the icon using Pillow
+    try:
+        img = Image.open(icon_file)
+        icon = ImageTk.PhotoImage(img)
+        root.iconphoto(True, icon)
+    except Exception as e:
+        print(f"Error loading image: {e}")
+        photo = None
+
+    # For Windows
+    root.iconbitmap(icon_file)
+
+    return root
