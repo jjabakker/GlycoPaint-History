@@ -6,7 +6,7 @@ import os
 import sys
 import time
 from tkinter import *
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 
 import pandas as pd
 
@@ -17,7 +17,6 @@ from src.Application.Utilities.General_Support_Functions import (
     format_time_nicely,
     correct_all_images_column_types,
     classify_directory)
-from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 from src.Fiji.LoggerConfig import (
     paint_logger,
@@ -150,14 +149,15 @@ class CompileDialog:
         if dir_type == 'Project':
             update_paint_attribute('User Directories', 'Project Directory', self.project_directory)
         else:
-            paint_messagebox(self.root, title='Warning',
-                             message='The selected directory does not seem to be a project directory.')
+            messagebox.showwarning(
+                title='Warning',
+                message='The selected directory does not seem to be a project directory.')
 
     def on_compile_pressed(self) -> None:
 
         # Check if the directory exists and has not been deleted since it lst was chosen
         if not os.path.exists(self.project_directory):
-            paint_messagebox(self.project_directory, title='Warning', message='The selected directory does not exist.')
+            messagebox.showwarning(title='Warning', message='The selected directory does not exist.')
             return
 
         # Determine if it indeed is a project directory
@@ -168,11 +168,11 @@ class CompileDialog:
         elif dir_type == 'Experiment':  # Experiment directory, so warn
             msg = "The selected directory does not seem to be a project directory, but an experiment directory."
             paint_logger.error(msg)
-            paint_messagebox(self.root, title='Warning', message=msg)
+            messagebox.showwarning(title='Warning', message=msg)
         else:  # Just any directory, so warn
             msg = "The selected directory does not seem to be a project directory, nor an experiment directory."
             paint_logger.error(msg)
-            paint_messagebox(self.root, title='Warning', message=msg)
+            messagebox.showwarning(title='Warning', message=msg)
 
     def on_exit_pressed(self) -> None:
         self.root.destroy()
