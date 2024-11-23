@@ -90,4 +90,5 @@ def find_excel_executable():
             if "Excel.exe" in files:
                 return os.path.join(root, "Excel.exe")
 
-    raise FileNotFoundError("Microsoft Excel executable not found. Please check your installation.")
+    return None
+    # raise FileNotFoundError("Microsoft Excel executable not found. Please check your installation.")
