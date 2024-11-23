@@ -448,3 +448,6 @@ The core of the data processing takes place in Generate Squares. To facilitate s
     4. If tracks exist:
        - Compute metrics (Tau, R-squared, Density, Variability, etc.).
     5. Return a dictionary containing square-level data.
+
+
+<video src='recording.mov' width="320" height="240" controls></video>
