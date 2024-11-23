@@ -441,52 +441,52 @@ class RecordingViewer:
 
     def on_squares_data(self):
         """Exports square data to a temporary CSV file and opens it in Excel."""
+
+        # Ensure the DataFrame exists and is valid
+        if self.df_squares.empty:
+            return
+
+        # Determine the command for opening Excel
+        if platform.system() == 'Darwin':
+            excel_command = 'open'
+            excel_args = ['-a', '/Applications/Microsoft Excel.app']
+        elif platform.system() == 'Windows':
+            excel_command = find_excel_executable()
+            excel_args = [excel_command]
+        else:
+            raise OSError("Unsupported operating system.")
+
+        # Create a temporary file
+        temp_dir = tempfile.mkdtemp()
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        temp_file = os.path.join(temp_dir, f'Temporary_All_Squares_{timestamp}.csv')
+
+        # Save the Squares data to a temporary file
+        self.df_squares.to_csv(temp_file, index=False)
+        if not os.path.exists(temp_file):
+            raise FileNotFoundError(f"Failed to create temporary file: {temp_file}")
+
+        # Open the file in Excel
         try:
-            # Ensure the DataFrame exists and is valid
-            if not hasattr(self, 'df_squares') or self.df_squares.empty:
-                raise ValueError("The DataFrame 'df_squares' is either missing or empty.")
-
-            # Determine the command for opening Excel
-            if platform.system() == 'Darwin':
-                excel_command = 'open'
-                excel_args = ['-a', '/Applications/Microsoft Excel.app']
-            elif platform.system() == 'Windows':
-                excel_command = find_excel_executable()
-                excel_args = [excel_command]
-            else:
-                raise OSError("Unsupported operating system.")
-
-            # Create a temporary file
-            temp_dir = tempfile.mkdtemp()
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            temp_file = os.path.join(temp_dir, f'Temporary_All_Squares_{timestamp}.csv')
-
-            # Save the Squares data to a temporary file
-            self.df_squares.to_csv(temp_file, index=False)
-            if not os.path.exists(temp_file):
-                raise FileNotFoundError(f"Failed to create temporary file: {temp_file}")
-
-            # Open the file in Excel
             if platform.system() == 'Darwin':
                 subprocess.run([excel_command] + excel_args + [temp_file], check=True)
             elif platform.system() == 'Windows':
                 subprocess.run(excel_args + [temp_file], shell=True, check=True)
-
-            # Allow some time for Excel to process the file
-            time.sleep(2)
-
-        except ValueError as ve:
-            print(f"Data validation error: {ve}")
-        except FileNotFoundError as fe:
-            print(f"File error: {fe}")
-        except subprocess.SubprocessError as se:
-            print(f"Error launching Excel: {se}")
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
-        finally:
+        except subprocess.CalledProcessError as e:
+            msg = "Failed to open Excel, cannot display squares data."
+            messagebox.showerror("Error", msg)
+            paint_logger.error(msg)
             # Clean up the temporary directory
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
+            return
+
+        # Allow some time for Excel to process the file
+        time.sleep(2)
+
+        # Clean up the temporary directory
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
 
         # Process square data statistics
         nr_total_squares = len(self.df_squares)
@@ -512,7 +512,6 @@ class RecordingViewer:
         print(f'The mean Tau value:            {tau_mean}')
         print(f'The median Tau value:          {tau_median}')
         print(f'The Tau standard deviation:    {tau_std}')
-
 
     # --------------------------------------------------------------------------------------------
     # Key Bindings and associated functions
