@@ -71,3 +71,14 @@ def paint_messagebox(_root, title, message):
         paint_messagebox(root, "Paint Message", "This is a custom message with a user-defined icon.")
 
         root.mainloop()
+
+
+if __name__ == '__main__':
+    # Create the main window
+    root = tk.Tk()
+    root.withdraw()  # Hide the main window
+
+    # Call the custom messagebox with a user-defined icon
+    paint_messagebox(root, "Paint Message", "This is a custom message with a user-defined icon.")
+
+    root.mainloop()
