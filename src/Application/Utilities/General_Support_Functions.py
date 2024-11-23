@@ -1,7 +1,7 @@
 import os
+from pathlib import Path
 import re
 import shutil
-
 import pandas as pd
 
 from src.Fiji.LoggerConfig import paint_logger
@@ -151,89 +151,184 @@ def copy_directory(src, dest):
 
 
 # ToDo there may be an Output dirctory but that should be ignored
-def classify_directory(directory_path):
-    # Define required files and subdirectories for an experiment directory
-    experiment_files = {'All Recordings.csv', 'All Tracks.csv'}
-    experiment_subdirs = {'Brightfield Images', 'TrackMate Images'}
-    mature_experiment_file = 'All Squares.csv'
+# def classify_directory(directory_path):
+#     # Define required files and subdirectories for an experiment directory
+#     experiment_files = {'All Recordings.csv', 'All Tracks.csv'}
+#     experiment_subdirs = {'Brightfield Images', 'TrackMate Images'}
+#     mature_experiment_file = 'All Squares.csv'
+#
+#     # Define required files for a project directory
+#     project_files = {'All Recordings.csv', 'All Tracks.csv'}
+#     mature_project_file = 'All Squares.csv'
+#
+#     observations = []
+#
+#     # Initialize classification variables
+#     directory_type = None
+#     maturity = 'Immature'
+#
+#     try:
+#         # Check if the directory exists
+#         if not os.path.exists(directory_path):
+#             paint_logger.error(f"Directory '{directory_path}' does not exist.")
+#             return directory_type, maturity
+#
+#         # Check if the path is a directory
+#         if not os.path.isdir(directory_path):
+#             paint_logger.error(f"Path '{directory_path}' is not a directory.")
+#             return directory_type, maturity
+#
+#         # Get directory contents
+#         contents = set(os.listdir(directory_path))
+#
+#         # Check if it is an experiment directory
+#         if experiment_files.issubset(contents):
+#             missing_subdirs = experiment_subdirs - contents
+#             if missing_subdirs:
+#                 observations.append(
+#                     f"Experiment directory '{directory_path}' is missing required subdirectories: {', '.join(missing_subdirs)}")
+#             else:
+#                 directory_type = 'Experiment'
+#                 # Check for maturity
+#                 if mature_experiment_file in contents:
+#                     maturity = 'Mature'
+#                 else:
+#                     observations.append(
+#                         f"Nor a mature Project: directory '{directory_path}' is missing the file '{mature_experiment_file}' required for maturity.")
+#         else:
+#             missing_files = experiment_files - contents
+#             observations.append(
+#                 f"Not an Experiment: directory '{directory_path}' is missing required files: {', '.join(missing_files)}")
+#
+#         # Check if it is a project directory
+#         if directory_type is None:
+#             experiment_dirs = [
+#                 d for d in os.listdir(directory_path)
+#                 if os.path.isdir(os.path.join(directory_path, d))
+#             ]
+#             experiment_dir_count = 0
+#             for sub_dir in experiment_dirs:
+#                 sub_dir_path = os.path.join(directory_path, sub_dir)
+#                 sub_contents = set(os.listdir(sub_dir_path))
+#                 if experiment_files.issubset(sub_contents) and experiment_subdirs.issubset(sub_contents):
+#                     experiment_dir_count += 1
+#                 else:
+#                     observations.append(
+#                         f"Not an Experiment: Subdirectory '{sub_dir}' is missing required files or subdirectories")
+#
+#             if experiment_dir_count > 0:
+#                 directory_type = 'Project'
+#                 if project_files.issubset(contents) and mature_project_file in contents:
+#                     maturity = 'Mature'
+#                 else:
+#                     observations.append(
+#                         f"Not a Project: directory '{directory_path}' is missing files required for project maturity: {', '.join(project_files - contents) or mature_project_file}")
+#             else:
+#                 observations.append(
+#                     f"Not a Project: directory '{directory_path}' does not contain any valid experiment subdirectories.")
+#
+#     except Exception as e:
+#         paint_logger.error(f"An error occurred while classifying the directory: {e}")
+#         return directory_type, maturity
+#
+#     # Return type and maturity
+#     if observations:
+#         for observation in observations:
+#             paint_logger.error(observation)
+#
+#     return directory_type, maturity
 
-    # Define required files for a project directory
-    project_files = {'All Recordings.csv', 'All Tracks.csv'}
-    mature_project_file = 'All Squares.csv'
 
-    observations = []
 
-    # Initialize classification variables
-    directory_type = None
-    maturity = 'Immature'
 
-    try:
-        # Check if the directory exists
-        if not os.path.exists(directory_path):
-            paint_logger.error(f"Directory '{directory_path}' does not exist.")
-            return directory_type, maturity
 
-        # Check if the path is a directory
-        if not os.path.isdir(directory_path):
-            paint_logger.error(f"Path '{directory_path}' is not a directory.")
-            return directory_type, maturity
+def classify_directory_work(directory_path):
+    """
+    Classifies a directory as either an experiment or project directory,
+    and determines its maturity. Provides feedback if classification fails.
 
-        # Get directory contents
-        contents = set(os.listdir(directory_path))
+    Args:
+        directory_path (str): The path to the directory to classify.
 
-        # Check if it is an experiment directory
-        if experiment_files.issubset(contents):
-            missing_subdirs = experiment_subdirs - contents
-            if missing_subdirs:
-                observations.append(
-                    f"Experiment directory '{directory_path}' is missing required subdirectories: {', '.join(missing_subdirs)}")
-            else:
-                directory_type = 'Experiment'
-                # Check for maturity
-                if mature_experiment_file in contents:
-                    maturity = 'Mature'
-                else:
-                    observations.append(
-                        f"Nor a mature Project: directory '{directory_path}' is missing the file '{mature_experiment_file}' required for maturity.")
+    Returns:
+        dict: A dictionary with keys 'type', 'maturity', and 'feedback'.
+              Possible 'type' values: 'experiment', 'project', or 'unknown'.
+              Possible 'maturity' values: 'mature', 'immature'.
+              'feedback' provides information on why classification failed.
+    """
+    directory = Path(directory_path)
+
+    # Ignore files like .DS_Store
+    contents = [item for item in directory.iterdir() if item.name != ".DS_Store"]
+
+    # Initialize feedback
+    feedback = []
+
+    # Check for experiment directory
+    experiment_files = {"Experiment Info.csv", "All Recordings.csv", "All Tracks.csv"}
+    required_dirs = {"Brightfield Images", "TrackMate Images"}
+    optional_file = "All Squares.csv"
+    output_dir = directory / "Output"
+
+    has_experiment_files = all((directory / file).is_file() for file in experiment_files)
+    has_required_dirs = all((directory / dir_name).is_dir() for dir_name in required_dirs)
+
+    if has_experiment_files and has_required_dirs:
+        additional_contents = [item for item in contents \
+                               if item.name not in experiment_files and \
+                                  item.name not in required_dirs and \
+                                  item.name != optional_file and \
+                                  item != output_dir]
+        if additional_contents:
+            feedback.append(f"Not an Experiment: directory contains unexpected files or directories: {additional_contents}.")
+        if not additional_contents and (not output_dir.exists() or output_dir.is_dir()):
+            maturity = "Mature" if (directory / optional_file).is_file() else "Immature"
+            return {"type": "Experiment", "maturity": maturity, "feedback": None}
         else:
-            missing_files = experiment_files - contents
-            observations.append(
-                f"Not an Experiment: directory '{directory_path}' is missing required files: {', '.join(missing_files)}")
+            feedback.append("Experiment directory contains unexpected files or directories.")
+    else:
+        if not has_experiment_files:
+            file_names = [Path(path).name for path in contents if Path(path).is_file()]
+            missing_files = set(experiment_files) - set(file_names)
+            feedback.append(f"Not an Experiment: Missing required experiment files: {missing_files}")
+        if not has_required_dirs:
+            dir_names = [Path(path).name for path in contents if Path(path).is_dir()]
+            missing_dirs = set(required_dirs) - set(dir_names)
+            feedback.append(f"Not an Experiment: Missing required directories for an experiment: {missing_dirs}")
 
-        # Check if it is a project directory
-        if directory_type is None:
-            experiment_dirs = [
-                d for d in os.listdir(directory_path)
-                if os.path.isdir(os.path.join(directory_path, d))
-            ]
-            experiment_dir_count = 0
-            for sub_dir in experiment_dirs:
-                sub_dir_path = os.path.join(directory_path, sub_dir)
-                sub_contents = set(os.listdir(sub_dir_path))
-                if experiment_files.issubset(sub_contents) and experiment_subdirs.issubset(sub_contents):
-                    experiment_dir_count += 1
-                else:
-                    observations.append(
-                        f"Not an Experiment: Subdirectory '{sub_dir}' is missing required files or subdirectories")
+    # Check for project directory
+    experiment_dirs = [item for item in contents if item.is_dir() and classify_directory_work(item)["type"] == "Experiment"]
+    project_files = {"All Recordings.csv", "All Tracks.csv", "All Squares.csv"}
 
-            if experiment_dir_count > 0:
-                directory_type = 'Project'
-                if project_files.issubset(contents) and mature_project_file in contents:
-                    maturity = 'Mature'
-                else:
-                    observations.append(
-                        f"Not a Project: directory '{directory_path}' is missing files required for project maturity: {', '.join(project_files - contents) or mature_project_file}")
-            else:
-                observations.append(
-                    f"Not a Project: directory '{directory_path}' does not contain any valid experiment subdirectories.")
+    has_project_files = all((directory / file).is_file() for file in project_files)
 
-    except Exception as e:
-        paint_logger.error(f"An error occurred while classifying the directory: {e}")
-        return directory_type, maturity
+    if experiment_dirs:
+        additional_dirs = [item for item in contents if item.is_dir() and item != output_dir and item not in experiment_dirs]
+        additional_files = [item for item in contents if item.is_file() and item.name not in project_files]
 
-    # Return type and maturity
-    if observations:
-        for observation in observations:
-            paint_logger.error(observation)
+        if not additional_dirs and not additional_files and (not output_dir.exists() or output_dir.is_dir()):
+            maturity = "Mature" if has_project_files else "Immature"
+            return {"type": "Project", "maturity": maturity, "feedback": None}
+        else:
+            dir_names = [Path(path).name for path in additional_dirs if Path(path).is_dir()]
+            feedback.append(f"Not a Project: unexpected files {additional_files} or directories {dir_names}.")
+    else:
+        feedback.append("Not a Project: No valid experiment directories found for a project.")
 
-    return directory_type, maturity
+    if not has_project_files:
+        feedback.append("Not a Project: Missing required project files.")
+
+    # Classify as unknown if criteria are not met
+    feedback_message = "; ".join(feedback)
+    return {"type": "unknown", "maturity": "immature", "feedback": feedback_message}
+
+
+def classify_directory(directory_path):
+    result = classify_directory_work(directory_path)
+    if result['type'] == "unknown":
+        if result["feedback"]:
+            for line in result["feedback"].split(";"):
+                paint_logger.error(line)
+        return 'Unknown', ''
+    else:
+        return result['type'], result['maturity']
