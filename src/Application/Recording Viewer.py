@@ -40,7 +40,6 @@ from src.Application.Recording_Viewer.Select_Squares import relabel_tracks
 from src.Application.Recording_Viewer.Select_Squares import select_squares
 from src.Application.Utilities.General_Support_Functions import (
     read_squares_from_file)
-from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Fiji.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
@@ -76,6 +75,9 @@ class RecordingViewer:
         self.setup_exclude_button()
         self.setup_heatmap()
         self.setup_key_bindings()
+
+        # Set the custom icon for the main window
+        root.iconbitmap('../Images/Paint1.png')
 
     def setup_heatmap(self):
 
@@ -1129,7 +1131,7 @@ class RecordingViewer:
         df_heatmap_data, min_val, max_val = get_heatmap_data(self.df_squares, self.df_all_squares, heatmap_mode,
                                                              heatmap_global_min_max)
         if df_heatmap_data is None:
-            paint_messagebox(self.viewer_dialog, "No data for heatmap", "There is no data for the heatmap")
+            messagebox.showwarning("No data for heatmap", "There is no data for the heatmap")
             return
 
         for index, row in df_heatmap_data.iterrows():
@@ -1286,6 +1288,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     root.geometry("1x1")  # Ensure root is visible
     root.deiconify()
+    root.iconbitmap('path_to_your_icon.ico')
 
     dialog = SelectViewerDataDialog(root)
     proceed, directory, mode = dialog.get_result()

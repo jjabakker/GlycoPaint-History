@@ -9,12 +9,12 @@ from src.Application.Recording_Viewer.Recording_Viewer_Support_Functions import 
 from src.Application.Utilities.General_Support_Functions import (
     classify_directory,
 )
-from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 from src.Fiji.LoggerConfig import paint_logger
 from src.Fiji.PaintConfig import (
     get_paint_attribute,
     update_paint_attribute)
+from src.Application.Compile_Project.Compile_Project import compile_project_output
 
 
 class SelectViewerDataDialog:
@@ -84,14 +84,15 @@ class SelectViewerDataDialog:
 
         if not os.path.isdir(self.directory):
             paint_logger.error("The selected directory does not exist")
-            paint_messagebox(self.dialog, title='Warning', message="The selected directory does not exist")
+            messagebox.showwarning(title='Warning', message="The selected directory does not exist")
             return
 
         type, maturity = classify_directory(self.directory)
         if type is None:
             paint_logger.error("The selected directory does not seem to be a project or experiment directory")
-            paint_messagebox(self.dialog, title='Warning',
-                             message="The selected directory does not seem to be a project or experiment directory")
+            messagebox.showwarning(
+                title='Warning',
+                message="The selected directory does not seem to be a project or experiment directory")
         elif type == 'Experiment':
             if maturity == 'Mature':
                 self.mode = type
@@ -100,15 +101,16 @@ class SelectViewerDataDialog:
             else:
                 msg = "The selected directory appears to be an Experiment directory but is missing files"
                 paint_logger.error(msg)
-                paint_messagebox(self.dialog, title='Warning', message=msg)
+                messagebox.showwarning(title='Warning', message=msg)
         elif type == 'Project':
             if maturity == 'Mature':
                 # If it is a project directory, check if there are no newer experiments, i.e., when you have forgotten to run Compile Project
                 if not self.test_project_up_to_date(self.directory):
                     return
                 if not only_one_nr_of_squares_in_row(self.directory):
-                    paint_messagebox(self.dialog, title='Warning',
-                                     message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
+                    messagebox.showwarning(
+                        title='Warning',
+                        message="Not all recordings have been processed with the same nr_of_square_in_row setting.")
                     return
                 # Ok, it all looks good. Check if very many recordings are requested and warn the user
                 nr = nr_recordings(self.directory)
@@ -121,8 +123,9 @@ class SelectViewerDataDialog:
                 self.dialog.destroy()
             else:
                 paint_logger.error("The selected directory is an immature project directory")
-                paint_messagebox(self.dialog, title='Warning',
-                                 message="The selected directory is an immature project directory")
+                messagebox.showwarning(
+                    title='Warning',
+                    message="The selected directory is an immature project directory")
 
     def on_exit(self):
         self.proceed = False
@@ -144,8 +147,12 @@ class SelectViewerDataDialog:
             if time_stamp_project < time_stamp_experiment:
                 out_of_date.append(experiment)
         if out_of_date and len(out_of_date) > 0:
-            paint_messagebox(self.dialog, title='Warning',
-                             message="The following experiments are out of date: " + ", ".join(
-                                 out_of_date) + ". You may want to run Compile Project.")
+            response = messagebox.askyesnocancel(
+                title='Warning',
+                message="The following experiments are out of date: " + ", ".join(
+                                 out_of_date) + ". Shall I run Compile Project?")
+            if response:
+                compile_project_output(project_directory)
+                out_of_date = []
 
         return len(out_of_date) == 0

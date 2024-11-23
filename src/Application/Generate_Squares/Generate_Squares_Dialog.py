@@ -1,7 +1,7 @@
 import os
 import time
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 
 from src.Application.Generate_Squares.Generate_Squares import (
     process_project,
@@ -12,7 +12,6 @@ from src.Application.Utilities.General_Support_Functions import (
     format_time_nicely,
     classify_directory
 )
-from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Application.Utilities.ToolTips import ToolTip
 from src.Fiji.LoggerConfig import (
     paint_logger,
@@ -171,7 +170,7 @@ class GenerateSquaresDialog:
 
         if not os.path.isdir(self.paint_directory):
             paint_logger.error("The selected directory does not exist")
-            paint_messagebox(self.root, title='Warning', message="The selected directory does not exist")
+            messagebox.showwarning(title='Warning', message="The selected directory does not exist")
             return
 
         self.level, _ = classify_directory(self.paint_directory)
@@ -184,7 +183,7 @@ class GenerateSquaresDialog:
         else:
             msg = "The selected directory does not seem to be a project directory, nor an experiment directory"
             paint_logger.error(msg)
-            paint_messagebox(self.root, title='Warning', message=msg)
+            messagebox.showwarning(self.root, title='Warning', message=msg)
             return
 
         select_parameters = pack_select_parameters(

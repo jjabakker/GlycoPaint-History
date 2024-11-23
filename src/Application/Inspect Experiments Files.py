@@ -1,7 +1,7 @@
 import logging
 import os
 from tkinter import *
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 
 import pandas as pd
 
@@ -9,7 +9,6 @@ from src.Application.Utilities.General_Support_Functions import (
     read_experiment_file,
     classify_directory
 )
-from src.Application.Utilities.Paint_Messagebox import paint_messagebox
 from src.Fiji.PaintConfig import (
     get_paint_attribute,
     update_paint_attribute)
@@ -134,10 +133,10 @@ class InspectDialog:
             root.destroy()
         elif dir_type == 'Experiment':
             msg = "The selected directory does not seem to be a project directory, but an experiment directory"
-            paint_messagebox(self.root, title='Warning', message=msg)
+            messagebox.showwarning(title='Warning', message=msg)
         else:
             msg = "The selected directory does not seem to be a project directory, nor an experiment directory"
-            paint_messagebox(self.root, title='Warning', message=msg)
+            messagebox.showwarning(title='Warning', message=msg)
 
     def exit_dialog(self):
         """
