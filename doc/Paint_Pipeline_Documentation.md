@@ -332,7 +332,7 @@ $$Diffusion\ Coefficient = \frac{MSD}{(2\ *n*t)}$$
 The operation of the Paint Pipeline can be tuned with parameters that are kept in 'Paint.json' file.
 
 <figure style="text-align: center;">
-  <img src="Images/paint_json.png" width="1200">
+  <img src="Images/paint_json.png" width="900">
 </figure>
 
 
