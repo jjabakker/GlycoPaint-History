@@ -7,6 +7,7 @@ from tkinter import ttk, filedialog
 import pandas as pd
 
 from src.Application.Process_Projects.Convert_BF_from_nd2_to_jpg import convert_bf_images
+from src.Application.Utilities.General_Support_Functions import set_application_icon
 from src.Fiji.LoggerConfig import (
     paint_logger,
     paint_logger_change_file_handler_name)
@@ -188,6 +189,7 @@ if __name__ == '__main__':
     paint_logger_change_file_handler_name('Prepare Experiment_Info File.log')
 
     root = Tk()
+    root = set_application_icon(root)
     root.eval('tk::PlaceWindow . center')
     BatchDialog(root)
     root.mainloop()
